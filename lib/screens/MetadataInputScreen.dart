@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../widgets/AppBarWithLogo.dart';
+import 'LoginScreen.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -84,6 +85,20 @@ class _MetadataScreen extends State<MetadataScreen> {
                                       },
                                       child: const Text('Submit'),
                                     ),
+                                  ),
+                                  SizedBox(
+                                    width: 200,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              Colors.grey, // background
+                                        ),
+                                        onPressed: () => {
+                                              Navigator.pushNamed(context,
+                                                  LoginScreen.routeName)
+                                            },
+                                        child: const Text('Cancel')),
                                   )
                                 ],
                               ))
