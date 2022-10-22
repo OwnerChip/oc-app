@@ -10,7 +10,8 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
 
 //local imports
-import 'ScanResultsScreen.dart';
+import 'MetadataInputScreen.dart';
+import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation_arguments.dart';
 import '../nfc/commands.dart';
 import '../web3/contractCalls.dart';
@@ -41,6 +42,7 @@ class _ScanningScreen extends State<ScanningScreen> {
     print('from initScanning');
     String nftOwner;
     bool chipIsInitialized;
+    dynamic tokenId;
 
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       var isoDep = IsoDep.from(tag);
@@ -67,22 +69,33 @@ class _ScanningScreen extends State<ScanningScreen> {
         }
 
         //get cardID and convert to int (tokenId)
-        var tokenId = bytesToInt(selectAppResponse.sublist(1, 11));
+        var cardId = bytesToInt(selectAppResponse.sublist(1, 11));
         //get owner of nft with cardId == tokenId
         try {
-          nftOwner = await getOwner(tokenId);
+          nftOwner = await getOwner(cardId);
+          tokenId = cardId;
         } catch (e) {
           print(e);
           chipIsInitialized = false;
+          tokenId = null;
           nftOwner = 'Error fetching owner';
         }
 
         NfcManager.instance.stopSession();
 
-        Navigator.pushNamed(context, ScanResultsScreen.routeName,
-            arguments: ScanResultsScreenArguments(nftOwner, chipIsInitialized));
+        if (chipIsInitialized) {
+          Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
+              arguments: ChipAlreadyInitializedScreenArguments(
+                widget.connector,
+                tokenId,
+              ));
+        } else {
+          //TODO: Navigate to metadata screen
+          Navigator.pushNamed(context, MetadataScreen.routeName);
+        }
       } catch (e) {
         print("Error transceiving isoDep: $e");
+        //TODO: Set some error state and display in UI
         NfcManager.instance.stopSession();
       }
     });

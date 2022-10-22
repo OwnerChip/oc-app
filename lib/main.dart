@@ -9,7 +9,8 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'screens/LoginScreen.dart';
 import 'screens/HomeScreen.dart';
 import 'screens/ScanningScreen.dart';
-import 'screens/ScanResultsScreen.dart';
+import 'screens/MetadataInputScreen.dart';
+import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'widgets/RestartWidget.dart';
 
 void main(List<String> args) async {
@@ -131,10 +132,10 @@ class _MyApp extends State<MyApp> {
         HomeScreen.routeName: (context) => HomeScreen(connector: connector),
         ScanningScreen.routeName: (context) => ScanningScreen(
             connector: connector, loginWithMetaMask: loginWithMetaMask),
-        ScanResultsScreen.routeName: (context) => ScanResultsScreen(
-              connector: connector,
-              loginWithMetaMask: loginWithMetaMask,
-            ),
+        ChipAlreadyInitializedScreen.routeName: (context) =>
+            ChipAlreadyInitializedScreen(connector: connector),
+        MetadataScreen.routeName: (context) =>
+            MetadataScreen(connector: connector),
       },
     );
   }

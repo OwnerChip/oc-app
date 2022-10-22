@@ -1,11 +1,13 @@
+import 'package:walletconnect_dart/walletconnect_dart.dart';
+
 class ScanScreenArguments {
   final String nextRoute;
   ScanScreenArguments(this.nextRoute);
 }
 
-class ScanResultsScreenArguments {
-  final String nftOwner;
-  final bool chipIsInitialized;
+class ChipAlreadyInitializedScreenArguments {
+  final WalletConnect? connector;
+  final BigInt? tokenId;
 
-  ScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized);
+  ChipAlreadyInitializedScreenArguments(this.connector, this.tokenId);
 }

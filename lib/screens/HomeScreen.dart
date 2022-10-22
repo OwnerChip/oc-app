@@ -1,7 +1,6 @@
 //flutter imports
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
@@ -118,8 +117,8 @@ class HomeScreenState extends State<HomeScreen> {
                                 child: Text('Logout'),
                                 onPressed: () => {
                                       widget.connector!.killSession(),
-                                      Navigator.pushReplacementNamed(
-                                          context, LoginScreen.routeName),
+                                      // Navigator.pushReplacementNamed(
+                                      //     context, LoginScreen.routeName),
                                     }),
                           ],
                         ),
