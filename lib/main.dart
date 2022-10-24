@@ -4,6 +4,7 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //screens and widgets
 import 'screens/LoginScreen.dart';
@@ -14,6 +15,8 @@ import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'widgets/RestartWidget.dart';
 
 void main(List<String> args) async {
+  await dotenv.load(fileName: ".env");
+
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   //prevent landscape mode
@@ -77,17 +80,16 @@ class _MyApp extends State<MyApp> {
   loginWithMetaMask(BuildContext context) async {
     if (!connector.connected) {
       try {
-        var session = await connector.createSession(
-            chainId: 80001,
+        var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: '1'));
+        await connector.createSession(
+            chainId: chainId,
             onDisplayUri: (uri) async {
               await launchUrlString(uri, mode: LaunchMode.externalApplication);
             });
         setState(() {});
         if (!mounted) {
-          //context should not be passed after async function without checking if mounted
           return;
         }
-        // Navigator.pushReplacementNamed(context, '/home');
       } catch (e) {
         print(e);
       }
