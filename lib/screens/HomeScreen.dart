@@ -196,12 +196,11 @@ class HomeScreenState extends State<HomeScreen> {
       }
       try {
         var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
-        //convert Uint8List to int
 
-        var burnParams = makeBurnParams(
-            widget.connector!.session!.accounts[0],
-            '0xfC97db8f5F39FE3354427674ABfC219795eba782',
-            selectAppResponse.sublist(1, 11));
+        final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
+
+        var burnParams = makeBurnParams(widget.connector!.session!.accounts[0],
+            contractAddress!, selectAppResponse.sublist(1, 11));
 
         loadingText.value = 'Burning...';
 

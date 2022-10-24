@@ -42,12 +42,15 @@ class _MetadataScreen extends State<MetadataScreen> {
 
   final Map<String, String> metadata = {};
   late XFile? image;
+  late String imageFilename = "none";
+  late String statusText = "";
   bool success = false;
 
   void setCameraImage() async {
     XFile? imageFile = await getImageFromCamera();
     setState(() {
       image = imageFile;
+      imageFilename = (imageFile != null) ? imageFile.name : "";
     });
   }
 
@@ -55,6 +58,103 @@ class _MetadataScreen extends State<MetadataScreen> {
     XFile? imageFile = await getImageFromGallery();
     setState(() {
       image = imageFile;
+      imageFilename = (imageFile != null) ? imageFile.name : "";
+    });
+  }
+
+  void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
+    loadingText.value = 'Scanning...';
+    loading.value = true;
+    status.value = '';
+
+    success = false;
+    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      var isoDep = IsoDep.from(tag);
+      if (isoDep == null) {
+        status.value = 'IsoDep is not supported.';
+        NfcManager.instance.stopSession();
+        return;
+      }
+      try {
+        var selectAppResponse =
+            await isoDep.transceive(data: SELECT_APP); //select app
+
+        Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
+        var responseGetKeyInfo = await isoDep.transceive(
+            data: GET_KEY_INFO); //check if key[1] already exists
+        //check if does not exist yet exist
+        if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
+            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
+          //key does not exist
+          var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
+          print("response generate key: $responseGenerateKey");
+          var newKeyHandle = responseGenerateKey[0];
+        } else {
+          setState(() {
+            statusText:
+            "key already exists";
+          });
+        }
+        NfcManager.instance.stopSession();
+
+        setState(() {
+          statusText:
+          "Initializing Chip...";
+        });
+
+        // upload image to ipfs
+        late String imageCid;
+        if (image != null) {
+          imageCid = await uploadFileToIPFS(image!);
+        }
+        // add image cid to metadata
+        metadata['image'] = 'ipfs://$imageCid';
+
+        // generate JSON file
+        XFile jsonFile = generateJsonFile(metadata);
+
+        // upload metadata json to ipfs
+        final String cid = await uploadFileToIPFS(jsonFile);
+
+        var mintParams = makeMintParams(
+            widget.connector!.session!.accounts[0],
+            dotenv.get('CONTRACT_ADDRESS'),
+            cid,
+            selectAppResponse.sublist(1, 11));
+
+        //metamask interaction
+        await launchUrlString(widget.connector!.session.toUri(),
+            mode: LaunchMode.externalApplication);
+
+        //TODO: transaction does not always pop up in Metamask!
+        var txnHash = await widget.connector!.sendCustomRequest(
+            method: 'eth_sendTransaction', params: mintParams, id: 1337);
+
+        var txnReceipt = await getTxnReceipt(txnHash);
+
+        if (txnReceipt?.status == true) {
+          setState(() {
+            statusText:
+            "Minted token successfully";
+          });
+        } else {
+          setState(() {
+            statusText:
+            "Error minting token";
+          });
+        }
+
+        loading.value = false;
+        loadingText.value = '';
+        success = true;
+      } catch (e) {
+        print("Error transceiving isoDep: $e");
+        NfcManager.instance.stopSession();
+        setState(() {
+          statusText:
+          "Error minting token: $e";
+        });
+      }
     });
   }
 
@@ -83,14 +183,17 @@ class _MetadataScreen extends State<MetadataScreen> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Upload an image'),
+                          Text('Please upload an image of the object',
+                              style: TextStyle(
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.bold)),
                           Form(
                             child: Column(children: [
                               ElevatedButton(
                                 onPressed: () {
                                   setGalleryImage();
                                 },
-                                child: const Text('Select an image'),
+                                child: const Text('Select image'),
                               ),
                               ElevatedButton(
                                 onPressed: () {
@@ -100,7 +203,14 @@ class _MetadataScreen extends State<MetadataScreen> {
                               )
                             ]),
                           ),
-                          Text('Please enter your metadata'),
+                          Text("Selected image: $imageFilename"),
+                          Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10.0)),
+                          Text('Please enter your metadata',
+                              style: TextStyle(
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.bold)),
                           Form(
                               key: _formKey,
                               child: Column(
@@ -141,98 +251,16 @@ class _MetadataScreen extends State<MetadataScreen> {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(const SnackBar(
                                                   content:
-                                                      Text('Processing Data')));
+                                                      Text('Processing ...')));
                                         }
                                         _initializeChip(metadata, image: image);
                                       },
                                       child: const Text('Submit'),
                                     ),
-                                  )
+                                  ),
+                                  Text(statusText)
                                 ],
                               ))
                         ])))));
-  }
-
-  void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
-    loadingText.value = 'Scanning...';
-    loading.value = true;
-    status.value = '';
-
-    success = false;
-    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      var isoDep = IsoDep.from(tag);
-      if (isoDep == null) {
-        status.value = 'IsoDep is not supported.';
-        NfcManager.instance.stopSession();
-        return;
-      }
-      try {
-        var selectAppResponse =
-            await isoDep.transceive(data: SELECT_APP); //select app
-
-        Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
-        var responseGetKeyInfo = await isoDep.transceive(
-            data: GET_KEY_INFO); //check if key[1] already exists
-        //check if does not exist yet exist
-        if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
-            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
-          //key does not exist
-          var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
-          print("response generate key: $responseGenerateKey");
-          var newKeyHandle = responseGenerateKey[0];
-        } else {
-          print("key already exists");
-        }
-        NfcManager.instance.stopSession();
-
-        loadingText.value = 'Initializing Chip...';
-
-        // upload image to ipfs
-        late String imageCid;
-        if (image != null) {
-          imageCid = await uploadFileToIPFS(image!);
-        }
-        // add image cid to metadata
-        metadata['image'] = 'ipfs://$imageCid';
-
-        // generate JSON file
-        XFile jsonFile = generateJsonFile(metadata);
-
-        // upload metadata json to ipfs
-        final String cid = await uploadFileToIPFS(jsonFile);
-
-        var mintParams = makeMintParams(
-            widget.connector!.session!.accounts[0],
-            dotenv.get('CONTRACT_ADDRESS'),
-            cid,
-            selectAppResponse.sublist(1, 11));
-
-        //metamask interaction
-        await launchUrlString(widget.connector!.session.toUri(),
-            mode: LaunchMode.externalApplication);
-
-        //TODO: transaction does not always pop up in Metamask!
-        var txnHash = await widget.connector!.sendCustomRequest(
-            method: 'eth_sendTransaction', params: mintParams, id: 1337);
-
-        var txnReceipt = await getTxnReceipt(txnHash);
-
-        if (txnReceipt?.status == true) {
-          status.value = 'Minted token successfully';
-        } else {
-          status.value = "Error minting token";
-        }
-
-        loading.value = false;
-        loadingText.value = '';
-        success = true;
-      } catch (e) {
-        print("Error transceiving isoDep: $e");
-        NfcManager.instance.stopSession();
-        loading.value = false;
-        loadingText.value = '';
-        status.value = "Error minting token: $e";
-      }
-    });
   }
 }

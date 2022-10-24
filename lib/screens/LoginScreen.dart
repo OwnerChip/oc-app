@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBarWithLogo(
-        text: 'OwnerChip Demo',
+        text: 'OwnerChip Demo Admin App',
         loginFunction: widget.loginWithMetaMask,
         connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
             ? null
@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ElevatedButton(
                 onPressed: () =>
                     Navigator.pushNamed(context, ScanningScreen.routeName),
-                child: const Text('Scan Item'),
+                child: const Text('Initialize Chip'),
               ),
             ),
           ),
