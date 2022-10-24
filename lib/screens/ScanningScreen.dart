@@ -14,7 +14,7 @@ import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation_arguments.dart';
 import '../nfc/commands.dart';
-import '../web3/contractCalls.dart';
+import '../web3/web3.services.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../widgets/ScanningLoader.dart';
 
