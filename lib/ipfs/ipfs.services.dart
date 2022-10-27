@@ -10,17 +10,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
  */
 Dio getIpfsGatewayClient() {
   String ipfsGategway = dotenv.get('IPFS_GATEWAY');
-  return Dio(BaseOptions(baseUrl: ipfsGategway));
-}
-
-/**
- * generate JSON and return as XFile
- */
-XFile generateJsonFile(Map<String, String> data) {
-  final jsonString = json.encode(data);
-  List<int> list = utf8.encode(jsonString);
-  Uint8List bytes = Uint8List.fromList(list);
-  return XFile.fromData(bytes);
+  String ipfsGategwayApiKey = dotenv.get('IPFS_API_KEY');
+  return Dio(BaseOptions(
+      baseUrl: ipfsGategway,
+      headers: {"Authorization": "Bearer $ipfsGategwayApiKey"}));
 }
 
 /**
@@ -40,11 +33,11 @@ Future<String> uploadFileToIPFS(XFile xfile) async {
     "file": await MultipartFile.fromFile(file.path, filename: fileName),
   });
   var ipfs = getIpfsGatewayClient();
-  Response response = await ipfs.post("", data: formData,
+  Response response = await ipfs.post("upload/", data: formData,
       onSendProgress: (int sent, int total) {
     print('$sent / $total');
   });
-  return response.data['message'];
+  return response.data['value']['cid'];
 }
 
 /**
