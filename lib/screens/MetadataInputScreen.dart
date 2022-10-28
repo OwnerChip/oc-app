@@ -24,9 +24,10 @@ import '../utils/navigation_arguments.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
-  const MetadataScreen({super.key, this.connector});
+  const MetadataScreen({super.key, this.connector, this.loginWithMetaMask});
 
   final WalletConnect? connector;
+  final Function? loginWithMetaMask;
 
   static const routeName = '/metadata-input';
 
@@ -89,8 +90,9 @@ class _MetadataScreen extends State<MetadataScreen> {
     // upload metadata json to ipfs
     String cid = await uploadFileToIPFS(jsonFile);
 
+    // generate mint parameters
     var mintParams = makeMintParams(
-        walletAddress, dotenv.get('CONTRACT_ADDRESS'), cid, tokenId);
+        walletAddress, dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", tokenId);
 
     //metamask interaction
     await launchUrlString(widget.connector!.session.toUri(),
@@ -150,7 +152,7 @@ class _MetadataScreen extends State<MetadataScreen> {
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
-            loginFunction: () => {},
+            loginFunction: widget.loginWithMetaMask,
             text: 'Initialize Chip (2/3)',
             connectedWallet: (widget.connector != null)
                 ? (widget.connector?.session != null)
@@ -242,7 +244,6 @@ class _MetadataScreen extends State<MetadataScreen> {
                                                   content:
                                                       Text('Processing ...')));
                                         }
-                                        //TODO: how can I show status updates here, if I can NOT call async functions?
                                         if (image != null) {
                                           _initializeChip(connectedWallet,
                                               navArgs.tokenId, metadata,

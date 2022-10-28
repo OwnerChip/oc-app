@@ -17,7 +17,7 @@ import 'widgets/RestartWidget.dart';
 
 // setup logger
 void _setupLogging() {
-  Logger.root.level = Level.ALL;
+  Logger.root.level = Level.WARNING;
   Logger.root.onRecord.listen((event) {
     print('${event.level.name}: ${event.time}: ${event.message}');
   });
@@ -146,8 +146,8 @@ class _MyApp extends State<MyApp> {
             connector: connector, loginWithMetaMask: loginWithMetaMask),
         ChipAlreadyInitializedScreen.routeName: (context) =>
             ChipAlreadyInitializedScreen(connector: connector),
-        MetadataScreen.routeName: (context) =>
-            MetadataScreen(connector: connector),
+        MetadataScreen.routeName: (context) => MetadataScreen(
+            connector: connector, loginWithMetaMask: loginWithMetaMask),
       },
     );
   }
