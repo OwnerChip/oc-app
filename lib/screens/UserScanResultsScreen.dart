@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import '../widgets/AppBarWithLogo.dart';
-import '../utils/navigation_arguments.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+
+//local imports
+import 'NFTDetailsScreen.dart';
+import '../widgets/AppBarWithLogo.dart';
+import '../utils/navigation_arguments.dart';
 
 class UserScanResultsScreen extends StatelessWidget {
   const UserScanResultsScreen(
@@ -93,7 +96,21 @@ class UserScanResultsScreen extends StatelessWidget {
                                           },
                                           icon: const Icon(Icons.copy))
                                     ],
-                                  )
+                                  ),
+                                  //button that navigates to nft details screen
+                                  OutlinedButton(
+                                      onPressed: () {
+                                        print(context);
+                                        Navigator.of(context).pushNamed(
+                                            NFTDetailsScreen.routeName,
+                                            arguments:
+                                                NFTDetailsScreenArguments(
+                                                    connector,
+                                                    loginWithMetaMask,
+                                                    navArgs.tokenId,
+                                                    navArgs.chipWalletAddress));
+                                      },
+                                      child: const Text('View NFT Details'))
                                 ],
                               )
                             : const Text(

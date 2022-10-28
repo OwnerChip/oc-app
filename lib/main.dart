@@ -14,6 +14,7 @@ import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/ChipAlreadyInitializedScreen.dart';
+import 'screens/NFTDetailsScreen.dart';
 import 'widgets/RestartWidget.dart';
 
 // setup logger
@@ -150,6 +151,10 @@ class _MyApp extends State<MyApp> {
         MetadataScreen.routeName: (context) => MetadataScreen(
             connector: connector, loginWithMetaMask: loginWithMetaMask),
         UserScanResultsScreen.routeName: (context) => UserScanResultsScreen(
+              connector: connector,
+              loginWithMetaMask: loginWithMetaMask,
+            ),
+        NFTDetailsScreen.routeName: (context) => NFTDetailsScreen(
               connector: connector,
               loginWithMetaMask: loginWithMetaMask,
             ),

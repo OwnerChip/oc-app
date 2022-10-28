@@ -30,3 +30,13 @@ class ChipInitializedArguments {
 
   ChipInitializedArguments(this.connector, this.tokenId);
 }
+
+class NFTDetailsScreenArguments {
+  final WalletConnect? connector;
+  final Function? loginWithMetaMask;
+  final BigInt? tokenId;
+  final String? chipWalletAddress;
+
+  NFTDetailsScreenArguments(this.connector, this.loginWithMetaMask,
+      this.tokenId, this.chipWalletAddress);
+}
