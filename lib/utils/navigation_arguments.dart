@@ -1,9 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
-class ScanScreenArguments {
+class ScanningScreenArguments {
   final String nextRoute;
-  ScanScreenArguments(this.nextRoute);
+  ScanningScreenArguments(this.nextRoute);
+}
+
+class UserScanResultsScreenArguments {
+  final String nftOwner;
+  final bool chipIsInitialized;
+
+  UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized);
 }
 
 class ChipAlreadyInitializedScreenArguments {
