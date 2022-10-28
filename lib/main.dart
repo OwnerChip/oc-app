@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -14,7 +15,16 @@ import 'screens/MetadataInputScreen.dart';
 import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'widgets/RestartWidget.dart';
 
+// setup logger
+void _setupLogging() {
+  Logger.root.level = Level.WARNING;
+  Logger.root.onRecord.listen((event) {
+    print('${event.level.name}: ${event.time}: ${event.message}');
+  });
+}
+
 void main(List<String> args) async {
+  _setupLogging();
   await dotenv.load(fileName: ".env");
 
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -136,8 +146,8 @@ class _MyApp extends State<MyApp> {
             connector: connector, loginWithMetaMask: loginWithMetaMask),
         ChipAlreadyInitializedScreen.routeName: (context) =>
             ChipAlreadyInitializedScreen(connector: connector),
-        MetadataScreen.routeName: (context) =>
-            MetadataScreen(connector: connector),
+        MetadataScreen.routeName: (context) => MetadataScreen(
+            connector: connector, loginWithMetaMask: loginWithMetaMask),
       },
     );
   }

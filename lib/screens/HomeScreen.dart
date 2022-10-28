@@ -1,10 +1,12 @@
 //flutter imports
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
+import 'package:owner_chip_admin_demo/screens/MetadataInputScreen.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -14,9 +16,9 @@ import 'package:url_launcher/url_launcher_string.dart';
 //local imports
 import '../nfc/commands.dart';
 import '../utils/utils.dart';
-import '../web3/contractCalls.dart';
-import '../web3/web3Helpers.dart';
+import '../web3/web3.services.dart';
 import 'LoginScreen.dart';
+import 'MetadataInputScreen.dart';
 
 //local widgets
 import '../widgets/LoadingIndicator.dart';
@@ -46,7 +48,7 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text('Owner Chip Demo')),
+        appBar: AppBar(title: Text('Owner Chip Demo Admin App')),
         body: SafeArea(
           child: FutureBuilder<bool>(
             future: NfcManager.instance.isAvailable(),
@@ -103,7 +105,11 @@ class HomeScreenState extends State<HomeScreen> {
                           children: [
                             ElevatedButton(
                                 child: Text('Initialize Chip'),
-                                onPressed: _initializeChip),
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: ((context) =>
+                                          const MetadataScreen())));
+                                }),
                             ElevatedButton(
                                 child: Text('Check owner'),
                                 onPressed: _checkOwner),
@@ -190,12 +196,11 @@ class HomeScreenState extends State<HomeScreen> {
       }
       try {
         var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
-        //convert Uint8List to int
 
-        var burnParams = makeBurnParams(
-            widget.connector!.session!.accounts[0],
-            '0xfC97db8f5F39FE3354427674ABfC219795eba782',
-            selectAppResponse.sublist(1, 11));
+        final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
+
+        var burnParams = makeBurnParams(widget.connector!.session!.accounts[0],
+            contractAddress!, selectAppResponse.sublist(1, 11));
 
         loadingText.value = 'Burning...';
 
@@ -222,78 +227,6 @@ class HomeScreenState extends State<HomeScreen> {
         loading.value = false;
         loadingText.value = '';
         status.value = "Error burning token: $e";
-        image = '';
-      }
-    });
-  }
-
-  void _initializeChip() {
-    loadingText.value = 'Scanning...';
-    loading.value = true;
-    status.value = '';
-    image = '';
-    success = false;
-    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      var isoDep = IsoDep.from(tag);
-      if (isoDep == null) {
-        status.value = 'IsoDep is not supported.';
-        NfcManager.instance.stopSession();
-        return;
-      }
-      try {
-        var selectAppResponse =
-            await isoDep.transceive(data: SELECT_APP); //select app
-
-        Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
-        var responseGetKeyInfo = await isoDep.transceive(
-            data: GET_KEY_INFO); //check if key[1] already exists
-        //check if does not exist yet exist
-        if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
-            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
-          //key does not exist
-          var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
-          print("response generate key: $responseGenerateKey");
-          var newKeyHandle = responseGenerateKey[0];
-        } else {
-          print("key already exists");
-        }
-        NfcManager.instance.stopSession();
-
-        loadingText.value = 'Minting...';
-
-        var mintParams = makeMintParams(
-            widget.connector!.session!.accounts[0],
-            '0xfC97db8f5F39FE3354427674ABfC219795eba782', //sc addresse
-            "https://gateway.pinata.cloud/ipfs/QmSgnix8VTXmJCYrvQK5Af9YEE97pUCCmUuzuT3hwUQ5fr",
-            selectAppResponse.sublist(1, 11));
-
-        //metamask interaction
-        await launchUrlString(widget.connector!.session.toUri(),
-            mode: LaunchMode.externalApplication);
-
-        //TODO: transaction does not always pop up in Metamask!
-        var txnHash = await widget.connector!.sendCustomRequest(
-            method: 'eth_sendTransaction', params: mintParams, id: 1337);
-
-        var txnReceipt = await getTxnReceipt(txnHash);
-
-        if (txnReceipt?.status == true) {
-          //this means mint succeeded
-          status.value = 'Minted token successfully';
-        } else {
-          status.value = "Error minting token";
-        }
-
-        loading.value = false;
-        loadingText.value = '';
-        success = true;
-        image = 'assets/images/trophy.png';
-      } catch (e) {
-        print("Error transceiving isoDep: $e");
-        NfcManager.instance.stopSession();
-        loading.value = false;
-        loadingText.value = '';
-        status.value = "Error minting token: $e";
         image = '';
       }
     });
