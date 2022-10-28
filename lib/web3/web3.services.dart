@@ -95,6 +95,17 @@ Future<dynamic> getOwner(BigInt tokenId) async {
   }
 }
 
+Future<dynamic> getTokenUri(BigInt tokenId) async {
+  try {
+    var uri = await query("tokenURI", [tokenId]);
+    print(uri);
+    return uri[0];
+  } catch (e) {
+    print('Error while fetching uri of tokenId $tokenId: $e');
+    return e;
+  }
+}
+
 Future<dynamic> getTxnReceipt(String txnHash) async {
   final web3Client = getWeb3Client();
 

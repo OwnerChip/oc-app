@@ -10,6 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 //screens and widgets
 import 'screens/LoginScreen.dart';
 import 'screens/HomeScreen.dart';
+import 'screens/ResultsScreen.dart';
 import 'screens/ScanningScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/ChipAlreadyInitializedScreen.dart';
@@ -148,6 +149,8 @@ class _MyApp extends State<MyApp> {
             ChipAlreadyInitializedScreen(connector: connector),
         MetadataScreen.routeName: (context) => MetadataScreen(
             connector: connector, loginWithMetaMask: loginWithMetaMask),
+        ResultsScreen.routeName: (context) => ResultsScreen(
+            connector: connector, loginWithMetaMask: loginWithMetaMask)
       },
     );
   }

@@ -6,6 +6,13 @@ class ScanScreenArguments {
   ScanScreenArguments(this.nextRoute);
 }
 
+class GetResultArguments {
+  final WalletConnect? connector;
+  final Uint8List tokenId;
+
+  GetResultArguments(this.connector, this.tokenId);
+}
+
 class ChipAlreadyInitializedScreenArguments {
   final WalletConnect? connector;
   final BigInt? tokenId;

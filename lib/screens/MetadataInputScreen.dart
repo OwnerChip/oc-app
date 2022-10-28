@@ -21,6 +21,7 @@ import '../nfc/commands.dart';
 import '../utils/images.service.dart';
 import '../web3/web3.services.dart';
 import '../utils/navigation_arguments.dart';
+import '../screens/ResultsScreen.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -252,6 +253,16 @@ class _MetadataScreen extends State<MetadataScreen> {
                                           _initializeChip(connectedWallet,
                                               navArgs.tokenId, metadata);
                                         }
+                                        // TODO: change screen after SUCCESS message only!
+                                        Future.delayed(
+                                            Duration(milliseconds: 1000), () {
+                                          Navigator.pushNamed(
+                                              context, ResultsScreen.routeName,
+                                              arguments: GetResultArguments(
+                                                widget.connector,
+                                                navArgs.tokenId,
+                                              ));
+                                        });
                                       },
                                       child: const Text('Mint NFT'),
                                     ),
