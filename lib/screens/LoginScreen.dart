@@ -55,8 +55,8 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ElevatedButton(
                 onPressed: () => Navigator.pushNamed(
                     context, ScanningScreen.routeName,
-                    arguments: ScanningScreenArguments(
-                        '')), //TODO: Do i need to pass argument here?
+                    arguments: ScanningScreenArguments('',
+                        'Initialize Chip (1/3)')), //TODO: Do i need to pass empty string first argument here?
                 child: const Text('Initialize Chip'),
               ),
             ),
@@ -70,7 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () => Navigator.pushNamed(
                     context, ScanningScreen.routeName,
                     arguments: ScanningScreenArguments(
-                        UserScanResultsScreen.routeName)),
+                        UserScanResultsScreen.routeName,
+                        'Searching for chip...')),
                 child: const Text('Scan Item'),
               ),
             ),

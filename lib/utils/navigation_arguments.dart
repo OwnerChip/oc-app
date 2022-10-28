@@ -3,14 +3,18 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
-  ScanningScreenArguments(this.nextRoute);
+  final String scanningTitle;
+  ScanningScreenArguments(this.nextRoute, this.scanningTitle);
 }
 
 class UserScanResultsScreenArguments {
   final String nftOwner;
   final bool chipIsInitialized;
+  final dynamic tokenId;
+  final String chipWalletAddress;
 
-  UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized);
+  UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
+      this.tokenId, this.chipWalletAddress);
 }
 
 class ChipAlreadyInitializedScreenArguments {
