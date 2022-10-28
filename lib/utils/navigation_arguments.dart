@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 class ScanScreenArguments {
@@ -10,4 +11,11 @@ class ChipAlreadyInitializedScreenArguments {
   final BigInt? tokenId;
 
   ChipAlreadyInitializedScreenArguments(this.connector, this.tokenId);
+}
+
+class ChipInitializedArguments {
+  final WalletConnect? connector;
+  final Uint8List tokenId;
+
+  ChipInitializedArguments(this.connector, this.tokenId);
 }

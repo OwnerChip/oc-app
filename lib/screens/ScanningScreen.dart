@@ -90,8 +90,11 @@ class _ScanningScreen extends State<ScanningScreen> {
                 tokenId,
               ));
         } else {
-          //TODO: Navigate to metadata screen
-          Navigator.pushNamed(context, MetadataScreen.routeName);
+          Navigator.pushNamed(context, MetadataScreen.routeName,
+              arguments: ChipInitializedArguments(
+                widget.connector,
+                selectAppResponse.sublist(1, 11),
+              ));
         }
       } catch (e) {
         print("Error transceiving isoDep: $e");
@@ -115,7 +118,7 @@ class _ScanningScreen extends State<ScanningScreen> {
             ? null
             : widget.connector!.session?.accounts![0].toLowerCase(),
         loginFunction: widget.loginWithMetaMask,
-        text: 'Scanning...',
+        text: 'Initialize Chip (1/3)',
       ),
       body: SafeArea(
           child: Center(

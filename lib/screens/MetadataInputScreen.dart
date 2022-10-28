@@ -1,4 +1,6 @@
 //flutter imports
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -18,12 +20,14 @@ import '../ipfs/ipfs.services.dart';
 import '../nfc/commands.dart';
 import '../utils/images.service.dart';
 import '../web3/web3.services.dart';
+import '../utils/navigation_arguments.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
-  const MetadataScreen({super.key, this.connector});
+  const MetadataScreen({super.key, this.connector, this.loginWithMetaMask});
 
   final WalletConnect? connector;
+  final Function? loginWithMetaMask;
 
   static const routeName = '/metadata-input';
 
@@ -40,17 +44,17 @@ class _MetadataScreen extends State<MetadataScreen> {
   ValueNotifier<dynamic> loadingText = ValueNotifier('');
   ValueNotifier<dynamic> status = ValueNotifier('');
 
-  final Map<String, String> metadata = {};
-  late XFile? image;
-  late String imageFilename = "none";
-  late String statusText = "";
+  Map<String, String> metadata = {};
+  XFile? image;
+  String imagePath = "none";
+  String statusText = "";
   bool success = false;
 
   void setCameraImage() async {
     XFile? imageFile = await getImageFromCamera();
     setState(() {
       image = imageFile;
-      imageFilename = (imageFile != null) ? imageFile.name : "";
+      imagePath = (imageFile != null) ? imageFile.path : "";
     });
   }
 
@@ -58,104 +62,70 @@ class _MetadataScreen extends State<MetadataScreen> {
     XFile? imageFile = await getImageFromGallery();
     setState(() {
       image = imageFile;
-      imageFilename = (imageFile != null) ? imageFile.name : "";
+      imagePath = (imageFile != null) ? imageFile.path : "";
     });
   }
 
-  void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
+  void _initializeChip(
+      String walletAddress, Uint8List tokenId, Map<String, String> metadata,
+      {XFile? image}) async {
     loadingText.value = 'Scanning...';
     loading.value = true;
     status.value = '';
-
     success = false;
-    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      var isoDep = IsoDep.from(tag);
-      if (isoDep == null) {
-        status.value = 'IsoDep is not supported.';
-        NfcManager.instance.stopSession();
-        return;
-      }
-      try {
-        var selectAppResponse =
-            await isoDep.transceive(data: SELECT_APP); //select app
 
-        Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
-        var responseGetKeyInfo = await isoDep.transceive(
-            data: GET_KEY_INFO); //check if key[1] already exists
-        //check if does not exist yet exist
-        if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
-            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
-          //key does not exist
-          var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
-          print("response generate key: $responseGenerateKey");
-          var newKeyHandle = responseGenerateKey[0];
-        } else {
-          setState(() {
-            statusText:
-            "key already exists";
-          });
-        }
-        NfcManager.instance.stopSession();
+    // upload image to ipfs
+    String imageCid;
+    if (image != null) {
+      imageCid = await uploadFileToIPFS(image!);
+      metadata['image'] = 'ipfs://$imageCid';
+    }
 
+    // generate JSON file
+    final Directory directory = Directory.systemTemp;
+    final File file = File('${directory.path}/metadata.json');
+    await file.writeAsString(json.encode(metadata));
+    XFile jsonFile = XFile(file.path);
+
+    // upload metadata json to ipfs
+    String cid = await uploadFileToIPFS(jsonFile);
+
+    // generate mint parameters
+    var mintParams = makeMintParams(
+        walletAddress, dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", tokenId);
+
+    //metamask interaction
+    await launchUrlString(widget.connector!.session.toUri(),
+        mode: LaunchMode.externalApplication);
+
+    //TODO: transaction does not always pop up in Metamask!
+    try {
+      var txnHash = await widget.connector!.sendCustomRequest(
+          method: 'eth_sendTransaction', params: mintParams, id: 1337);
+
+      var txnReceipt = await getTxnReceipt(txnHash);
+
+      if (txnReceipt?.status == true) {
         setState(() {
           statusText:
-          "Initializing Chip...";
+          "Minted token successfully";
         });
-
-        // upload image to ipfs
-        late String imageCid;
-        if (image != null) {
-          imageCid = await uploadFileToIPFS(image!);
-        }
-        // add image cid to metadata
-        metadata['image'] = 'ipfs://$imageCid';
-
-        // generate JSON file
-        XFile jsonFile = generateJsonFile(metadata);
-
-        // upload metadata json to ipfs
-        final String cid = await uploadFileToIPFS(jsonFile);
-
-        var mintParams = makeMintParams(
-            widget.connector!.session!.accounts[0],
-            dotenv.get('CONTRACT_ADDRESS'),
-            cid,
-            selectAppResponse.sublist(1, 11));
-
-        //metamask interaction
-        await launchUrlString(widget.connector!.session.toUri(),
-            mode: LaunchMode.externalApplication);
-
-        //TODO: transaction does not always pop up in Metamask!
-        var txnHash = await widget.connector!.sendCustomRequest(
-            method: 'eth_sendTransaction', params: mintParams, id: 1337);
-
-        var txnReceipt = await getTxnReceipt(txnHash);
-
-        if (txnReceipt?.status == true) {
-          setState(() {
-            statusText:
-            "Minted token successfully";
-          });
-        } else {
-          setState(() {
-            statusText:
-            "Error minting token";
-          });
-        }
-
-        loading.value = false;
-        loadingText.value = '';
-        success = true;
-      } catch (e) {
-        print("Error transceiving isoDep: $e");
-        NfcManager.instance.stopSession();
+      } else {
         setState(() {
           statusText:
-          "Error minting token: $e";
+          "Error minting token";
         });
       }
-    });
+
+      loading.value = false;
+      loadingText.value = '';
+      success = true;
+    } catch (e) {
+      setState(() {
+        statusText:
+        "Error minting token";
+      });
+    }
   }
 
   @override
@@ -167,19 +137,34 @@ class _MetadataScreen extends State<MetadataScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
+
+    //TODO
+    String connectedWallet = (navArgs.connector != null)
+        ? (navArgs.connector?.session != null)
+            ? (navArgs.connector!.session.accounts.isEmpty != true)
+                ? navArgs.connector!.session.accounts[0].toLowerCase()
+                : "0x"
+            : "0x"
+        : "0x";
+
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
-          loginFunction: () => {},
-          text: 'Initialize Chip',
-          connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
-              ? null
-              : widget.connector!.session?.accounts![0].toLowerCase(),
-        ),
+            loginFunction: widget.loginWithMetaMask,
+            text: 'Initialize Chip (2/3)',
+            connectedWallet: (widget.connector != null)
+                ? (widget.connector?.session != null)
+                    ? (widget.connector!.session.accounts.isEmpty != true)
+                        ? widget.connector!.session.accounts[0].toLowerCase()
+                        : null
+                    : null
+                : null),
         body: SafeArea(
             child: Center(
                 child: Padding(
-                    padding: EdgeInsets.all(25.0),
+                    padding: EdgeInsets.all(15.0),
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -203,7 +188,13 @@ class _MetadataScreen extends State<MetadataScreen> {
                               )
                             ]),
                           ),
-                          Text("Selected image: $imageFilename"),
+                          if (image != null) Text("Selected image:"),
+                          if (image != null)
+                            Image.file(
+                              File(imagePath),
+                              height: 200,
+                              width: 200,
+                            ),
                           Padding(
                               padding:
                                   const EdgeInsets.symmetric(vertical: 10.0)),
@@ -253,9 +244,16 @@ class _MetadataScreen extends State<MetadataScreen> {
                                                   content:
                                                       Text('Processing ...')));
                                         }
-                                        _initializeChip(metadata, image: image);
+                                        if (image != null) {
+                                          _initializeChip(connectedWallet,
+                                              navArgs.tokenId, metadata,
+                                              image: image);
+                                        } else {
+                                          _initializeChip(connectedWallet,
+                                              navArgs.tokenId, metadata);
+                                        }
                                       },
-                                      child: const Text('Submit'),
+                                      child: const Text('Mint NFT'),
                                     ),
                                   ),
                                   Text(statusText)
