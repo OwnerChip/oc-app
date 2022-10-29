@@ -3,6 +3,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/material.dart';
 import '../widgets/AppBarWithLogo.dart';
 import 'ScanningScreen.dart';
+import 'UserScanResultsScreen.dart';
+import '../utils/navigation_arguments.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key, this.connector, this.loginWithMetaMask})
@@ -23,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBarWithLogo(
-        text: 'OwnerChip Demo Admin App',
+        text: 'OwnerChip Admin',
         loginFunction: widget.loginWithMetaMask,
         connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
             ? null
@@ -32,14 +34,30 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
           child: Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          widget.connector!.connected
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 200,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pushNamed(context, '/home'),
+                      child: const Text('All functions'),
+                    ),
+                  ),
+                )
+              : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
               width: 200,
               height: 50,
               child: ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/home'),
-                child: const Text('All functions'),
+                onPressed: () => Navigator.pushNamed(
+                    context, ScanningScreen.routeName,
+                    arguments: ScanningScreenArguments('',
+                        'Initialize Chip (1/3)')), //TODO: Do i need to pass empty string first argument here?
+                child: const Text('Initialize Chip'),
               ),
             ),
           ),
@@ -49,9 +67,12 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 200,
               height: 50,
               child: ElevatedButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, ScanningScreen.routeName),
-                child: const Text('Initialize Chip'),
+                onPressed: () => Navigator.pushNamed(
+                    context, ScanningScreen.routeName,
+                    arguments: ScanningScreenArguments(
+                        UserScanResultsScreen.routeName,
+                        'Searching for chip...')),
+                child: const Text('Scan Item'),
               ),
             ),
           ),

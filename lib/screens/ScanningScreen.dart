@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
 
 //web3 imports
@@ -10,9 +11,11 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
 
 //local imports
+import 'UserScanResultsScreen.dart';
 import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation_arguments.dart';
+import '../utils/utils.dart';
 import '../nfc/commands.dart';
 import '../web3/web3.services.dart';
 import '../widgets/AppBarWithLogo.dart';
@@ -39,12 +42,13 @@ class _ScanningScreen extends State<ScanningScreen> {
   }
 
   void initScanning() async {
-    print('from initScanning');
     String nftOwner;
     bool chipIsInitialized;
     dynamic tokenId;
 
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      final navArgs =
+          ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
       var isoDep = IsoDep.from(tag);
       if (isoDep == null) {
         //TODO: Set some error state
@@ -57,6 +61,9 @@ class _ScanningScreen extends State<ScanningScreen> {
 
         Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
         var responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
+        var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
+        var uint8Address = publicKeyToAddress(uin8key);
+        var chipWalletAddress = makeHexFromUint8List(uint8Address);
 
         //check if first key does not exist yet exist
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
@@ -72,7 +79,8 @@ class _ScanningScreen extends State<ScanningScreen> {
         var cardId = bytesToInt(selectAppResponse.sublist(1, 11));
         //get owner of nft with cardId == tokenId
         try {
-          nftOwner = await getOwner(cardId);
+          EthereumAddress ownerAddress = await getOwner(cardId);
+          nftOwner = ownerAddress.toString();
           tokenId = cardId;
         } catch (e) {
           print(e);
@@ -82,19 +90,30 @@ class _ScanningScreen extends State<ScanningScreen> {
         }
 
         NfcManager.instance.stopSession();
-
-        if (chipIsInitialized) {
-          Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
-              arguments: ChipAlreadyInitializedScreenArguments(
-                widget.connector,
-                tokenId,
-              ));
+        //navigate to UserScanResultsScreen
+        if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
+          // ignore: use_build_context_synchronously
+          Navigator.pushNamed(context, UserScanResultsScreen.routeName,
+              arguments: UserScanResultsScreenArguments(
+                  nftOwner, chipIsInitialized, tokenId, chipWalletAddress));
         } else {
-          Navigator.pushNamed(context, MetadataScreen.routeName,
-              arguments: ChipInitializedArguments(
-                widget.connector,
-                selectAppResponse.sublist(1, 11),
-              ));
+          //navigate to ChipAlreadyInitializedScreen
+          if (chipIsInitialized) {
+            // ignore: use_build_context_synchronously
+            Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
+                arguments: ChipAlreadyInitializedScreenArguments(
+                  widget.connector,
+                  tokenId,
+                ));
+          } else {
+            //navigate to MetadataInputScreen
+            // ignore: use_build_context_synchronously
+            Navigator.pushNamed(context, MetadataScreen.routeName,
+                arguments: ChipInitializedArguments(
+                  widget.connector,
+                  selectAppResponse.sublist(1, 11),
+                ));
+          }
         }
       } catch (e) {
         print("Error transceiving isoDep: $e");
@@ -111,6 +130,8 @@ class _ScanningScreen extends State<ScanningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBarWithLogo(
@@ -118,7 +139,7 @@ class _ScanningScreen extends State<ScanningScreen> {
             ? null
             : widget.connector!.session?.accounts![0].toLowerCase(),
         loginFunction: widget.loginWithMetaMask,
-        text: 'Initialize Chip (1/3)',
+        text: navArgs.scanningTitle,
       ),
       body: SafeArea(
           child: Center(
