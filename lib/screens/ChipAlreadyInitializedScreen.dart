@@ -23,35 +23,53 @@ import '../nfc/commands.dart';
 import '../utils/utils.dart';
 import '../web3/web3.services.dart';
 
-class ChipAlreadyInitializedScreen extends StatelessWidget {
-  const ChipAlreadyInitializedScreen({super.key, required this.connector});
+class ChipAlreadyInitializedScreen extends StatefulWidget {
+  const ChipAlreadyInitializedScreen(
+      {super.key, required this.connector, this.loginWithMetaMask});
   final WalletConnect? connector;
+  final Function? loginWithMetaMask;
 
   static const routeName = '/scan-already-initialized';
 
-  void _burnToken(Uint8List tokenId) async {
+  @override
+  State<StatefulWidget> createState() => _ChipAlreadyInitializedState();
+}
+
+class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
+  String statusText = 'This chip is already linked to an NFT.';
+
+  Future<void> _burnToken(Uint8List tokenId) async {
     try {
-      print("do burn");
       final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
 
       var burnParams = makeBurnParams(
-          connector!.session!.accounts[0], contractAddress!, tokenId);
+          widget.connector!.session!.accounts[0], contractAddress!, tokenId);
 
-      await launchUrlString(connector!.session.toUri(),
+      await launchUrlString(widget.connector!.session.toUri(),
           mode: LaunchMode.externalApplication);
-      var txnHash = await connector!.sendCustomRequest(
+      var txnHash = await widget.connector!.sendCustomRequest(
           method: 'eth_sendTransaction', params: burnParams, id: 1338);
 
       var txnReceipt = await getTxnReceipt(txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
-        print('Burned token.');
+        statusText = "The token was successfully burned!";
+        setState(() {
+          statusText;
+        });
       } else {
         print("Error burning token.");
       }
     } catch (e) {
       print("Error: $e");
     }
+  }
+
+  Future<void> _burnAndMintToken(Uint8List tokenId) async {
+    statusText = "BURN & MINT FEATURE NOT IMPLEMENTED YET!";
+    setState(() {
+      statusText;
+    });
   }
 
   @override
@@ -65,15 +83,15 @@ class ChipAlreadyInitializedScreen extends StatelessWidget {
         appBar: AppBarWithLogo(
           loginFunction: () => {},
           text: 'Initialize Chip',
-          connectedWallet: connector!.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
               ? null
-              : connector!.session?.accounts![0].toLowerCase(),
+              : widget.connector!.session?.accounts![0].toLowerCase(),
         ),
         body: SafeArea(
             child: Center(
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Text(
-              'This chip is already linked to an NFT.',
+            Text(
+              statusText,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 50),
@@ -114,7 +132,8 @@ class ChipAlreadyInitializedScreen extends StatelessWidget {
               width: 200,
               height: 50,
               child: ElevatedButton(
-                  onPressed: () => {}, child: const Text('Burn and Mint')),
+                  onPressed: () => {_burnAndMintToken(tokenId)},
+                  child: const Text('Burn and Mint')),
             ),
             const SizedBox(height: 15),
             SizedBox(

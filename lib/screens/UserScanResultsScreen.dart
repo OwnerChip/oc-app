@@ -156,7 +156,7 @@ class UserScanResultsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Ownershp Check: ',
+                        Text('Ownership Check: ',
                             style: const TextStyle(fontSize: 18)),
                         const SizedBox(height: 15),
                         connector!.session.accounts.isEmpty
@@ -198,14 +198,17 @@ class UserScanResultsScreen extends StatelessWidget {
                     )),
               ],
             ),
-            const SizedBox(height: 150),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey, // background
-                ),
-                onPressed: () =>
-                    {Navigator.pushReplacementNamed(context, '/login')},
-                child: Text('Home'))
+            const SizedBox(height: 100),
+            SizedBox(
+                width: 200,
+                height: 50,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey, // background
+                    ),
+                    onPressed: () =>
+                        {Navigator.pushReplacementNamed(context, '/login')},
+                    child: Text('Home')))
           ]),
         )));
   }
