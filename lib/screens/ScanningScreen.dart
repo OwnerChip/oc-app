@@ -109,10 +109,8 @@ class _ScanningScreen extends State<ScanningScreen> {
             //navigate to MetadataInputScreen
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, MetadataScreen.routeName,
-                arguments: ChipInitializedArguments(
-                  widget.connector,
-                  selectAppResponse.sublist(1, 11),
-                ));
+                arguments: ChipInitializedArguments(widget.connector,
+                    selectAppResponse.sublist(1, 11), chipWalletAddress));
           }
         }
       } catch (e) {

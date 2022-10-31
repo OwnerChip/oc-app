@@ -18,10 +18,11 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../ipfs/ipfs.services.dart';
 import '../nfc/commands.dart';
+import '../utils/utils.dart';
 import '../utils/images.service.dart';
 import '../web3/web3.services.dart';
 import '../utils/navigation_arguments.dart';
-import '../screens/ResultsScreen.dart';
+import '../screens/NFTDetailsScreen.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -256,12 +257,15 @@ class _MetadataScreen extends State<MetadataScreen> {
                                         // TODO: change screen after SUCCESS message only!
                                         Future.delayed(
                                             Duration(milliseconds: 1000), () {
-                                          Navigator.pushNamed(
-                                              context, ResultsScreen.routeName,
-                                              arguments: GetResultArguments(
-                                                widget.connector,
-                                                navArgs.tokenId,
-                                              ));
+                                          Navigator.pushNamed(context,
+                                              NFTDetailsScreen.routeName,
+                                              arguments: NFTDetailsScreenArguments(
+                                                  widget.connector,
+                                                  widget.loginWithMetaMask,
+                                                  BigInt.from(
+                                                      convertUint8ListToDecimal(
+                                                          navArgs.tokenId)),
+                                                  navArgs.chipWalletAddress));
                                         });
                                       },
                                       child: const Text('Mint NFT'),
