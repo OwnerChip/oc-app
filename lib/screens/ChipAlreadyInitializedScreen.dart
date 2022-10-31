@@ -74,19 +74,21 @@ class ChipAlreadyInitializedScreen extends StatelessWidget {
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Text(
               'This chip is already linked to an NFT.',
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 50),
             Text('TokenID: ${bytesToInt(navArgs.tokenId)}'),
             const SizedBox(height: 15),
             SizedBox(
               width: 200,
               height: 50,
               child: ElevatedButton(
-                  onPressed: () => {
-                        launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                            tokenId.toString()))
-                      },
-                  child: const Text('Show on Blockchain Explorer')),
+                onPressed: () => {
+                  launchUrl(generateBlockchainExplorerTokenDetailsUrl(
+                      tokenId.toString()))
+                },
+                child: const Text('Show on BC Explorer'),
+              ),
             ),
             const SizedBox(height: 15),
             SizedBox(

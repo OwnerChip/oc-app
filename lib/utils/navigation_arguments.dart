@@ -17,25 +17,22 @@ class UserScanResultsScreenArguments {
       this.tokenId, this.chipWalletAddress);
 }
 
-class GetResultArguments {
-  final WalletConnect? connector;
-  final Uint8List tokenId;
-
-  GetResultArguments(this.connector, this.tokenId);
-}
-
 class ChipAlreadyInitializedScreenArguments {
   final WalletConnect? connector;
-  final BigInt? tokenId;
+  final Uint8List tokenId;
+  final String chipWalletAddress;
 
-  ChipAlreadyInitializedScreenArguments(this.connector, this.tokenId);
+  ChipAlreadyInitializedScreenArguments(
+      this.connector, this.tokenId, this.chipWalletAddress);
 }
 
 class ChipInitializedArguments {
   final WalletConnect? connector;
   final Uint8List tokenId;
+  final String chipWalletAddress;
 
-  ChipInitializedArguments(this.connector, this.tokenId);
+  ChipInitializedArguments(
+      this.connector, this.tokenId, this.chipWalletAddress);
 }
 
 class NFTDetailsScreenArguments {

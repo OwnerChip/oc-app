@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:typed_data';
 import 'dart:io';
 
@@ -12,6 +13,7 @@ import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
 import '../ipfs/ipfs.services.dart';
 import '../web3/web3.services.dart';
+import '../utils/url_generator.service.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen({super.key, this.connector, this.loginWithMetaMask});
@@ -52,11 +54,12 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       if (metadata.containsKey("image") && metadata['image']!.isEmpty != true) {
         String imageCid = getCidFromIpfsLink(metadata['image']!);
         imagePath = await downloadImageFileFromIPFS(imageCid);
+
+        // updateScreen
+        statusText = "Item Data:";
         setState(() {
-          statusText:
-          "";
-          imagePath:
           imagePath;
+          statusText;
         });
       }
     } catch (e) {
@@ -92,7 +95,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Text('Token ID: ${navArgs.tokenId}'),
                     if (imagePath != "")
                       Image.file(
@@ -100,10 +103,11 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         height: 200,
                         width: 200,
                       ),
-                    SizedBox(height: 20),
+                    if (imagePath == "") const SizedBox(height: 50),
                     Text(statusText,
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 20),
                     if (metadata['title'] != null)
                       Text('Item Name: ${metadata['title']}',
                           style: TextStyle(fontSize: 20)),
@@ -111,14 +115,31 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                     if (metadata['description'] != null)
                       Text('Item Description: ${metadata['description']}',
                           style: TextStyle(fontSize: 20)),
-                    const SizedBox(height: 150),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey, // background
-                        ),
-                        onPressed: () =>
-                            {Navigator.pushReplacementNamed(context, '/login')},
-                        child: Text('Home')),
+                    const SizedBox(height: 120),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () => {
+                          launchUrl(generateBlockchainExplorerTokenDetailsUrl(
+                              navArgs.tokenId.toString()))
+                        },
+                        child: const Text('Show on BC Explorer'),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                        width: 200,
+                        height: 50,
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey, // background
+                            ),
+                            onPressed: () => {
+                                  Navigator.pushReplacementNamed(
+                                      context, '/login')
+                                },
+                            child: Text('Home'))),
                   ]),
             ),
           )
