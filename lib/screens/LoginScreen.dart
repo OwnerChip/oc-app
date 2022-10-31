@@ -51,28 +51,41 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
               width: 200,
-              height: 50,
+              height: 150,
               child: ElevatedButton(
-                onPressed: () => Navigator.pushNamed(
-                    context, ScanningScreen.routeName,
-                    arguments: ScanningScreenArguments('',
-                        'Initialize Chip (1/3)')), //TODO: Do i need to pass empty string first argument here?
-                child: const Text('Initialize Chip'),
-              ),
+                  onPressed: () => Navigator.pushNamed(
+                      context, ScanningScreen.routeName,
+                      arguments: ScanningScreenArguments('',
+                          'Initialize Chip (1/3)')), //TODO: Do i need to pass empty string first argument here?
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.auto_fix_high, size: 50),
+                      SizedBox(height: 10),
+                      Text('Initialize Chip'),
+                    ],
+                  )),
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
               width: 200,
-              height: 50,
+              height: 150,
               child: ElevatedButton(
                 onPressed: () => Navigator.pushNamed(
                     context, ScanningScreen.routeName,
                     arguments: ScanningScreenArguments(
                         UserScanResultsScreen.routeName,
                         'Searching for chip...')),
-                child: const Text('Scan Item'),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.tap_and_play, size: 50),
+                    SizedBox(height: 10),
+                    Text('Tap an item'),
+                  ],
+                ),
               ),
             ),
           ),
