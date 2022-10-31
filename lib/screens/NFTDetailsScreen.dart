@@ -25,35 +25,39 @@ class NFTDetailsScreen extends StatefulWidget {
 }
 
 class _NFTDetailsScreen extends State<NFTDetailsScreen> {
-  String statusText = "";
+  String statusText = "loading data ...";
   String imagePath = "";
   Map<String, String> metadata = {};
 
   Future<void> _fetchResults() async {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
-    final BigInt tokenId = navArgs.tokenId;
+    final BigInt tokenId = navArgs.tokenId!;
 
     try {
       // get IPFS CID
       String tokenUri = await getTokenUri(tokenId);
 
       // fetch metadata json
-      final Directory directory = Directory.systemTemp;
-      String tempJsonPath = "$directory.path/$tokenUri.metadata.json";
       String jsonCid = getCidFromIpfsLink(tokenUri);
-      downloadFileFromIPFS(jsonCid, tempJsonPath);
+      final Directory directory = Directory.systemTemp;
+      File jsonFile = File("${directory.path}/${jsonCid}.metadata.json");
+      await downloadFileFromIPFS(jsonCid, jsonFile.path);
 
       // read metadata json
-      final File jsonFile = File(tempJsonPath);
       final String res = await jsonFile.readAsString();
-      metadata = await jsonDecode(res);
+      metadata = new Map<String, String>.from(json.decode(res));
 
       // fetch image if set in metadata
       if (metadata.containsKey("image") && metadata['image']!.isEmpty != true) {
         String imageCid = getCidFromIpfsLink(metadata['image']!);
-        downloadFileFromIPFS(imageCid, "$tokenUri.image.json");
-        imagePath = "$tokenUri.image.json";
+        imagePath = await downloadImageFileFromIPFS(imageCid);
+        setState(() {
+          statusText:
+          "";
+          imagePath:
+          imagePath;
+        });
       }
     } catch (e) {
       print("error $e");
@@ -63,7 +67,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchResults();
+    Future.delayed(Duration.zero, () => _fetchResults());
   }
 
   @override
@@ -81,17 +85,10 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
               : widget.connector!.session?.accounts![0].toLowerCase(),
         ),
         body: SafeArea(
-            child: Row(
-          children: [
-            //three Expanded widgets to make the three columns equal width
-            Expanded(
-              flex: 1,
-              child: Container(
-                color: Colors.blue,
-              ),
-            ),
-            Expanded(
-              flex: 8,
+            child: Row(children: [
+          Expanded(
+            flex: 8,
+            child: Center(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -103,21 +100,28 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         height: 200,
                         width: 200,
                       ),
-                    if (metadata['title'] != null) SizedBox(height: 20),
-                    Text('Item Name: ${metadata['title']}',
-                        style: TextStyle(fontSize: 20)),
-                    if (metadata['description'] != null) SizedBox(height: 20),
-                    Text('Item Description: ${metadata['decription']}',
-                        style: TextStyle(fontSize: 20)),
+                    SizedBox(height: 20),
+                    Text(statusText,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    if (metadata['title'] != null)
+                      Text('Item Name: ${metadata['title']}',
+                          style: TextStyle(fontSize: 20)),
+                    SizedBox(height: 20),
+                    if (metadata['description'] != null)
+                      Text('Item Description: ${metadata['description']}',
+                          style: TextStyle(fontSize: 20)),
+                    const SizedBox(height: 150),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey, // background
+                        ),
+                        onPressed: () =>
+                            {Navigator.pushReplacementNamed(context, '/login')},
+                        child: Text('Home')),
                   ]),
             ),
-            Expanded(
-              flex: 1,
-              child: Container(
-                color: Colors.green,
-              ),
-            ),
-          ],
-        )));
+          )
+        ])));
   }
 }

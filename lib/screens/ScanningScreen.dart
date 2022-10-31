@@ -102,9 +102,9 @@ class _ScanningScreen extends State<ScanningScreen> {
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
-                  widget.connector,
-                  tokenId,
-                ));
+                    widget.connector,
+                    selectAppResponse.sublist(1, 11),
+                    chipWalletAddress));
           } else {
             //navigate to MetadataInputScreen
             // ignore: use_build_context_synchronously
