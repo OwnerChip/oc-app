@@ -1,9 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
-class ScanScreenArguments {
+class ScanningScreenArguments {
   final String nextRoute;
-  ScanScreenArguments(this.nextRoute);
+  final String scanningTitle;
+  ScanningScreenArguments(this.nextRoute, this.scanningTitle);
+}
+
+class UserScanResultsScreenArguments {
+  final String nftOwner;
+  final bool chipIsInitialized;
+  final dynamic tokenId;
+  final String chipWalletAddress;
+
+  UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
+      this.tokenId, this.chipWalletAddress);
 }
 
 class GetResultArguments {
@@ -25,4 +36,14 @@ class ChipInitializedArguments {
   final Uint8List tokenId;
 
   ChipInitializedArguments(this.connector, this.tokenId);
+}
+
+class NFTDetailsScreenArguments {
+  final WalletConnect? connector;
+  final Function? loginWithMetaMask;
+  final BigInt? tokenId;
+  final String? chipWalletAddress;
+
+  NFTDetailsScreenArguments(this.connector, this.loginWithMetaMask,
+      this.tokenId, this.chipWalletAddress);
 }

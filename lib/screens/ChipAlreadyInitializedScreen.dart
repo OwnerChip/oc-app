@@ -69,7 +69,8 @@ class ChipAlreadyInitializedScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey, // background
                   ),
-                  onPressed: () => {},
+                  onPressed: () =>
+                      {Navigator.pushNamed(context, LoginScreen.routeName)},
                   child: const Text('Cancel')),
             ),
           ]),
