@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
@@ -18,9 +19,11 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../ipfs/ipfs.services.dart';
 import '../nfc/commands.dart';
+import '../utils/utils.dart';
 import '../utils/images.service.dart';
 import '../web3/web3.services.dart';
 import '../utils/navigation_arguments.dart';
+import '../screens/NFTDetailsScreen.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -76,8 +79,9 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     // upload image to ipfs
     String imageCid;
+    String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
     if (image != null) {
-      imageCid = await uploadFileToIPFS(image!);
+      imageCid = await uploadFileToIPFS(image!, mimeType);
       metadata['image'] = 'ipfs://$imageCid';
     }
 
@@ -88,7 +92,7 @@ class _MetadataScreen extends State<MetadataScreen> {
     XFile jsonFile = XFile(file.path);
 
     // upload metadata json to ipfs
-    String cid = await uploadFileToIPFS(jsonFile);
+    String cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
     // generate mint parameters
     var mintParams = makeMintParams(
@@ -252,6 +256,19 @@ class _MetadataScreen extends State<MetadataScreen> {
                                           _initializeChip(connectedWallet,
                                               navArgs.tokenId, metadata);
                                         }
+                                        // TODO: change screen after SUCCESS message only!
+                                        Future.delayed(
+                                            Duration(milliseconds: 1000), () {
+                                          Navigator.pushNamed(context,
+                                              NFTDetailsScreen.routeName,
+                                              arguments: NFTDetailsScreenArguments(
+                                                  widget.connector,
+                                                  widget.loginWithMetaMask,
+                                                  BigInt.from(
+                                                      convertUint8ListToDecimal(
+                                                          navArgs.tokenId)),
+                                                  navArgs.chipWalletAddress));
+                                        });
                                       },
                                       child: const Text('Mint NFT'),
                                     ),
