@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'dart:convert';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
@@ -36,7 +37,7 @@ class ChipAlreadyInitializedScreen extends StatefulWidget {
 }
 
 class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
-  String statusText = 'This chip is already linked to an NFT.';
+  String statusText = "";
 
   Future<void> _burnToken(Uint8List tokenId) async {
     try {
@@ -53,12 +54,12 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
-        statusText = "The token was successfully burned!";
+        statusText = AppLocalizations.of(context)!.burnedSuccess;
         setState(() {
           statusText;
         });
       } else {
-        print("Error burning token.");
+        print(AppLocalizations.of(context)!.burnedError);
       }
     } catch (e) {
       print("Error: $e");
@@ -78,11 +79,15 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         as ChipAlreadyInitializedScreenArguments;
     final tokenId = navArgs.tokenId!;
 
+    setState(() {
+      statusText = AppLocalizations.of(context)!.alreadyLinked;
+    });
+
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
           loginFunction: () => {},
-          text: 'Initialize Chip',
+          text: AppLocalizations.of(context)!.initializeChip,
           connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
               ? null
               : widget.connector!.session?.accounts![0].toLowerCase(),
@@ -105,7 +110,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                   launchUrl(generateBlockchainExplorerTokenDetailsUrl(
                       tokenId.toString()))
                 },
-                child: const Text('Show on BC Explorer'),
+                child: Text(AppLocalizations.of(context)!.showOnExplorer),
               ),
             ),
             const SizedBox(height: 15),
@@ -117,7 +122,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                         launchUrl(
                             generateOpenSeaTokenDetailsUrl(tokenId.toString()))
                       },
-                  child: const Text('Show on OpenSea')),
+                  child: Text(AppLocalizations.of(context)!.showOnOpenSea)),
             ),
             const SizedBox(height: 15),
             SizedBox(
@@ -125,7 +130,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () => {_burnToken(tokenId)},
-                  child: const Text('Burn token')),
+                  child: Text(AppLocalizations.of(context)!.burnToken)),
             ),
             const SizedBox(height: 15),
             SizedBox(
@@ -133,7 +138,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () => {_burnAndMintToken(tokenId)},
-                  child: const Text('Burn and Mint')),
+                  child: Text(AppLocalizations.of(context)!.burnAndMint)),
             ),
             const SizedBox(height: 15),
             SizedBox(
@@ -145,7 +150,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                   ),
                   onPressed: () =>
                       {Navigator.pushNamed(context, LoginScreen.routeName)},
-                  child: const Text('Cancel')),
+                  child: Text(AppLocalizations.of(context)!.cancel)),
             ),
           ]),
         )));

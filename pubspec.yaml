@@ -11,6 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.17.0
   cupertino_icons: ^1.0.2
   nfc_manager: ^3.2.0
   web3dart: ^2.4.1
@@ -36,4 +39,5 @@ flutter:
     - assets/images/
     - assets/contracts/contract.abi.json
     - .env
+  generate: true
   uses-material-design: true
