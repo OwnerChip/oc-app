@@ -13,3 +13,8 @@ Uri generateOpenSeaTokenDetailsUrl(String tokenId) {
   final String res = "${baseUrl}${contractAddress}/${tokenId}";
   return Uri.parse(res);
 }
+
+Uri generateLandingPageUrl() {
+  final String baseUrl = dotenv.get('LANDING_PAGE_URL');
+  return Uri.parse(baseUrl);
+}

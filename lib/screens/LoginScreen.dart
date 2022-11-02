@@ -1,6 +1,10 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/material.dart';
+
+// local files
+import '../utils/url_generator.service.dart';
 import '../widgets/AppBarWithLogo.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
@@ -98,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey, // background
                 ),
-                onPressed: () => {},
+                onPressed: () => {launchUrl(generateLandingPageUrl())},
                 child: const Text('More Information'),
               ),
             ),
