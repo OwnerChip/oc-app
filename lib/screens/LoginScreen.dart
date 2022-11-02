@@ -2,7 +2,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization.helper.dart';
 
 // local files
 import '../utils/url_generator.service.dart';
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () => Navigator.pushNamed(context, '/home'),
-                      child: Text(AppLocalizations.of(context)!.allFunctions),
+                      child: Text(context.loc.allFunctions),
                     ),
                   ),
                 )
@@ -62,14 +62,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       context, ScanningScreen.routeName,
                       arguments: ScanningScreenArguments(
                           '',
-                          AppLocalizations.of(context)!.initializeChip +
+                          context.loc.initializeChip +
                               ' (1/3)')), //TODO: Do i need to pass empty string first argument here?
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.auto_fix_high, size: 50),
                       SizedBox(height: 10),
-                      Text(AppLocalizations.of(context)!.initializeChip),
+                      Text(context.loc.initializeChip),
                     ],
                   )),
             ),
@@ -84,13 +84,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     context, ScanningScreen.routeName,
                     arguments: ScanningScreenArguments(
                         UserScanResultsScreen.routeName,
-                        AppLocalizations.of(context)!.searchChip)),
+                        context.loc.searchChip)),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.tap_and_play, size: 50),
                     SizedBox(height: 10),
-                    Text(AppLocalizations.of(context)!.tapItem),
+                    Text(context.loc.tapItem),
                   ],
                 ),
               ),
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   backgroundColor: Colors.grey, // background
                 ),
                 onPressed: () => {launchUrl(generateLandingPageUrl())},
-                child: Text(AppLocalizations.of(context)!.moreInfo),
+                child: Text(context.loc.moreInfo),
               ),
             ),
           ),

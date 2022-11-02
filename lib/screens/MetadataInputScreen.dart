@@ -6,7 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization.helper.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
@@ -73,7 +73,7 @@ class _MetadataScreen extends State<MetadataScreen> {
   void _initializeChip(
       String walletAddress, Uint8List tokenId, Map<String, String> metadata,
       {XFile? image}) async {
-    loadingText.value = AppLocalizations.of(context)!.scanning + '...';
+    loadingText.value = context.loc.scanning + '...';
     loading.value = true;
     status.value = '';
     success = false;
@@ -112,11 +112,11 @@ class _MetadataScreen extends State<MetadataScreen> {
 
       if (txnReceipt?.status == true) {
         setState(() {
-          statusText = AppLocalizations.of(context)!.mintSuccess;
+          statusText = context.loc.mintSuccess;
         });
       } else {
         setState(() {
-          statusText = AppLocalizations.of(context)!.mintError;
+          statusText = context.loc.mintError;
         });
       }
 
@@ -125,7 +125,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       success = true;
     } catch (e) {
       setState(() {
-        statusText = AppLocalizations.of(context)!.mintError;
+        statusText = context.loc.mintError;
       });
     }
   }
@@ -152,14 +152,14 @@ class _MetadataScreen extends State<MetadataScreen> {
         : "0x";
 
     setState(() {
-      statusText = AppLocalizations.of(context)!.alreadyLinked;
+      statusText = context.loc.alreadyLinked;
     });
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
             loginFunction: widget.loginWithMetaMask,
-            text: AppLocalizations.of(context)!.initializeChip + ' (2/3)',
+            text: context.loc.initializeChip + ' (2/3)',
             connectedWallet: (widget.connector != null)
                 ? (widget.connector?.session != null)
                     ? (widget.connector!.session.accounts.isEmpty != true)
@@ -174,7 +174,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(AppLocalizations.of(context)!.uploadImage,
+                          Text(context.loc.uploadImage,
                               style: TextStyle(
                                   color: Colors.grey[800],
                                   fontWeight: FontWeight.bold)),
@@ -184,20 +184,17 @@ class _MetadataScreen extends State<MetadataScreen> {
                                 onPressed: () {
                                   setGalleryImage();
                                 },
-                                child: Text(
-                                    AppLocalizations.of(context)!.selectImage),
+                                child: Text(context.loc.selectImage),
                               ),
                               ElevatedButton(
                                 onPressed: () {
                                   setCameraImage();
                                 },
-                                child: Text(
-                                    AppLocalizations.of(context)!.takePicture),
+                                child: Text(context.loc.takePicture),
                               )
                             ]),
                           ),
-                          if (image != null)
-                            Text(AppLocalizations.of(context)!.selectedImage),
+                          if (image != null) Text(context.loc.selectedImage),
                           if (image != null)
                             Image.file(
                               File(imagePath),
@@ -206,7 +203,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                             ),
                           Padding(
                               padding: EdgeInsets.symmetric(vertical: 10.0)),
-                          Text(AppLocalizations.of(context)!.enterMetadata,
+                          Text(context.loc.enterMetadata,
                               style: TextStyle(
                                   color: Colors.grey[800],
                                   fontWeight: FontWeight.bold)),
@@ -217,16 +214,14 @@ class _MetadataScreen extends State<MetadataScreen> {
                                   TextFormField(
                                     controller: _titleController,
                                     decoration: InputDecoration(
-                                      hintText:
-                                          AppLocalizations.of(context)!.title,
+                                      hintText: context.loc.title,
                                     ),
                                     onChanged: (text) {
                                       metadata['title'] = text;
                                     },
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return AppLocalizations.of(context)!
-                                            .enterText;
+                                        return context.loc.enterText;
                                       }
                                       return null;
                                     },
@@ -237,8 +232,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                     keyboardType: TextInputType.multiline,
                                     controller: _descriptionController,
                                     decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)!
-                                          .description,
+                                      hintText: context.loc.description,
                                     ),
                                     onChanged: (text) {
                                       metadata['description'] = text;
@@ -253,9 +247,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(SnackBar(
                                                   content: Text(
-                                                      AppLocalizations.of(
-                                                                  context)!
-                                                              .processing +
+                                                      context.loc.processing +
                                                           '...')));
                                         }
                                         if (image != null) {
@@ -280,8 +272,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                                   navArgs.chipWalletAddress));
                                         });
                                       },
-                                      child: Text(AppLocalizations.of(context)!
-                                          .mintNft),
+                                      child: Text(context.loc.mintNft),
                                     ),
                                   ),
                                   Text(statusText)

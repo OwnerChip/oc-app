@@ -2,7 +2,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization.helper.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
@@ -49,7 +49,7 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context)!.appTitle)),
+        appBar: AppBar(title: Text(context.loc.appTitle)),
         body: SafeArea(
           child: FutureBuilder<bool>(
             future: NfcManager.instance.isAvailable(),
@@ -105,28 +105,23 @@ class HomeScreenState extends State<HomeScreen> {
                           mainAxisSpacing: 4,
                           children: [
                             ElevatedButton(
-                                child: Text(AppLocalizations.of(context)!
-                                    .initializeChip),
+                                child: Text(context.loc.initializeChip),
                                 onPressed: () {
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: ((context) =>
                                           const MetadataScreen())));
                                 }),
                             ElevatedButton(
-                                child: Text(
-                                    AppLocalizations.of(context)!.checkOwner),
+                                child: Text(context.loc.checkOwner),
                                 onPressed: _checkOwner),
                             ElevatedButton(
-                                child: Text(AppLocalizations.of(context)!
-                                    .getWalletAddress),
+                                child: Text(context.loc.getWalletAddress),
                                 onPressed: _getWalletAddress),
                             ElevatedButton(
-                                child: Text(
-                                    AppLocalizations.of(context)!.burnToken),
+                                child: Text(context.loc.burnToken),
                                 onPressed: _burnToken),
                             ElevatedButton(
-                                child:
-                                    Text(AppLocalizations.of(context)!.logout),
+                                child: Text(context.loc.logout),
                                 onPressed: () => {
                                       widget.connector!.killSession(),
                                       // Navigator.pushReplacementNamed(
@@ -188,7 +183,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void _burnToken() async {
-    loadingText.value = AppLocalizations.of(context)!.scanning + '...';
+    loadingText.value = context.loc!.scanning + '...';
     loading.value = true;
     status.value = '';
     image = '';
@@ -196,7 +191,7 @@ class HomeScreenState extends State<HomeScreen> {
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       var isoDep = IsoDep.from(tag);
       if (isoDep == null) {
-        status.value = AppLocalizations.of(context)!.nfcError;
+        status.value = context.loc.nfcError;
         NfcManager.instance.stopSession();
         return;
       }
@@ -208,7 +203,7 @@ class HomeScreenState extends State<HomeScreen> {
         var burnParams = makeBurnParams(widget.connector!.session!.accounts[0],
             contractAddress!, selectAppResponse.sublist(1, 11));
 
-        loadingText.value = AppLocalizations.of(context)!.burning + '...';
+        loadingText.value = context.loc.burning + '...';
 
         await launchUrlString(widget.connector!.session.toUri(),
             mode: LaunchMode.externalApplication);
@@ -219,9 +214,9 @@ class HomeScreenState extends State<HomeScreen> {
 
         if (txnReceipt?.status == true) {
           //this means mint succeeded
-          status.value = AppLocalizations.of(context)!.burnedSuccess;
+          status.value = context.loc.burnedSuccess;
         } else {
-          status.value = AppLocalizations.of(context)!.burnedError;
+          status.value = context.loc.burnedError;
         }
         loading.value = false;
         loadingText.value = '';
@@ -239,7 +234,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void _getWalletAddress() {
-    loadingText.value = AppLocalizations.of(context)!.scanning + '...';
+    loadingText.value = context.loc.scanning + '...';
     loading.value = true;
     status.value = '';
     image = '';
@@ -269,7 +264,7 @@ class HomeScreenState extends State<HomeScreen> {
         NfcManager.instance.stopSession(errorMessage: status.value);
         loading.value = false;
         loadingText.value = '';
-        status.value = AppLocalizations.of(context)!.nfcError + ": $e";
+        status.value = context.loc.nfcError + ": $e";
         image = '';
       }
     });

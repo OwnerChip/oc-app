@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:typed_data';
 import 'dart:io';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization.helper.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -57,7 +57,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
         imagePath = await downloadImageFileFromIPFS(imageCid);
 
         // updateScreen
-        statusText = AppLocalizations.of(context)!.itemData;
+        statusText = context.loc.itemData;
         setState(() {
           imagePath;
           statusText;
@@ -80,14 +80,14 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
 
     setState(() {
-      statusText = AppLocalizations.of(context)!.loadingData + " ...";
+      statusText = context.loc.loadingData + " ...";
     });
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
-          text: AppLocalizations.of(context)!.nftDetails,
+          text: context.loc.nftDetails,
           connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
               ? null
               : widget.connector!.session?.accounts![0].toLowerCase(),
@@ -114,14 +114,12 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                             fontSize: 20, fontWeight: FontWeight.bold)),
                     SizedBox(height: 20),
                     if (metadata['title'] != null)
-                      Text(
-                          AppLocalizations.of(context)!.itemName +
-                              ': ${metadata['title']}',
+                      Text(context.loc.itemName + ': ${metadata['title']}',
                           style: TextStyle(fontSize: 20)),
                     SizedBox(height: 20),
                     if (metadata['description'] != null)
                       Text(
-                          AppLocalizations.of(context)!.itemDescription +
+                          context.loc.itemDescription +
                               ': ${metadata['description']}',
                           style: TextStyle(fontSize: 20)),
                     const SizedBox(height: 120),
@@ -133,8 +131,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                           launchUrl(generateBlockchainExplorerTokenDetailsUrl(
                               navArgs.tokenId.toString()))
                         },
-                        child:
-                            Text(AppLocalizations.of(context)!.showOnExplorer),
+                        child: Text(context.loc.showOnExplorer),
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -149,7 +146,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                                   Navigator.pushReplacementNamed(
                                       context, '/login')
                                 },
-                            child: Text(AppLocalizations.of(context)!.home))),
+                            child: Text(context.loc.home))),
                   ]),
             ),
           )

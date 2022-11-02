@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'dart:convert';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization.helper.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
@@ -54,12 +54,12 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
-        statusText = AppLocalizations.of(context)!.burnedSuccess;
+        statusText = context.loc.burnedSuccess;
         setState(() {
           statusText;
         });
       } else {
-        print(AppLocalizations.of(context)!.burnedError);
+        print(context.loc.burnedError);
       }
     } catch (e) {
       print("Error: $e");
@@ -80,14 +80,14 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
     final tokenId = navArgs.tokenId!;
 
     setState(() {
-      statusText = AppLocalizations.of(context)!.alreadyLinked;
+      statusText = context.loc.alreadyLinked;
     });
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
           loginFunction: () => {},
-          text: AppLocalizations.of(context)!.initializeChip,
+          text: context.loc.initializeChip,
           connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
               ? null
               : widget.connector!.session?.accounts![0].toLowerCase(),
@@ -110,7 +110,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                   launchUrl(generateBlockchainExplorerTokenDetailsUrl(
                       tokenId.toString()))
                 },
-                child: Text(AppLocalizations.of(context)!.showOnExplorer),
+                child: Text(context.loc.showOnExplorer),
               ),
             ),
             const SizedBox(height: 15),
@@ -122,7 +122,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                         launchUrl(
                             generateOpenSeaTokenDetailsUrl(tokenId.toString()))
                       },
-                  child: Text(AppLocalizations.of(context)!.showOnOpenSea)),
+                  child: Text(context.loc.showOnOpenSea)),
             ),
             const SizedBox(height: 15),
             SizedBox(
@@ -130,7 +130,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () => {_burnToken(tokenId)},
-                  child: Text(AppLocalizations.of(context)!.burnToken)),
+                  child: Text(context.loc.burnToken)),
             ),
             const SizedBox(height: 15),
             SizedBox(
@@ -138,7 +138,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () => {_burnAndMintToken(tokenId)},
-                  child: Text(AppLocalizations.of(context)!.burnAndMint)),
+                  child: Text(context.loc.burnAndMint)),
             ),
             const SizedBox(height: 15),
             SizedBox(
@@ -150,7 +150,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                   ),
                   onPressed: () =>
                       {Navigator.pushNamed(context, LoginScreen.routeName)},
-                  child: Text(AppLocalizations.of(context)!.cancel)),
+                  child: Text(context.loc.cancel)),
             ),
           ]),
         )));

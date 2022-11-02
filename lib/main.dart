@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization.helper.dart';
 
 //screens and widgets
 import 'screens/LoginScreen.dart';
@@ -138,17 +138,6 @@ class _MyApp extends State<MyApp> {
             });
 
     return MaterialApp(
-      title: 'Localizations Sample App',
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [
-        Locale('en', ''),
-        Locale('de', ''),
-      ],
       home: HomeScreen(connector: connector),
       initialRoute: widget.initialRoute,
       routes: {
