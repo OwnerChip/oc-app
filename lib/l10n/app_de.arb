@@ -2,6 +2,8 @@
     "appTitle": "OwnerChip Demo App",
     "initializeChip": "Initialisiere Chip",
     "checkOwner": "Eigentümer prüfen",
+    "youAreOwner": "Sie sind der Eigentümer",
+    "theOwnerIs": "Der Eigentümer ist",
     "walletAddress": "Wallet Adresse",
     "getWalletAddress": "Finde Wallet Adresse",
     "burnToken": "Token löschen",
