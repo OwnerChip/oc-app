@@ -85,11 +85,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         UserScanResultsScreen.routeName,
                         context.loc.searchChip)),
                 child: Center(
-                  child: Column(children: [
-                    Icon(Icons.tap_and_play, size: 50),
-                    SizedBox(height: 10),
-                    Text(context.loc.tapItem),
-                  ]),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.tap_and_play, size: 50),
+                        SizedBox(height: 10),
+                        Text(context.loc.tapItem),
+                      ]),
                 ),
               ),
             ),
