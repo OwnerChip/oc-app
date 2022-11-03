@@ -61,9 +61,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => Navigator.pushNamed(
                       context, ScanningScreen.routeName,
                       arguments: ScanningScreenArguments(
-                          '',
-                          context.loc.initializeChip +
-                              ' (1/3)')), //TODO: Do i need to pass empty string first argument here?
+                          '', "${context.loc.initializeChip} (1/3)")),
+                  //TODO: Do i need to pass empty string first argument here?
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -85,13 +84,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     arguments: ScanningScreenArguments(
                         UserScanResultsScreen.routeName,
                         context.loc.searchChip)),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                child: Center(
+                  child: Column(children: [
                     Icon(Icons.tap_and_play, size: 50),
                     SizedBox(height: 10),
                     Text(context.loc.tapItem),
-                  ],
+                  ]),
                 ),
               ),
             ),

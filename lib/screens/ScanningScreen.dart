@@ -145,7 +145,10 @@ class _ScanningScreen extends State<ScanningScreen> {
               child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(context.loc.scanHint),
+          Text(
+            context.loc.scanHint,
+            overflow: TextOverflow.fade,
+          ),
           SizedBox(height: 90),
           Icon(
             Icons.nfc,
