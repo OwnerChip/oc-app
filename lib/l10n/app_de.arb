@@ -3,6 +3,7 @@
     "initializeChip": "Initialisiere Chip",
     "checkOwner": "Eigentümer prüfen",
     "youAreOwner": "Sie sind der Eigentümer",
+    "youAreNftOwner": "Sie sind der NFT Eigentümer",
     "theOwnerIs": "Der Eigentümer ist",
     "walletAddress": "Wallet Adresse",
     "getWalletAddress": "Finde Wallet Adresse",
@@ -41,5 +42,14 @@
     "title": "Titel",
     "description":"Beschreibung",
     "processing":"Daten verarbeiten",
-    "mintNft":"NFT erzeugen"
+    "mintNft":"NFT erzeugen",
+    "tapResults": "Ergebnis",
+    "viewNftDetails": "NFT Details ansehen",
+    "addressCopied": "Chip wallet Adresse kopiert!",
+    "nftNotFound": "Echtheits-NFT nicht in der Blockchain auffindbar.",
+    "noWalletConnected": "Keiene Wallet verbunden!",
+    "connectWallet": "Wallet verbinden",
+    "openWalletToView": "Wallet öffnen, um NFT anzusehen",
+    "noNftInWallet": "Kein Echtheits-NFT in ihrer wallet gefunden.",
+    "nftCheck": "NFT Überprüfung"
 }
