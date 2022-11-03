@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import '../utils/localization.helper.dart';
 
 //local imports
 import 'NFTDetailsScreen.dart';
@@ -30,7 +31,7 @@ class UserScanResultsScreen extends StatelessWidget {
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
           loginFunction: loginWithMetaMask,
-          text: 'Tap results',
+          text: context.loc.tapResults,
           connectedWallet: connector!.session?.accounts!.isEmpty == true
               ? null
               : connector!.session?.accounts![0].toLowerCase(),
@@ -64,7 +65,8 @@ class UserScanResultsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('NFT Check: ', style: TextStyle(fontSize: 18)),
+                        Text('${context.loc.nftCheck}: ',
+                            style: TextStyle(fontSize: 18)),
                         const SizedBox(height: 15),
                         navArgs.chipIsInitialized
                             ? Column(
@@ -90,9 +92,9 @@ class UserScanResultsScreen extends StatelessWidget {
                                                 text:
                                                     navArgs.chipWalletAddress));
                                             ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                                    content: Text(
-                                                        'Chip wallet address copied to clipboard')));
+                                                .showSnackBar(SnackBar(
+                                                    content: Text(context
+                                                        .loc.addressCopied)));
                                           },
                                           icon: const Icon(Icons.copy))
                                     ],
@@ -110,11 +112,10 @@ class UserScanResultsScreen extends StatelessWidget {
                                                     navArgs.tokenId,
                                                     navArgs.chipWalletAddress));
                                       },
-                                      child: const Text('View NFT Details'))
+                                      child: Text(context.loc.viewNftDetails))
                                 ],
                               )
-                            : const Text(
-                                'Authenticity NFT does not exist on blockchain.',
+                            : Text(context.loc.nftNotFound,
                                 style: TextStyle(fontSize: 14)),
                       ],
                     )),
@@ -156,14 +157,14 @@ class UserScanResultsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Ownership Check: ',
+                        Text('${context.loc.checkOwner}: ',
                             style: const TextStyle(fontSize: 18)),
                         const SizedBox(height: 15),
                         connector!.session.accounts.isEmpty
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('You have no wallet connected!',
+                                  Text(context.loc.noWalletConnected,
                                       style: TextStyle(fontSize: 14)),
                                   const SizedBox(height: 3),
                                   connector!.session!.accounts!.isEmpty
@@ -171,7 +172,8 @@ class UserScanResultsScreen extends StatelessWidget {
                                           onPressed: (() => {
                                                 loginWithMetaMask!(context),
                                               }),
-                                          child: Text('Connect Wallet'))
+                                          child:
+                                              Text(context.loc.connectWallet))
                                       : Container()
                                 ],
                               )
@@ -181,18 +183,16 @@ class UserScanResultsScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                          'You are the owner of this NFT!',
+                                      Text(context.loc.youAreNftOwner,
                                           style: TextStyle(fontSize: 14)),
                                       const SizedBox(height: 3),
                                       OutlinedButton(
                                           onPressed: (() => {launchWallet()}),
-                                          child:
-                                              Text('Open wallet to view NFT'))
+                                          child: Text(
+                                              context.loc.openWalletToView))
                                     ],
                                   )
-                                : const Text(
-                                    'There is no ownership NFT in your wallet.',
+                                : Text(context.loc.noNftInWallet,
                                     style: TextStyle(fontSize: 14)),
                       ],
                     )),
@@ -208,7 +208,7 @@ class UserScanResultsScreen extends StatelessWidget {
                     ),
                     onPressed: () =>
                         {Navigator.pushReplacementNamed(context, '/login')},
-                    child: Text('Home')))
+                    child: Text(context.loc.home)))
           ]),
         )));
   }

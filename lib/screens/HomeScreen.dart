@@ -2,6 +2,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../utils/localization.helper.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
@@ -48,7 +49,7 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: Text('Owner Chip Demo Admin App')),
+        appBar: AppBar(title: Text(context.loc.appTitle)),
         body: SafeArea(
           child: FutureBuilder<bool>(
             future: NfcManager.instance.isAvailable(),
@@ -104,23 +105,23 @@ class HomeScreenState extends State<HomeScreen> {
                           mainAxisSpacing: 4,
                           children: [
                             ElevatedButton(
-                                child: Text('Initialize Chip'),
+                                child: Text(context.loc.initializeChip),
                                 onPressed: () {
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: ((context) =>
                                           const MetadataScreen())));
                                 }),
                             ElevatedButton(
-                                child: Text('Check owner'),
+                                child: Text(context.loc.checkOwner),
                                 onPressed: _checkOwner),
                             ElevatedButton(
-                                child: Text('Get Wallet Address'),
+                                child: Text(context.loc.getWalletAddress),
                                 onPressed: _getWalletAddress),
                             ElevatedButton(
-                                child: Text('Burn token'),
+                                child: Text(context.loc.burnToken),
                                 onPressed: _burnToken),
                             ElevatedButton(
-                                child: Text('Logout'),
+                                child: Text(context.loc.logout),
                                 onPressed: () => {
                                       widget.connector!.killSession(),
                                       // Navigator.pushReplacementNamed(
@@ -138,7 +139,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void _checkOwner() async {
-    loadingText.value = 'Scanning...';
+    loadingText.value = "${context.loc.scanning} ...";
     loading.value = true;
     status.value = '';
     image = '';
@@ -146,7 +147,7 @@ class HomeScreenState extends State<HomeScreen> {
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       var isoDep = IsoDep.from(tag);
       if (isoDep == null) {
-        status.value = 'IsoDep is not supported.';
+        status.value = context.loc.nfcError;
         NfcManager.instance.stopSession();
         return;
       }
@@ -156,33 +157,33 @@ class HomeScreenState extends State<HomeScreen> {
         //convert Uint8List to int
         var tokenId = bytesToInt(selectAppResponse.sublist(1, 11));
 
-        loadingText.value = 'Checking owner...';
+        loadingText.value = '${context.loc.checkOwner} ...';
 
         final owner = await getOwner(tokenId);
 
         if (owner == widget.connector!.session!.accounts[0].toLowerCase()) {
-          status.value = 'You are the owner!';
+          status.value = context.loc.youAreOwner;
           success = true;
           image = 'assets/images/checkmark.png';
         } else {
-          status.value = 'Owner is $owner';
+          status.value = '${context.loc.theOwnerIs} $owner';
         }
 
         loading.value = false;
         loadingText.value = '';
       } catch (e) {
-        print("Error transceiving isoDep: $e");
+        print("${context.loc.nfcError}: $e");
         NfcManager.instance.stopSession();
         loading.value = false;
         loadingText.value = '';
-        status.value = "Error checking owner: $e";
+        status.value = "${context.loc.ownerError}: $e";
         image = '';
       }
     });
   }
 
   void _burnToken() async {
-    loadingText.value = 'Scanning...';
+    loadingText.value = "${context.loc.scanning} ...";
     loading.value = true;
     status.value = '';
     image = '';
@@ -190,7 +191,7 @@ class HomeScreenState extends State<HomeScreen> {
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       var isoDep = IsoDep.from(tag);
       if (isoDep == null) {
-        status.value = 'IsoDep is not supported.';
+        status.value = context.loc.nfcError;
         NfcManager.instance.stopSession();
         return;
       }
@@ -202,7 +203,7 @@ class HomeScreenState extends State<HomeScreen> {
         var burnParams = makeBurnParams(widget.connector!.session!.accounts[0],
             contractAddress!, selectAppResponse.sublist(1, 11));
 
-        loadingText.value = 'Burning...';
+        loadingText.value = context.loc.burning + '...';
 
         await launchUrlString(widget.connector!.session.toUri(),
             mode: LaunchMode.externalApplication);
@@ -213,27 +214,27 @@ class HomeScreenState extends State<HomeScreen> {
 
         if (txnReceipt?.status == true) {
           //this means mint succeeded
-          status.value = 'Burned token.';
+          status.value = context.loc.burnedSuccess;
         } else {
-          status.value = "Error burning token.";
+          status.value = context.loc.burnedError;
         }
         loading.value = false;
         loadingText.value = '';
         success = true;
         image = 'assets/images/flame.png';
       } catch (e) {
-        print("Error transceiving isoDep: $e");
+        print("${context.loc.nfcError}: $e");
         NfcManager.instance.stopSession();
         loading.value = false;
         loadingText.value = '';
-        status.value = "Error burning token: $e";
+        status.value = "${context.loc.burnedError}: $e";
         image = '';
       }
     });
   }
 
   void _getWalletAddress() {
-    loadingText.value = 'Scanning...';
+    loadingText.value = "${context.loc.scanning} ...";
     loading.value = true;
     status.value = '';
     image = '';
@@ -241,7 +242,7 @@ class HomeScreenState extends State<HomeScreen> {
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       var isoDep = IsoDep.from(tag);
       if (isoDep == null) {
-        status.value = 'IsoDep is not supported.';
+        status.value = context.loc.nfcError;
         NfcManager.instance.stopSession(errorMessage: status.value);
         return;
       }
@@ -254,16 +255,16 @@ class HomeScreenState extends State<HomeScreen> {
         var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
         var uint8Address = publicKeyToAddress(uin8key);
         var walletAddress = makeHexFromUint8List(uint8Address);
-        status.value = "Wallet address: $walletAddress";
+        status.value = "${context.loc.walletAddress}: $walletAddress";
         loading.value = false;
         loadingText.value = '';
         success = true;
       } catch (e) {
-        print("Error transceiving isoDep: $e");
+        print("${context.loc.nfcError}: $e");
         NfcManager.instance.stopSession(errorMessage: status.value);
         loading.value = false;
         loadingText.value = '';
-        status.value = "Error transceiving isoDep: $e";
+        status.value = "${context.loc.nfcError}: $e";
         image = '';
       }
     });

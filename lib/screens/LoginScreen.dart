@@ -1,6 +1,11 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/material.dart';
+import '../utils/localization.helper.dart';
+
+// local files
+import '../utils/url_generator.service.dart';
 import '../widgets/AppBarWithLogo.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
@@ -42,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () => Navigator.pushNamed(context, '/home'),
-                      child: const Text('All functions'),
+                      child: Text(context.loc.allFunctions),
                     ),
                   ),
                 )
@@ -55,14 +60,15 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ElevatedButton(
                   onPressed: () => Navigator.pushNamed(
                       context, ScanningScreen.routeName,
-                      arguments: ScanningScreenArguments('',
-                          'Initialize Chip (1/3)')), //TODO: Do i need to pass empty string first argument here?
+                      arguments: ScanningScreenArguments(
+                          '', "${context.loc.initializeChip} (1/3)")),
+                  //TODO: Do i need to pass empty string first argument here?
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Icon(Icons.auto_fix_high, size: 50),
                       SizedBox(height: 10),
-                      Text('Initialize Chip'),
+                      Text(context.loc.initializeChip),
                     ],
                   )),
             ),
@@ -77,14 +83,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     context, ScanningScreen.routeName,
                     arguments: ScanningScreenArguments(
                         UserScanResultsScreen.routeName,
-                        'Searching for chip...')),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.tap_and_play, size: 50),
-                    SizedBox(height: 10),
-                    Text('Tap an item'),
-                  ],
+                        context.loc.searchChip)),
+                child: Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.tap_and_play, size: 50),
+                        SizedBox(height: 10),
+                        Text(context.loc.tapItem),
+                      ]),
                 ),
               ),
             ),
@@ -98,8 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey, // background
                 ),
-                onPressed: () => {},
-                child: const Text('More Information'),
+                onPressed: () => {launchUrl(generateLandingPageUrl())},
+                child: Text(context.loc.moreInfo),
               ),
             ),
           ),

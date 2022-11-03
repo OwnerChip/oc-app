@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import '../utils/localization.helper.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
@@ -72,7 +73,7 @@ class _MetadataScreen extends State<MetadataScreen> {
   void _initializeChip(
       String walletAddress, Uint8List tokenId, Map<String, String> metadata,
       {XFile? image}) async {
-    loadingText.value = 'Scanning...';
+    loadingText.value = context.loc.scanning + '...';
     loading.value = true;
     status.value = '';
     success = false;
@@ -111,13 +112,11 @@ class _MetadataScreen extends State<MetadataScreen> {
 
       if (txnReceipt?.status == true) {
         setState(() {
-          statusText:
-          "Minted token successfully";
+          statusText = context.loc.mintSuccess;
         });
       } else {
         setState(() {
-          statusText:
-          "Error minting token";
+          statusText = context.loc.mintError;
         });
       }
 
@@ -126,8 +125,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       success = true;
     } catch (e) {
       setState(() {
-        statusText:
-        "Error minting token";
+        statusText = context.loc.mintError;
       });
     }
   }
@@ -153,11 +151,15 @@ class _MetadataScreen extends State<MetadataScreen> {
             : "0x"
         : "0x";
 
+    setState(() {
+      statusText = context.loc.alreadyLinked;
+    });
+
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
             loginFunction: widget.loginWithMetaMask,
-            text: 'Initialize Chip (2/3)',
+            text: context.loc.initializeChip + ' (2/3)',
             connectedWallet: (widget.connector != null)
                 ? (widget.connector?.session != null)
                     ? (widget.connector!.session.accounts.isEmpty != true)
@@ -172,7 +174,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Please upload an image of the object',
+                          Text(context.loc.uploadImage,
                               style: TextStyle(
                                   color: Colors.grey[800],
                                   fontWeight: FontWeight.bold)),
@@ -182,17 +184,17 @@ class _MetadataScreen extends State<MetadataScreen> {
                                 onPressed: () {
                                   setGalleryImage();
                                 },
-                                child: const Text('Select image'),
+                                child: Text(context.loc.selectImage),
                               ),
                               ElevatedButton(
                                 onPressed: () {
                                   setCameraImage();
                                 },
-                                child: const Text('Take a picture'),
+                                child: Text(context.loc.takePicture),
                               )
                             ]),
                           ),
-                          if (image != null) Text("Selected image:"),
+                          if (image != null) Text(context.loc.selectedImage),
                           if (image != null)
                             Image.file(
                               File(imagePath),
@@ -200,9 +202,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                               width: 200,
                             ),
                           Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 10.0)),
-                          Text('Please enter your metadata',
+                              padding: EdgeInsets.symmetric(vertical: 10.0)),
+                          Text(context.loc.enterMetadata,
                               style: TextStyle(
                                   color: Colors.grey[800],
                                   fontWeight: FontWeight.bold)),
@@ -212,15 +213,15 @@ class _MetadataScreen extends State<MetadataScreen> {
                                 children: [
                                   TextFormField(
                                     controller: _titleController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Title',
+                                    decoration: InputDecoration(
+                                      hintText: context.loc.title,
                                     ),
                                     onChanged: (text) {
                                       metadata['title'] = text;
                                     },
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter some text';
+                                        return context.loc.enterText;
                                       }
                                       return null;
                                     },
@@ -230,8 +231,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                                     maxLines: 2,
                                     keyboardType: TextInputType.multiline,
                                     controller: _descriptionController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Description',
+                                    decoration: InputDecoration(
+                                      hintText: context.loc.description,
                                     ),
                                     onChanged: (text) {
                                       metadata['description'] = text;
@@ -244,9 +245,10 @@ class _MetadataScreen extends State<MetadataScreen> {
                                       onPressed: () {
                                         if (_formKey.currentState!.validate()) {
                                           ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  content:
-                                                      Text('Processing ...')));
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(
+                                                      context.loc.processing +
+                                                          '...')));
                                         }
                                         if (image != null) {
                                           _initializeChip(connectedWallet,
@@ -270,7 +272,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                                   navArgs.chipWalletAddress));
                                         });
                                       },
-                                      child: const Text('Mint NFT'),
+                                      child: Text(context.loc.mintNft),
                                     ),
                                   ),
                                   Text(statusText)
