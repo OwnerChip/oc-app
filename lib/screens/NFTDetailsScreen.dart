@@ -31,11 +31,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   String imagePath = "";
   Map<String, String> metadata = {};
 
-  Future<void> _fetchResults() async {
-    final NFTDetailsScreenArguments navArgs =
-        ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
-    final BigInt tokenId = navArgs.tokenId!;
-
+  Future<void> _fetchResults(tokenId) async {
     try {
       // get IPFS CID
       String tokenUri = await getTokenUri(tokenId);
@@ -51,7 +47,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       metadata = new Map<String, String>.from(json.decode(res));
 
       // fetch image if set in metadata
-      if (metadata.containsKey("image") && metadata['image']!.isEmpty != true) {
+      if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
         String imageCid = getCidFromIpfsLink(metadata['image']!);
         imagePath = await downloadImageFileFromIPFS(imageCid);
 
@@ -68,9 +64,15 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    final NFTDetailsScreenArguments navArgs =
+        ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
+    _fetchResults(navArgs.tokenId);
+  }
+
+  @override
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, () => _fetchResults());
   }
 
   @override
@@ -105,9 +107,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                       ),
                     if (imagePath == "") const SizedBox(height: 50),
                     Text(statusText,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     if (metadata['title'] != null)
                       Text('Item Name: ${metadata['title']}',
                           style: TextStyle(fontSize: 20)),

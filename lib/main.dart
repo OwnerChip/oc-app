@@ -9,7 +9,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //screens and widgets
 import 'screens/LoginScreen.dart';
-import 'screens/HomeScreen.dart';
 import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
@@ -36,10 +35,7 @@ void main(List<String> args) async {
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   //check if web3 session exists and set initialRoute accordingly
-  String initialRoute =
-      (await WalletConnectSecureStorage().getSession() == null)
-          ? LoginScreen.routeName
-          : HomeScreen.routeName;
+  String initialRoute = LoginScreen.routeName;
 
   runApp(
       //wrapper to enable app restarts
@@ -143,7 +139,6 @@ class _MyApp extends State<MyApp> {
               connector: connector,
               loginWithMetaMask: loginWithMetaMask,
             ),
-        HomeScreen.routeName: (context) => HomeScreen(connector: connector),
         ScanningScreen.routeName: (context) => ScanningScreen(
             connector: connector, loginWithMetaMask: loginWithMetaMask),
         ChipAlreadyInitializedScreen.routeName: (context) =>

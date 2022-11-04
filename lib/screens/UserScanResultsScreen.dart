@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'NFTDetailsScreen.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
+import '../widgets/ChipInfo.dart';
 
 class UserScanResultsScreen extends StatelessWidget {
   const UserScanResultsScreen(
@@ -70,33 +71,10 @@ class UserScanResultsScreen extends StatelessWidget {
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Chip: Infineon Secora',
-                                      style: TextStyle(fontSize: 14)),
-                                  Text('ID: ${navArgs.tokenId}',
-                                      style: TextStyle(fontSize: 14)),
-                                  //display first 5 characters of wallet address as Text
-                                  Row(
-                                    children: [
-                                      Text(
-                                          'Chip Wallet: ${navArgs.chipWalletAddress.substring(0, 5)}...',
-                                          style: TextStyle(fontSize: 14)),
-                                      //icon that copies navargs.nftowner to clipboard
-                                      IconButton(
-                                          padding: EdgeInsets.zero,
-                                          constraints: BoxConstraints(),
-                                          iconSize: 20,
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(
-                                                text:
-                                                    navArgs.chipWalletAddress));
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                                    content: Text(
-                                                        'Chip wallet address copied to clipboard')));
-                                          },
-                                          icon: const Icon(Icons.copy))
-                                    ],
-                                  ),
+                                  ChipInfo(
+                                      tokenId: navArgs.tokenId,
+                                      chipName: 'Secora Infineon',
+                                      walletAddress: navArgs.chipWalletAddress),
                                   //button that navigates to nft details screen
                                   OutlinedButton(
                                       onPressed: () {
@@ -105,7 +83,6 @@ class UserScanResultsScreen extends StatelessWidget {
                                             NFTDetailsScreen.routeName,
                                             arguments:
                                                 NFTDetailsScreenArguments(
-                                                    connector,
                                                     loginWithMetaMask,
                                                     navArgs.tokenId,
                                                     navArgs.chipWalletAddress));

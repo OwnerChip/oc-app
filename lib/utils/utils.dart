@@ -12,15 +12,6 @@ String makeHexFromUint8List(Iterable list) {
   return concatenate.toString();
 }
 
-int convertUint8ListToDecimal(Uint8List uintList) {
-  int decimalValue = 0;
-  for (int i = uintList.length - 1; i >= 0; i--) {
-    decimalValue = decimalValue << 8; // shift everything one byte to the left
-    decimalValue = decimalValue | uintList[i]; // bitwise or operation
-  }
-  return decimalValue;
-}
-
 BigInt concatenateUint8List(Uint8List uintList) {
   return BigInt.from(int.parse(uintList.join()));
 }

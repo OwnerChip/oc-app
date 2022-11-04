@@ -7,23 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
 
-//nfc imports
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/platform_tags.dart';
-
 //web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:web3dart/crypto.dart';
 
 //local imports
 import '../widgets/AppBarWithLogo.dart';
 import '../ipfs/ipfs.services.dart';
-import '../nfc/commands.dart';
 import '../utils/utils.dart';
 import '../utils/images.service.dart';
 import '../web3/web3.services.dart';
 import '../utils/navigation_arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
+import '../widgets/LoadingIndicator.dart';
+import '../widgets/ChipInfo.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -43,21 +41,20 @@ class _MetadataScreen extends State<MetadataScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  ValueNotifier<dynamic> loading = ValueNotifier(false);
-  ValueNotifier<dynamic> loadingText = ValueNotifier('');
-  ValueNotifier<dynamic> status = ValueNotifier('');
-
   Map<String, String> metadata = {};
   XFile? image;
-  String imagePath = "none";
-  String statusText = "";
+  String imagePath = 'assets/images/placeholder.jpg';
   bool success = false;
+  bool loading = false;
+  String loadingText = '';
 
   void setCameraImage() async {
     XFile? imageFile = await getImageFromCamera();
     setState(() {
       image = imageFile;
-      imagePath = (imageFile != null) ? imageFile.path : "";
+      imagePath = (imageFile != null)
+          ? imageFile.path
+          : 'assets/images/placeholder.jpg';
     });
   }
 
@@ -65,17 +62,23 @@ class _MetadataScreen extends State<MetadataScreen> {
     XFile? imageFile = await getImageFromGallery();
     setState(() {
       image = imageFile;
-      imagePath = (imageFile != null) ? imageFile.path : "";
+      imagePath = (imageFile != null)
+          ? imageFile.path
+          : 'assets/images/placeholder.jpg';
     });
   }
 
-  void _initializeChip(
-      String walletAddress, Uint8List tokenId, Map<String, String> metadata,
-      {XFile? image}) async {
-    loadingText.value = 'Scanning...';
-    loading.value = true;
-    status.value = '';
-    success = false;
+  void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
+    setState(() {
+      loading = true;
+      loadingText = 'Uploading Metadata ...'; //TODO: Externalize String!
+      success = false;
+    });
+
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as ChipAlreadyInitializedScreenArguments;
+
+    String walletAddress = widget.connector!.session.accounts[0].toLowerCase();
 
     // upload image to ipfs
     String imageCid;
@@ -95,39 +98,40 @@ class _MetadataScreen extends State<MetadataScreen> {
     String cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
     // generate mint parameters
-    var mintParams = makeMintParams(
-        walletAddress, dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", tokenId);
-
-    //metamask interaction
-    await launchUrlString(widget.connector!.session.toUri(),
-        mode: LaunchMode.externalApplication);
+    var mintParams = makeMintParams(walletAddress,
+        dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.cardId);
 
     //TODO: transaction does not always pop up in Metamask!
     try {
+      //metamask interaction
+      await launchUrlString(widget.connector!.session.toUri(),
+          mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector!.sendCustomRequest(
           method: 'eth_sendTransaction', params: mintParams, id: 1337);
+
+      setState(() {
+        loadingText = 'Minting token...'; //TODO: Externalize String!
+      });
 
       var txnReceipt = await getTxnReceipt(txnHash);
 
       if (txnReceipt?.status == true) {
         setState(() {
-          statusText:
-          "Minted token successfully";
+          success = true;
+          loading = false;
         });
-      } else {
-        setState(() {
-          statusText:
-          "Error minting token";
-        });
-      }
 
-      loading.value = false;
-      loadingText.value = '';
-      success = true;
+        // ignore: use_build_context_synchronously
+        Navigator.pushNamed(context, NFTDetailsScreen.routeName,
+            arguments: NFTDetailsScreenArguments(widget.loginWithMetaMask,
+                bytesToInt(navArgs.cardId), navArgs.chipWalletAddress));
+      } else {
+        throw Exception('Transaction failed');
+      }
     } catch (e) {
       setState(() {
-        statusText:
-        "Error minting token";
+        success = false;
+        loading = false;
       });
     }
   }
@@ -141,141 +145,123 @@ class _MetadataScreen extends State<MetadataScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final navArgs =
-        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
-
-    //TODO
-    String connectedWallet = (navArgs.connector != null)
-        ? (navArgs.connector?.session != null)
-            ? (navArgs.connector!.session.accounts.isEmpty != true)
-                ? navArgs.connector!.session.accounts[0].toLowerCase()
-                : "0x"
-            : "0x"
-        : "0x";
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as ChipAlreadyInitializedScreenArguments;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
-            loginFunction: widget.loginWithMetaMask,
-            text: 'Initialize Chip (2/3)',
-            connectedWallet: (widget.connector != null)
-                ? (widget.connector?.session != null)
-                    ? (widget.connector!.session.accounts.isEmpty != true)
-                        ? widget.connector!.session.accounts[0].toLowerCase()
-                        : null
-                    : null
-                : null),
+          loginFunction: widget.loginWithMetaMask,
+          text: 'Initialize Chip (2/3)',
+          connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
+              ? null
+              : widget.connector!.session?.accounts![0].toLowerCase(),
+        ),
         body: SafeArea(
-            child: Center(
-                child: Padding(
-                    padding: EdgeInsets.all(15.0),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Please upload an image of the object',
-                              style: TextStyle(
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.bold)),
-                          Form(
-                            child: Column(children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  setGalleryImage();
-                                },
-                                child: const Text('Select image'),
+          child: SingleChildScrollView(
+              child: Padding(
+                  padding: EdgeInsets.all(15.0),
+                  child: Column(children: [
+                    ChipInfo(
+                        tokenId: bytesToInt(navArgs.cardId),
+                        chipName: 'Secora Infineon',
+                        walletAddress: navArgs.chipWalletAddress),
+                    SizedBox(height: 20),
+                    Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _titleController,
+                              decoration: const InputDecoration(
+                                hintText: 'Title',
                               ),
-                              ElevatedButton(
+                              onChanged: (text) {
+                                metadata['title'] = text;
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter some text';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 15),
+                            TextField(
+                              maxLines: 2,
+                              keyboardType: TextInputType.multiline,
+                              controller: _descriptionController,
+                              decoration: const InputDecoration(
+                                hintText: 'Description',
+                              ),
+                              onChanged: (text) {
+                                metadata['description'] = text;
+                              },
+                            ),
+                          ],
+                        )),
+                    //spacing
+                    SizedBox(height: 20),
+
+                    //row with height 100
+
+                    Row(
+                      //space evenly
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        //image with aspect ratio of 1
+                        Container(
+                          width: 150,
+                          height: 150,
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: image != null
+                                ? Image.file(
+                                    File(image!.path),
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.asset(
+                                    imagePath,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                        ),
+
+                        Column(
+                          children: [
+                            ElevatedButton(
                                 onPressed: () {
                                   setCameraImage();
                                 },
-                                child: const Text('Take a picture'),
-                              )
-                            ]),
-                          ),
-                          if (image != null) Text("Selected image:"),
-                          if (image != null)
-                            Image.file(
-                              File(imagePath),
-                              height: 200,
-                              width: 200,
-                            ),
-                          Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 10.0)),
-                          Text('Please enter your metadata',
-                              style: TextStyle(
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.bold)),
-                          Form(
-                              key: _formKey,
-                              child: Column(
-                                children: [
-                                  TextFormField(
-                                    controller: _titleController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Title',
-                                    ),
-                                    onChanged: (text) {
-                                      metadata['title'] = text;
-                                    },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter some text';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 15),
-                                  TextField(
-                                    maxLines: 2,
-                                    keyboardType: TextInputType.multiline,
-                                    controller: _descriptionController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Description',
-                                    ),
-                                    onChanged: (text) {
-                                      metadata['description'] = text;
-                                    },
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16.0),
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        if (_formKey.currentState!.validate()) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  content:
-                                                      Text('Processing ...')));
-                                        }
-                                        if (image != null) {
-                                          _initializeChip(connectedWallet,
-                                              navArgs.tokenId, metadata,
-                                              image: image);
-                                        } else {
-                                          _initializeChip(connectedWallet,
-                                              navArgs.tokenId, metadata);
-                                        }
-                                        // TODO: change screen after SUCCESS message only!
-                                        Future.delayed(
-                                            Duration(milliseconds: 1000), () {
-                                          Navigator.pushNamed(context,
-                                              NFTDetailsScreen.routeName,
-                                              arguments: NFTDetailsScreenArguments(
-                                                  widget.connector,
-                                                  widget.loginWithMetaMask,
-                                                  BigInt.from(
-                                                      convertUint8ListToDecimal(
-                                                          navArgs.tokenId)),
-                                                  navArgs.chipWalletAddress));
-                                        });
-                                      },
-                                      child: const Text('Mint NFT'),
-                                    ),
-                                  ),
-                                  Text(statusText)
-                                ],
-                              ))
-                        ])))));
+                                child: Text('Take a picture')),
+                            ElevatedButton(
+                                onPressed: () {
+                                  setGalleryImage();
+                                },
+                                child: Text('Select image')),
+                          ],
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: (loading
+                          ? LoadingIndicator(loadingText: loadingText)
+                          : ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  if (image != null) {
+                                    _initializeChip(metadata, image: image);
+                                  } else {
+                                    _initializeChip(metadata);
+                                  }
+                                }
+                              },
+                              child: const Text('Mint NFT'),
+                            )),
+                    ),
+                  ]))),
+        ));
   }
 }

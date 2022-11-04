@@ -18,29 +18,17 @@ class UserScanResultsScreenArguments {
 }
 
 class ChipAlreadyInitializedScreenArguments {
-  final WalletConnect? connector;
-  final Uint8List tokenId;
+  final Uint8List cardId;
   final String chipWalletAddress;
 
-  ChipAlreadyInitializedScreenArguments(
-      this.connector, this.tokenId, this.chipWalletAddress);
-}
-
-class ChipInitializedArguments {
-  final WalletConnect? connector;
-  final Uint8List tokenId;
-  final String chipWalletAddress;
-
-  ChipInitializedArguments(
-      this.connector, this.tokenId, this.chipWalletAddress);
+  ChipAlreadyInitializedScreenArguments(this.cardId, this.chipWalletAddress);
 }
 
 class NFTDetailsScreenArguments {
-  final WalletConnect? connector;
   final Function? loginWithMetaMask;
   final BigInt? tokenId;
-  final String? chipWalletAddress;
+  final String chipWalletAddress;
 
-  NFTDetailsScreenArguments(this.connector, this.loginWithMetaMask,
-      this.tokenId, this.chipWalletAddress);
+  NFTDetailsScreenArguments(
+      this.loginWithMetaMask, this.tokenId, this.chipWalletAddress);
 }

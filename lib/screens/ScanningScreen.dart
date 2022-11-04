@@ -76,12 +76,12 @@ class _ScanningScreen extends State<ScanningScreen> {
         }
 
         //get cardID and convert to int (tokenId)
-        var cardId = bytesToInt(selectAppResponse.sublist(1, 11));
+        var cardId = selectAppResponse.sublist(1, 11);
         //get owner of nft with cardId == tokenId
         try {
-          EthereumAddress ownerAddress = await getOwner(cardId);
+          tokenId = bytesToInt(cardId);
+          EthereumAddress ownerAddress = await getOwner(tokenId);
           nftOwner = ownerAddress.toString();
-          tokenId = cardId;
         } catch (e) {
           print(e);
           chipIsInitialized = false;
@@ -102,15 +102,13 @@ class _ScanningScreen extends State<ScanningScreen> {
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
-                    widget.connector,
-                    selectAppResponse.sublist(1, 11),
-                    chipWalletAddress));
+                    cardId, chipWalletAddress));
           } else {
             //navigate to MetadataInputScreen
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, MetadataScreen.routeName,
-                arguments: ChipInitializedArguments(widget.connector,
-                    selectAppResponse.sublist(1, 11), chipWalletAddress));
+                arguments: ChipAlreadyInitializedScreenArguments(
+                    cardId, chipWalletAddress));
           }
         }
       } catch (e) {

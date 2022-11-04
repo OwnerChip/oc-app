@@ -76,7 +76,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final tokenId = navArgs.tokenId!;
+    final tokenId = navArgs.cardId!;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -95,7 +95,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 50),
-            Text('TokenID: ${bytesToInt(navArgs.tokenId)}'),
+            Text('TokenID: ${bytesToInt(navArgs.cardId)}'),
             const SizedBox(height: 15),
             SizedBox(
               width: 200,
