@@ -10,7 +10,7 @@ class ScanningScreenArguments {
 class UserScanResultsScreenArguments {
   final String nftOwner;
   final bool chipIsInitialized;
-  final dynamic tokenId;
+  final BigInt tokenId;
   final String chipWalletAddress;
 
   UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
@@ -18,29 +18,22 @@ class UserScanResultsScreenArguments {
 }
 
 class ChipAlreadyInitializedScreenArguments {
-  final WalletConnect? connector;
   final Uint8List tokenId;
   final String chipWalletAddress;
 
-  ChipAlreadyInitializedScreenArguments(
-      this.connector, this.tokenId, this.chipWalletAddress);
+  ChipAlreadyInitializedScreenArguments(this.tokenId, this.chipWalletAddress);
 }
 
 class ChipInitializedArguments {
-  final WalletConnect? connector;
   final Uint8List tokenId;
   final String chipWalletAddress;
 
-  ChipInitializedArguments(
-      this.connector, this.tokenId, this.chipWalletAddress);
+  ChipInitializedArguments(this.tokenId, this.chipWalletAddress);
 }
 
 class NFTDetailsScreenArguments {
-  final WalletConnect? connector;
-  final Function? loginWithMetaMask;
-  final BigInt? tokenId;
-  final String? chipWalletAddress;
+  final BigInt tokenId;
+  final String chipWalletAddress;
 
-  NFTDetailsScreenArguments(this.connector, this.loginWithMetaMask,
-      this.tokenId, this.chipWalletAddress);
+  NFTDetailsScreenArguments(this.tokenId, this.chipWalletAddress);
 }

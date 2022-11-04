@@ -61,10 +61,13 @@ class _ScanningScreen extends State<ScanningScreen> {
         var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
 
         Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
-        var responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
-        var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
-        var uint8Address = publicKeyToAddress(uin8key);
-        var chipWalletAddress = makeHexFromUint8List(uint8Address);
+        Uint8List responseGetKeyInfo =
+            await isoDep.transceive(data: GET_KEY_INFO);
+        Uint8List chipEthereumAddress =
+            getEthereumAddressFromPublicKeyResponse(responseGetKeyInfo);
+        String chipEthereumAddressHexString =
+            getEthereumAddressHexString(chipEthereumAddress);
+        BigInt chipTokenId = getBigIntFromEthereumAddress(chipEthereumAddress);
 
         //check if first key does not exist yet exist
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
@@ -76,13 +79,27 @@ class _ScanningScreen extends State<ScanningScreen> {
           chipIsInitialized = true;
         }
 
-        //get cardID and convert to int (tokenId)
-        var cardId = bytesToInt(selectAppResponse.sublist(1, 11));
-        //get owner of nft with cardId == tokenId
+        // get SIGNATURE from NFC chip
+        final Uint8List hashedTokenId = keccak256(chipEthereumAddress);
+        final Uint8List GET_SIGNATURE =
+            make_signature_command(0x01, hashedTokenId);
+        final Uint8List responseGetSignature =
+            await isoDep.transceive(data: GET_SIGNATURE);
+        final Uint8List signature =
+            extractSignature(hashedTokenId, responseGetSignature);
+
+        // verify chip authenticity
         try {
-          EthereumAddress ownerAddress = await getOwner(cardId);
+          bool result = await verifyToken(chipEthereumAddress, signature);
+        } catch (e) {
+          print("ERROR: $e");
+        }
+
+        // get owner of nft with chipEthereumAddress == tokenId
+        try {
+          EthereumAddress ownerAddress = await getOwner(chipTokenId);
           nftOwner = ownerAddress.toString();
-          tokenId = cardId;
+          tokenId = chipTokenId;
         } catch (e) {
           print(e);
           chipIsInitialized = false;
@@ -96,22 +113,23 @@ class _ScanningScreen extends State<ScanningScreen> {
           // ignore: use_build_context_synchronously
           Navigator.pushNamed(context, UserScanResultsScreen.routeName,
               arguments: UserScanResultsScreenArguments(
-                  nftOwner, chipIsInitialized, tokenId, chipWalletAddress));
+                  nftOwner,
+                  chipIsInitialized,
+                  chipTokenId,
+                  chipEthereumAddressHexString));
         } else {
           //navigate to ChipAlreadyInitializedScreen
           if (chipIsInitialized) {
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
-                    widget.connector,
-                    selectAppResponse.sublist(1, 11),
-                    chipWalletAddress));
+                    chipEthereumAddress, chipEthereumAddressHexString));
           } else {
             //navigate to MetadataInputScreen
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, MetadataScreen.routeName,
-                arguments: ChipInitializedArguments(widget.connector,
-                    selectAppResponse.sublist(1, 11), chipWalletAddress));
+                arguments: ChipInitializedArguments(
+                    chipEthereumAddress, chipEthereumAddressHexString));
           }
         }
       } catch (e) {

@@ -53,3 +53,42 @@ String intTo32ByteHex(int intToConvert) {
   //pad length of hex to multiple of 64
   return hex.padLeft(64, '0');
 }
+
+// hex to BigInt
+BigInt hexToBigInt(String fullString) {
+  return BigInt.parse(fullString, radix: 16);
+}
+
+Uint8List getEthereumAddressFromPublicKeyResponse(
+    Uint8List responseGetKeyInfo) {
+  var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
+  return publicKeyToAddress(uin8key);
+}
+
+BigInt getBigIntFromEthereumAddress(Uint8List ethereumAddress) {
+  String i = makeHexFromUint8List(ethereumAddress);
+  return hexToBigInt(i);
+}
+
+String getEthereumAddressHexString(Uint8List ethereumAddress) {
+  return makeHexFromUint8List(ethereumAddress);
+}
+
+//extract signature out of signatureResponse
+Uint8List extractSignature(pubkey, Uint8List signatureResponse) {
+  String signatureResponseString = String.fromCharCodes(signatureResponse);
+  String signature = signatureResponseString.substring(22);
+
+  int rLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
+  signature = signature.substring(2);
+  String r = signature.substring(0, rLength);
+
+  signature = signature.substring(2 + rLength);
+
+  int sLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
+  signature = signature.substring(2);
+  String s = signature.substring(0, sLength);
+
+  String res = '${hexToInt(r)}${hexToInt(s)}';
+  return res;
+}

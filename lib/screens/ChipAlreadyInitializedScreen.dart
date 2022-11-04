@@ -77,7 +77,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final tokenId = navArgs.tokenId!;
+    final Uint8List tokenId = navArgs.tokenId!;
 
     setState(() {
       statusText = context.loc.alreadyLinked;
@@ -100,7 +100,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 50),
-            Text('TokenID: ${bytesToInt(navArgs.tokenId)}'),
+            Text('TokenID: ${uint8ListTo32ByteHex(navArgs.tokenId)}'),
             const SizedBox(height: 15),
             SizedBox(
               width: 200,

@@ -94,16 +94,20 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     // upload metadata json to ipfs
     String cid = await uploadFileToIPFS(jsonFile, 'application/json');
+    String fullUri = "ipfs://$cid";
+
+    //TODO: implement
+    Uint8List signature = extractSignature("x", tokenId);
 
     // generate mint parameters
     var mintParams = makeMintParams(
-        walletAddress, dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", tokenId);
+        walletAddress, dotenv.get('CONTRACT_ADDRESS'), fullUri, signature);
 
-    //metamask interaction
+    // metamask interaction
     await launchUrlString(widget.connector!.session.toUri(),
         mode: LaunchMode.externalApplication);
 
-    //TODO: transaction does not always pop up in Metamask!
+    // TODO: transaction does not always pop up in Metamask!
     try {
       var txnHash = await widget.connector!.sendCustomRequest(
           method: 'eth_sendTransaction', params: mintParams, id: 1337);
@@ -141,15 +145,6 @@ class _MetadataScreen extends State<MetadataScreen> {
   Widget build(BuildContext context) {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
-
-    //TODO
-    String connectedWallet = (navArgs.connector != null)
-        ? (navArgs.connector?.session != null)
-            ? (navArgs.connector!.session.accounts.isEmpty != true)
-                ? navArgs.connector!.session.accounts[0].toLowerCase()
-                : "0x"
-            : "0x"
-        : "0x";
 
     setState(() {
       statusText = context.loc.alreadyLinked;
@@ -251,12 +246,20 @@ class _MetadataScreen extends State<MetadataScreen> {
                                                           '...')));
                                         }
                                         if (image != null) {
-                                          _initializeChip(connectedWallet,
-                                              navArgs.tokenId, metadata,
+                                          _initializeChip(
+                                              widget.connector!.session
+                                                  .accounts[0]
+                                                  .toLowerCase(),
+                                              navArgs.tokenId,
+                                              metadata,
                                               image: image);
                                         } else {
-                                          _initializeChip(connectedWallet,
-                                              navArgs.tokenId, metadata);
+                                          _initializeChip(
+                                              widget.connector!.session
+                                                  .accounts[0]
+                                                  .toLowerCase(),
+                                              navArgs.tokenId,
+                                              metadata);
                                         }
                                         // TODO: change screen after SUCCESS message only!
                                         Future.delayed(
@@ -264,8 +267,6 @@ class _MetadataScreen extends State<MetadataScreen> {
                                           Navigator.pushNamed(context,
                                               NFTDetailsScreen.routeName,
                                               arguments: NFTDetailsScreenArguments(
-                                                  widget.connector,
-                                                  widget.loginWithMetaMask,
                                                   BigInt.from(
                                                       convertUint8ListToDecimal(
                                                           navArgs.tokenId)),

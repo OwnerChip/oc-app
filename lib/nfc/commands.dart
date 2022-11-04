@@ -39,3 +39,15 @@ Uint8List make_get_key_info_command(hex_key_number) {
     0x00,
   ]);
 }
+
+Uint8List make_signature_command(hex_key_number, data_to_sign) {
+  return Uint8List.fromList([
+    0x00,
+    0x18,
+    hex_key_number,
+    0x00,
+    0x20,
+    data_to_sign,
+    0x00,
+  ]);
+}

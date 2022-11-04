@@ -29,6 +29,15 @@ Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
   return result;
 }
 
+Future<bool> verifyToken(Uint8List tokenId, Uint8List signature) async {
+  try {
+    var result = await query("verifyToken", [tokenId, signature]);
+    return result[0];
+  } catch (e) {
+    return false;
+  }
+}
+
 String makeBurnTransactionData(Uint8List cardId) {
   var burnFunctionSignature = '42966c68';
   var tokenIdHex = uint8ListTo32ByteHex(cardId);
@@ -51,27 +60,23 @@ dynamic makeBurnParams(String from, String to, Uint8List cardId,
   return params;
 }
 
-String makeMintTransactionData(
-    String receivingWalletAddress, String tokenURI, Uint8List cardId) {
-  String from = receivingWalletAddress.substring(2).padLeft(64, '0');
-  String tokenURILocation = "60".padLeft(64, '0');
-  String tokenId = uint8ListTo32ByteHex(cardId);
+String makeMintTransactionData(String tokenURI, Uint8List signature) {
   String tokenUriLength = (tokenURI.length).toRadixString(16).padLeft(64, '0');
   String tokenURIHex = stringToHex(tokenURI);
+  String signatureHex = String.fromCharCodes(signature);
   String data = "0x" +
       "ba7aef43" +
-      from +
-      tokenURILocation +
-      tokenId +
+      "60".padLeft(64, '0') +
       tokenUriLength +
-      tokenURIHex;
+      tokenURIHex +
+      signatureHex;
   return data;
 }
 
 dynamic makeMintParams(
-    String from, String to, String tokenURI, Uint8List cardId,
+    String from, String to, String tokenURI, Uint8List signature,
     {String? gasPrice}) {
-  String data = makeMintTransactionData(from, tokenURI, cardId);
+  String data = makeMintTransactionData(tokenURI, signature);
   final params = [
     {
       "from": from,

@@ -107,8 +107,6 @@ class UserScanResultsScreen extends StatelessWidget {
                                             NFTDetailsScreen.routeName,
                                             arguments:
                                                 NFTDetailsScreenArguments(
-                                                    connector,
-                                                    loginWithMetaMask,
                                                     navArgs.tokenId,
                                                     navArgs.chipWalletAddress));
                                       },
