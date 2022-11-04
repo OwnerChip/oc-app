@@ -6,6 +6,8 @@ import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization.helper.dart';
 
 //screens and widgets
 import 'screens/LoginScreen.dart';
@@ -53,7 +55,7 @@ class MyApp extends StatefulWidget {
 
 class _MyApp extends State<MyApp> {
   var sessionData;
-  SessionStatus? session;
+  SessionStatus? _session;
 
   var connector = WalletConnect(
       bridge: 'https://bridge.walletconnect.org',
@@ -61,9 +63,7 @@ class _MyApp extends State<MyApp> {
           name: 'OwnerChip Demo',
           description: 'Connecting physical goods to the blockchain.',
           url: 'https://walletconnect.org',
-          icons: [
-            'https://files.gitbook.com/v0/b/gitbook-legacy-files/o/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
-          ]));
+          icons: ["assets/images/walletconnect.png"]));
 
   Future initWalletConnect() async {
     final sessionStorage = WalletConnectSecureStorage();
@@ -79,22 +79,22 @@ class _MyApp extends State<MyApp> {
               name: 'OwnerChip Demo',
               description: 'Connecting physical goods to the blockchain.',
               url: 'https://walletconnect.org',
-              icons: [
-                'https://files.gitbook.com/v0/b/gitbook-legacy-files/o/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
-              ]));
+              icons: ["assets/images/walletconnect.png"]));
     });
   }
 
-  loginWithMetaMask(BuildContext context) async {
+  Future loginWithMetaMask(BuildContext context) async {
     if (!connector.connected) {
       try {
         var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: '1'));
-        await connector.createSession(
+        var session = await connector.createSession(
             chainId: chainId,
             onDisplayUri: (uri) async {
               await launchUrlString(uri, mode: LaunchMode.externalApplication);
             });
-        setState(() {});
+        setState(() {
+          _session = session;
+        });
         if (!mounted) {
           return;
         }
@@ -132,7 +132,10 @@ class _MyApp extends State<MyApp> {
               RestartWidget.restartApp(context),
               NfcManager.instance.stopSession()
             });
+
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
       routes: {
         LoginScreen.routeName: (context) => LoginScreen(

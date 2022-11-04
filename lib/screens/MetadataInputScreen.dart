@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import '../utils/localization.helper.dart';
 
 //web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -71,7 +72,7 @@ class _MetadataScreen extends State<MetadataScreen> {
   void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
     setState(() {
       loading = true;
-      loadingText = 'Uploading Metadata ...'; //TODO: Externalize String!
+      loadingText = context.loc.uploadingMetadata + '...';
       success = false;
     });
 
@@ -110,7 +111,7 @@ class _MetadataScreen extends State<MetadataScreen> {
           method: 'eth_sendTransaction', params: mintParams, id: 1337);
 
       setState(() {
-        loadingText = 'Minting token...'; //TODO: Externalize String!
+        loadingText = context.loc.mintingToken + '...';
       });
 
       var txnReceipt = await getTxnReceipt(txnHash);
@@ -152,7 +153,7 @@ class _MetadataScreen extends State<MetadataScreen> {
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
-          text: 'Initialize Chip (2/3)',
+          text: context.loc.initializeChip + ' (2/3)',
           connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
               ? null
               : widget.connector!.session?.accounts![0].toLowerCase(),
@@ -181,7 +182,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                               },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
+                                  return context.loc.pleaseEnterText;
                                 }
                                 return null;
                               },
@@ -229,16 +230,25 @@ class _MetadataScreen extends State<MetadataScreen> {
 
                         Column(
                           children: [
-                            ElevatedButton(
+                            //button with fixed width
+                            Container(
+                              width: 150,
+                              child: ElevatedButton(
                                 onPressed: () {
                                   setCameraImage();
                                 },
-                                child: Text('Take a picture')),
-                            ElevatedButton(
+                                child: Text(context.loc.takePicture),
+                              ),
+                            ),
+                            Container(
+                              width: 150,
+                              child: ElevatedButton(
                                 onPressed: () {
                                   setGalleryImage();
                                 },
-                                child: Text('Select image')),
+                                child: Text(context.loc.selectedImage),
+                              ),
+                            ),
                           ],
                         )
                       ],
@@ -258,7 +268,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                   }
                                 }
                               },
-                              child: const Text('Mint NFT'),
+                              child: Text(context.loc.mintNft),
                             )),
                     ),
                   ]))),

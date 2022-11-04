@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
+import '../utils/localization.helper.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -86,7 +87,7 @@ class _ScanningScreen extends State<ScanningScreen> {
           print(e);
           chipIsInitialized = false;
           tokenId = null;
-          nftOwner = 'Error fetching owner';
+          nftOwner = context.loc.ownerError;
         }
 
         NfcManager.instance.stopSession();
@@ -112,7 +113,7 @@ class _ScanningScreen extends State<ScanningScreen> {
           }
         }
       } catch (e) {
-        print("Error transceiving isoDep: $e");
+        print(context.loc.nfcError + ": $e");
         //TODO: Set some error state and display in UI
         NfcManager.instance.stopSession();
       }
@@ -142,9 +143,12 @@ class _ScanningScreen extends State<ScanningScreen> {
               child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('Place your phone close to the chip.'),
-          const SizedBox(height: 90),
-          const Icon(
+          Text(
+            context.loc.scanHint,
+            overflow: TextOverflow.fade,
+          ),
+          SizedBox(height: 90),
+          Icon(
             Icons.nfc,
             color: Colors.black,
             size: 96.0,
@@ -165,7 +169,7 @@ class _ScanningScreen extends State<ScanningScreen> {
                 backgroundColor: Colors.grey, // background
               ),
               onPressed: () => cancelScan(),
-              child: const Text('Cancel'))
+              child: Text(context.loc.cancel))
         ],
       ))),
     );
