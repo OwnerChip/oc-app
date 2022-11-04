@@ -34,19 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
           child: Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          widget.connector!.connected
-              ? Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: 200,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/home'),
-                      child: const Text('All functions'),
-                    ),
-                  ),
-                )
-              : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
