@@ -26,7 +26,7 @@ class AppBarWithLogo extends StatelessWidget with PreferredSizeWidget {
           Row(
             children: [
               Image.asset(
-                'assets/images/oc_cali.png',
+                'assets/images/oc_logo.png',
                 fit: BoxFit.contain,
                 height: 32,
               ),

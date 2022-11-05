@@ -27,7 +27,7 @@ import '../web3/web3.services.dart';
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
       {super.key, required this.connector, this.loginWithMetaMask});
-  final WalletConnect? connector;
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/scan-already-initialized';
@@ -44,11 +44,11 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
 
       var burnParams = makeBurnParams(
-          widget.connector!.session!.accounts[0], contractAddress!, tokenId);
+          widget.connector?.session!.accounts[0], contractAddress!, tokenId);
 
-      await launchUrlString(widget.connector!.session.toUri(),
+      await launchUrlString(widget.connector.session.toUri(),
           mode: LaunchMode.externalApplication);
-      var txnHash = await widget.connector!.sendCustomRequest(
+      var txnHash = await widget.connector?.sendCustomRequest(
           method: 'eth_sendTransaction', params: burnParams, id: 1338);
 
       var txnReceipt = await getTxnReceipt(txnHash);
@@ -88,9 +88,9 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         appBar: AppBarWithLogo(
           loginFunction: () => {},
           text: context.loc.initializeChip,
-          connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
-              : widget.connector!.session?.accounts![0].toLowerCase(),
+              : widget.connector?.session?.accounts![0].toLowerCase(),
         ),
         body: SafeArea(
             child: Center(

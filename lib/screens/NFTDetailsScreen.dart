@@ -90,9 +90,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
           text: context.loc.nftDetails,
-          connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
-              : widget.connector!.session?.accounts![0].toLowerCase(),
+              : widget.connector?.session?.accounts![0].toLowerCase(),
         ),
         body: SafeArea(
             child: Row(children: [

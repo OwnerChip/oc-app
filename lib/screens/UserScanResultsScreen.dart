@@ -12,14 +12,14 @@ import '../widgets/ChipInfo.dart';
 
 class UserScanResultsScreen extends StatelessWidget {
   const UserScanResultsScreen(
-      {super.key, this.connector, this.loginWithMetaMask});
-  final WalletConnect? connector;
+      {super.key, required this.connector, this.loginWithMetaMask});
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/user-scan-results';
 
   Future<void> launchWallet() async {
-    await launchUrlString(connector!.session.toUri(),
+    await launchUrlString(connector.session.toUri(),
         mode: LaunchMode.externalApplication);
   }
 
@@ -33,9 +33,9 @@ class UserScanResultsScreen extends StatelessWidget {
         appBar: AppBarWithLogo(
           loginFunction: loginWithMetaMask,
           text: context.loc.tapResults,
-          connectedWallet: connector!.session?.accounts!.isEmpty == true
+          connectedWallet: connector?.session?.accounts!.isEmpty == true
               ? null
-              : connector!.session?.accounts![0].toLowerCase(),
+              : connector?.session?.accounts![0].toLowerCase(),
         ),
         body: SafeArea(
             child: Center(
@@ -107,14 +107,14 @@ class UserScanResultsScreen extends StatelessWidget {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          connector!.session.accounts.isEmpty
+                          connector.session.accounts.isEmpty
                               ? //no wallet connected
                               const Icon(
                                   Icons.warning,
                                   color: Colors.orange,
                                   size: 44,
                                 )
-                              : connector!.session.accounts[0].toLowerCase() ==
+                              : connector?.session.accounts[0].toLowerCase() ==
                                       navArgs.nftOwner
                                   ? //you are the owner
                                   const Icon(
@@ -137,14 +137,14 @@ class UserScanResultsScreen extends StatelessWidget {
                         Text('${context.loc.checkOwner}: ',
                             style: const TextStyle(fontSize: 18)),
                         const SizedBox(height: 15),
-                        connector!.session.accounts.isEmpty
+                        connector.session.accounts.isEmpty
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(context.loc.noWalletConnected,
                                       style: TextStyle(fontSize: 14)),
                                   const SizedBox(height: 3),
-                                  connector!.session!.accounts!.isEmpty
+                                  connector.session!.accounts!.isEmpty
                                       ? OutlinedButton(
                                           onPressed: (() => {
                                                 loginWithMetaMask!(context),
@@ -154,7 +154,7 @@ class UserScanResultsScreen extends StatelessWidget {
                                       : Container()
                                 ],
                               )
-                            : connector!.session.accounts[0].toLowerCase() ==
+                            : connector?.session.accounts[0].toLowerCase() ==
                                     navArgs.nftOwner
                                 ? Column(
                                     crossAxisAlignment:

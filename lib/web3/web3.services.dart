@@ -36,7 +36,7 @@ String makeBurnTransactionData(Uint8List cardId) {
   return burnTransactionData;
 }
 
-dynamic makeBurnParams(String from, String to, Uint8List cardId,
+dynamic makeBurnParams(String? from, String to, Uint8List cardId,
     {String? gasPrice}) {
   String data = makeBurnTransactionData(cardId);
   final params = [

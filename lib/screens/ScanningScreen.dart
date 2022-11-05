@@ -132,9 +132,9 @@ class _ScanningScreen extends State<ScanningScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBarWithLogo(
-        connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
+        connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
             ? null
-            : widget.connector!.session?.accounts![0].toLowerCase(),
+            : widget.connector?.session?.accounts![0].toLowerCase(),
         loginFunction: widget.loginWithMetaMask,
         text: navArgs.scanningTitle,
       ),

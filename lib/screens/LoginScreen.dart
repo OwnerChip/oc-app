@@ -12,10 +12,10 @@ import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key, this.connector, this.loginWithMetaMask})
+  const LoginScreen({Key? key, required this.connector, this.loginWithMetaMask})
       : super(key: key);
 
-  final WalletConnect? connector;
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/login';
@@ -32,9 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBarWithLogo(
         text: 'OwnerChip Admin',
         loginFunction: widget.loginWithMetaMask,
-        connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
+        connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
             ? null
-            : widget.connector!.session?.accounts![0].toLowerCase(),
+            : widget.connector?.session?.accounts![0].toLowerCase(),
       ),
       body: SafeArea(
           child: Center(
@@ -94,6 +94,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 onPressed: () => {launchUrl(generateLandingPageUrl())},
                 child: Text(context.loc.moreInfo),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: SizedBox(
+              width: 200,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey, // background
+                ),
+                onPressed: () => {
+                  widget.connector.killSession(),
+                  widget.connector.sessionStorage?.removeSession()
+                },
+                child: Text('Disconnect wallet'),
               ),
             ),
           ),

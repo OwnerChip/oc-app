@@ -26,9 +26,10 @@ import '../widgets/ChipInfo.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
-  const MetadataScreen({super.key, this.connector, this.loginWithMetaMask});
+  const MetadataScreen(
+      {super.key, required this.connector, this.loginWithMetaMask});
 
-  final WalletConnect? connector;
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/metadata-input';
@@ -79,7 +80,7 @@ class _MetadataScreen extends State<MetadataScreen> {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
 
-    String walletAddress = widget.connector!.session.accounts[0].toLowerCase();
+    String walletAddress = widget.connector.session.accounts[0].toLowerCase();
 
     // upload image to ipfs
     String imageCid;
@@ -105,9 +106,9 @@ class _MetadataScreen extends State<MetadataScreen> {
     //TODO: transaction does not always pop up in Metamask!
     try {
       //metamask interaction
-      await launchUrlString(widget.connector!.session.toUri(),
+      await launchUrlString(widget.connector.session.toUri(),
           mode: LaunchMode.externalApplication);
-      var txnHash = await widget.connector!.sendCustomRequest(
+      var txnHash = await widget.connector?.sendCustomRequest(
           method: 'eth_sendTransaction', params: mintParams, id: 1337);
 
       setState(() {
@@ -154,9 +155,9 @@ class _MetadataScreen extends State<MetadataScreen> {
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
           text: context.loc.initializeChip + ' (2/3)',
-          connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
-              : widget.connector!.session?.accounts![0].toLowerCase(),
+              : widget.connector?.session?.accounts![0].toLowerCase(),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
