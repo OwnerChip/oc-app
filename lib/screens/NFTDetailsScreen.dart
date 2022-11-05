@@ -17,8 +17,9 @@ import '../web3/web3.services.dart';
 import '../utils/url_generator.service.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
-  const NFTDetailsScreen({super.key, this.connector, this.loginWithMetaMask});
-  final WalletConnect? connector;
+  const NFTDetailsScreen(
+      {super.key, required this.connector, this.loginWithMetaMask});
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/nft-details';
@@ -93,6 +94,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
           connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
               : widget.connector?.session?.accounts![0].toLowerCase(),
+          connector: widget.connector,
         ),
         body: SafeArea(
             child: Row(children: [

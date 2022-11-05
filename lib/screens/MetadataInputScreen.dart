@@ -106,10 +106,11 @@ class _MetadataScreen extends State<MetadataScreen> {
     //TODO: transaction does not always pop up in Metamask!
     try {
       //metamask interaction
-      await launchUrlString(widget.connector.session.toUri(),
-          mode: LaunchMode.externalApplication);
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector?.sendCustomRequest(
-          method: 'eth_sendTransaction', params: mintParams, id: 1337);
+          method: 'eth_sendTransaction',
+          params: mintParams,
+          id: makeRandomInt());
 
       setState(() {
         loadingText = context.loc.mintingToken + '...';
@@ -158,6 +159,7 @@ class _MetadataScreen extends State<MetadataScreen> {
           connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
               : widget.connector?.session?.accounts![0].toLowerCase(),
+          connector: widget.connector,
         ),
         body: SafeArea(
           child: SingleChildScrollView(

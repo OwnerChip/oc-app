@@ -19,8 +19,7 @@ class UserScanResultsScreen extends StatelessWidget {
   static const routeName = '/user-scan-results';
 
   Future<void> launchWallet() async {
-    await launchUrlString(connector.session.toUri(),
-        mode: LaunchMode.externalApplication);
+    await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -36,6 +35,7 @@ class UserScanResultsScreen extends StatelessWidget {
           connectedWallet: connector?.session?.accounts!.isEmpty == true
               ? null
               : connector?.session?.accounts![0].toLowerCase(),
+          connector: connector,
         ),
         body: SafeArea(
             child: Center(

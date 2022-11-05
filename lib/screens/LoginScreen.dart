@@ -35,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
         connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
             ? null
             : widget.connector?.session?.accounts![0].toLowerCase(),
+        connector: widget.connector,
       ),
       body: SafeArea(
           child: Center(
@@ -94,23 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 onPressed: () => {launchUrl(generateLandingPageUrl())},
                 child: Text(context.loc.moreInfo),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey, // background
-                ),
-                onPressed: () => {
-                  widget.connector.killSession(),
-                  widget.connector.sessionStorage?.removeSession()
-                },
-                child: Text('Disconnect wallet'),
               ),
             ),
           ),

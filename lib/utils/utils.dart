@@ -1,5 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/crypto.dart';
+import 'dart:math';
+
+//generates random integer between 0 and 2^32
+int makeRandomInt() {
+  return Random().nextInt(4294967296);
+}
 
 String makeHexFromUint8List(Iterable list) {
   print("from public key from uint list");

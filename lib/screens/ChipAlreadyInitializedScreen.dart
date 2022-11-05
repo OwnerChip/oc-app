@@ -46,10 +46,11 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       var burnParams = makeBurnParams(
           widget.connector?.session!.accounts[0], contractAddress!, tokenId);
 
-      await launchUrlString(widget.connector.session.toUri(),
-          mode: LaunchMode.externalApplication);
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector?.sendCustomRequest(
-          method: 'eth_sendTransaction', params: burnParams, id: 1338);
+          method: 'eth_sendTransaction',
+          params: burnParams,
+          id: makeRandomInt());
 
       var txnReceipt = await getTxnReceipt(txnHash);
       if (txnReceipt?.status == true) {
@@ -91,6 +92,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
           connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
               : widget.connector?.session?.accounts![0].toLowerCase(),
+          connector: widget.connector,
         ),
         body: SafeArea(
             child: Center(

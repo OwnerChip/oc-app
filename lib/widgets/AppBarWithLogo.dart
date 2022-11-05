@@ -1,16 +1,19 @@
 //boilerplate for stateless widget
 import 'package:flutter/material.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 class AppBarWithLogo extends StatelessWidget with PreferredSizeWidget {
   const AppBarWithLogo(
       {Key? key,
       required this.text,
       required this.loginFunction,
-      required this.connectedWallet})
+      required this.connectedWallet,
+      required this.connector})
       : super(key: key);
   final String text;
   final dynamic loginFunction;
   final String? connectedWallet;
+  final WalletConnect connector;
   //necessary to use as appbar because flutter?!
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
@@ -43,7 +46,12 @@ class AppBarWithLogo extends StatelessWidget with PreferredSizeWidget {
                   onPressed: () => loginFunction(context),
                   iconSize: 36,
                 )
-              : Container(),
+              : IconButton(
+                  icon: const Icon(Icons.logout),
+                  color: Colors.black,
+                  onPressed: () => connector.killSession(),
+                  iconSize: 36,
+                ),
         ],
       ),
       titleTextStyle: const TextStyle(

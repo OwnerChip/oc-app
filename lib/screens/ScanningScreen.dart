@@ -23,9 +23,10 @@ import '../widgets/AppBarWithLogo.dart';
 import '../widgets/ScanningLoader.dart';
 
 class ScanningScreen extends StatefulWidget {
-  const ScanningScreen({super.key, this.connector, this.loginWithMetaMask});
+  const ScanningScreen(
+      {super.key, required this.connector, this.loginWithMetaMask});
 
-  final WalletConnect? connector;
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/scanning';
@@ -137,6 +138,7 @@ class _ScanningScreen extends State<ScanningScreen> {
             : widget.connector?.session?.accounts![0].toLowerCase(),
         loginFunction: widget.loginWithMetaMask,
         text: navArgs.scanningTitle,
+        connector: widget.connector,
       ),
       body: SafeArea(
           child: Center(
