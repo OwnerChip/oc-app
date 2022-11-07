@@ -27,8 +27,10 @@ class ChipAlreadyInitializedScreenArguments {
 class ChipInitializedArguments {
   final Uint8List tokenId;
   final String chipWalletAddress;
+  final Uint8List signature;
 
-  ChipInitializedArguments(this.tokenId, this.chipWalletAddress);
+  ChipInitializedArguments(
+      this.tokenId, this.chipWalletAddress, this.signature);
 }
 
 class NFTDetailsScreenArguments {

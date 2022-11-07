@@ -73,12 +73,12 @@ class _MetadataScreen extends State<MetadataScreen> {
   void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
     setState(() {
       loading = true;
-      loadingText = context.loc.uploadingMetadata + '...';
+      loadingText = "${context.loc.uploadingMetadata} ...";
       success = false;
     });
 
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as ChipAlreadyInitializedScreenArguments;
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
     String walletAddress = widget.connector.session.accounts[0].toLowerCase();
 
@@ -100,12 +100,9 @@ class _MetadataScreen extends State<MetadataScreen> {
     String cid = await uploadFileToIPFS(jsonFile, 'application/json');
     String fullUri = "ipfs://$cid";
 
-    //TODO: implement
-    Uint8List signature = extractSignature("x", tokenId);
-
     // generate mint parameters
-    var mintParams = makeMintParams(
-        walletAddress, dotenv.get('CONTRACT_ADDRESS'), fullUri, signature);
+    var mintParams = makeMintParams(walletAddress,
+        dotenv.get('CONTRACT_ADDRESS'), fullUri, navArgs.signature);
 
     // metamask interaction
     await launchUrlString(widget.connector!.session.toUri(),
@@ -121,7 +118,7 @@ class _MetadataScreen extends State<MetadataScreen> {
           id: makeRandomInt());
 
       setState(() {
-        loadingText = context.loc.mintingToken + '...';
+        loadingText = '${context.loc.mintingToken} ...';
       });
 
       var txnReceipt = await getTxnReceipt(txnHash);
@@ -134,8 +131,8 @@ class _MetadataScreen extends State<MetadataScreen> {
 
         // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(widget.loginWithMetaMask,
-                bytesToInt(navArgs.cardId), navArgs.chipWalletAddress));
+            arguments: NFTDetailsScreenArguments(
+                bytesToInt(navArgs.tokenId), navArgs.chipWalletAddress));
       } else {
         throw Exception('Transaction failed');
       }
@@ -163,7 +160,7 @@ class _MetadataScreen extends State<MetadataScreen> {
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
-          text: context.loc.initializeChip + ' (2/3)',
+          text: '${context.loc.initializeChip} (2/3)',
           connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
               : widget.connector?.session?.accounts![0].toLowerCase(),
@@ -175,7 +172,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                   padding: EdgeInsets.all(15.0),
                   child: Column(children: [
                     ChipInfo(
-                        tokenId: bytesToInt(navArgs.cardId),
+                        tokenId: bytesToInt(navArgs.tokenId),
                         chipName: 'Secora Infineon',
                         walletAddress: navArgs.chipWalletAddress),
                     SizedBox(height: 20),

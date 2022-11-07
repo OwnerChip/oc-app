@@ -87,5 +87,5 @@ Uint8List extractSignature(pubkey, Uint8List signatureResponse) {
   String s = signature.substring(0, sLength);
 
   String res = '${hexToInt(r)}${hexToInt(s)}';
-  return res;
+  return signatureResponse; //TODO
 }
