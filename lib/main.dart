@@ -7,11 +7,11 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
 
 //screens and widgets
 import 'screens/LoginScreen.dart';
-import 'screens/HomeScreen.dart';
 import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
@@ -37,53 +37,70 @@ void main(List<String> args) async {
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
-  //check if web3 session exists and set initialRoute accordingly
-  String initialRoute =
-      (await WalletConnectSecureStorage().getSession() == null)
-          ? LoginScreen.routeName
-          : HomeScreen.routeName;
+  //set initialRoute accordingly
+  String initialRoute = LoginScreen.routeName;
+
+  //create wallet connector function
+  Future<WalletConnect> createWalletConnector() async {
+    WalletConnectSecureStorage sessionStorage = WalletConnectSecureStorage();
+    WalletConnectSession? session = await sessionStorage.getSession();
+
+    return WalletConnect(
+        bridge: 'https://bridge.walletconnect.org',
+        session: session,
+        sessionStorage: sessionStorage,
+        clientMeta: const PeerMeta(
+            name: 'OwnerChip Demo',
+            description: 'Connecting physical objects to the blockchain.',
+            url: 'https://walletconnect.org',
+            icons: ["assets/images/oc_logo.png"]));
+  }
+
+  //create connector
+  WalletConnect connector = await createWalletConnector();
 
   runApp(
       //wrapper to enable app restarts
-      RestartWidget(child: MyApp(initialRoute: initialRoute)));
+      RestartWidget(
+          child: MyApp(
+              initialRoute: initialRoute,
+              connector: connector,
+              createWalletConnector: createWalletConnector)));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key, required this.initialRoute}) : super(key: key);
+  const MyApp(
+      {Key? key,
+      required this.initialRoute,
+      required this.connector,
+      required this.createWalletConnector})
+      : super(key: key);
 
   final String initialRoute;
+  final WalletConnect connector;
+  final Function createWalletConnector;
 
   @override
   State<MyApp> createState() => _MyApp();
 }
 
 class _MyApp extends State<MyApp> {
-  var sessionData;
-  SessionStatus? _session;
-
-  var connector = WalletConnect(
+  //has to be initialized with WC instance
+  WalletConnect connector = WalletConnect(
       bridge: 'https://bridge.walletconnect.org',
       clientMeta: const PeerMeta(
           name: 'OwnerChip Demo',
-          description: 'Connecting physical goods to the blockchain.',
+          description: 'Connecting physical objects to the blockchain.',
           url: 'https://walletconnect.org',
-          icons: ["assets/images/walletconnect.png"]));
+          icons: ["assets/images/oc_logo.png"]));
 
-  Future initWalletConnect() async {
-    final sessionStorage = WalletConnectSecureStorage();
-    final session = await sessionStorage.getSession();
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
 
-    //overwrite connector if session exists
+    var asdf = await widget.createWalletConnector();
     setState(() {
-      connector = WalletConnect(
-          bridge: 'https://bridge.walletconnect.org',
-          session: session,
-          sessionStorage: sessionStorage,
-          clientMeta: const PeerMeta(
-              name: 'OwnerChip Demo',
-              description: 'Connecting physical goods to the blockchain.',
-              url: 'https://walletconnect.org',
-              icons: ["assets/images/walletconnect.png"]));
+      connector = asdf;
     });
   }
 
@@ -91,14 +108,16 @@ class _MyApp extends State<MyApp> {
     if (!connector.connected) {
       try {
         var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: '1'));
-        var session = await connector.createSession(
+        var sessionStatus = await connector.createSession(
             chainId: chainId,
             onDisplayUri: (uri) async {
               await launchUrlString(uri, mode: LaunchMode.externalApplication);
             });
-        setState(() {
-          _session = session;
-        });
+
+        //save session
+        connector.sessionStorage?.store(connector.session);
+
+        //TODO: Test without this code: I think this piece of code is needed but unsure why
         if (!mounted) {
           return;
         }
@@ -110,44 +129,45 @@ class _MyApp extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    connector!.on(
+    connector.on(
         'connect',
         (payload) => {
+              //setstate to rerender app and show wallet icon in appbar correctly
+              setState(
+                () => {},
+              )
               //TODO: check what kind of payload is returned here and if sessionData state is necessary
-              setState(() {
-                sessionData = payload;
-              })
             });
 
-    connector!.on(
+    connector.on(
         'session_update',
         (payload) => {
               //TODO: check what kind of payload is returned here and if sessionData state is necessary
               print("session updated: $payload"),
-              setState(() {
-                sessionData = payload;
-              })
             });
-    connector!.on(
+    connector.on(
         'disconnect',
         (payload) => {
               //TODO: check what kind of payload is returned here
               //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
               RestartWidget.restartApp(context),
-              NfcManager.instance.stopSession()
+              NfcManager.instance.stopSession(),
+              // connector.sessionStorage?.removeSession(),
+              //setstate to rerender app and show wallet icon in appbar correctly
+              setState(
+                () => {},
+              )
             });
 
     return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: HomeScreen(connector: connector),
       initialRoute: widget.initialRoute,
       routes: {
         LoginScreen.routeName: (context) => LoginScreen(
               connector: connector,
               loginWithMetaMask: loginWithMetaMask,
             ),
-        HomeScreen.routeName: (context) => HomeScreen(connector: connector),
         ScanningScreen.routeName: (context) => ScanningScreen(
             connector: connector, loginWithMetaMask: loginWithMetaMask),
         ChipAlreadyInitializedScreen.routeName: (context) =>

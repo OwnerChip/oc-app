@@ -8,18 +8,18 @@ import '../utils/localization.helper.dart';
 import 'NFTDetailsScreen.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
+import '../widgets/ChipInfo.dart';
 
 class UserScanResultsScreen extends StatelessWidget {
   const UserScanResultsScreen(
-      {super.key, this.connector, this.loginWithMetaMask});
-  final WalletConnect? connector;
+      {super.key, required this.connector, this.loginWithMetaMask});
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/user-scan-results';
 
   Future<void> launchWallet() async {
-    await launchUrlString(connector!.session.toUri(),
-        mode: LaunchMode.externalApplication);
+    await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -32,9 +32,10 @@ class UserScanResultsScreen extends StatelessWidget {
         appBar: AppBarWithLogo(
           loginFunction: loginWithMetaMask,
           text: context.loc.tapResults,
-          connectedWallet: connector!.session?.accounts!.isEmpty == true
+          connectedWallet: connector?.session?.accounts!.isEmpty == true
               ? null
-              : connector!.session?.accounts![0].toLowerCase(),
+              : connector?.session?.accounts![0].toLowerCase(),
+          connector: connector,
         ),
         body: SafeArea(
             child: Center(
@@ -72,33 +73,10 @@ class UserScanResultsScreen extends StatelessWidget {
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Chip: Infineon Secora',
-                                      style: TextStyle(fontSize: 14)),
-                                  Text('ID: ${navArgs.tokenId}',
-                                      style: TextStyle(fontSize: 14)),
-                                  //display first 5 characters of wallet address as Text
-                                  Row(
-                                    children: [
-                                      Text(
-                                          'Chip Wallet: ${navArgs.chipWalletAddress.substring(0, 5)}...',
-                                          style: TextStyle(fontSize: 14)),
-                                      //icon that copies navargs.nftowner to clipboard
-                                      IconButton(
-                                          padding: EdgeInsets.zero,
-                                          constraints: BoxConstraints(),
-                                          iconSize: 20,
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(
-                                                text:
-                                                    navArgs.chipWalletAddress));
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(SnackBar(
-                                                    content: Text(context
-                                                        .loc.addressCopied)));
-                                          },
-                                          icon: const Icon(Icons.copy))
-                                    ],
-                                  ),
+                                  ChipInfo(
+                                      tokenId: navArgs.tokenId,
+                                      chipName: 'Secora Infineon',
+                                      walletAddress: navArgs.chipWalletAddress),
                                   //button that navigates to nft details screen
                                   OutlinedButton(
                                       onPressed: () {
@@ -128,14 +106,14 @@ class UserScanResultsScreen extends StatelessWidget {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          connector!.session.accounts.isEmpty
+                          connector.session.accounts.isEmpty
                               ? //no wallet connected
                               const Icon(
                                   Icons.warning,
                                   color: Colors.orange,
                                   size: 44,
                                 )
-                              : connector!.session.accounts[0].toLowerCase() ==
+                              : connector?.session.accounts[0].toLowerCase() ==
                                       navArgs.nftOwner
                                   ? //you are the owner
                                   const Icon(
@@ -158,14 +136,14 @@ class UserScanResultsScreen extends StatelessWidget {
                         Text('${context.loc.checkOwner}: ',
                             style: const TextStyle(fontSize: 18)),
                         const SizedBox(height: 15),
-                        connector!.session.accounts.isEmpty
+                        connector.session.accounts.isEmpty
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(context.loc.noWalletConnected,
                                       style: TextStyle(fontSize: 14)),
                                   const SizedBox(height: 3),
-                                  connector!.session!.accounts!.isEmpty
+                                  connector.session!.accounts!.isEmpty
                                       ? OutlinedButton(
                                           onPressed: (() => {
                                                 loginWithMetaMask!(context),
@@ -175,7 +153,7 @@ class UserScanResultsScreen extends StatelessWidget {
                                       : Container()
                                 ],
                               )
-                            : connector!.session.accounts[0].toLowerCase() ==
+                            : connector?.session.accounts[0].toLowerCase() ==
                                     navArgs.nftOwner
                                 ? Column(
                                     crossAxisAlignment:

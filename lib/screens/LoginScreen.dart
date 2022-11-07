@@ -12,10 +12,10 @@ import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key, this.connector, this.loginWithMetaMask})
+  const LoginScreen({Key? key, required this.connector, this.loginWithMetaMask})
       : super(key: key);
 
-  final WalletConnect? connector;
+  final WalletConnect connector;
   final Function? loginWithMetaMask;
 
   static const routeName = '/login';
@@ -32,26 +32,14 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBarWithLogo(
         text: 'OwnerChip Admin',
         loginFunction: widget.loginWithMetaMask,
-        connectedWallet: widget.connector!.session?.accounts!.isEmpty == true
+        connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
             ? null
-            : widget.connector!.session?.accounts![0].toLowerCase(),
+            : widget.connector?.session?.accounts![0].toLowerCase(),
+        connector: widget.connector,
       ),
       body: SafeArea(
           child: Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          widget.connector!.connected
-              ? Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: 200,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/home'),
-                      child: Text(context.loc.allFunctions),
-                    ),
-                  ),
-                )
-              : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(

@@ -51,5 +51,8 @@
     "connectWallet": "Connect Wallet",
     "openWalletToView": "Open wallet to view NFT",
     "noNftInWallet": "There is no ownership NFT in your wallet.",
-    "nftCheck": "NFT check"
+    "nftCheck": "NFT check",
+    "uploadingMetadata": "Uploading metadata",
+    "mintingToken": "Minting token",
+    "pleaseEnterText": "Please inter text"
 }

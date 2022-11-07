@@ -1,5 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/crypto.dart';
+import 'dart:math';
+
+//generates random integer between 0 and 2^32
+int makeRandomInt() {
+  return Random().nextInt(4294967296);
+}
 
 String makeHexFromUint8List(Iterable list) {
   print("from public key from uint list");
@@ -10,15 +16,6 @@ String makeHexFromUint8List(Iterable list) {
   });
   print("public key: ${concatenate.toString()}");
   return concatenate.toString();
-}
-
-int convertUint8ListToDecimal(Uint8List uintList) {
-  int decimalValue = 0;
-  for (int i = uintList.length - 1; i >= 0; i--) {
-    decimalValue = decimalValue << 8; // shift everything one byte to the left
-    decimalValue = decimalValue | uintList[i]; // bitwise or operation
-  }
-  return decimalValue;
 }
 
 BigInt concatenateUint8List(Uint8List uintList) {
