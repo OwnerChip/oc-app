@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:typed_data';
 import 'dart:io';
@@ -65,6 +66,22 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     }
   }
 
+  Future<void> _addNftToMetamask(String tokenId) async {
+    try {
+      await widget.connector.sendCustomRequest(
+          method: 'wallet_watchAsset',
+          params: [
+            'ERC721',
+            dotenv.get("CONTRACT_ADDRESS"),
+            "OC",
+            0,
+            imagePath
+          ]);
+    } catch (error) {
+      print(error);
+    }
+  }
+
   @override
   void didChangeDependencies() {
     final NFTDetailsScreenArguments navArgs =
@@ -118,7 +135,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                             fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
                     if (metadata['title'] != null)
-                      Text(context.loc.itemName + ': ${metadata['title']}',
+                      Text(context.loc.itemName + ': ${metadata['name']}',
                           style: TextStyle(fontSize: 20)),
                     SizedBox(height: 20),
                     if (metadata['description'] != null)
@@ -136,6 +153,16 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                               navArgs.tokenId.toString()))
                         },
                         child: Text(context.loc.showOnExplorer),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            {_addNftToMetamask(navArgs.tokenId.toString())},
+                        child: Text(context.loc.showNftInWallet),
                       ),
                     ),
                     const SizedBox(height: 15),

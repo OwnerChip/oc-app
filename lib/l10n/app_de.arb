@@ -54,5 +54,6 @@
     "nftCheck": "NFT Überprüfung",
     "uploadingMetadata": "Metadaten hochladen",
     "mintingToken": "Minting token",
-    "pleaseEnterText": "Bitte Text eingeben"
+    "pleaseEnterText": "Bitte Text eingeben",
+    "showNftInWallet": "NFT in Wallet ansehen"
 }

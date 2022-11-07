@@ -181,7 +181,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                 hintText: 'Title',
                               ),
                               onChanged: (text) {
-                                metadata['title'] = text;
+                                metadata['name'] = text;
                               },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
