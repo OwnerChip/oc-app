@@ -160,6 +160,18 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                       width: 200,
                       height: 50,
                       child: ElevatedButton(
+                        onPressed: () => {
+                          launchUrl(generateOpenSeaTokenDetailsUrl(
+                              navArgs.tokenId.toString()))
+                        },
+                        child: Text(context.loc.showOnOpenSea),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
                         onPressed: () =>
                             {_addNftToMetamask(navArgs.tokenId.toString())},
                         child: Text(context.loc.showNftInWallet),
