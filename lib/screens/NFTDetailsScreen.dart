@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:typed_data';
 import 'dart:io';
 import '../utils/localization.helper.dart';
@@ -31,6 +33,7 @@ class NFTDetailsScreen extends StatefulWidget {
 class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   String statusText = "";
   String imagePath = "";
+  String imageUri = "";
   Map<String, String> metadata = {};
 
   Future<void> _fetchResults(tokenId) async {
@@ -51,17 +54,30 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       // fetch image if set in metadata
       if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
         String imageCid = getCidFromIpfsLink(metadata['image']!);
-        imagePath = await downloadImageFileFromIPFS(imageCid);
+        Map<String, String> result = await downloadImageFileFromIPFS(imageCid);
+        imagePath = result['imagePath']!;
+        imageUri = result['imageUri']!;
 
         // updateScreen
         statusText = context.loc.itemData;
         setState(() {
           imagePath;
-          statusText;
+          statusText = "";
         });
       }
     } catch (e) {
       print("error $e");
+    }
+  }
+
+  Future<void> _addNftToMetamask(String tokenId) async {
+    try {
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+      // TODO: nothing happens yet ?!
+      await widget.connector?.sendCustomRequest(
+          method: 'wallet_watchAsset', params: makeWatchAssetParams(imageUri));
+    } catch (error) {
+      print(error);
     }
   }
 
@@ -82,9 +98,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
 
-    setState(() {
-      statusText = context.loc.loadingData + " ...";
-    });
+    statusText = "${context.loc.loadingData}";
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -113,20 +127,23 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         width: 200,
                       ),
                     if (imagePath == "") const SizedBox(height: 50),
-                    Text(statusText,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    if (imagePath == "")
+                      Text(statusText,
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
-                    if (metadata['title'] != null)
-                      Text(context.loc.itemName + ': ${metadata['title']}',
-                          style: TextStyle(fontSize: 20)),
+                    if (metadata['name'] != null)
+                      Text(/*context.loc.itemName + */ '${metadata['name']}',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
                     SizedBox(height: 20),
                     if (metadata['description'] != null)
                       Text(
-                          context.loc.itemDescription +
-                              ': ${metadata['description']}',
+                          /*context.loc.itemDescription +
+                              */
+                          '${metadata['description']}',
                           style: TextStyle(fontSize: 20)),
-                    const SizedBox(height: 120),
+                    const SizedBox(height: 50),
                     SizedBox(
                       width: 200,
                       height: 50,
@@ -136,6 +153,31 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                               navArgs.tokenId.toString()))
                         },
                         child: Text(context.loc.showOnExplorer),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () => {
+                          launchUrl(generateOpenSeaTokenDetailsUrl(
+                              navArgs.tokenId.toString()))
+                        },
+                        child: Text(context.loc.showOnOpenSea),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: () =>
+                            {_addNftToMetamask(navArgs.tokenId.toString())},
+                        child: Text(context.loc.showNftInWallet),
                       ),
                     ),
                     const SizedBox(height: 15),

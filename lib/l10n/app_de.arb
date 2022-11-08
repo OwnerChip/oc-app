@@ -27,7 +27,7 @@
     "itemDescription": "Beschreibung",
     "nftDetails": "NFT Details",
     "itemData": "Gespeicherte Daten",
-    "loadingData": "lade Daten",
+    "loadingData": "NFT Daten werden von IPFS geladen. \nBitte um wenige Augenblicke Geduld.",
     "tapItem": "Gegenstand berühren",
     "searchChip": "Suche nach NFC Chip",
     "scanHint": "Halten Sie Ihr Smartphone näher an den Chip.",
@@ -55,5 +55,6 @@
     "uploadingMetadata": "Metadaten hochladen",
     "mintingToken": "Minting token",
     "pleaseEnterText": "Bitte Text eingeben",
-    "warning": "Achtung"
+    "warning": "Achtung",
+    "showNftInWallet": "NFT in Wallet ansehen"
 }
