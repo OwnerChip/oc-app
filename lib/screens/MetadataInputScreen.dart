@@ -73,7 +73,7 @@ class _MetadataScreen extends State<MetadataScreen> {
   void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
     setState(() {
       loading = true;
-      loadingText = context.loc.uploadingMetadata + '...';
+      loadingText = '${context.loc.uploadingMetadata} ...';
       success = false;
     });
 
@@ -98,6 +98,7 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     // upload metadata json to ipfs
     String cid = await uploadFileToIPFS(jsonFile, 'application/json');
+    print("CID: $cid");
 
     // generate mint parameters
     var mintParams = makeMintParams(walletAddress,
@@ -113,7 +114,7 @@ class _MetadataScreen extends State<MetadataScreen> {
           id: makeRandomInt());
 
       setState(() {
-        loadingText = context.loc.mintingToken + '...';
+        loadingText = '${context.loc.mintingToken} ...';
       });
 
       var txnReceipt = await getTxnReceipt(txnHash);
@@ -155,7 +156,7 @@ class _MetadataScreen extends State<MetadataScreen> {
         extendBodyBehindAppBar: true,
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
-          text: context.loc.initializeChip + ' (2/3)',
+          text: '${context.loc.initializeChip} (2/3)',
           connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
               ? null
               : widget.connector?.session?.accounts![0].toLowerCase(),
@@ -177,8 +178,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                           children: [
                             TextFormField(
                               controller: _titleController,
-                              decoration: const InputDecoration(
-                                hintText: 'Title',
+                              decoration: InputDecoration(
+                                hintText: context.loc.title,
                               ),
                               onChanged: (text) {
                                 metadata['name'] = text;
@@ -195,8 +196,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                               maxLines: 2,
                               keyboardType: TextInputType.multiline,
                               controller: _descriptionController,
-                              decoration: const InputDecoration(
-                                hintText: 'Description',
+                              decoration: InputDecoration(
+                                hintText: context.loc.description,
                               ),
                               onChanged: (text) {
                                 metadata['description'] = text;

@@ -27,7 +27,7 @@
     "itemDescription": "Item description",
     "nftDetails": "NFT Details",
     "itemData": "Item Data",
-    "loadingData": "loading data",
+    "loadingData": "Loading NFT data from IPFS. \nThis can take a few seconds.",
     "tapItem": "Tap an item",
     "searchChip": "searching for NFC chip",
     "scanHint": "Place your phone close to the chip.",

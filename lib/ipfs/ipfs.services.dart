@@ -73,7 +73,7 @@ Future downloadFileFromIPFS(String cid, String savePath) async {
 }
 
 /// download an image file from IPFS and return file path
-Future<String> downloadImageFileFromIPFS(String cid) async {
+Future<Map<String, String>> downloadImageFileFromIPFS(String cid) async {
   try {
     // get filename
     var ipfs_api = getIpfsGatewayClient(true);
@@ -103,10 +103,12 @@ Future<String> downloadImageFileFromIPFS(String cid) async {
             return status! < 500;
           }),
     );
-    return imagePath;
+    String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid/$filename";
+    Map<String, String> result = {"imagePath": imagePath, "imageUri": imageUri};
+    return result;
   } catch (e) {
     print("ERROR while downloading from IPFS...");
     print(e);
-    return "";
+    return {};
   }
 }
