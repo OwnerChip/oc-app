@@ -20,9 +20,9 @@
     "alreadyLinked": "Dieser Chip ist bereits mit einem NFT verknüpft.",
     "cancel": "abbrechen",
     "allFunctions": "Alle Funktionen",
-    "burnAndMint": "Token burnen und neu erstellen",
-    "showOnExplorer": "Im Blockchain Explorer ansehen",
-    "showOnOpenSea": "Auf Open Sea ansehen",
+    "burnAndMint": "Burnen & neu minten",
+    "showOnExplorer": "Blockchain Explorer",
+    "showOnOpenSea": "Auf OpenSea ansehen",
     "itemName": "Name",
     "itemDescription": "Beschreibung",
     "nftDetails": "NFT Details",
@@ -54,5 +54,6 @@
     "nftCheck": "NFT Überprüfung",
     "uploadingMetadata": "Metadaten hochladen",
     "mintingToken": "Minting token",
-    "pleaseEnterText": "Bitte Text eingeben"
+    "pleaseEnterText": "Bitte Text eingeben",
+    "warning": "Achtung"
 }

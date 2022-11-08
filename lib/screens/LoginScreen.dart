@@ -40,62 +40,56 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
           child: Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              width: 200,
-              height: 150,
-              child: ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(
-                      context, ScanningScreen.routeName,
-                      arguments: ScanningScreenArguments(
-                          '', "${context.loc.initializeChip} (1/3)")),
-                  //TODO: Do i need to pass empty string first argument here?
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.auto_fix_high, size: 50),
-                      SizedBox(height: 10),
-                      Text(context.loc.initializeChip),
-                    ],
-                  )),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              width: 200,
-              height: 150,
-              child: ElevatedButton(
+          SizedBox(
+            width: 200,
+            height: 150,
+            child: ElevatedButton(
                 onPressed: () => Navigator.pushNamed(
                     context, ScanningScreen.routeName,
                     arguments: ScanningScreenArguments(
-                        UserScanResultsScreen.routeName,
-                        context.loc.searchChip)),
-                child: Center(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.tap_and_play, size: 50),
-                        SizedBox(height: 10),
-                        Text(context.loc.tapItem),
-                      ]),
-                ),
+                        '', "${context.loc.initializeChip} (1/3)")),
+                //TODO: Do i need to pass empty string first argument here?
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.auto_fix_high, size: 50),
+                    SizedBox(height: 10),
+                    Text(context.loc.initializeChip),
+                  ],
+                )),
+          ),
+          SizedBox(height: 16),
+
+          SizedBox(
+            width: 200,
+            height: 150,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushNamed(
+                  context, ScanningScreen.routeName,
+                  arguments: ScanningScreenArguments(
+                      UserScanResultsScreen.routeName, context.loc.searchChip)),
+              child: Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.tap_and_play, size: 50),
+                      SizedBox(height: 10),
+                      Text(context.loc.tapItem),
+                    ]),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey, // background
-                ),
-                onPressed: () => {launchUrl(generateLandingPageUrl())},
-                child: Text(context.loc.moreInfo),
+          //spacing
+          SizedBox(height: 70),
+          SizedBox(
+            width: 200,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey, // background
               ),
+              onPressed: () => {launchUrl(generateLandingPageUrl())},
+              child: Text(context.loc.moreInfo),
             ),
           ),
         ]),

@@ -54,5 +54,7 @@
     "nftCheck": "NFT check",
     "uploadingMetadata": "Uploading metadata",
     "mintingToken": "Minting token",
-    "pleaseEnterText": "Please inter text"
+    "pleaseEnterText": "Please inter text",
+    "warning": "Warning"
+
 }

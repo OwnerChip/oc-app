@@ -110,7 +110,7 @@ class UserScanResultsScreen extends StatelessWidget {
                           connector.session.accounts.isEmpty
                               ? //no wallet connected
                               const Icon(
-                                  Icons.warning,
+                                  Icons.warning_amber_rounded,
                                   color: Colors.orange,
                                   size: 44,
                                 )
