@@ -28,7 +28,8 @@ class NFTDetailsScreenArguments {
   final Function? loginWithMetaMask;
   final BigInt? tokenId;
   final String chipWalletAddress;
+  final String? localImagePath;
 
-  NFTDetailsScreenArguments(
-      this.loginWithMetaMask, this.tokenId, this.chipWalletAddress);
+  NFTDetailsScreenArguments(this.loginWithMetaMask, this.tokenId,
+      this.chipWalletAddress, this.localImagePath);
 }

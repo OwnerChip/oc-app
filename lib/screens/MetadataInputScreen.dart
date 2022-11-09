@@ -98,7 +98,6 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     // upload metadata json to ipfs
     String cid = await uploadFileToIPFS(jsonFile, 'application/json');
-    print("CID: $cid");
 
     // generate mint parameters
     var mintParams = makeMintParams(walletAddress,
@@ -127,8 +126,11 @@ class _MetadataScreen extends State<MetadataScreen> {
 
         // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(widget.loginWithMetaMask,
-                bytesToInt(navArgs.cardId), navArgs.chipWalletAddress));
+            arguments: NFTDetailsScreenArguments(
+                widget.loginWithMetaMask,
+                bytesToInt(navArgs.cardId),
+                navArgs.chipWalletAddress,
+                image.path));
       } else {
         throw Exception('Transaction failed');
       }

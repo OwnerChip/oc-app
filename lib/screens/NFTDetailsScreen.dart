@@ -34,9 +34,11 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   String statusText = "";
   String imagePath = "";
   String imageUri = "";
-  Map<String, String> metadata = {};
+  Map<String, dynamic> metadata = {};
 
-  Future<void> _fetchResults(tokenId) async {
+  // get the metadata.json file from IPFS associated with a token
+  Future<Map<String, dynamic>> _fetchMetadata(BigInt tokenId) async {
+    Map<String, dynamic> result = {};
     try {
       // get IPFS CID
       String tokenUri = await getTokenUri(tokenId);
@@ -44,30 +46,37 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       // fetch metadata json
       String jsonCid = getCidFromIpfsLink(tokenUri);
       final Directory directory = Directory.systemTemp;
-      File jsonFile = File("${directory.path}/${jsonCid}.metadata.json");
-      await downloadFileFromIPFS(jsonCid, jsonFile.path);
+      File jsonFile = File("${directory.path}/$jsonCid.metadata.json");
+      await downloadMetadataFileFromIPFS(jsonCid, jsonFile.path, false);
 
       // read metadata json
       final String res = await jsonFile.readAsString();
-      metadata = new Map<String, String>.from(json.decode(res));
-
-      // fetch image if set in metadata
-      if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
-        String imageCid = getCidFromIpfsLink(metadata['image']!);
-        Map<String, String> result = await downloadImageFileFromIPFS(imageCid);
-        imagePath = result['imagePath']!;
-        imageUri = result['imageUri']!;
-
-        // updateScreen
-        statusText = context.loc.itemData;
-        setState(() {
-          imagePath;
-          statusText = "";
-        });
-      }
+      metadata = Map<String, dynamic>.from(json.decode(res));
+      result = metadata;
     } catch (e) {
       print("error $e");
     }
+    return result;
+  }
+
+  // get the path of the associated image locally if available OR from IPFS if not
+  Future<void> _fetchImage(
+      String imgPath, Future<Map<String, dynamic>> meta) async {
+    Map<String, dynamic> metaSync = await meta;
+    if (imgPath != "") {
+      imagePath = imgPath;
+    } else if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
+      String imageCid = getCidFromIpfsLink(metaSync['image']!);
+      Map<String, String> result = await downloadImageFileFromIPFS(imageCid);
+      imagePath = result['imagePath']!;
+      imageUri = result['imageUri']!;
+    }
+    // updateScreen
+    statusText = context.loc.itemData;
+    setState(() {
+      imagePath;
+      statusText = "";
+    });
   }
 
   Future<void> _addNftToMetamask(String tokenId) async {
@@ -85,7 +94,10 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   void didChangeDependencies() {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
-    _fetchResults(navArgs.tokenId);
+    Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
+    print(meta);
+    String imgPath = (navArgs.localImagePath) ?? "";
+    _fetchImage(imgPath, meta);
   }
 
   @override
@@ -120,6 +132,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                   children: [
                     const SizedBox(height: 20),
                     Text('Token ID: ${navArgs.tokenId}'),
+                    // IMAGE
                     if (imagePath != "")
                       Image.file(
                         File(imagePath),
@@ -132,11 +145,12 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
+                    // METADATA
                     if (metadata['name'] != null)
                       Text(/*context.loc.itemName + */ '${metadata['name']}',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     if (metadata['description'] != null)
                       Text(
                           /*context.loc.itemDescription +

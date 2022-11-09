@@ -17,6 +17,10 @@ Dio getIpfsGatewayClient(bool api) {
   }
 }
 
+Dio getAlternativeIpfsGatewayClient() {
+  return Dio(BaseOptions(baseUrl: dotenv.get('IPFS_ALTERNATIVE_GATEWAY')));
+}
+
 /// retrieve cid from IPFS link
 String getCidFromIpfsLink(String ipfsLink) {
   return ipfsLink.toString().replaceFirst(r'ipfs://', '');
@@ -26,24 +30,31 @@ String getCidFromIpfsLink(String ipfsLink) {
 Future<String> uploadFileToIPFS(XFile xfile, String fileMimeType) async {
   File file = File(xfile.path);
   String fileName = file.path.split('/').last;
-  FormData formData = FormData.fromMap({
-    "file": await MultipartFile.fromFile(file.path,
-        filename: fileName, contentType: MediaType.parse(fileMimeType)),
-  });
+  FormData formData = FormData.fromMap(
+    {
+      "file": await MultipartFile.fromFile(file.path,
+          filename: fileName, contentType: MediaType.parse(fileMimeType)),
+      "pinataMetadata": {"fileMimeType": fileMimeType}
+    },
+  );
   var ipfs = getIpfsGatewayClient(true);
-  Response response = await ipfs.post("upload/", data: formData,
-      onSendProgress: (int sent, int total) {
-    print('$sent / $total');
+  Response response = await ipfs.post(dotenv.get('IPFS_PIN_COMMAND'),
+      data: formData, onSendProgress: (int sent, int total) {
+    print('$sent / $total'); // TODO: pass to progress bar
   });
-  return response.data['value']['cid'];
+  print(response.data);
+  return response.data[dotenv.get('IPFS_CID_RESPONSE_PATH')];
 }
 
 /// download a file from IPFS
-Future downloadFileFromIPFS(String cid, String savePath) async {
+Future<void> downloadMetadataFileFromIPFS(
+    String cid, String savePath, bool retry) async {
   try {
     // get filename
-    var ipfs_api = getIpfsGatewayClient(true);
-    Response response = await ipfs_api.get(
+    var ipfs = (!retry)
+        ? getIpfsGatewayClient(false)
+        : getAlternativeIpfsGatewayClient();
+    Response response = await ipfs.get(
       cid,
       options: Options(
           responseType: ResponseType.json,
@@ -52,62 +63,38 @@ Future downloadFileFromIPFS(String cid, String savePath) async {
             return status! < 500;
           }),
     );
-    String filename = response.data['value']['files'][0]['name'];
-
-    //download content
-    final ipfs = getIpfsGatewayClient(false);
-    Response res = await ipfs.download(
-      "$cid/$filename",
-      savePath,
-      options: Options(
-          responseType: ResponseType.json,
-          followRedirects: true,
-          validateStatus: (status) {
-            return status! < 500;
-          }),
-    );
+    File metadataFile = File(savePath);
+    await metadataFile.writeAsString(json.encode(response.data), flush: true);
   } catch (e) {
-    print("ERROR while downloading from IPFS...");
-    print(e);
+    print("ERROR while downloading metadata file from IPFS: $e");
+    // RETRY using alternative IPFS gateway
+    await downloadMetadataFileFromIPFS(cid, savePath, true);
   }
 }
 
 /// download an image file from IPFS and return file path
 Future<Map<String, String>> downloadImageFileFromIPFS(String cid) async {
   try {
-    // get filename
-    var ipfs_api = getIpfsGatewayClient(true);
-    Response response = await ipfs_api.get(
+    var ipfs = getIpfsGatewayClient(false);
+    Response response = await ipfs.get(
       cid,
       options: Options(
-          responseType: ResponseType.json,
+          responseType: ResponseType.bytes,
           followRedirects: false,
           validateStatus: (status) {
             return status! < 500;
           }),
     );
-    String filename = response.data['value']['files'][0]['name'];
 
-    //download content
     final Directory directory = Directory.systemTemp;
-    final File imageFile = File("${directory.path}/${cid}.${filename}");
+    final File imageFile = File("${directory.path}/$cid");
+    await imageFile.writeAsBytes(response.data);
     final String imagePath = imageFile.path;
-    final ipfs = getIpfsGatewayClient(false);
-    Response res = await ipfs.download(
-      "$cid/$filename",
-      imagePath,
-      options: Options(
-          responseType: ResponseType.stream,
-          followRedirects: true,
-          validateStatus: (status) {
-            return status! < 500;
-          }),
-    );
-    String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid/$filename";
+    String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
     Map<String, String> result = {"imagePath": imagePath, "imageUri": imageUri};
     return result;
   } catch (e) {
-    print("ERROR while downloading from IPFS...");
+    print("ERROR while downloading image file from IPFS...");
     print(e);
     return {};
   }
