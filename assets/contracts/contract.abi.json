@@ -1,4 +1,5 @@
-[{
+[
+{
 	"inputs": [],
 	"stateMutability": "nonpayable",
 	"type": "constructor"
@@ -105,7 +106,7 @@
 		"type": "address"
 	}
 	],
-	"name": "addMember",
+	"name": "addAdmin",
 	"outputs": [],
 	"stateMutability": "nonpayable",
 	"type": "function"
@@ -187,9 +188,19 @@
 		"type": "bytes32"
 	},
 	{
-		"internalType": "bytes",
-		"name": "signature",
-		"type": "bytes"
+		"internalType": "bytes32",
+		"name": "r",
+		"type": "bytes32"
+	},
+	{
+		"internalType": "bytes32",
+		"name": "s",
+		"type": "bytes32"
+	},
+	{
+		"internalType": "uint8",
+		"name": "v",
+		"type": "uint8"
 	}
 	],
 	"name": "getSigner",
@@ -230,14 +241,29 @@
 {
 	"inputs": [
 	{
+		"internalType": "bytes32",
+		"name": "tokenIdHash",
+		"type": "bytes32"
+	},
+	{
 		"internalType": "string",
 		"name": "tokenURI",
 		"type": "string"
 	},
 	{
-		"internalType": "bytes",
-		"name": "signature",
-		"type": "bytes"
+		"internalType": "bytes32",
+		"name": "r",
+		"type": "bytes32"
+	},
+	{
+		"internalType": "bytes32",
+		"name": "s",
+		"type": "bytes32"
+	},
+	{
+		"internalType": "uint8",
+		"name": "v",
+		"type": "uint8"
 	}
 	],
 	"name": "mint",
@@ -469,14 +495,62 @@
 {
 	"inputs": [
 	{
+		"internalType": "address",
+		"name": "signer",
+		"type": "address"
+	}
+	],
+	"name": "transformAddress",
+	"outputs": [
+	{
 		"internalType": "uint256",
 		"name": "tokenId",
 		"type": "uint256"
+	}
+	],
+	"stateMutability": "pure",
+	"type": "function"
+},
+{
+	"inputs": [
+	{
+		"internalType": "uint256",
+		"name": "tokenId",
+		"type": "uint256"
+	}
+	],
+	"name": "transformToken",
+	"outputs": [
+	{
+		"internalType": "address",
+		"name": "res",
+		"type": "address"
+	}
+	],
+	"stateMutability": "pure",
+	"type": "function"
+},
+{
+	"inputs": [
+	{
+		"internalType": "address",
+		"name": "tokenId",
+		"type": "address"
 	},
 	{
-		"internalType": "bytes",
-		"name": "signature",
-		"type": "bytes"
+		"internalType": "bytes32",
+		"name": "r",
+		"type": "bytes32"
+	},
+	{
+		"internalType": "bytes32",
+		"name": "s",
+		"type": "bytes32"
+	},
+	{
+		"internalType": "uint8",
+		"name": "v",
+		"type": "uint8"
 	}
 	],
 	"name": "verifyToken",
@@ -489,4 +563,5 @@
 	],
 	"stateMutability": "pure",
 	"type": "function"
-}]
+}
+]

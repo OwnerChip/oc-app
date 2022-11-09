@@ -20,17 +20,25 @@ class UserScanResultsScreenArguments {
 class ChipAlreadyInitializedScreenArguments {
   final Uint8List tokenId;
   final String chipWalletAddress;
+  final Uint8List tokenIdHash;
+  final Uint8List r;
+  final Uint8List s;
+  final Uint8List v;
 
-  ChipAlreadyInitializedScreenArguments(this.tokenId, this.chipWalletAddress);
+  ChipAlreadyInitializedScreenArguments(this.tokenId, this.chipWalletAddress,
+      this.tokenIdHash, this.r, this.s, this.v);
 }
 
 class ChipInitializedArguments {
   final Uint8List tokenId;
   final String chipWalletAddress;
-  final Uint8List signature;
+  final Uint8List tokenIdHash;
+  final Uint8List r;
+  final Uint8List s;
+  final Uint8List v;
 
-  ChipInitializedArguments(
-      this.tokenId, this.chipWalletAddress, this.signature);
+  ChipInitializedArguments(this.tokenId, this.chipWalletAddress,
+      this.tokenIdHash, this.r, this.s, this.v);
 }
 
 class NFTDetailsScreenArguments {

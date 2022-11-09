@@ -39,12 +39,11 @@ class ChipAlreadyInitializedScreen extends StatefulWidget {
 class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   String statusText = "";
 
-  Future<void> _burnToken(Uint8List tokenId) async {
+  Future<void> _burnToken(
+      Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v) async {
     try {
-      final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
-
       var burnParams = makeBurnParams(
-          widget.connector?.session!.accounts[0], contractAddress!, tokenId);
+          widget.connector?.session!.accounts[0], tokenIdHash, r, s, v);
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector?.sendCustomRequest(
@@ -54,7 +53,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
       var txnReceipt = await getTxnReceipt(txnHash);
       if (txnReceipt?.status == true) {
-        //this means burn succeeded
+        //TODO: show ERROR / SUCCESS MSG
         statusText = context.loc.burnedSuccess;
         setState(() {
           statusText;
@@ -67,7 +66,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
     }
   }
 
-  Future<void> _burnAndMintToken(Uint8List tokenId) async {
+  Future<void> _burnAndMintToken(
+      Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v) async {
     statusText = "BURN & MINT FEATURE NOT IMPLEMENTED YET!";
     setState(() {
       statusText;
@@ -131,7 +131,10 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               width: 200,
               height: 50,
               child: ElevatedButton(
-                  onPressed: () => {_burnToken(tokenId)},
+                  onPressed: () => {
+                        _burnToken(navArgs.tokenIdHash, navArgs.r, navArgs.s,
+                            navArgs.v)
+                      },
                   child: Text(context.loc.burnToken)),
             ),
             const SizedBox(height: 15),
@@ -139,7 +142,10 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               width: 200,
               height: 50,
               child: ElevatedButton(
-                  onPressed: () => {_burnAndMintToken(tokenId)},
+                  onPressed: () => {
+                        _burnAndMintToken(navArgs.tokenIdHash, navArgs.r,
+                            navArgs.s, navArgs.v)
+                      },
                   child: Text(context.loc.burnAndMint)),
             ),
             const SizedBox(height: 15),

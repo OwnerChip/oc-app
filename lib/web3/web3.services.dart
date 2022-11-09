@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
@@ -29,29 +31,30 @@ Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
   return result;
 }
 
-Future<bool> verifyToken(Uint8List tokenId, Uint8List signature) async {
+Future<bool> verifyTokenSigner(String chipWalletAddressHex,
+    Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v) async {
   try {
-    var result = await query("verifyToken", [tokenId, signature]);
-    return result[0];
+    var result = await query("getSigner", [tokenIdHash, r, s, v]);
+    bool res = (chipWalletAddressHex == result[0]);
+    return res;
   } catch (e) {
     return false;
   }
 }
 
-String makeBurnTransactionData(Uint8List cardId) {
-  var burnFunctionSignature = '42966c68';
-  var tokenIdHex = uint8ListTo32ByteHex(cardId);
-  var burnTransactionData = "0x" + burnFunctionSignature + tokenIdHex;
-  return burnTransactionData;
-}
-
-dynamic makeBurnParams(String? from, String to, Uint8List cardId,
+List<dynamic> makeBurnParams(
+    String? from, Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v,
     {String? gasPrice}) {
-  String data = makeBurnTransactionData(cardId);
+  String data = "0x" +
+      '42966c68' +
+      uint8ListTo32ByteHex(tokenIdHash) +
+      String.fromCharCodes(r) +
+      String.fromCharCodes(s) +
+      String.fromCharCodes(v);
   final params = [
     {
       "from": from,
-      "to": to,
+      "to": dotenv.env['CONTRACT_ADDRESS'],
       "data": data,
       "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
       "gas": "0x30D40",
@@ -60,27 +63,21 @@ dynamic makeBurnParams(String? from, String to, Uint8List cardId,
   return params;
 }
 
-String makeMintTransactionData(String tokenURI, Uint8List signature) {
-  String tokenUriLength = (tokenURI.length).toRadixString(16).padLeft(64, '0');
-  String tokenURIHex = stringToHex(tokenURI);
-  String signatureHex = String.fromCharCodes(signature);
+List<dynamic> makeMintParams(String? from, Uint8List tokenIdHash,
+    String tokenURI, Uint8List r, Uint8List s, Uint8List v,
+    {String? gasPrice}) {
   String data = "0x" +
       "ba7aef43" +
       "60".padLeft(64, '0') +
-      tokenUriLength +
-      tokenURIHex +
-      signatureHex;
-  return data;
-}
-
-dynamic makeMintParams(
-    String from, String to, String tokenURI, Uint8List signature,
-    {String? gasPrice}) {
-  String data = makeMintTransactionData(tokenURI, signature);
+      (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+      stringToHex(tokenURI) +
+      String.fromCharCodes(r) +
+      String.fromCharCodes(s) +
+      String.fromCharCodes(v);
   final params = [
     {
       "from": from,
-      "to": to,
+      "to": dotenv.env['CONTRACT_ADDRESS'],
       "data": data,
       "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
       "gas": "0x30D40",

@@ -72,7 +72,7 @@ String getEthereumAddressHexString(Uint8List ethereumAddress) {
 }
 
 //extract signature out of signatureResponse
-Uint8List extractSignature(pubkey, Uint8List signatureResponse) {
+Map<String, Uint8List> extractSignature(Uint8List signatureResponse) {
   String signatureResponseString = String.fromCharCodes(signatureResponse);
   String signature = signatureResponseString.substring(22);
 
@@ -86,6 +86,11 @@ Uint8List extractSignature(pubkey, Uint8List signatureResponse) {
   signature = signature.substring(2);
   String s = signature.substring(0, sLength);
 
-  String res = '${hexToInt(r)}${hexToInt(s)}';
-  return signatureResponse; //TODO
+  //TODO: calculate v
+  Map<String, Uint8List> res = {
+    "r": signatureResponse,
+    "s": signatureResponse,
+    "v": signatureResponse
+  };
+  return res;
 }

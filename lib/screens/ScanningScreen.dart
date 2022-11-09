@@ -86,12 +86,13 @@ class _ScanningScreen extends State<ScanningScreen> {
             make_signature_command(0x01, hashedTokenId);
         final Uint8List responseGetSignature =
             await isoDep.transceive(data: GET_SIGNATURE);
-        final Uint8List signature =
-            extractSignature(hashedTokenId, responseGetSignature);
+        final Map<String, Uint8List> signature =
+            extractSignature(responseGetSignature);
 
         // verify chip authenticity
         try {
-          bool result = await verifyToken(chipEthereumAddress, signature);
+          bool result = await verifyTokenSigner(chipEthereumAddressHexString,
+              hashedTokenId, signature["r"]!, signature["s"]!, signature["v"]!);
         } catch (e) {
           print("ERROR: $e");
         }
@@ -124,13 +125,23 @@ class _ScanningScreen extends State<ScanningScreen> {
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
-                    chipEthereumAddress, chipEthereumAddressHexString));
+                    chipEthereumAddress,
+                    chipEthereumAddressHexString,
+                    hashedTokenId,
+                    signature["r"]!,
+                    signature["s"]!,
+                    signature["v"]!));
           } else {
             //navigate to MetadataInputScreen
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, MetadataScreen.routeName,
-                arguments: ChipInitializedArguments(chipEthereumAddress,
-                    chipEthereumAddressHexString, signature));
+                arguments: ChipInitializedArguments(
+                    chipEthereumAddress,
+                    chipEthereumAddressHexString,
+                    hashedTokenId,
+                    signature["r"]!,
+                    signature["s"]!,
+                    signature["v"]!));
           }
         }
       } catch (e) {
