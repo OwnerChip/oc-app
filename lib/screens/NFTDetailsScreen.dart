@@ -17,6 +17,7 @@ import '../utils/navigation_arguments.dart';
 import '../ipfs/ipfs.services.dart';
 import '../web3/web3.services.dart';
 import '../utils/url_generator.service.dart';
+import '../utils/utils.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -62,18 +63,23 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   // get the path of the associated image locally if available OR from IPFS if not
   Future<void> _fetchImage(
       String imgPath, Future<Map<String, dynamic>> meta) async {
-    Map<String, dynamic> metaSync = await meta;
     if (imgPath != "") {
+      metadata = await meta;
       imagePath = imgPath;
-    } else if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
-      String imageCid = getCidFromIpfsLink(metaSync['image']!);
-      Map<String, String> result = await downloadImageFileFromIPFS(imageCid);
-      imagePath = result['imagePath']!;
-      imageUri = result['imageUri']!;
+    } else {
+      Map<String, dynamic> metaSync = await meta;
+      if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
+        String imageCid = getCidFromIpfsLink(metaSync['image']!);
+        Map<String, String> result = await downloadImageFileFromIPFS(imageCid);
+        imagePath = result['imagePath']!;
+        imageUri = result['imageUri']!;
+      }
     }
+
     // updateScreen
     statusText = context.loc.itemData;
     setState(() {
+      metadata;
       imagePath;
       statusText = "";
     });
@@ -84,7 +90,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       // TODO: nothing happens yet ?!
       await widget.connector?.sendCustomRequest(
-          method: 'wallet_watchAsset', params: makeWatchAssetParams(imageUri));
+          method: 'wallet_watchAsset',
+          params: makeWatchAssetParams(imageUri),
+          id: makeRandomInt());
     } catch (error) {
       print(error);
     }
@@ -95,7 +103,6 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
     Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
-    print(meta);
     String imgPath = (navArgs.localImagePath) ?? "";
     _fetchImage(imgPath, meta);
   }

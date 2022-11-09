@@ -33,8 +33,7 @@ Future<String> uploadFileToIPFS(XFile xfile, String fileMimeType) async {
   FormData formData = FormData.fromMap(
     {
       "file": await MultipartFile.fromFile(file.path,
-          filename: fileName, contentType: MediaType.parse(fileMimeType)),
-      "pinataMetadata": {"fileMimeType": fileMimeType}
+          filename: fileName, contentType: MediaType.parse(fileMimeType))
     },
   );
   var ipfs = getIpfsGatewayClient(true);
