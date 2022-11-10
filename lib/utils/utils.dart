@@ -8,13 +8,11 @@ int makeRandomInt() {
 }
 
 String makeHexFromUint8List(Iterable list) {
-  print("from public key from uint list");
   var concatenate = StringBuffer();
   concatenate.write("0x");
   list.forEach((element) {
     concatenate.write(element.toRadixString(16).padLeft(2, '0'));
   });
-  print("public key: ${concatenate.toString()}");
   return concatenate.toString();
 }
 
@@ -35,7 +33,6 @@ String stringToHex(String string) {
   return hex;
 }
 
-//function to convert Uint8List to hex left padded to 32 bytes
 String uint8ListTo32ByteHex(Uint8List uint8List) {
   var hex = '';
   for (var i = 0; i < uint8List.length; i++) {
@@ -45,15 +42,19 @@ String uint8ListTo32ByteHex(Uint8List uint8List) {
 }
 
 //int to hex left padded to 32 bytes
-String intTo32ByteHex(int intToConvert) {
+String convertTokenIdToEthereumAddress(BigInt intToConvert) {
   var hex = intToConvert.toRadixString(16);
-  //pad length of hex to multiple of 64
-  return hex.padLeft(64, '0');
+  return "0x${hex.padLeft(40)}";
 }
 
 // hex to BigInt
-BigInt hexToBigInt(String fullString) {
-  return BigInt.parse(fullString, radix: 16);
+BigInt hexToBigInt(Uint8List ethereumAddress) {
+  BigInt decimalValue = BigInt.from(0);
+  for (int i = 0; i < ethereumAddress.length; i++) {
+    decimalValue = decimalValue << 8;
+    decimalValue = decimalValue | BigInt.from(ethereumAddress[i]);
+  }
+  return decimalValue;
 }
 
 Uint8List getEthereumAddressFromPublicKeyResponse(
@@ -63,8 +64,7 @@ Uint8List getEthereumAddressFromPublicKeyResponse(
 }
 
 BigInt getBigIntFromEthereumAddress(Uint8List ethereumAddress) {
-  String i = makeHexFromUint8List(ethereumAddress);
-  return hexToBigInt(i);
+  return hexToBigInt(ethereumAddress);
 }
 
 String getEthereumAddressHexString(Uint8List ethereumAddress) {
@@ -76,15 +76,15 @@ Map<String, Uint8List> extractSignature(Uint8List signatureResponse) {
   String signatureResponseString = String.fromCharCodes(signatureResponse);
   String signature = signatureResponseString.substring(22);
 
-  int rLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
-  signature = signature.substring(2);
-  String r = signature.substring(0, rLength);
+  // int rLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
+  // signature = signature.substring(2);
+  // String r = signature.substring(0, rLength);
 
-  signature = signature.substring(2 + rLength);
+  // signature = signature.substring(2 + rLength);
 
-  int sLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
-  signature = signature.substring(2);
-  String s = signature.substring(0, sLength);
+  // int sLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
+  // signature = signature.substring(2);
+  // String s = signature.substring(0, sLength);
 
   //TODO: calculate v
   Map<String, Uint8List> res = {
