@@ -44,6 +44,8 @@ class ChipInitializedArguments {
 class NFTDetailsScreenArguments {
   final BigInt tokenId;
   final String chipWalletAddress;
+  final String? localImagePath;
 
-  NFTDetailsScreenArguments(this.tokenId, this.chipWalletAddress);
+  NFTDetailsScreenArguments(
+      this.tokenId, this.chipWalletAddress, this.localImagePath);
 }

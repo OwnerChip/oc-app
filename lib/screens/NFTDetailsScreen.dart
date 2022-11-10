@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:typed_data';
 import 'dart:io';
 import '../utils/localization.helper.dart';
@@ -15,6 +17,7 @@ import '../utils/navigation_arguments.dart';
 import '../ipfs/ipfs.services.dart';
 import '../web3/web3.services.dart';
 import '../utils/url_generator.service.dart';
+import '../utils/utils.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -31,9 +34,12 @@ class NFTDetailsScreen extends StatefulWidget {
 class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   String statusText = "";
   String imagePath = "";
-  Map<String, String> metadata = {};
+  String imageUri = "";
+  Map<String, dynamic> metadata = {};
 
-  Future<void> _fetchResults(tokenId) async {
+  // get the metadata.json file from IPFS associated with a token
+  Future<Map<String, dynamic>> _fetchMetadata(BigInt tokenId) async {
+    Map<String, dynamic> result = {};
     try {
       // get IPFS CID
       String tokenUri = await getTokenUri(tokenId);
@@ -41,27 +47,54 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       // fetch metadata json
       String jsonCid = getCidFromIpfsLink(tokenUri);
       final Directory directory = Directory.systemTemp;
-      File jsonFile = File("${directory.path}/${jsonCid}.metadata.json");
-      await downloadFileFromIPFS(jsonCid, jsonFile.path);
+      File jsonFile = File("${directory.path}/$jsonCid.metadata.json");
+      await downloadMetadataFileFromIPFS(jsonCid, jsonFile.path, false);
 
       // read metadata json
       final String res = await jsonFile.readAsString();
-      metadata = new Map<String, String>.from(json.decode(res));
-
-      // fetch image if set in metadata
-      if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
-        String imageCid = getCidFromIpfsLink(metadata['image']!);
-        imagePath = await downloadImageFileFromIPFS(imageCid);
-
-        // updateScreen
-        statusText = context.loc.itemData;
-        setState(() {
-          imagePath;
-          statusText;
-        });
-      }
+      metadata = Map<String, dynamic>.from(json.decode(res));
+      result = metadata;
     } catch (e) {
       print("error $e");
+    }
+    return result;
+  }
+
+  // get the path of the associated image locally if available OR from IPFS if not
+  Future<void> _fetchImage(
+      String imgPath, Future<Map<String, dynamic>> meta) async {
+    if (imgPath != "") {
+      metadata = await meta;
+      imagePath = imgPath;
+    } else {
+      Map<String, dynamic> metaSync = await meta;
+      if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
+        String imageCid = getCidFromIpfsLink(metaSync['image']!);
+        Map<String, String> result = await downloadImageFileFromIPFS(imageCid);
+        imagePath = result['imagePath']!;
+        imageUri = result['imageUri']!;
+      }
+    }
+
+    // updateScreen
+    statusText = context.loc.itemData;
+    setState(() {
+      metadata;
+      imagePath;
+      statusText = "";
+    });
+  }
+
+  Future<void> _addNftToMetamask(String tokenId) async {
+    try {
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+      // TODO: nothing happens yet ?!
+      await widget.connector?.sendCustomRequest(
+          method: 'wallet_watchAsset',
+          params: makeWatchAssetParams(imageUri),
+          id: makeRandomInt());
+    } catch (error) {
+      print(error);
     }
   }
 
@@ -69,7 +102,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   void didChangeDependencies() {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
-    _fetchResults(navArgs.tokenId);
+    Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
+    String imgPath = (navArgs.localImagePath) ?? "";
+    _fetchImage(imgPath, meta);
   }
 
   @override
@@ -82,9 +117,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
 
-    setState(() {
-      statusText = context.loc.loadingData + " ...";
-    });
+    statusText = "${context.loc.loadingData}";
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -106,6 +139,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                   children: [
                     const SizedBox(height: 20),
                     Text('Token ID: ${navArgs.tokenId}'),
+                    // IMAGE
                     if (imagePath != "")
                       Image.file(
                         File(imagePath),
@@ -113,20 +147,24 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         width: 200,
                       ),
                     if (imagePath == "") const SizedBox(height: 50),
-                    Text(statusText,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    if (imagePath == "")
+                      Text(statusText,
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
-                    if (metadata['title'] != null)
-                      Text(context.loc.itemName + ': ${metadata['title']}',
-                          style: TextStyle(fontSize: 20)),
-                    SizedBox(height: 20),
+                    // METADATA
+                    if (metadata['name'] != null)
+                      Text(/*context.loc.itemName + */ '${metadata['name']}',
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 20),
                     if (metadata['description'] != null)
                       Text(
-                          context.loc.itemDescription +
-                              ': ${metadata['description']}',
+                          /*context.loc.itemDescription +
+                              */
+                          '${metadata['description']}',
                           style: TextStyle(fontSize: 20)),
-                    const SizedBox(height: 120),
+                    const SizedBox(height: 50),
                     SizedBox(
                       width: 200,
                       height: 50,
@@ -136,6 +174,31 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                               navArgs.tokenId.toString()))
                         },
                         child: Text(context.loc.showOnExplorer),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () => {
+                          launchUrl(generateOpenSeaTokenDetailsUrl(
+                              navArgs.tokenId.toString()))
+                        },
+                        child: Text(context.loc.showOnOpenSea),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: () =>
+                            {_addNftToMetamask(navArgs.tokenId.toString())},
+                        child: Text(context.loc.showNftInWallet),
                       ),
                     ),
                     const SizedBox(height: 15),

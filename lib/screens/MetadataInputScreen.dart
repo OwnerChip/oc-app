@@ -73,7 +73,7 @@ class _MetadataScreen extends State<MetadataScreen> {
   void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
     setState(() {
       loading = true;
-      loadingText = "${context.loc.uploadingMetadata} ...";
+      loadingText = '${context.loc.uploadingMetadata} ...';
       success = false;
     });
 
@@ -131,8 +131,8 @@ class _MetadataScreen extends State<MetadataScreen> {
 
         // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(
-                bytesToInt(navArgs.tokenId), navArgs.chipWalletAddress));
+            arguments: NFTDetailsScreenArguments(bytesToInt(navArgs.tokenId),
+                navArgs.chipWalletAddress, image.path));
       } else {
         throw Exception('Transaction failed');
       }
@@ -182,11 +182,11 @@ class _MetadataScreen extends State<MetadataScreen> {
                           children: [
                             TextFormField(
                               controller: _titleController,
-                              decoration: const InputDecoration(
-                                hintText: 'Title',
+                              decoration: InputDecoration(
+                                hintText: context.loc.title,
                               ),
                               onChanged: (text) {
-                                metadata['title'] = text;
+                                metadata['name'] = text;
                               },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -200,8 +200,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                               maxLines: 2,
                               keyboardType: TextInputType.multiline,
                               controller: _descriptionController,
-                              decoration: const InputDecoration(
-                                hintText: 'Description',
+                              decoration: InputDecoration(
+                                hintText: context.loc.description,
                               ),
                               onChanged: (text) {
                                 metadata['description'] = text;

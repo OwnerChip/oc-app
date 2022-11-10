@@ -86,6 +86,21 @@ List<dynamic> makeMintParams(String? from, Uint8List tokenIdHash,
   return params;
 }
 
+dynamic makeWatchAssetParams(String imageUri) {
+  final params = [
+    {
+      "type": "ERC721",
+      "options": {
+        "address": dotenv.get("CONTRACT_ADDRESS"),
+        "symbol": "OC",
+        "decimals": 0,
+        "image": imageUri
+      }
+    }
+  ];
+  return params;
+}
+
 Future<dynamic> getOwner(BigInt tokenId) async {
   try {
     var owner = await query("ownerOf", [tokenId]);

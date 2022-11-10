@@ -86,7 +86,8 @@ class UserScanResultsScreen extends StatelessWidget {
                                             arguments:
                                                 NFTDetailsScreenArguments(
                                                     navArgs.tokenId,
-                                                    navArgs.chipWalletAddress));
+                                                    navArgs.chipWalletAddress,
+                                                    ""));
                                       },
                                       child: Text(context.loc.viewNftDetails))
                                 ],
