@@ -14,8 +14,8 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 //local imports
 import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
-import '../ipfs/ipfs.services.dart';
-import '../web3/web3.services.dart';
+import '../utils/ipfs.services.dart';
+import '../utils/web3.services.dart';
 import '../utils/url_generator.service.dart';
 import '../utils/utils.dart';
 

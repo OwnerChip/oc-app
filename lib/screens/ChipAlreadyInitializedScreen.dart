@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'dart:convert';
+import 'package:convert/convert.dart';
 import '../utils/localization.helper.dart';
 
 //nfc imports
@@ -20,9 +20,9 @@ import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
 import '../utils/url_generator.service.dart';
 import 'LoginScreen.dart';
-import '../nfc/commands.dart';
+import '../utils/nfc.commands.dart';
 import '../utils/utils.dart';
-import '../web3/web3.services.dart';
+import '../utils/web3.services.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
@@ -39,11 +39,10 @@ class ChipAlreadyInitializedScreen extends StatefulWidget {
 class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   String statusText = "";
 
-  Future<void> _burnToken(
-      Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v) async {
+  Future<void> _burnToken(Uint8List tokenIdHash, MsgSignature signature) async {
     try {
       var burnParams = makeBurnParams(
-          widget.connector?.session!.accounts[0], tokenIdHash, r, s, v);
+          widget.connector?.session!.accounts[0], tokenIdHash, signature);
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector?.sendCustomRequest(
@@ -67,7 +66,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   }
 
   Future<void> _burnAndMintToken(
-      Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v) async {
+      Uint8List tokenIdHash, MsgSignature sig) async {
     statusText = "BURN & MINT FEATURE NOT IMPLEMENTED YET!";
     setState(() {
       statusText;
@@ -102,7 +101,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 50),
-            Text('TokenID: ${uint8ListTo32ByteHex(navArgs.tokenId)}'),
+            Text('TokenID: 0x${hex.encode(navArgs.tokenId)}'),
             const SizedBox(height: 15),
             SizedBox(
               width: 200,
@@ -131,10 +130,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               width: 200,
               height: 50,
               child: ElevatedButton(
-                  onPressed: () => {
-                        _burnToken(navArgs.tokenIdHash, navArgs.r, navArgs.s,
-                            navArgs.v)
-                      },
+                  onPressed: () =>
+                      {_burnToken(navArgs.tokenIdHash, navArgs.signature)},
                   child: Text(context.loc.burnToken)),
             ),
             const SizedBox(height: 15),
@@ -143,8 +140,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () => {
-                        _burnAndMintToken(navArgs.tokenIdHash, navArgs.r,
-                            navArgs.s, navArgs.v)
+                        _burnAndMintToken(
+                            navArgs.tokenIdHash, navArgs.signature)
                       },
                   child: Text(context.loc.burnAndMint)),
             ),

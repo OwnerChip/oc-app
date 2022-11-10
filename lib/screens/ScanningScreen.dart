@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
 import '../utils/localization.helper.dart';
+import 'package:convert/convert.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -16,9 +17,10 @@ import 'UserScanResultsScreen.dart';
 import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation_arguments.dart';
+import '../utils/signature.service.dart';
 import '../utils/utils.dart';
-import '../nfc/commands.dart';
-import '../web3/web3.services.dart';
+import '../utils/nfc.commands.dart';
+import '../utils/web3.services.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../widgets/ScanningLoader.dart';
 
@@ -68,7 +70,9 @@ class _ScanningScreen extends State<ScanningScreen> {
             getEthereumAddressFromPublicKeyResponse(responseGetKeyInfo);
         String chipEthereumAddressHexString =
             getEthereumAddressHexString(chipEthereumAddress);
-        BigInt chipTokenId = getBigIntFromEthereumAddress(chipEthereumAddress);
+        print(chipEthereumAddressHexString);
+        BigInt chipTokenId = hexToBigInt(chipEthereumAddress);
+        print(chipTokenId);
 
         //check if first key does not exist yet exist
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
@@ -82,17 +86,24 @@ class _ScanningScreen extends State<ScanningScreen> {
 
         // get SIGNATURE from NFC chip
         final Uint8List hashedTokenId = keccak256(chipEthereumAddress);
+        print('signing msg: 0x${hex.encode(hashedTokenId)}');
         final Uint8List GET_SIGNATURE =
             make_signature_command(0x01, hashedTokenId);
         final Uint8List responseGetSignature =
             await isoDep.transceive(data: GET_SIGNATURE);
-        final Map<String, Uint8List> signature =
-            extractSignature(responseGetSignature);
+        final MsgSignature signature = extractSignature(
+            responseGetKeyInfo, hashedTokenId, responseGetSignature);
+        print(signature);
+
+        // TEST: verify signature
+        bool testResult =
+            isValidSignature(hashedTokenId, signature, responseGetKeyInfo);
+        print(testResult);
 
         // verify chip authenticity
         try {
-          bool result = await verifyTokenSigner(chipEthereumAddressHexString,
-              hashedTokenId, signature["r"]!, signature["s"]!, signature["v"]!);
+          bool result = await verifyTokenSigner(
+              chipEthereumAddressHexString, hashedTokenId, signature);
         } catch (e) {
           print("ERROR: $e");
         }
@@ -128,20 +139,13 @@ class _ScanningScreen extends State<ScanningScreen> {
                     chipEthereumAddress,
                     chipEthereumAddressHexString,
                     hashedTokenId,
-                    signature["r"]!,
-                    signature["s"]!,
-                    signature["v"]!));
+                    signature));
           } else {
             //navigate to MetadataInputScreen
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, MetadataScreen.routeName,
-                arguments: ChipInitializedArguments(
-                    chipEthereumAddress,
-                    chipEthereumAddressHexString,
-                    hashedTokenId,
-                    signature["r"]!,
-                    signature["s"]!,
-                    signature["v"]!));
+                arguments: ChipInitializedArguments(chipEthereumAddress,
+                    chipEthereumAddressHexString, hashedTokenId, signature));
           }
         }
       } catch (e) {

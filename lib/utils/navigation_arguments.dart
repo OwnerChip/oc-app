@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:web3dart/crypto.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
@@ -21,24 +22,20 @@ class ChipAlreadyInitializedScreenArguments {
   final Uint8List tokenId;
   final String chipWalletAddress;
   final Uint8List tokenIdHash;
-  final Uint8List r;
-  final Uint8List s;
-  final Uint8List v;
+  final MsgSignature signature;
 
-  ChipAlreadyInitializedScreenArguments(this.tokenId, this.chipWalletAddress,
-      this.tokenIdHash, this.r, this.s, this.v);
+  ChipAlreadyInitializedScreenArguments(
+      this.tokenId, this.chipWalletAddress, this.tokenIdHash, this.signature);
 }
 
 class ChipInitializedArguments {
   final Uint8List tokenId;
   final String chipWalletAddress;
   final Uint8List tokenIdHash;
-  final Uint8List r;
-  final Uint8List s;
-  final Uint8List v;
+  final MsgSignature signature;
 
-  ChipInitializedArguments(this.tokenId, this.chipWalletAddress,
-      this.tokenIdHash, this.r, this.s, this.v);
+  ChipInitializedArguments(
+      this.tokenId, this.chipWalletAddress, this.tokenIdHash, this.signature);
 }
 
 class NFTDetailsScreenArguments {

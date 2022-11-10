@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 
 Uint8List SELECT_APP = Uint8List.fromList([
@@ -55,6 +54,5 @@ Uint8List make_signature_command(int hex_key_number, Uint8List data_to_sign) {
   bytes.add(data_to_sign);
   bytes.add(Uint8List.fromList([0x00]));
   Uint8List res = bytes.toBytes();
-  print(res);
   return res;
 }

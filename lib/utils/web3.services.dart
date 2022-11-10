@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../utils/utils.dart';
+import 'utils.dart';
 
 Web3Client getWeb3Client() {
   var rpcUrl = dotenv.get('CHAIN_RPC');
@@ -32,9 +32,10 @@ Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
 }
 
 Future<bool> verifyTokenSigner(String chipWalletAddressHex,
-    Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v) async {
+    Uint8List tokenIdHash, MsgSignature signature) async {
   try {
-    var result = await query("getSigner", [tokenIdHash, r, s, v]);
+    var result = await query(
+        "getSigner", [tokenIdHash, signature.r, signature.s, signature.v]);
     bool res = (chipWalletAddressHex == result[0]);
     return res;
   } catch (e) {
@@ -43,14 +44,14 @@ Future<bool> verifyTokenSigner(String chipWalletAddressHex,
 }
 
 List<dynamic> makeBurnParams(
-    String? from, Uint8List tokenIdHash, Uint8List r, Uint8List s, Uint8List v,
+    String? from, Uint8List tokenIdHash, MsgSignature signature,
     {String? gasPrice}) {
   String data = "0x" +
       '42966c68' +
-      uint8ListTo32ByteHex(tokenIdHash) +
-      String.fromCharCodes(r) +
-      String.fromCharCodes(s) +
-      String.fromCharCodes(v);
+      getEthereumAddressFromUint8List(tokenIdHash) +
+      signature.r.toString() +
+      signature.s.toString() +
+      signature.v.toString();
   final params = [
     {
       "from": from,
@@ -64,16 +65,17 @@ List<dynamic> makeBurnParams(
 }
 
 List<dynamic> makeMintParams(String? from, Uint8List tokenIdHash,
-    String tokenURI, Uint8List r, Uint8List s, Uint8List v,
+    String tokenURI, MsgSignature signature,
     {String? gasPrice}) {
   String data = "0x" +
       "ba7aef43" +
       "60".padLeft(64, '0') +
       (tokenURI.length).toRadixString(16).padLeft(64, '0') +
       stringToHex(tokenURI) +
-      String.fromCharCodes(r) +
-      String.fromCharCodes(s) +
-      String.fromCharCodes(v);
+      signature.r.toString() +
+      signature.s.toString() +
+      signature.v.toString();
+  ;
   final params = [
     {
       "from": from,

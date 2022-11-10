@@ -15,10 +15,10 @@ import 'package:web3dart/crypto.dart';
 
 //local imports
 import '../widgets/AppBarWithLogo.dart';
-import '../ipfs/ipfs.services.dart';
+import '../utils/ipfs.services.dart';
 import '../utils/utils.dart';
 import '../utils/images.service.dart';
-import '../web3/web3.services.dart';
+import '../utils/web3.services.dart';
 import '../utils/navigation_arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
 import '../widgets/LoadingIndicator.dart';
@@ -101,8 +101,7 @@ class _MetadataScreen extends State<MetadataScreen> {
     String fullUri = "ipfs://$cid";
 
     // generate mint parameters
-    var mintParams = makeMintParams(walletAddress, navArgs.tokenIdHash, fullUri,
-        navArgs.r, navArgs.s, navArgs.v);
+    //var mintParams = makeMintParams(        walletAddress, navArgs.tokenIdHash, fullUri, navArgs.signature);
 
     // metamask interaction
     await launchUrlString(widget.connector!.session.toUri(),
@@ -114,7 +113,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector?.sendCustomRequest(
           method: 'eth_sendTransaction',
-          params: mintParams,
+          params: ['mintParams'],
           id: makeRandomInt());
 
       setState(() {
