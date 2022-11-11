@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/widgets/LoadingIndicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'dart:convert';
@@ -38,9 +39,14 @@ class ChipAlreadyInitializedScreen extends StatefulWidget {
 }
 
 class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
-  String statusText = "";
+  bool loading = false;
+  String loadingText = '';
 
-  Future<void> _burnToken(Uint8List tokenId) async {
+  Future<void> burnToken(Uint8List tokenId) async {
+    setState(() {
+      loading = true;
+      loadingText = context.loc.burnToken;
+    });
     try {
       final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
 
@@ -56,17 +62,20 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
-        statusText = context.loc.burnedSuccess;
-        setState(() {
-          statusText;
-        });
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(
               'Success!', 'Successfully burned token.', 'success'),
         );
+        //delay 1 second
+        await Future.delayed(Duration(seconds: 1));
+
         //navigate to login screen
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+        setState(() {
+          loading = false;
+          loadingText = '';
+        });
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -74,26 +83,21 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget('Oh Snap!', 'Error when burning token.', 'error'),
       );
+      setState(() {
+        loading = false;
+        loadingText = '';
+      });
       print("Error: $e");
     }
   }
 
-  Future<void> _burnAndMintToken(Uint8List tokenId) async {
-    statusText = "BURN & MINT FEATURE NOT IMPLEMENTED YET!";
-    setState(() {
-      statusText;
-    });
-  }
+  Future<void> burnAndMintToken(Uint8List tokenId) async {}
 
   @override
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
     final tokenId = navArgs.cardId!;
-
-    setState(() {
-      statusText = context.loc.alreadyLinked;
-    });
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -108,62 +112,135 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         body: SafeArea(
             child: Center(
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(
-              statusText,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 50),
-            Text('TokenID: ${bytesToInt(navArgs.cardId)}'),
-            const SizedBox(height: 15),
-            SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () => {
-                  launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                      "${bytesToInt(navArgs.cardId)}"))
-                },
-                child: Text(context.loc.showOnExplorer),
-              ),
-            ),
-            const SizedBox(height: 15),
-            SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                  onPressed: () => {
-                        launchUrl(generateOpenSeaTokenDetailsUrl(
-                            "${bytesToInt(navArgs.cardId)}"))
-                      },
-                  child: Text(context.loc.showOnOpenSea)),
-            ),
-            const SizedBox(height: 15),
-            SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                  onPressed: () => {_burnToken(tokenId)},
-                  child: Text(context.loc.burnToken)),
-            ),
-            /*const SizedBox(height: 15),
-            SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                  onPressed: () => {_burnAndMintToken(tokenId)},
-                  child: Text(context.loc.burnAndMint)),
-            ),*/
-            const SizedBox(height: 15),
-            SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey, // background
-                  ),
-                  onPressed: () =>
-                      {Navigator.pushNamed(context, LoginScreen.routeName)},
-                  child: Text(context.loc.home)),
+            Row(
+              children: [
+                Expanded(
+                    flex: 2,
+                    child: Row(
+                      children: [],
+                    )),
+                Expanded(
+                    flex: 10,
+                    child: Column(
+                      children: [
+                        //bold red text
+                        Text(
+                          context.loc.warning,
+                          style: const TextStyle(
+                              color: Colors.orange,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        //spacing
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: const [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.orange,
+                                      size: 40,
+                                    ),
+                                  ],
+                                )),
+                            //spacing
+                            const SizedBox(width: 10),
+                            Expanded(
+                                flex: 10,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      context.loc.alreadyLinked,
+                                    )
+                                  ],
+                                ))
+                          ],
+                        ),
+                        //spacing
+                        const SizedBox(
+                          height: 50,
+                        ),
+
+                        SizedBox(
+                          width: 200,
+                          height: 50,
+                          child: ElevatedButton(
+                              onPressed:
+                                  loading ? null : () => {burnToken(tokenId)},
+                              child: loading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.grey,
+                                    )
+                                  : Text(context.loc.burnToken)),
+                        ),
+                        // const SizedBox(
+                        //   height: 8,
+                        // ),
+                        // SizedBox(
+                        //   width: 200,
+                        //   height: 50,
+                        //   child: ElevatedButton(
+                        //       onPressed: () => {burnAndMintToken(tokenId)},
+                        //       child: Text(context.loc.burnAndMint)),
+                        // ),
+                        const SizedBox(
+                          height: 40,
+                        ),
+                        SizedBox(
+                          width: 200,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: () => {
+                              launchUrl(
+                                  generateBlockchainExplorerTokenDetailsUrl(
+                                      tokenId.toString()))
+                            },
+                            child: Text(context.loc.showOnExplorer),
+                          ),
+                        ),
+                        //spacing
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        SizedBox(
+                          width: 200,
+                          height: 50,
+                          child: ElevatedButton(
+                              onPressed: () => {
+                                    launchUrl(generateOpenSeaTokenDetailsUrl(
+                                        tokenId.toString()))
+                                  },
+                              child: Text(context.loc.showOnOpenSea)),
+                        ),
+                        const SizedBox(
+                          height: 40,
+                        ),
+                        SizedBox(
+                          width: 200,
+                          height: 50,
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey, // background
+                              ),
+                              onPressed: () => {
+                                    Navigator.pushNamed(
+                                        context, LoginScreen.routeName)
+                                  },
+                              child: Text(context.loc.cancel)),
+                        ),
+                      ],
+                    )),
+                Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [],
+                    )),
+              ],
             ),
           ]),
         )));
