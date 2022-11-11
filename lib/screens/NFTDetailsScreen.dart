@@ -18,6 +18,7 @@ import '../ipfs/ipfs.services.dart';
 import '../web3/web3.services.dart';
 import '../utils/url_generator.service.dart';
 import '../utils/utils.dart';
+import '../screens/LoginScreen.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -211,7 +212,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                             ),
                             onPressed: () => {
                                   Navigator.pushReplacementNamed(
-                                      context, '/login')
+                                      context, LoginScreen.routeName)
                                 },
                             child: Text(context.loc.home))),
                   ]),

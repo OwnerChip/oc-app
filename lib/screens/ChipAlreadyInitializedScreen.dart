@@ -23,6 +23,7 @@ import 'LoginScreen.dart';
 import '../nfc/commands.dart';
 import '../utils/utils.dart';
 import '../web3/web3.services.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
@@ -59,10 +60,20 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         setState(() {
           statusText;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              'Success!', 'Successfully burned token.', 'success'),
+        );
+        //navigate to login screen
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       } else {
-        print(context.loc.burnedError);
+        throw Exception(context.loc.burnedError);
       }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget('Oh Snap!', 'Error when burning token.', 'error'),
+      );
       print("Error: $e");
     }
   }
