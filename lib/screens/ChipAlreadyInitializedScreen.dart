@@ -110,7 +110,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               child: ElevatedButton(
                 onPressed: () => {
                   launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                      tokenId.toString()))
+                      "${bytesToInt(navArgs.cardId)}"))
                 },
                 child: Text(context.loc.showOnExplorer),
               ),
@@ -121,8 +121,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () => {
-                        launchUrl(
-                            generateOpenSeaTokenDetailsUrl(tokenId.toString()))
+                        launchUrl(generateOpenSeaTokenDetailsUrl(
+                            "${bytesToInt(navArgs.cardId)}"))
                       },
                   child: Text(context.loc.showOnOpenSea)),
             ),
@@ -134,14 +134,14 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                   onPressed: () => {_burnToken(tokenId)},
                   child: Text(context.loc.burnToken)),
             ),
-            const SizedBox(height: 15),
+            /*const SizedBox(height: 15),
             SizedBox(
               width: 200,
               height: 50,
               child: ElevatedButton(
                   onPressed: () => {_burnAndMintToken(tokenId)},
                   child: Text(context.loc.burnAndMint)),
-            ),
+            ),*/
             const SizedBox(height: 15),
             SizedBox(
               width: 200,
@@ -152,7 +152,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                   ),
                   onPressed: () =>
                       {Navigator.pushNamed(context, LoginScreen.routeName)},
-                  child: Text(context.loc.cancel)),
+                  child: Text(context.loc.home)),
             ),
           ]),
         )));

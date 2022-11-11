@@ -188,7 +188,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         child: Text(context.loc.showOnOpenSea),
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    /*const SizedBox(height: 15),
                     SizedBox(
                       width: 200,
                       height: 50,
@@ -200,7 +200,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                             {_addNftToMetamask(navArgs.tokenId.toString())},
                         child: Text(context.loc.showNftInWallet),
                       ),
-                    ),
+                    ),*/
                     const SizedBox(height: 15),
                     SizedBox(
                         width: 200,

@@ -1,7 +1,7 @@
 {
     "appTitle": "OwnerChip Demo App",
     "initializeChip": "Initialize Chip",
-    "checkOwner": "checkOwner",
+    "checkOwner": "Ownership check",
     "walletAddress": "wallet Address",
     "getWalletAddress": "Get Wallet Address",
     "youAreOwner": "You are the owner",
