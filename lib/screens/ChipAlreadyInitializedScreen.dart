@@ -178,16 +178,6 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                                     )
                                   : Text(context.loc.burnToken)),
                         ),
-                        // const SizedBox(
-                        //   height: 8,
-                        // ),
-                        // SizedBox(
-                        //   width: 200,
-                        //   height: 50,
-                        //   child: ElevatedButton(
-                        //       onPressed: () => {burnAndMintToken(tokenId)},
-                        //       child: Text(context.loc.burnAndMint)),
-                        // ),
                         const SizedBox(
                           height: 40,
                         ),
