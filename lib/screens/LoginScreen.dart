@@ -48,10 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 200,
               height: 150,
               child: ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(
-                      context, ScanningScreen.routeName,
-                      arguments: ScanningScreenArguments(
-                          '', "${context.loc.initializeChip} (1/3)")),
+                  onPressed: widget.connector.connected
+                      ? () => Navigator.pushNamed(
+                          context, ScanningScreen.routeName,
+                          arguments: ScanningScreenArguments(
+                              '', "${context.loc.initializeChip} (1/3)"))
+                      : null,
                   //TODO: Do i need to pass empty string first argument here?
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
