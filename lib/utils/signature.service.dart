@@ -110,7 +110,7 @@ MsgSignature extractSignature(Uint8List signatureResp) {
   print("r length $rLength");
 
   signature = signature.substring(2);
-  String r = "0x${signature.substring(0, rLength)}";
+  String r = "${signature.substring(0, rLength)}";
   print("r: $r");
 
   // get s component
@@ -119,7 +119,7 @@ MsgSignature extractSignature(Uint8List signatureResp) {
   print("s length $sLength");
 
   signature = signature.substring(2);
-  String s = "0x${signature.substring(0, sLength)}";
+  String s = "${signature.substring(0, sLength)}";
   print("s: $s");
 
   // calculate v component
