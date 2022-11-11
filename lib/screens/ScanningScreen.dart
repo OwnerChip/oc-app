@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
@@ -66,13 +68,13 @@ class _ScanningScreen extends State<ScanningScreen> {
         Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
         Uint8List responseGetKeyInfo =
             await isoDep.transceive(data: GET_KEY_INFO);
-        Uint8List chipEthereumAddress =
-            getEthereumAddressFromPublicKeyResponse(responseGetKeyInfo);
+        Uint8List chipPubKey = getPublicKeyFromChipResponse(responseGetKeyInfo);
+        Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
         String chipEthereumAddressHexString =
             getEthereumAddressHexString(chipEthereumAddress);
-        print(chipEthereumAddressHexString);
+        print("HexString Address: $chipEthereumAddressHexString");
         BigInt chipTokenId = hexToBigInt(chipEthereumAddress);
-        print(chipTokenId);
+        print("BigInt TokenId: $chipTokenId");
 
         //check if first key does not exist yet exist
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
@@ -85,19 +87,17 @@ class _ScanningScreen extends State<ScanningScreen> {
         }
 
         // get SIGNATURE from NFC chip
-        final Uint8List hashedTokenId = keccak256(chipEthereumAddress);
-        print('signing msg: 0x${hex.encode(hashedTokenId)}');
+        final Uint8List hashedTokenId =
+            prepareMsgForSignature(chipEthereumAddressHexString);
         final Uint8List GET_SIGNATURE =
             make_signature_command(0x01, hashedTokenId);
         final Uint8List responseGetSignature =
             await isoDep.transceive(data: GET_SIGNATURE);
-        final MsgSignature signature = extractSignature(
-            responseGetKeyInfo, hashedTokenId, responseGetSignature);
-        print(signature);
+        final MsgSignature signature = extractSignature(responseGetSignature);
 
         // TEST: verify signature
         bool testResult =
-            isValidSignature(hashedTokenId, signature, responseGetKeyInfo);
+            isValidSignature(hashedTokenId, signature, chipPubKey);
         print(testResult);
 
         // verify chip authenticity

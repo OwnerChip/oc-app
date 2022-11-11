@@ -61,8 +61,6 @@ String convertTokenIdToEthereumAddress(BigInt intToConvert) {
 }
 
 // specific to secora chip response
-Uint8List getEthereumAddressFromPublicKeyResponse(
-    Uint8List responseGetKeyInfo) {
-  var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
-  return publicKeyToAddress(uin8key);
+Uint8List getPublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
+  return responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
 }
