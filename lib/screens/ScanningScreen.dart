@@ -21,6 +21,7 @@ import '../nfc/commands.dart';
 import '../web3/web3.services.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../widgets/ScanningLoader.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
@@ -52,14 +53,14 @@ class _ScanningScreen extends State<ScanningScreen> {
       final navArgs =
           ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
       var isoDep = IsoDep.from(tag);
-      if (isoDep == null) {
-        //TODO: Set some error state
-        NfcManager.instance.stopSession();
-        return;
-      }
 
       try {
-        var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
+        //check if isodep is available and exit if not
+        if (isoDep == null) {
+          NfcManager.instance.stopSession();
+          throw Exception('Tag is not ISO-DEP.');
+        }
+        var selectAppResponse = await isoDep!.transceive(data: SELECT_APP);
 
         Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
         var responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
@@ -85,6 +86,7 @@ class _ScanningScreen extends State<ScanningScreen> {
           EthereumAddress ownerAddress = await getOwner(tokenId);
           nftOwner = ownerAddress.toString();
         } catch (e) {
+          //NFT with this token ID does not have an owner/does not exist
           print(e);
           chipIsInitialized = false;
           tokenId = null;
@@ -114,9 +116,12 @@ class _ScanningScreen extends State<ScanningScreen> {
           }
         }
       } catch (e) {
+        //error reading chip
         print(context.loc.nfcError + ": $e");
-        //TODO: Set some error state and display in UI
         NfcManager.instance.stopSession();
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget('Oh Snap!', 'Error scanning NFC tag.', 'error'),
+        );
       }
     });
   }

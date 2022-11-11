@@ -23,6 +23,7 @@ import '../utils/navigation_arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
 import '../widgets/LoadingIndicator.dart';
 import '../widgets/ChipInfo.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -84,27 +85,28 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     // upload image to ipfs
     String imageCid;
-    String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
-    if (image != null) {
-      imageCid = await uploadFileToIPFS(image!, mimeType);
-      metadata['image'] = 'ipfs://$imageCid';
-    }
+    String cid = '';
 
-    // generate JSON file
-    final Directory directory = Directory.systemTemp;
-    final File file = File('${directory.path}/metadata.json');
-    await file.writeAsString(json.encode(metadata));
-    XFile jsonFile = XFile(file.path);
-
-    // upload metadata json to ipfs
-    String cid = await uploadFileToIPFS(jsonFile, 'application/json');
-
-    // generate mint parameters
-    var mintParams = makeMintParams(walletAddress,
-        dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.cardId);
-
-    //TODO: transaction does not always pop up in Metamask!
     try {
+      String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
+
+      if (image != null) {
+        imageCid = await uploadFileToIPFS(image!, mimeType);
+        metadata['image'] = 'ipfs://$imageCid';
+      }
+
+      // generate JSON file
+      final Directory directory = Directory.systemTemp;
+      final File file = File('${directory.path}/metadata.json');
+      await file.writeAsString(json.encode(metadata));
+      XFile jsonFile = XFile(file.path);
+
+      // upload metadata json to ipfs
+      cid = await uploadFileToIPFS(jsonFile, 'application/json');
+
+      // generate mint parameters
+      var mintParams = makeMintParams(walletAddress,
+          dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.cardId);
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector?.sendCustomRequest(
@@ -121,6 +123,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       if (txnReceipt?.status == true) {
         setState(() {
           success = true;
+          loadingText = '';
           loading = false;
         });
 
@@ -135,8 +138,12 @@ class _MetadataScreen extends State<MetadataScreen> {
         throw Exception('Transaction failed');
       }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget('Oh Snap!', 'Error when minting token.', 'error'),
+      );
       setState(() {
         success = false;
+        loadingText = '';
         loading = false;
       });
     }

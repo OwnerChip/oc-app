@@ -10,6 +10,8 @@ import '../widgets/AppBarWithLogo.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
+import '../widgets/CustomSnackBarContent.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key, required this.connector, this.loginWithMetaMask})
@@ -95,6 +97,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 onPressed: () => {launchUrl(generateLandingPageUrl())},
                 child: Text(context.loc.moreInfo),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: SizedBox(
+              width: 200,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey, // background
+                ),
+                onPressed: () => {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    returnSnackBarWidget(
+                        'Success!', 'This is a text', 'success'),
+                  )
+                },
+                child: Text('trigger popup'),
               ),
             ),
           ),
