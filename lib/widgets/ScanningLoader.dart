@@ -42,7 +42,7 @@ class _ScanningLoaderState extends State<ScanningLoader>
         Icons.wifi,
         color: Theme.of(context).primaryColor,
         size: 48.0,
-        semanticLabel: 'Text to announce in accessibility modes',
+        semanticLabel: 'Icon of a wifi signal',
       ),
     );
   }

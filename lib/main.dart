@@ -64,7 +64,6 @@ void main(List<String> args) async {
       RestartWidget(
           child: MyApp(
               initialRoute: initialRoute,
-              connector: connector,
               createWalletConnector: createWalletConnector)));
 }
 
@@ -72,12 +71,10 @@ class MyApp extends StatefulWidget {
   const MyApp(
       {Key? key,
       required this.initialRoute,
-      required this.connector,
       required this.createWalletConnector})
       : super(key: key);
 
   final String initialRoute;
-  final WalletConnect connector;
   final Function createWalletConnector;
 
   @override
@@ -85,7 +82,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyApp extends State<MyApp> {
-  //has to be initialized with WC instance
+  //connector has to be initialized with WC instance
   WalletConnect connector = WalletConnect(
       bridge: 'https://bridge.walletconnect.org',
       clientMeta: const PeerMeta(
@@ -98,9 +95,10 @@ class _MyApp extends State<MyApp> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    var asdf = await widget.createWalletConnector();
+    //after mounting connector is created
+    var _connector = await widget.createWalletConnector();
     setState(() {
-      connector = asdf;
+      connector = _connector;
     });
   }
 
@@ -132,7 +130,7 @@ class _MyApp extends State<MyApp> {
     connector.on(
         'connect',
         (payload) => {
-              //setstate to rerender app and show wallet icon in appbar correctly
+              //setstate to rerender UI and show wallet icon in appbar correctly
               setState(
                 () => {},
               )
@@ -153,7 +151,7 @@ class _MyApp extends State<MyApp> {
               RestartWidget.restartApp(context),
               NfcManager.instance.stopSession(),
               // connector.sessionStorage?.removeSession(),
-              //setstate to rerender app and show wallet icon in appbar correctly
+              //setstate to rerender UI and show wallet icon in appbar correctly
               setState(
                 () => {},
               )

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
 

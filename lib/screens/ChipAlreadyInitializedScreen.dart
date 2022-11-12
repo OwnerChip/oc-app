@@ -1,27 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/widgets/LoadingIndicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'dart:convert';
 import '../utils/localization.helper.dart';
 
-//nfc imports
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/platform_tags.dart';
-
 //web3 imports
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:web3dart/crypto.dart';
 
 // import local files
 import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
 import '../utils/url_generator.service.dart';
 import 'LoginScreen.dart';
-import '../nfc/commands.dart';
 import '../utils/utils.dart';
 import '../web3/web3.services.dart';
 import '../widgets/returnSnackBarWidget.dart';

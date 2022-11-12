@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
 import '../utils/localization.helper.dart';
-import 'dart:io';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';

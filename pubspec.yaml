@@ -49,3 +49,7 @@ flutter:
     - .env
   generate: true
   uses-material-design: true
+  fonts:
+    - family: Ubuntu
+      fonts:
+        - asset: assets/fonts/Ubuntu-Regular.ttf

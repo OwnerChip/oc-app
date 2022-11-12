@@ -1,14 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'dart:typed_data';
 import 'dart:io';
 import '../utils/localization.helper.dart';
 
 //web3 imports
-import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 //local imports
@@ -156,65 +153,62 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
           connector: widget.connector,
         ),
         body: SafeArea(
-            child: Row(children: [
-          Expanded(
-            flex: 8,
-            child: Center(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    Text('Token ID: ${navArgs.tokenId}'),
-                    // IMAGE
-                    if (imagePath != "")
-                      Image.file(
-                        File(imagePath),
-                        height: 200,
-                        width: 200,
-                      ),
-                    if (imagePath == "") const SizedBox(height: 50),
-                    if (imagePath == "")
-                      Text(statusText,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 20),
-                    // METADATA
-                    if (metadata['name'] != null)
-                      Text(/*context.loc.itemName + */ '${metadata['name']}',
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 20),
-                    if (metadata['description'] != null)
-                      Text(
-                          /*context.loc.itemDescription +
+          child: Center(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  Text('Token ID: ${navArgs.tokenId}'),
+                  // IMAGE
+                  if (imagePath != "")
+                    Image.file(
+                      File(imagePath),
+                      height: 270,
+                      // width: 300,
+                    ),
+                  if (imagePath == "") const SizedBox(height: 50),
+                  if (imagePath == "")
+                    Text(statusText,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  // METADATA
+                  if (metadata['name'] != null)
+                    Text(/*context.loc.itemName + */ '${metadata['name']}',
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  if (metadata['description'] != null)
+                    Text(
+                        /*context.loc.itemDescription +
                               */
-                          '${metadata['description']}',
-                          style: TextStyle(fontSize: 20)),
-                    const SizedBox(height: 50),
-                    SizedBox(
-                      width: 200,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () => {
-                          launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                              navArgs.tokenId.toString()))
-                        },
-                        child: Text(context.loc.showOnExplorer),
-                      ),
+                        '${metadata['description']}',
+                        style: TextStyle(fontSize: 20)),
+                  const SizedBox(height: 50),
+                  SizedBox(
+                    width: 200,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => {
+                        launchUrl(generateBlockchainExplorerTokenDetailsUrl(
+                            navArgs.tokenId.toString()))
+                      },
+                      child: Text(context.loc.showOnExplorer),
                     ),
-                    const SizedBox(height: 15),
-                    SizedBox(
-                      width: 200,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () => {
-                          launchUrl(generateOpenSeaTokenDetailsUrl(
-                              navArgs.tokenId.toString()))
-                        },
-                        child: Text(context.loc.showOnOpenSea),
-                      ),
+                  ),
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    width: 200,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => {
+                        launchUrl(generateOpenSeaTokenDetailsUrl(
+                            navArgs.tokenId.toString()))
+                      },
+                      child: Text(context.loc.showOnOpenSea),
                     ),
-                    /*const SizedBox(height: 15),
+                  ),
+                  /*const SizedBox(height: 15),
                     SizedBox(
                       width: 200,
                       height: 50,
@@ -227,22 +221,21 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         child: Text(context.loc.showNftInWallet),
                       ),
                     ),*/
-                    const SizedBox(height: 15),
-                    SizedBox(
-                        width: 200,
-                        height: 50,
-                        child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey, // background
-                            ),
-                            onPressed: () => {
-                                  Navigator.pushReplacementNamed(
-                                      context, LoginScreen.routeName)
-                                },
-                            child: Text(context.loc.home))),
-                  ]),
-            ),
-          )
-        ])));
+                  const SizedBox(height: 15),
+                  SizedBox(
+                      width: 200,
+                      height: 50,
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey, // background
+                          ),
+                          onPressed: () => {
+                                Navigator.pushReplacementNamed(
+                                    context, LoginScreen.routeName)
+                              },
+                          child: Text(context.loc.home))),
+                ]),
+          ),
+        ));
   }
 }
