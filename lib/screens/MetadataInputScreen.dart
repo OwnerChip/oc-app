@@ -109,7 +109,7 @@ class _MetadataScreen extends State<MetadataScreen> {
           dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.cardId);
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-      var txnHash = await widget.connector?.sendCustomRequest(
+      var txnHash = await widget.connector.sendCustomRequest(
           method: 'eth_sendTransaction',
           params: mintParams,
           id: makeRandomInt());
@@ -167,9 +167,9 @@ class _MetadataScreen extends State<MetadataScreen> {
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
           text: '${context.loc.initializeChip} (2/3)',
-          connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector.session.accounts.isEmpty == true
               ? null
-              : widget.connector?.session?.accounts![0].toLowerCase(),
+              : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
         ),
         body: SafeArea(

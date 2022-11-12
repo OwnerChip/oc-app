@@ -42,10 +42,10 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
 
       var burnParams = makeBurnParams(
-          widget.connector?.session!.accounts[0], contractAddress!, tokenId);
+          widget.connector.session.accounts[0], contractAddress!, tokenId);
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-      var txnHash = await widget.connector?.sendCustomRequest(
+      var txnHash = await widget.connector.sendCustomRequest(
           method: 'eth_sendTransaction',
           params: burnParams,
           id: makeRandomInt());
@@ -96,9 +96,9 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         appBar: AppBarWithLogo(
           loginFunction: () => {},
           text: context.loc.initializeChip,
-          connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector.session.accounts.isEmpty == true
               ? null
-              : widget.connector?.session?.accounts![0].toLowerCase(),
+              : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
         ),
         body: SafeArea(

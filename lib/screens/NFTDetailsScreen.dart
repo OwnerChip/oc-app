@@ -102,7 +102,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     try {
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       // TODO: nothing happens yet ?!
-      await widget.connector?.sendCustomRequest(
+      await widget.connector.sendCustomRequest(
           method: 'wallet_watchAsset',
           params: makeWatchAssetParams(imageUri),
           id: makeRandomInt());
@@ -147,9 +147,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
           text: context.loc.nftDetails,
-          connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector.session.accounts.isEmpty == true
               ? null
-              : widget.connector?.session?.accounts![0].toLowerCase(),
+              : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
         ),
         body: SafeArea(
