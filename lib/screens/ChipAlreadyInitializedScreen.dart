@@ -7,6 +7,7 @@ import '../utils/localization.helper.dart';
 //web3 imports
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:web3dart/crypto.dart';
 
 // import local files
 import '../widgets/AppBarWithLogo.dart';
@@ -162,6 +163,9 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                           width: 200,
                           height: 50,
                           child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                              ),
                               onPressed:
                                   loading ? null : () => {burnToken(tokenId)},
                               child: loading
@@ -177,6 +181,9 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                           width: 200,
                           height: 50,
                           child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                            ),
                             onPressed: () => {
                               launchUrl(
                                   generateBlockchainExplorerTokenDetailsUrl(
@@ -193,9 +200,12 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                           width: 200,
                           height: 50,
                           child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                              ),
                               onPressed: () => {
                                     launchUrl(generateOpenSeaTokenDetailsUrl(
-                                        tokenId.toString()))
+                                        bytesToInt(tokenId).toString()))
                                   },
                               child: Text(context.loc.showOnOpenSea)),
                         ),

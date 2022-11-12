@@ -248,6 +248,10 @@ class _MetadataScreen extends State<MetadataScreen> {
                             Container(
                               width: 150,
                               child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                ),
                                 onPressed: () {
                                   setCameraImage();
                                 },
@@ -257,6 +261,10 @@ class _MetadataScreen extends State<MetadataScreen> {
                             Container(
                               width: 150,
                               child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                ),
                                 onPressed: () {
                                   setGalleryImage();
                                 },
@@ -273,6 +281,9 @@ class _MetadataScreen extends State<MetadataScreen> {
                       child: (loading
                           ? LoadingIndicator(loadingText: loadingText)
                           : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                              ),
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   if (image != null) {

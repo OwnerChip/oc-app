@@ -158,6 +158,9 @@ class _MyApp extends State<MyApp> {
             });
 
     return MaterialApp(
+      //color from hex
+
+      theme: ThemeData(primaryColor: Color.fromARGB(255, 77, 122, 255)),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,

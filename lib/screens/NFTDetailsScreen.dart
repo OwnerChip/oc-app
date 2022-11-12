@@ -189,6 +189,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                     width: 200,
                     height: 50,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                      ),
                       onPressed: () => {
                         launchUrl(generateBlockchainExplorerTokenDetailsUrl(
                             navArgs.tokenId.toString()))
@@ -201,6 +204,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                     width: 200,
                     height: 50,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                      ),
                       onPressed: () => {
                         launchUrl(generateOpenSeaTokenDetailsUrl(
                             navArgs.tokenId.toString()))

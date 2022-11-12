@@ -78,6 +78,10 @@ class UserScanResultsScreen extends StatelessWidget {
                                       walletAddress: navArgs.chipWalletAddress),
                                   //button that navigates to nft details screen
                                   OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor:
+                                            Theme.of(context).primaryColor,
+                                      ),
                                       onPressed: () {
                                         print(context);
                                         Navigator.of(context).pushNamed(
@@ -144,8 +148,12 @@ class UserScanResultsScreen extends StatelessWidget {
                                   Text(context.loc.noWalletConnected,
                                       style: TextStyle(fontSize: 14)),
                                   const SizedBox(height: 3),
-                                  connector.session!.accounts!.isEmpty
+                                  connector.session.accounts.isEmpty
                                       ? OutlinedButton(
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor:
+                                                Theme.of(context).primaryColor,
+                                          ),
                                           onPressed: (() => {
                                                 loginWithMetaMask!(context),
                                               }),
@@ -164,6 +172,10 @@ class UserScanResultsScreen extends StatelessWidget {
                                           style: TextStyle(fontSize: 14)),
                                       const SizedBox(height: 3),
                                       OutlinedButton(
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor:
+                                                Theme.of(context).primaryColor,
+                                          ),
                                           onPressed: (() => {launchWallet()}),
                                           child: Text(
                                               context.loc.openWalletToView))

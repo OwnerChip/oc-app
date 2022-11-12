@@ -43,6 +43,9 @@ class _LoginScreenState extends State<LoginScreen> {
             width: 200,
             height: 150,
             child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
                 onPressed: widget.connector.connected
                     ? () => Navigator.pushNamed(
                         context, ScanningScreen.routeName,
@@ -65,6 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
             width: 200,
             height: 150,
             child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+              ),
               onPressed: () => Navigator.pushNamed(
                   context, ScanningScreen.routeName,
                   arguments: ScanningScreenArguments(
