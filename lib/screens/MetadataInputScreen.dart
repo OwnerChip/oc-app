@@ -139,7 +139,8 @@ class _MetadataScreen extends State<MetadataScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget('Oh Snap!', 'Error when minting token.', 'error'),
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
       );
       setState(() {
         success = false;

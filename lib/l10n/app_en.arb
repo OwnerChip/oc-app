@@ -10,7 +10,8 @@
     "burnToken": "Burn token",
     "logout": "Logout",
     "scanning": "Scanning",
-    "nfcError": "IsoDep is not supported.",
+    "nfcError": "Error tapping NFC tag.",
+    "isoDepError": "IsoDep is not supported.",
     "ownerError": "Error fetching owner",
     "burning": "delete",
     "burnedSuccess": "Token burned.",
@@ -54,7 +55,10 @@
     "nftCheck": "NFT check",
     "uploadingMetadata": "Uploading metadata",
     "mintingToken": "Minting token",
-    "warning": "Warning",
     "pleaseEnterText": "Please enter text",
-    "showNftInWallet": "Show NFT in Wallet"
+    "warning": "Warning",
+    "showNftInWallet": "Show NFT in Wallet",
+    "successHeadingSnackbar": "Success!",
+    "errorHeadingSnackBar": "Oh Snap!",
+    "loadingNFTDataError": "Error loading NFT data from IPFS."
 }

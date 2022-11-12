@@ -63,8 +63,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       if (txnReceipt?.status == true) {
         //this means burn succeeded
         ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-              'Success!', 'Successfully burned token.', 'success'),
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.burnedSuccess, 'success'),
         );
         //delay 1 second
         await Future.delayed(Duration(seconds: 1));
@@ -81,7 +81,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget('Oh Snap!', 'Error when burning token.', 'error'),
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, context.loc.burnedError, 'error'),
       );
       setState(() {
         loading = false;

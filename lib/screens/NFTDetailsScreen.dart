@@ -19,6 +19,7 @@ import '../web3/web3.services.dart';
 import '../utils/url_generator.service.dart';
 import '../utils/utils.dart';
 import '../screens/LoginScreen.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -57,6 +58,11 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       result = metadata;
     } catch (e) {
       print("error $e");
+      // throw Exception("Error fetching metadata: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.loadingNFTDataError, 'error'),
+      );
     }
     return result;
   }
@@ -64,26 +70,35 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   // get the path of the associated image locally if available OR from IPFS if not
   Future<void> _fetchImage(
       String imgPath, Future<Map<String, dynamic>> meta) async {
-    if (imgPath != "") {
-      metadata = await meta;
-      imagePath = imgPath;
-    } else {
-      Map<String, dynamic> metaSync = await meta;
-      if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
-        String imageCid = getCidFromIpfsLink(metaSync['image']!);
-        Map<String, String> result = await downloadImageFileFromIPFS(imageCid);
-        imagePath = result['imagePath']!;
-        imageUri = result['imageUri']!;
+    try {
+      if (imgPath != "") {
+        metadata = await meta;
+        imagePath = imgPath;
+      } else {
+        Map<String, dynamic> metaSync = await meta;
+        if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
+          String imageCid = getCidFromIpfsLink(metaSync['image']!);
+          Map<String, String> result =
+              await downloadImageFileFromIPFS(imageCid);
+          imagePath = result['imagePath']!;
+          imageUri = result['imageUri']!;
+        }
       }
-    }
 
-    // updateScreen
-    statusText = context.loc.itemData;
-    setState(() {
-      metadata;
-      imagePath;
-      statusText = "";
-    });
+      // updateScreen
+      statusText = context.loc.itemData;
+      setState(() {
+        metadata;
+        imagePath;
+        statusText = "";
+      });
+    } catch (e) {
+      print("error fetching image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.loadingNFTDataError, 'error'),
+      );
+    }
   }
 
   Future<void> _addNftToMetamask(String tokenId) async {
@@ -101,11 +116,21 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
 
   @override
   void didChangeDependencies() {
-    final NFTDetailsScreenArguments navArgs =
-        ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
-    Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
-    String imgPath = (navArgs.localImagePath) ?? "";
-    _fetchImage(imgPath, meta);
+    try {
+      final NFTDetailsScreenArguments navArgs = ModalRoute.of(context)!
+          .settings
+          .arguments as NFTDetailsScreenArguments;
+      Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
+      String imgPath = (navArgs.localImagePath) ?? "";
+      _fetchImage(imgPath, meta);
+    } catch (e) {
+      //snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.loadingNFTDataError, 'error'),
+      );
+      print(e);
+    }
   }
 
   @override
