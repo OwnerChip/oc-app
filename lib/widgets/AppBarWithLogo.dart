@@ -35,7 +35,10 @@ class AppBarWithLogo extends StatelessWidget with PreferredSizeWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(left: 15),
-                child: Text(text),
+                child: Text(text,
+                    style: const TextStyle(
+                      fontFamily: 'Ubuntu',
+                    )),
               ),
             ],
           ),
@@ -49,7 +52,10 @@ class AppBarWithLogo extends StatelessWidget with PreferredSizeWidget {
               : IconButton(
                   icon: const Icon(Icons.logout),
                   color: Colors.black,
-                  onPressed: () => connector.killSession(),
+                  onPressed: () => {
+                    print('button pressed'),
+                    connector.killSession(),
+                  },
                   iconSize: 36,
                 ),
         ],

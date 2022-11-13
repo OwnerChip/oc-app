@@ -21,6 +21,7 @@ import '../nfc/commands.dart';
 import '../web3/web3.services.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../widgets/ScanningLoader.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
@@ -38,44 +39,55 @@ class ScanningScreen extends StatefulWidget {
 //flutter stateless widget
 class _ScanningScreen extends State<ScanningScreen> {
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     initScanning();
   }
 
   void initScanning() async {
     String nftOwner;
-    bool chipIsInitialized;
+    bool chipIsInitialized = false;
     dynamic tokenId;
 
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      final navArgs =
-          ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
-      var isoDep = IsoDep.from(tag);
-      if (isoDep == null) {
-        //TODO: Set some error state
-        NfcManager.instance.stopSession();
-        return;
-      }
-
       try {
-        var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
+        //check if there is internet connections
+        if (!await checkInternetConnection()) {
+          throw Exception("No internet connection");
+        }
 
-        Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
+        final navArgs = ModalRoute.of(context)!.settings.arguments
+            as ScanningScreenArguments;
+
+        var isoDep = IsoDep.from(tag);
+        //check if isodep is available and exit if not
+        if (isoDep == null) {
+          NfcManager.instance.stopSession();
+          throw Exception('Tag is not ISO-DEP.');
+        }
+        var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
+        Uint8List GET_KEY_INFO = make_get_key_info_command(
+            0x01); //make command to get first generated wallet
         var responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
+
+        //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
+        if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
+            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
+          print('first key does not exist yet');
+          //if first generated wallet does not yet exist, generate it on chip
+          var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
+          //get first key info after generating new key
+          responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
+        }
+        //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
+        else if (!(responseGetKeyInfo[responseGetKeyInfo.length - 2] == 144 &&
+            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 00)) {
+          throw Exception("Error while generating key");
+        }
+        print('first key already exists');
         var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
         var uint8Address = publicKeyToAddress(uin8key);
         var chipWalletAddress = makeHexFromUint8List(uint8Address);
-
-        //check if first key does not exist yet exist
-        if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
-            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
-          //key does not exist
-          chipIsInitialized = false;
-        } else {
-          //key exists
-          chipIsInitialized = true;
-        }
 
         //get cardID and convert to int (tokenId)
         var cardId = selectAppResponse.sublist(1, 11);
@@ -84,7 +96,11 @@ class _ScanningScreen extends State<ScanningScreen> {
           tokenId = bytesToInt(cardId);
           EthereumAddress ownerAddress = await getOwner(tokenId);
           nftOwner = ownerAddress.toString();
+
+          //chip is initialized if this didnt catch!
+          chipIsInitialized = true;
         } catch (e) {
+          //NFT with this token ID does not have an owner/does not exist
           print(e);
           chipIsInitialized = false;
           tokenId = null;
@@ -95,28 +111,38 @@ class _ScanningScreen extends State<ScanningScreen> {
         //navigate to UserScanResultsScreen
         if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
           // ignore: use_build_context_synchronously
-          Navigator.pushNamed(context, UserScanResultsScreen.routeName,
+          Navigator.pushReplacementNamed(
+              context, UserScanResultsScreen.routeName,
               arguments: UserScanResultsScreenArguments(
                   nftOwner, chipIsInitialized, tokenId, chipWalletAddress));
         } else {
-          //navigate to ChipAlreadyInitializedScreen
+          //chip already initialized: navigate to ChipAlreadyInitializedScreen
           if (chipIsInitialized) {
             // ignore: use_build_context_synchronously
-            Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
+            Navigator.pushReplacementNamed(
+                context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
                     cardId, chipWalletAddress));
           } else {
-            //navigate to MetadataInputScreen
+            //chip not initialized: navigate to MetadataScreen
             // ignore: use_build_context_synchronously
-            Navigator.pushNamed(context, MetadataScreen.routeName,
+            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
                     cardId, chipWalletAddress));
           }
         }
       } catch (e) {
-        print(context.loc.nfcError + ": $e");
-        //TODO: Set some error state and display in UI
+        //error reading chip
+        print(context.loc.isoDepError + ": $e");
         NfcManager.instance.stopSession();
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
+        );
+        //delay for 1 second
+        await Future.delayed(Duration(seconds: 1));
+        //navigate back to previous screen
+        Navigator.pop(context);
       }
     });
   }
@@ -150,11 +176,11 @@ class _ScanningScreen extends State<ScanningScreen> {
             overflow: TextOverflow.fade,
           ),
           SizedBox(height: 90),
-          Icon(
+          const Icon(
             Icons.nfc,
             color: Colors.black,
             size: 96.0,
-            semanticLabel: 'Text to announce in accessibility modes',
+            semanticLabel: 'NFC Icon',
           ),
           const SizedBox(height: 15),
           const ScanningLoader(),
@@ -163,7 +189,7 @@ class _ScanningScreen extends State<ScanningScreen> {
             Icons.smartphone,
             color: Colors.black,
             size: 96.0,
-            semanticLabel: 'Text to announce in accessibility modes',
+            semanticLabel: 'Smartphone Icon',
           ),
           const SizedBox(height: 90),
           ElevatedButton(

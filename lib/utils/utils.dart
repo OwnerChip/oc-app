@@ -1,6 +1,19 @@
 import 'package:flutter/foundation.dart';
-import 'package:web3dart/crypto.dart';
 import 'dart:math';
+import 'dart:io';
+
+//check for internet connection
+Future<bool> checkInternetConnection() async {
+  try {
+    final result = await InternetAddress.lookup('example.com');
+    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+      return true;
+    }
+    return false;
+  } on SocketException catch (_) {
+    return false;
+  }
+}
 
 //generates random integer between 0 and 2^32
 int makeRandomInt() {
