@@ -15,7 +15,7 @@ import '../ipfs/ipfs.services.dart';
 import '../web3/web3.services.dart';
 import '../utils/url_generator.service.dart';
 import '../utils/utils.dart';
-import '../screens/LoginScreen.dart';
+import 'HomeScreen.dart';
 import '../widgets/returnSnackBarWidget.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
@@ -113,6 +113,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
 
   @override
   void didChangeDependencies() {
+    super.didChangeDependencies();
     try {
       final NFTDetailsScreenArguments navArgs = ModalRoute.of(context)!
           .settings

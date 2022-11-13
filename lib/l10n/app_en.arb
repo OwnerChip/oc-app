@@ -60,5 +60,7 @@
     "showNftInWallet": "Show NFT in Wallet",
     "successHeadingSnackbar": "Success!",
     "errorHeadingSnackBar": "Oh Snap!",
-    "loadingNFTDataError": "Error loading NFT data from IPFS."
+    "loadingNFTDataError": "Error loading NFT data from IPFS.",
+    "errorConnectingWallet": "Error when connecting wallet."
+
 }

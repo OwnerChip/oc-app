@@ -39,8 +39,8 @@ class ScanningScreen extends StatefulWidget {
 //flutter stateless widget
 class _ScanningScreen extends State<ScanningScreen> {
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     initScanning();
   }
 
@@ -66,23 +66,25 @@ class _ScanningScreen extends State<ScanningScreen> {
           throw Exception('Tag is not ISO-DEP.');
         }
         var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
-        Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
+        Uint8List GET_KEY_INFO = make_get_key_info_command(
+            0x01); //make command to get first generated wallet
         var responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
 
-        //check if first key does not exist yet exist
+        //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
             responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
+          print('first key does not exist yet');
           //if first generated wallet does not yet exist, generate it on chip
           var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
-          //get new key info after generating new key
+          //get first key info after generating new key
           responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
-          print(responseGetKeyInfo);
         }
         //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
         else if (!(responseGetKeyInfo[responseGetKeyInfo.length - 2] == 144 &&
             responseGetKeyInfo[responseGetKeyInfo.length - 1] == 00)) {
           throw Exception("Error while generating key");
         }
+        print('first key already exists');
         var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
         var uint8Address = publicKeyToAddress(uin8key);
         var chipWalletAddress = makeHexFromUint8List(uint8Address);
@@ -174,11 +176,11 @@ class _ScanningScreen extends State<ScanningScreen> {
             overflow: TextOverflow.fade,
           ),
           SizedBox(height: 90),
-          Icon(
+          const Icon(
             Icons.nfc,
             color: Colors.black,
             size: 96.0,
-            semanticLabel: 'Text to announce in accessibility modes',
+            semanticLabel: 'NFC Icon',
           ),
           const SizedBox(height: 15),
           const ScanningLoader(),
@@ -187,7 +189,7 @@ class _ScanningScreen extends State<ScanningScreen> {
             Icons.smartphone,
             color: Colors.black,
             size: 96.0,
-            semanticLabel: 'Text to announce in accessibility modes',
+            semanticLabel: 'Smartphone Icon',
           ),
           const SizedBox(height: 90),
           ElevatedButton(

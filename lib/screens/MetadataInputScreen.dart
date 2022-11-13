@@ -121,11 +121,11 @@ class _MetadataScreen extends State<MetadataScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
 
       if (txnReceipt?.status == true) {
-        setState(() {
-          success = true;
-          loadingText = '';
-          loading = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.mintSuccess, 'success'),
+        );
+        await Future.delayed(const Duration(seconds: 1));
 
         // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
@@ -134,6 +134,12 @@ class _MetadataScreen extends State<MetadataScreen> {
                 bytesToInt(navArgs.cardId),
                 navArgs.chipWalletAddress,
                 image.path));
+
+        setState(() {
+          success = true;
+          loadingText = '';
+          loading = false;
+        });
       } else {
         throw Exception('Transaction failed');
       }

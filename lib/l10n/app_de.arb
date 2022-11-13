@@ -60,5 +60,6 @@
     "showNftInWallet": "NFT in Wallet ansehen",
     "successHeadingSnackbar": "Success!",
     "errorHeadingSnackBar": "Fehler!",
-    "loadingNFTDataError": "Daten konnten nicht geladen werden."
+    "loadingNFTDataError": "Daten konnten nicht geladen werden.",
+    "errorConnectingWallet": "Fehler beim Verbinden der Wallet."
 }

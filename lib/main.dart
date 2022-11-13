@@ -11,13 +11,14 @@ import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
 
 //screens and widgets
-import 'screens/LoginScreen.dart';
+import 'screens/HomeScreen.dart';
 import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'widgets/RestartWidget.dart';
+import 'widgets/returnSnackBarWidget.dart';
 
 // setup logger
 void _setupLogging() {
@@ -94,7 +95,8 @@ class _MyApp extends State<MyApp> {
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-
+    //stop scanning for NFC tags in case the app is restarted
+    NfcManager.instance.stopSession();
     //after mounting connector is created
     var _connector = await widget.createWalletConnector();
     setState(() {
@@ -120,6 +122,11 @@ class _MyApp extends State<MyApp> {
           return;
         }
       } catch (e) {
+        //returnSnackBar
+        ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar,
+            context.loc.errorConnectingWallet,
+            'success'));
         print(e);
       }
     }
@@ -160,7 +167,9 @@ class _MyApp extends State<MyApp> {
     return MaterialApp(
       //color from hex
 
-      theme: ThemeData(primaryColor: Color.fromARGB(255, 77, 122, 255)),
+      theme: ThemeData(
+          primaryColor: Color.fromARGB(
+              255, 77, 122, 255)), //TODO: extract color to env file???
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,

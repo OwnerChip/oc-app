@@ -13,7 +13,7 @@ import 'package:web3dart/crypto.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
 import '../utils/url_generator.service.dart';
-import 'LoginScreen.dart';
+import 'HomeScreen.dart';
 import '../utils/utils.dart';
 import '../web3/web3.services.dart';
 import '../widgets/returnSnackBarWidget.dart';
