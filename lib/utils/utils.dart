@@ -50,6 +50,15 @@ String getEthereumAddressFromUint8List(Iterable list) {
   return concatenate.toString();
 }
 
+// function to convert Uint8List to hex left padded to 32 bytes
+String uint8ListTo32ByteHex(Uint8List uint8List) {
+  var hex = '';
+  for (var i = 0; i < uint8List.length; i++) {
+    hex += uint8List[i].toRadixString(16).padLeft(2, '0');
+  }
+  return hex.padLeft(64, '0');
+}
+
 // wrapper
 String getEthereumAddressHexString(Uint8List ethereumAddress) {
   return getEthereumAddressFromUint8List(ethereumAddress);

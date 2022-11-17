@@ -60,6 +60,16 @@ class _ScanningScreen extends State<ScanningScreen> {
           throw Exception("No internet connection");
         }
 
+        final navArgs = ModalRoute.of(context)!.settings.arguments
+            as ScanningScreenArguments;
+
+        var isoDep = IsoDep.from(tag);
+        //check if isodep is available and exit if not
+        if (isoDep == null) {
+          NfcManager.instance.stopSession();
+          throw Exception('Tag is not ISO-DEP.');
+        }
+
         Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
         Uint8List responseGetKeyInfo =
             await isoDep.transceive(data: GET_KEY_INFO);

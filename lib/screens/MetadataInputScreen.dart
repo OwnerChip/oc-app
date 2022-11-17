@@ -94,7 +94,7 @@ class _MetadataScreen extends State<MetadataScreen> {
     XFile jsonFile = XFile(file.path);
 
     // upload metadata json to ipfs
-    String cid = await uploadFileToIPFS(jsonFile, 'application/json');
+    cid = await uploadFileToIPFS(jsonFile, 'application/json');
     String fullUri = "ipfs://$cid";
 
     // generate mint parameters
@@ -124,7 +124,7 @@ class _MetadataScreen extends State<MetadataScreen> {
 
       // generate mint parameters
       var mintParams = makeMintParams(walletAddress,
-          dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.cardId);
+          dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.tokenId);
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(

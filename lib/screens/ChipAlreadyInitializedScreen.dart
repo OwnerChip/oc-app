@@ -41,8 +41,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       loadingText = context.loc.burnToken;
     });
     try {
-      var burnParams = makeBurnParams(
-          widget.connector?.session!.accounts[0], tokenIdHash, signature);
+      var burnParams = makeBurnParams(widget.connector?.session!.accounts[0],
+          dotenv.get('CONTRACT_ADDRESS'), tokenId);
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(
@@ -59,14 +59,6 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         );
         //delay 1 second
         await Future.delayed(Duration(seconds: 1));
-
-        //navigate to login screen
-        // ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-        setState(() {
-          loading = false;
-          loadingText = '';
-        });
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -219,8 +211,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                                 backgroundColor: Colors.grey, // background
                               ),
                               onPressed: () => {
-                                    Navigator.pushNamed(
-                                        context, LoginScreen.routeName)
+                                    Navigator.pushReplacementNamed(
+                                        context, '/login')
                                   },
                               child: Text(context.loc.cancel)),
                         ),
