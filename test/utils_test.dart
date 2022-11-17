@@ -1,21 +1,99 @@
 import 'package:flutter/foundation.dart';
 import 'package:test/test.dart';
 import 'package:owner_chip_admin_demo/utils/utils.dart';
+import 'package:web3dart/crypto.dart';
 import 'dart:convert';
 
 void main() {
   group('bigInt helpers', () {
     test('should parse a hex string to BigInt number', () {
       // arrange
-      String ethAddress = "0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e";
-      Uint8List ethAddressBytes = Uint8List.fromList(utf8.encode(ethAddress));
+      Uint8List pubKey = Uint8List.fromList([
+        122,
+        88,
+        136,
+        89,
+        86,
+        209,
+        52,
+        249,
+        9,
+        89,
+        204,
+        102,
+        207,
+        33,
+        1,
+        207,
+        105,
+        180,
+        35,
+        124,
+        52,
+        95,
+        7,
+        2,
+        151,
+        134,
+        230,
+        178,
+        235,
+        15,
+        141,
+        211,
+        130,
+        95,
+        126,
+        206,
+        107,
+        57,
+        29,
+        254,
+        168,
+        119,
+        170,
+        16,
+        237,
+        107,
+        3,
+        221,
+        17,
+        208,
+        115,
+        78,
+        216,
+        154,
+        124,
+        25,
+        16,
+        91,
+        172,
+        170,
+        106,
+        17,
+        54,
+        73
+      ]);
+      Uint8List ethAddressBytes = publicKeyToAddress(pubKey);
 
       // act
       BigInt tokenId = hexToBigInt(ethAddressBytes);
 
       // assert
-      expect(tokenId,
-          BigInt.parse("643025298622660478098289384378752240690720980366"));
+      expect(tokenId.toString(),
+          "643025298622660478098289384378752240690720980366");
+    });
+
+    test('should transform a BigInt number to a hexString', () {
+      // arrange
+      BigInt tokenId =
+          BigInt.parse("643025298622660478098289384378752240690720980366");
+
+      // act
+      String ethAddress = convertTokenIdToEthereumAddress(tokenId);
+
+      // assert
+      expect(ethAddress, "0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e");
     });
   });
 }
