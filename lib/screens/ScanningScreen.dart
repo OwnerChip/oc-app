@@ -1,20 +1,13 @@
 import 'dart:convert';
-
+import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
 import '../utils/localization.helper.dart';
-import 'package:convert/convert.dart';
-
-//web3 imports
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-
-//nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
-
-//local imports
 import 'UserScanResultsScreen.dart';
 import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
@@ -70,6 +63,7 @@ class _ScanningScreen extends State<ScanningScreen> {
           throw Exception('Tag is not ISO-DEP.');
         }
 
+        var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
         Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
         Uint8List responseGetKeyInfo =
             await isoDep.transceive(data: GET_KEY_INFO);

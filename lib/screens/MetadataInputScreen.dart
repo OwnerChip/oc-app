@@ -179,8 +179,8 @@ class _MetadataScreen extends State<MetadataScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as ChipAlreadyInitializedScreenArguments;
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
