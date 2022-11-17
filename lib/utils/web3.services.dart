@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
@@ -33,12 +34,21 @@ Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
 
 Future<bool> verifyTokenSigner(String chipWalletAddressHex,
     Uint8List tokenIdHash, MsgSignature signature) async {
+  Uint8List r = Uint8List.fromList(utf8.encode(signature.r.toString()));
+  Uint8List s = Uint8List.fromList(utf8.encode(signature.s.toString()));
+  Uint8List v = Uint8List.fromList(utf8.encode(signature.v.toString()));
+  var bytes = BytesBuilder();
+  bytes.add(tokenIdHash);
+  bytes.add(r);
+  bytes.add(s);
+  bytes.add(v);
+  Uint8List data = bytes.toBytes();
   try {
-    var result = await query(
-        "getSigner", [tokenIdHash, signature.r, signature.s, signature.v]);
+    var result = await query("getSigner", keccak256(data));
     bool res = (chipWalletAddressHex == result[0]);
     return res;
   } catch (e) {
+    print("getSigner ERROR: $e");
     return false;
   }
 }

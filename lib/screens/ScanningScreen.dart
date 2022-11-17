@@ -72,9 +72,9 @@ class _ScanningScreen extends State<ScanningScreen> {
         Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
         String chipEthereumAddressHexString =
             getEthereumAddressHexString(chipEthereumAddress);
-        print("HexString Address: $chipEthereumAddressHexString");
+        print("$chipEthereumAddressHexString  (Card ID as HexString)");
         BigInt chipTokenId = hexToBigInt(chipEthereumAddress);
-        print("BigInt TokenId: $chipTokenId");
+        print("$chipTokenId (Card ID as bigInt)");
 
         //check if first key does not exist yet exist
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
@@ -87,26 +87,32 @@ class _ScanningScreen extends State<ScanningScreen> {
         }
 
         // get SIGNATURE from NFC chip
-        final Uint8List hashedTokenId =
-            prepareMsgForSignature(chipEthereumAddressHexString);
-        final Uint8List GET_SIGNATURE =
-            make_signature_command(0x01, hashedTokenId);
+        final Uint8List hashedTokenId = keccakUtf8(chipTokenId.toString());
+        final Uint8List getSigCmd = make_signature_command(0x01, hashedTokenId);
         final Uint8List responseGetSignature =
-            await isoDep.transceive(data: GET_SIGNATURE);
-        final MsgSignature signature = extractSignature(responseGetSignature);
+            await isoDep.transceive(data: getSigCmd);
 
-        // TEST: verify signature
-        bool testResult =
-            isValidSignature(hashedTokenId, signature, chipPubKey);
-        print(testResult);
+        // TEST: extract and implicitly verify signature
+        final MsgSignature signature =
+            extractSignature(chipTokenId, responseGetSignature);
 
-        // verify chip authenticity
+        // only if true, is the tokenId corresponding to the chip!
+        bool verificationResult =
+            verifySignature(chipTokenId, signature.r, signature.s);
+        if (!verificationResult) {
+          throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
+        }
+
+        /* TODO: verify chip authenticity via SMART CONTRACT
+        // To achieve this, the msg hash needs to be prefixed --> use prepareMsgForSignature()
         try {
           bool result = await verifyTokenSigner(
               chipEthereumAddressHexString, hashedTokenId, signature);
+          print(result);
         } catch (e) {
           print("ERROR: $e");
         }
+        */
 
         // get owner of nft with chipEthereumAddress == tokenId
         try {
