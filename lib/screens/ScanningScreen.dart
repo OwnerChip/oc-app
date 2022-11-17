@@ -25,6 +25,7 @@ import '../utils/nfc.commands.dart';
 import '../utils/web3.services.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../widgets/ScanningLoader.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
@@ -42,28 +43,22 @@ class ScanningScreen extends StatefulWidget {
 //flutter stateless widget
 class _ScanningScreen extends State<ScanningScreen> {
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     initScanning();
   }
 
   void initScanning() async {
     String nftOwner;
-    bool chipIsInitialized;
+    bool chipIsInitialized = false;
     dynamic tokenId;
 
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      final navArgs =
-          ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
-      var isoDep = IsoDep.from(tag);
-      if (isoDep == null) {
-        //TODO: Set some error state
-        NfcManager.instance.stopSession();
-        return;
-      }
-
       try {
-        var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
+        //check if there is internet connections
+        if (!await checkInternetConnection()) {
+          throw Exception("No internet connection");
+        }
 
         Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
         Uint8List responseGetKeyInfo =
@@ -119,7 +114,10 @@ class _ScanningScreen extends State<ScanningScreen> {
           EthereumAddress ownerAddress = await getOwner(chipTokenId);
           nftOwner = ownerAddress.toString();
           tokenId = chipTokenId;
+          //chip is initialized if this didnt catch!
+          chipIsInitialized = true;
         } catch (e) {
+          //NFT with this token ID does not have an owner/does not exist
           print(e);
           chipIsInitialized = false;
           tokenId = null;
@@ -130,24 +128,26 @@ class _ScanningScreen extends State<ScanningScreen> {
         //navigate to UserScanResultsScreen
         if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
           // ignore: use_build_context_synchronously
-          Navigator.pushNamed(context, UserScanResultsScreen.routeName,
+          Navigator.pushReplacementNamed(
+              context, UserScanResultsScreen.routeName,
               arguments: UserScanResultsScreenArguments(
                   nftOwner,
                   chipIsInitialized,
                   chipTokenId,
                   chipEthereumAddressHexString));
         } else {
-          //navigate to ChipAlreadyInitializedScreen
+          //chip already initialized: navigate to ChipAlreadyInitializedScreen
           if (chipIsInitialized) {
             // ignore: use_build_context_synchronously
-            Navigator.pushNamed(context, ChipAlreadyInitializedScreen.routeName,
+            Navigator.pushReplacementNamed(
+                context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
                     chipEthereumAddress,
                     chipEthereumAddressHexString,
                     hashedTokenId,
                     signature));
           } else {
-            //navigate to MetadataInputScreen
+            //chip not initialized: navigate to MetadataScreen
             // ignore: use_build_context_synchronously
             Navigator.pushNamed(context, MetadataScreen.routeName,
                 arguments: ChipInitializedArguments(chipEthereumAddress,
@@ -155,9 +155,17 @@ class _ScanningScreen extends State<ScanningScreen> {
           }
         }
       } catch (e) {
-        print(context.loc.nfcError + ": $e");
-        //TODO: Set some error state and display in UI
+        //error reading chip
+        print(context.loc.isoDepError + ": $e");
         NfcManager.instance.stopSession();
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
+        );
+        //delay for 1 second
+        await Future.delayed(Duration(seconds: 1));
+        //navigate back to previous screen
+        Navigator.pop(context);
       }
     });
   }
@@ -191,11 +199,11 @@ class _ScanningScreen extends State<ScanningScreen> {
             overflow: TextOverflow.fade,
           ),
           SizedBox(height: 90),
-          Icon(
+          const Icon(
             Icons.nfc,
             color: Colors.black,
             size: 96.0,
-            semanticLabel: 'Text to announce in accessibility modes',
+            semanticLabel: 'NFC Icon',
           ),
           const SizedBox(height: 15),
           const ScanningLoader(),
@@ -204,7 +212,7 @@ class _ScanningScreen extends State<ScanningScreen> {
             Icons.smartphone,
             color: Colors.black,
             size: 96.0,
-            semanticLabel: 'Text to announce in accessibility modes',
+            semanticLabel: 'Smartphone Icon',
           ),
           const SizedBox(height: 90),
           ElevatedButton(

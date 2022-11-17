@@ -23,6 +23,7 @@ import '../utils/navigation_arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
 import '../widgets/LoadingIndicator.dart';
 import '../widgets/ChipInfo.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -84,11 +85,7 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     // upload image to ipfs
     String imageCid;
-    String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
-    if (image != null) {
-      imageCid = await uploadFileToIPFS(image!, mimeType);
-      metadata['image'] = 'ipfs://$imageCid';
-    }
+    String cid = '';
 
     // generate JSON file
     final Directory directory = Directory.systemTemp;
@@ -109,9 +106,28 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     // TODO: transaction does not always pop up in Metamask!
     try {
+      String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
+
+      if (image != null) {
+        imageCid = await uploadFileToIPFS(image!, mimeType);
+        metadata['image'] = 'ipfs://$imageCid';
+      }
+
+      // generate JSON file
+      final Directory directory = Directory.systemTemp;
+      final File file = File('${directory.path}/metadata.json');
+      await file.writeAsString(json.encode(metadata));
+      XFile jsonFile = XFile(file.path);
+
+      // upload metadata json to ipfs
+      cid = await uploadFileToIPFS(jsonFile, 'application/json');
+
+      // generate mint parameters
+      var mintParams = makeMintParams(walletAddress,
+          dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.cardId);
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-      var txnHash = await widget.connector?.sendCustomRequest(
+      var txnHash = await widget.connector.sendCustomRequest(
           method: 'eth_sendTransaction',
           params: ['mintParams'],
           id: makeRandomInt());
@@ -123,21 +139,32 @@ class _MetadataScreen extends State<MetadataScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
 
       if (txnReceipt?.status == true) {
-        setState(() {
-          success = true;
-          loading = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.mintSuccess, 'success'),
+        );
+        await Future.delayed(const Duration(seconds: 1));
 
         // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
             arguments: NFTDetailsScreenArguments(bytesToInt(navArgs.tokenId),
                 navArgs.chipWalletAddress, image.path));
+        setState(() {
+          success = true;
+          loadingText = '';
+          loading = false;
+        });
       } else {
         throw Exception('Transaction failed');
       }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
+      );
       setState(() {
         success = false;
+        loadingText = '';
         loading = false;
       });
     }
@@ -160,9 +187,9 @@ class _MetadataScreen extends State<MetadataScreen> {
         appBar: AppBarWithLogo(
           loginFunction: widget.loginWithMetaMask,
           text: '${context.loc.initializeChip} (2/3)',
-          connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
+          connectedWallet: widget.connector.session.accounts.isEmpty == true
               ? null
-              : widget.connector?.session?.accounts![0].toLowerCase(),
+              : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
         ),
         body: SafeArea(
@@ -241,6 +268,10 @@ class _MetadataScreen extends State<MetadataScreen> {
                             Container(
                               width: 150,
                               child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                ),
                                 onPressed: () {
                                   setCameraImage();
                                 },
@@ -250,6 +281,10 @@ class _MetadataScreen extends State<MetadataScreen> {
                             Container(
                               width: 150,
                               child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                ),
                                 onPressed: () {
                                   setGalleryImage();
                                 },
@@ -266,6 +301,9 @@ class _MetadataScreen extends State<MetadataScreen> {
                       child: (loading
                           ? LoadingIndicator(loadingText: loadingText)
                           : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                              ),
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   if (image != null) {

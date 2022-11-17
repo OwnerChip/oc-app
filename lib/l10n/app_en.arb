@@ -1,7 +1,7 @@
 {
     "appTitle": "OwnerChip Demo App",
     "initializeChip": "Initialize Chip",
-    "checkOwner": "checkOwner",
+    "checkOwner": "Ownership check",
     "walletAddress": "wallet Address",
     "getWalletAddress": "Get Wallet Address",
     "youAreOwner": "You are the owner",
@@ -10,7 +10,8 @@
     "burnToken": "Burn token",
     "logout": "Logout",
     "scanning": "Scanning",
-    "nfcError": "IsoDep is not supported.",
+    "nfcError": "Error tapping NFC tag.",
+    "isoDepError": "IsoDep is not supported.",
     "ownerError": "Error fetching owner",
     "burning": "delete",
     "burnedSuccess": "Token burned.",
@@ -55,5 +56,11 @@
     "uploadingMetadata": "Uploading metadata",
     "mintingToken": "Minting token",
     "pleaseEnterText": "Please enter text",
-    "showNftInWallet": "Show NFT in Wallet"
+    "warning": "Warning",
+    "showNftInWallet": "Show NFT in Wallet",
+    "successHeadingSnackbar": "Success!",
+    "errorHeadingSnackBar": "Oh Snap!",
+    "loadingNFTDataError": "Error loading NFT data from IPFS.",
+    "errorConnectingWallet": "Error when connecting wallet."
+
 }
