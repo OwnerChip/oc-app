@@ -129,7 +129,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(
           method: 'eth_sendTransaction',
-          params: ['mintParams'],
+          params: mintParams,
           id: makeRandomInt());
 
       setState(() {
@@ -158,9 +158,10 @@ class _MetadataScreen extends State<MetadataScreen> {
         throw Exception('Transaction failed');
       }
     } catch (e) {
+      print("MINTING ERROR: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            "${context.loc.mintError} $e", 'error'),
       );
       setState(() {
         success = false;
