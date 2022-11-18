@@ -157,7 +157,7 @@ class _MyApp extends State<MyApp> {
         'disconnect',
         (payload) => {
               //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
-              // RestartWidget.restartApp(context),
+              RestartWidget.restartApp(context),
 
               //setstate to rerender UI and show wallet icon in appbar correctly
               setState(
