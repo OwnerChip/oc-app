@@ -20,9 +20,13 @@ import '../widgets/returnSnackBarWidget.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
-      {super.key, required this.connector, this.loginWithMetaMask});
+      {super.key,
+      required this.connector,
+      this.loginWithMetaMask,
+      required this.connected});
   final WalletConnect connector;
   final Function? loginWithMetaMask;
+  final bool connected;
 
   static const routeName = '/nft-details';
 
@@ -152,6 +156,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
               ? null
               : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
+          connected: widget.connected,
         ),
         body: SafeArea(
           child: Center(

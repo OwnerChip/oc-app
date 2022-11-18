@@ -28,10 +28,14 @@ import '../widgets/returnSnackBarWidget.dart';
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
   const MetadataScreen(
-      {super.key, required this.connector, this.loginWithMetaMask});
+      {super.key,
+      required this.connector,
+      this.loginWithMetaMask,
+      required this.connected});
 
   final WalletConnect connector;
   final Function? loginWithMetaMask;
+  final bool connected;
 
   static const routeName = '/metadata-input';
 
@@ -177,6 +181,7 @@ class _MetadataScreen extends State<MetadataScreen> {
               ? null
               : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
+          connected: widget.connected,
         ),
         body: SafeArea(
           child: SingleChildScrollView(

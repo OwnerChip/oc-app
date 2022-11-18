@@ -11,11 +11,16 @@ import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key, required this.connector, this.loginWithMetaMask})
+  const LoginScreen(
+      {Key? key,
+      required this.connector,
+      this.loginWithMetaMask,
+      required this.connected})
       : super(key: key);
 
   final WalletConnect connector;
   final Function? loginWithMetaMask;
+  final bool connected;
 
   static const routeName = '/login';
 
@@ -35,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ? null
             : widget.connector.session.accounts[0].toLowerCase(),
         connector: widget.connector,
+        connected: widget.connected,
       ),
       body: SafeArea(
           child: Center(

@@ -11,9 +11,13 @@ import '../widgets/ChipInfo.dart';
 
 class UserScanResultsScreen extends StatelessWidget {
   const UserScanResultsScreen(
-      {super.key, required this.connector, this.loginWithMetaMask});
+      {super.key,
+      required this.connector,
+      this.loginWithMetaMask,
+      required this.connected});
   final WalletConnect connector;
   final Function? loginWithMetaMask;
+  final bool connected;
 
   static const routeName = '/user-scan-results';
 
@@ -35,6 +39,7 @@ class UserScanResultsScreen extends StatelessWidget {
               ? null
               : connector?.session?.accounts![0].toLowerCase(),
           connector: connector,
+          connected: connected,
         ),
         body: SafeArea(
             child: Center(
