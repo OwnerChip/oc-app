@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
+import '../utils/localization.helper.dart';
 
 class AppBarWithLogo extends StatelessWidget with PreferredSizeWidget {
   const AppBarWithLogo(
@@ -40,8 +41,13 @@ class AppBarWithLogo extends StatelessWidget with PreferredSizeWidget {
       }
     } catch (e) {
       //show error snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget('Error', 'No Internet connection.', 'error'));
+      ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+          "Error",
+          "No internet connection",
+          //TODO: localize strings
+          // context.loc.errorHeadingSnackBar,
+          // context.loc.errorNoInternetConnection,
+          'error'));
     }
   }
 

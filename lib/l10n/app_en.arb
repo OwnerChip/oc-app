@@ -61,6 +61,6 @@
     "successHeadingSnackbar": "Success!",
     "errorHeadingSnackBar": "Oh Snap!",
     "loadingNFTDataError": "Error loading NFT data from IPFS.",
-    "errorConnectingWallet": "Error when connecting wallet."
-
+    "errorConnectingWallet": "Error when connecting wallet.",
+    "errorNoInternetConnection": "No internet connection."
 }
