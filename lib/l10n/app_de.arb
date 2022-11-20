@@ -19,7 +19,7 @@
     "mintSuccess": "Token erfolgreich erstellt",
     "mintError": "Fehler beim Erstellen des Tokens",
     "alreadyLinked": "Dieser Chip ist bereits mit einem NFT verknüpft.",
-    "cancel": "abbrechen",
+    "cancel": "Abbrechen",
     "allFunctions": "Alle Funktionen",
     "burnAndMint": "Löschen & neu erstellen",
     "showOnExplorer": "Blockchain Explorer",

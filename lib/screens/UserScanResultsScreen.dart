@@ -175,15 +175,6 @@ class UserScanResultsScreen extends StatelessWidget {
                                     children: [
                                       Text(context.loc.youAreNftOwner,
                                           style: TextStyle(fontSize: 14)),
-                                      const SizedBox(height: 3),
-                                      OutlinedButton(
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor:
-                                                Theme.of(context).primaryColor,
-                                          ),
-                                          onPressed: (() => {launchWallet()}),
-                                          child: Text(
-                                              context.loc.openWalletToView))
                                     ],
                                   )
                                 : Text(context.loc.noNftInWallet,

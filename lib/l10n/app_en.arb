@@ -19,7 +19,7 @@
     "mintSuccess": "Minted token successfully",
     "mintError": "Error minting token",
     "alreadyLinked": "This chip is already linked to an NFT.",
-    "cancel": "cancel",
+    "cancel": "Cancel",
     "allFunctions": "All Functions",
     "burnAndMint": "burn and mint",
     "showOnExplorer": "Show on BC Explorer",
