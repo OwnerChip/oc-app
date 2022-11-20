@@ -204,7 +204,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                               ),
                               onPressed: () => {
                                     launchUrl(generateOpenSeaTokenDetailsUrl(
-                                        bytesToInt(tokenId).toString()))
+                                        bytesToUnsignedInt(tokenId).toString()))
                                   },
                               child: Text(context.loc.showOnOpenSea)),
                         ),

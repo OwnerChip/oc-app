@@ -132,7 +132,7 @@ class _MetadataScreen extends State<MetadataScreen> {
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
             arguments: NFTDetailsScreenArguments(
                 widget.loginWithMetaMask,
-                bytesToInt(navArgs.tokenId),
+                bytesToUnsignedInt(navArgs.tokenId),
                 navArgs.chipWalletAddress,
                 image.path));
 
@@ -185,7 +185,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                   padding: EdgeInsets.all(15.0),
                   child: Column(children: [
                     ChipInfo(
-                        tokenId: bytesToInt(navArgs.tokenId),
+                        tokenId: bytesToUnsignedInt(navArgs.tokenId),
                         chipName: 'Secora Infineon',
                         walletAddress: navArgs.chipWalletAddress),
                     SizedBox(height: 20),

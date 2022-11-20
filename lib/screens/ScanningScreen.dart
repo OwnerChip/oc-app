@@ -126,7 +126,7 @@ class _ScanningScreen extends State<ScanningScreen> {
 
         //get owner of nft with cardId == tokenId
         try {
-          // tokenId = bytesToInt(cardId);
+          // tokenId = bytesToUnsignedInt(cardId);
           EthereumAddress ownerAddress = await getOwner(chipTokenId);
           nftOwner = ownerAddress.toString();
 
