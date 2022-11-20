@@ -57,9 +57,6 @@ void main(List<String> args) async {
             icons: ["assets/images/oc_logo.png"]));
   }
 
-  //create connector
-  WalletConnect connector = await createWalletConnector();
-
   runApp(
       //wrapper to enable app restarts
       RestartWidget(
@@ -83,9 +80,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyApp extends State<MyApp> {
+  bool connected = false;
   //connector has to be initialized with WC instance
   WalletConnect connector = WalletConnect(
       bridge: 'https://bridge.walletconnect.org',
+      sessionStorage: WalletConnectSecureStorage(),
       clientMeta: const PeerMeta(
           name: 'OwnerChip Demo',
           description: 'Connecting physical objects to the blockchain.',
@@ -101,35 +100,36 @@ class _MyApp extends State<MyApp> {
     var _connector = await widget.createWalletConnector();
     setState(() {
       connector = _connector;
+      connected = connector.connected;
     });
   }
 
-  Future loginWithMetaMask(BuildContext context) async {
-    if (!connector.connected) {
-      try {
-        var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: '1'));
-        var sessionStatus = await connector.createSession(
-            chainId: chainId,
-            onDisplayUri: (uri) async {
-              await launchUrlString(uri, mode: LaunchMode.externalApplication);
-            });
+  Future<void> loginWithMetaMask(BuildContext context) async {
+    // if (!connector.connected) {
+    try {
+      var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: '1'));
+      var sessionStatus = await connector.connect(
+          chainId: chainId,
+          onDisplayUri: (uri) async {
+            await launchUrlString(uri, mode: LaunchMode.externalApplication);
+          });
 
-        //save session
-        connector.sessionStorage?.store(connector.session);
+      //save session
+      connector.sessionStorage?.store(connector.session);
 
-        //TODO: Test without this code: I think this piece of code is needed but unsure why
-        if (!mounted) {
-          return;
-        }
-      } catch (e) {
-        //returnSnackBar
-        ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar,
-            context.loc.errorConnectingWallet,
-            'success'));
-        print(e);
+      //TODO: Test without this code: I think this piece of code is needed but unsure why
+      if (!mounted) {
+        return;
       }
+    } catch (e) {
+      //returnSnackBar
+      ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+          context.loc.errorHeadingSnackBar,
+          context.loc.errorConnectingWallet,
+          'success'));
+      print(e);
     }
+    // }
   }
 
   @override
@@ -139,7 +139,7 @@ class _MyApp extends State<MyApp> {
         (payload) => {
               //setstate to rerender UI and show wallet icon in appbar correctly
               setState(
-                () => {},
+                () => {connected = connector.connected},
               )
               //TODO: check what kind of payload is returned here and if sessionData state is necessary
             });
@@ -149,18 +149,19 @@ class _MyApp extends State<MyApp> {
         (payload) => {
               //TODO: check what kind of payload is returned here and if sessionData state is necessary
               print("session updated: $payload"),
+              setState(() {
+                connected = connector.connected;
+              })
             });
     connector.on(
         'disconnect',
         (payload) => {
-              //TODO: check what kind of payload is returned here
               //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
               RestartWidget.restartApp(context),
-              NfcManager.instance.stopSession(),
-              // connector.sessionStorage?.removeSession(),
+
               //setstate to rerender UI and show wallet icon in appbar correctly
               setState(
-                () => {},
+                () => {connected = false},
               )
             });
 
@@ -176,20 +177,30 @@ class _MyApp extends State<MyApp> {
       routes: {
         HomeScreen.routeName: (context) => HomeScreen(
               connector: connector,
+              connected: connected,
               loginWithMetaMask: loginWithMetaMask,
             ),
         ScanningScreen.routeName: (context) => ScanningScreen(
-            connector: connector, loginWithMetaMask: loginWithMetaMask),
+            connector: connector,
+            connected: connected,
+            loginWithMetaMask: loginWithMetaMask),
         ChipAlreadyInitializedScreen.routeName: (context) =>
-            ChipAlreadyInitializedScreen(connector: connector),
+            ChipAlreadyInitializedScreen(
+                connector: connector,
+                connected: connected,
+                loginWithMetaMask: loginWithMetaMask),
         MetadataScreen.routeName: (context) => MetadataScreen(
-            connector: connector, loginWithMetaMask: loginWithMetaMask),
+            connector: connector,
+            connected: connected,
+            loginWithMetaMask: loginWithMetaMask),
         UserScanResultsScreen.routeName: (context) => UserScanResultsScreen(
               connector: connector,
+              connected: connected,
               loginWithMetaMask: loginWithMetaMask,
             ),
         NFTDetailsScreen.routeName: (context) => NFTDetailsScreen(
               connector: connector,
+              connected: connected,
               loginWithMetaMask: loginWithMetaMask,
             ),
       },

@@ -28,10 +28,14 @@ import '../widgets/returnSnackBarWidget.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
-      {super.key, required this.connector, this.loginWithMetaMask});
+      {super.key,
+      required this.connector,
+      this.loginWithMetaMask,
+      required this.connected});
 
   final WalletConnect connector;
   final Function? loginWithMetaMask;
+  final bool connected;
 
   static const routeName = '/scanning';
 
@@ -192,6 +196,12 @@ class _ScanningScreen extends State<ScanningScreen> {
   }
 
   @override
+  void dispose() {
+    cancelScan();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
@@ -204,6 +214,7 @@ class _ScanningScreen extends State<ScanningScreen> {
         loginFunction: widget.loginWithMetaMask,
         text: navArgs.scanningTitle,
         connector: widget.connector,
+        connected: widget.connected,
       ),
       body: SafeArea(
           child: Center(

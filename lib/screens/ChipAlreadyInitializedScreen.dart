@@ -21,9 +21,13 @@ import '../widgets/returnSnackBarWidget.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
-      {super.key, required this.connector, this.loginWithMetaMask});
+      {super.key,
+      required this.connector,
+      this.loginWithMetaMask,
+      required this.connected});
   final WalletConnect connector;
   final Function? loginWithMetaMask;
+  final bool connected;
 
   static const routeName = '/scan-already-initialized';
 
@@ -100,6 +104,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               ? null
               : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
+          connected: widget.connected,
         ),
         body: SafeArea(
             child: Center(

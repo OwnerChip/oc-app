@@ -61,5 +61,6 @@
     "successHeadingSnackbar": "Success!",
     "errorHeadingSnackBar": "Fehler!",
     "loadingNFTDataError": "Daten konnten nicht geladen werden.",
-    "errorConnectingWallet": "Fehler beim Verbinden der Wallet."
+    "errorConnectingWallet": "Fehler beim Verbinden der Wallet.",
+    "errorNoInternetConnection": "Keine Internetverbindung."
 }
