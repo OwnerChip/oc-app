@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:web3dart/crypto.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
@@ -9,7 +11,7 @@ class ScanningScreenArguments {
 class UserScanResultsScreenArguments {
   final String nftOwner;
   final bool chipIsInitialized;
-  final dynamic tokenId;
+  final BigInt tokenId;
   final String chipWalletAddress;
 
   UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
@@ -17,15 +19,28 @@ class UserScanResultsScreenArguments {
 }
 
 class ChipAlreadyInitializedScreenArguments {
-  final Uint8List cardId;
+  final Uint8List tokenId;
   final String chipWalletAddress;
+  final Uint8List tokenIdHash;
+  final MsgSignature signature;
 
-  ChipAlreadyInitializedScreenArguments(this.cardId, this.chipWalletAddress);
+  ChipAlreadyInitializedScreenArguments(
+      this.tokenId, this.chipWalletAddress, this.tokenIdHash, this.signature);
+}
+
+class ChipInitializedArguments {
+  final Uint8List tokenId;
+  final String chipWalletAddress;
+  final Uint8List tokenIdHash;
+  final MsgSignature signature;
+
+  ChipInitializedArguments(
+      this.tokenId, this.chipWalletAddress, this.tokenIdHash, this.signature);
 }
 
 class NFTDetailsScreenArguments {
   final Function? loginWithMetaMask;
-  final BigInt? tokenId;
+  final BigInt tokenId;
   final String chipWalletAddress;
   final String? localImagePath;
 

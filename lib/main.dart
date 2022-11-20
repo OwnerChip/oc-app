@@ -39,7 +39,7 @@ void main(List<String> args) async {
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   //set initialRoute accordingly
-  String initialRoute = LoginScreen.routeName;
+  String initialRoute = HomeScreen.routeName;
 
   //create wallet connector function
   Future<WalletConnect> createWalletConnector() async {
@@ -175,7 +175,7 @@ class _MyApp extends State<MyApp> {
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
       routes: {
-        LoginScreen.routeName: (context) => LoginScreen(
+        HomeScreen.routeName: (context) => HomeScreen(
               connector: connector,
               connected: connected,
               loginWithMetaMask: loginWithMetaMask,

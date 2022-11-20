@@ -10,8 +10,8 @@ import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen(
+class HomeScreen extends StatefulWidget {
+  const HomeScreen(
       {Key? key,
       required this.connector,
       this.loginWithMetaMask,
@@ -25,10 +25,10 @@ class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../utils/utils.dart';
+import 'utils.dart';
 
 Web3Client getWeb3Client() {
   var rpcUrl = dotenv.get('CHAIN_RPC');
@@ -34,6 +37,72 @@ String makeBurnTransactionData(Uint8List cardId) {
   var tokenIdHex = uint8ListTo32ByteHex(cardId);
   var burnTransactionData = "0x" + burnFunctionSignature + tokenIdHex;
   return burnTransactionData;
+}
+
+Future<bool> verifyTokenSigner(String chipWalletAddressHex,
+    Uint8List tokenIdHash, MsgSignature signature) async {
+  Uint8List r = Uint8List.fromList(utf8.encode(signature.r.toString()));
+  Uint8List s = Uint8List.fromList(utf8.encode(signature.s.toString()));
+  Uint8List v = Uint8List.fromList(utf8.encode(signature.v.toString()));
+  var bytes = BytesBuilder();
+  bytes.add(tokenIdHash);
+  bytes.add(r);
+  bytes.add(s);
+  bytes.add(v);
+  Uint8List data = bytes.toBytes();
+  try {
+    var result = await query("getSigner", keccak256(data));
+    bool res = (chipWalletAddressHex == result[0]);
+    return res;
+  } catch (e) {
+    print("getSigner ERROR: $e");
+    return false;
+  }
+}
+
+List<dynamic> makeSignedBurnParams(
+    String? from, Uint8List tokenIdHash, MsgSignature signature,
+    {String? gasPrice}) {
+  String data = "0x" +
+      '42966c68' +
+      getEthereumAddressFromUint8List(tokenIdHash) +
+      signature.r.toString() +
+      signature.s.toString() +
+      signature.v.toString();
+  final params = [
+    {
+      "from": from,
+      "to": dotenv.env['CONTRACT_ADDRESS'],
+      "data": data,
+      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
+      "gas": "0x30D40",
+    },
+  ];
+  return params;
+}
+
+List<dynamic> makeSignedMintParams(String? from, Uint8List tokenIdHash,
+    String tokenURI, MsgSignature signature,
+    {String? gasPrice}) {
+  String data = "0x" +
+      "ba7aef43" +
+      "60".padLeft(64, '0') + 
+      (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+      stringToHex(tokenURI) +
+      signature.r.toString() +
+      signature.s.toString() +
+      signature.v.toString();
+  ;
+  final params = [
+    {
+      "from": from,
+      "to": dotenv.env['CONTRACT_ADDRESS'],
+      "data": data,
+      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
+      "gas": "0x30D40",
+    },
+  ];
+  return params;
 }
 
 dynamic makeBurnParams(String? from, String to, Uint8List cardId,

@@ -15,10 +15,10 @@ import 'package:web3dart/crypto.dart';
 
 //local imports
 import '../widgets/AppBarWithLogo.dart';
-import '../ipfs/ipfs.services.dart';
+import '../utils/ipfs.services.dart';
 import '../utils/utils.dart';
 import '../utils/images.service.dart';
-import '../web3/web3.services.dart';
+import '../utils/web3.services.dart';
 import '../utils/navigation_arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
 import '../widgets/LoadingIndicator.dart';
@@ -82,8 +82,8 @@ class _MetadataScreen extends State<MetadataScreen> {
       success = false;
     });
 
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as ChipAlreadyInitializedScreenArguments;
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
     String walletAddress = widget.connector.session.accounts[0].toLowerCase();
 
@@ -107,10 +107,11 @@ class _MetadataScreen extends State<MetadataScreen> {
 
       // upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
+      String fullUri = "ipfs://$cid";
 
       // generate mint parameters
       var mintParams = makeMintParams(walletAddress,
-          dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.cardId);
+          dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.tokenId);
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(
@@ -135,7 +136,7 @@ class _MetadataScreen extends State<MetadataScreen> {
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
             arguments: NFTDetailsScreenArguments(
                 widget.loginWithMetaMask,
-                bytesToInt(navArgs.cardId),
+                bytesToUnsignedInt(navArgs.tokenId),
                 navArgs.chipWalletAddress,
                 image.path));
 
@@ -169,8 +170,8 @@ class _MetadataScreen extends State<MetadataScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as ChipAlreadyInitializedScreenArguments;
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -189,7 +190,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                   padding: EdgeInsets.all(15.0),
                   child: Column(children: [
                     ChipInfo(
-                        tokenId: bytesToInt(navArgs.cardId),
+                        tokenId: bytesToUnsignedInt(navArgs.tokenId),
                         chipName: 'Secora Infineon',
                         walletAddress: navArgs.chipWalletAddress),
                     SizedBox(height: 20),
