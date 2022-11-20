@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
@@ -17,8 +19,9 @@ import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation_arguments.dart';
 import '../utils/utils.dart';
-import '../nfc/commands.dart';
-import '../web3/web3.services.dart';
+import '../utils/nfc.commands.dart';
+import '../utils/web3.services.dart';
+import '../utils/signature.service.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../widgets/ScanningLoader.dart';
 import '../widgets/returnSnackBarWidget.dart';
@@ -85,16 +88,46 @@ class _ScanningScreen extends State<ScanningScreen> {
           throw Exception("Error while generating key");
         }
         print('first key already exists');
-        var uin8key = responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
-        var uint8Address = publicKeyToAddress(uin8key);
-        var chipWalletAddress = makeHexFromUint8List(uint8Address);
+        Uint8List chipPubKey = getPublicKeyFromChipResponse(responseGetKeyInfo);
+        Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
+        String chipEthereumAddressHexString =
+            getEthereumAddressHexString(chipEthereumAddress);
+        print("$chipEthereumAddressHexString  (Card ID as HexString)");
+        BigInt chipTokenId = hexToBigInt(chipEthereumAddress);
+        print("$chipTokenId (Card ID as bigInt)");
 
-        //get cardID and convert to int (tokenId)
-        var cardId = selectAppResponse.sublist(1, 11);
+        // get SIGNATURE from NFC chip
+        final Uint8List hashedTokenId = keccakUtf8(chipTokenId.toString());
+        final Uint8List getSigCmd = make_signature_command(0x01, hashedTokenId);
+        final Uint8List responseGetSignature =
+            await isoDep.transceive(data: getSigCmd);
+
+        // TEST: extract and implicitly verify signature
+        final MsgSignature signature =
+            extractSignature(chipTokenId, responseGetSignature);
+
+        // only if true, is the tokenId corresponding to the chip!
+        bool verificationResult =
+            verifySignature(chipTokenId, signature.r, signature.s);
+        if (!verificationResult) {
+          throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
+        }
+
+        /* TODO: verify chip authenticity via SMART CONTRACT
+        // To achieve this, the msg hash needs to be prefixed --> use prepareMsgForSignature()
+        try {
+          bool result = await verifyTokenSigner(
+              chipEthereumAddressHexString, hashedTokenId, signature);
+          print(result);
+        } catch (e) {
+          print("ERROR: $e");
+        }
+        */
+
         //get owner of nft with cardId == tokenId
         try {
-          tokenId = bytesToInt(cardId);
-          EthereumAddress ownerAddress = await getOwner(tokenId);
+          // tokenId = bytesToInt(cardId);
+          EthereumAddress ownerAddress = await getOwner(chipTokenId);
           nftOwner = ownerAddress.toString();
 
           //chip is initialized if this didnt catch!
@@ -114,7 +147,10 @@ class _ScanningScreen extends State<ScanningScreen> {
           Navigator.pushReplacementNamed(
               context, UserScanResultsScreen.routeName,
               arguments: UserScanResultsScreenArguments(
-                  nftOwner, chipIsInitialized, tokenId, chipWalletAddress));
+                  nftOwner,
+                  chipIsInitialized,
+                  chipTokenId,
+                  chipEthereumAddressHexString));
         } else {
           //chip already initialized: navigate to ChipAlreadyInitializedScreen
           if (chipIsInitialized) {
@@ -122,13 +158,16 @@ class _ScanningScreen extends State<ScanningScreen> {
             Navigator.pushReplacementNamed(
                 context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
-                    cardId, chipWalletAddress));
+                    chipEthereumAddress,
+                    chipEthereumAddressHexString,
+                    hashedTokenId,
+                    signature));
           } else {
             //chip not initialized: navigate to MetadataScreen
             // ignore: use_build_context_synchronously
-            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
-                arguments: ChipAlreadyInitializedScreenArguments(
-                    cardId, chipWalletAddress));
+            Navigator.pushNamed(context, MetadataScreen.routeName,
+                arguments: ChipInitializedArguments(chipEthereumAddress,
+                    chipEthereumAddressHexString, hashedTokenId, signature));
           }
         }
       } catch (e) {
@@ -174,6 +213,8 @@ class _ScanningScreen extends State<ScanningScreen> {
           Text(
             context.loc.scanHint,
             overflow: TextOverflow.fade,
+            //center text
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 90),
           const Icon(

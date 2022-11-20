@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:convert/convert.dart';
 import '../utils/localization.helper.dart';
 
 //web3 imports
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 // import local files
 import '../widgets/AppBarWithLogo.dart';
@@ -15,7 +16,7 @@ import '../utils/navigation_arguments.dart';
 import '../utils/url_generator.service.dart';
 import 'HomeScreen.dart';
 import '../utils/utils.dart';
-import '../web3/web3.services.dart';
+import '../utils/web3.services.dart';
 import '../widgets/returnSnackBarWidget.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
@@ -40,10 +41,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       loadingText = context.loc.burnToken;
     });
     try {
-      final contractAddress = dotenv.env['CONTRACT_ADDRESS'];
-
-      var burnParams = makeBurnParams(
-          widget.connector.session.accounts[0], contractAddress!, tokenId);
+      var burnParams = makeBurnParams(widget.connector.session.accounts[0],
+          dotenv.env['CONTRACT_ADDRESS']!, tokenId);
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(
@@ -63,7 +62,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
         //navigate to login screen
         // ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
         setState(() {
           loading = false;
           loadingText = '';
@@ -90,7 +89,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final tokenId = navArgs.cardId!;
+    final Uint8List tokenId = navArgs.tokenId;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -221,7 +220,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                               ),
                               onPressed: () => {
                                     Navigator.pushNamed(
-                                        context, LoginScreen.routeName)
+                                        context, HomeScreen.routeName)
                                   },
                               child: Text(context.loc.cancel)),
                         ),
