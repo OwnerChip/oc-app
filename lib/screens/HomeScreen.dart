@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBarWithLogo(
-        text: 'ownerchip',
+        text: 'OwnerChip Demo',
         loginFunction: widget.loginWithMetaMask,
         connectedWallet: widget.connector.session.accounts.isEmpty == true
             ? null
