@@ -46,6 +46,18 @@ BigInt hexToBigInt(Uint8List ethereumAddress) {
   return decimalValue;
 }
 
+// BigInt to Bytes
+Uint8List bytesFromBigInt(BigInt number) {
+  int bytes = (number.bitLength + 7) >> 3;
+  var b256 = BigInt.from(256);
+  var res = Uint8List(bytes);
+  for (int i = 0; i < bytes; i++) {
+    res[bytes - 1 - i] = number.remainder(b256).toInt();
+    number = number >> 8;
+  }
+  return res;
+}
+
 //function to convert string to hex padded to 32 bytes
 String stringToHex(String string) {
   var hex = '';
