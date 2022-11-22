@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:convert/convert.dart';
 import '../utils/localization.helper.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 
 //web3 imports
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import '../utils/ipfs.services.dart';
 
 // import local files
 import '../widgets/AppBarWithLogo.dart';
@@ -45,6 +49,20 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       loadingText = context.loc.burnToken;
     });
     try {
+      // to burn the related IPFS files here, we first need to fetch metadata.json read it and return image file CID
+      String tokenUri = await getTokenUri(hexToBigInt(tokenId));
+      String metadataFileCid = getCidFromIpfsLink(tokenUri);
+      String imageCid = "";
+      final Directory directory = Directory.systemTemp;
+      File jsonFile = File("${directory.path}/$metadataFileCid.metadata.json");
+      await downloadMetadataFileFromIPFS(metadataFileCid, jsonFile.path, false);
+      final String res = await jsonFile.readAsString();
+      Map<String, dynamic> metadata =
+          Map<String, dynamic>.from(json.decode(res));
+      if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
+        imageCid = getCidFromIpfsLink(metadata['image']!);
+      }
+
       var burnParams = makeBurnParams(widget.connector.session.accounts[0],
           dotenv.env['CONTRACT_ADDRESS']!, tokenId);
 
@@ -57,6 +75,23 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
+
+        // try deleting IPFS files
+        try {
+          bool success1 = await upinFileFromIPFS(metadataFileCid);
+          if (!success1) {
+            throw ("Could not delete image file $metadataFileCid from IPFS");
+          }
+          if (imageCid != "") {
+            bool success2 = await upinFileFromIPFS(imageCid);
+            if (!success2) {
+              throw ("Could not delete image file $imageCid from IPFS");
+            }
+          }
+        } catch (e) {
+          print("ERROR deleting files from IPFS: $e");
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
               context.loc.burnedSuccess, 'success'),

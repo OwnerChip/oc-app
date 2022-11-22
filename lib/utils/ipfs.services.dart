@@ -98,3 +98,17 @@ Future<Map<String, String>> downloadImageFileFromIPFS(String cid) async {
     return {};
   }
 }
+
+/// delete file from IPFS
+Future<bool> upinFileFromIPFS(String cid) async {
+  try {
+    var ipfs = getIpfsGatewayClient(true);
+    final String deletePath = "${dotenv.get('IPFS_UNPIN_COMMAND')}$cid";
+    Response response = await ipfs.delete(deletePath);
+    print(response.data);
+    return (response.statusCode! < 201);
+  } catch (e) {
+    print("ERROR while deleting file from IPFS: $e");
+    return false;
+  }
+}
