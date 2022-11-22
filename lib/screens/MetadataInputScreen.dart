@@ -110,8 +110,11 @@ class _MetadataScreen extends State<MetadataScreen> {
       String fullUri = "ipfs://$cid";
 
       // generate mint parameters
-      var mintParams = makeMintParams(walletAddress,
-          dotenv.get('CONTRACT_ADDRESS'), "ipfs://$cid", navArgs.tokenId);
+      var mintParams = makeSignedMintParams(
+          walletAddress,
+          keccakUtf8(hexToBigInt(navArgs.tokenId).toString()),
+          "ipfs://$cid",
+          navArgs.signature);
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(

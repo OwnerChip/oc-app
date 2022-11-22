@@ -39,14 +39,14 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   bool loading = false;
   String loadingText = '';
 
-  Future<void> burnToken(Uint8List tokenId) async {
+  Future<void> burnToken(Uint8List tokenIdHash, MsgSignature signature) async {
     setState(() {
       loading = true;
       loadingText = context.loc.burnToken;
     });
     try {
-      var burnParams = makeBurnParams(widget.connector.session.accounts[0],
-          dotenv.env['CONTRACT_ADDRESS']!, tokenId);
+      var burnParams = makeSignedBurnParams(
+          widget.connector.session.accounts[0], tokenIdHash, signature);
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(
@@ -94,6 +94,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
     final Uint8List tokenId = navArgs.tokenId;
+    final Uint8List tokenIdHash = keccakUtf8(hexToBigInt(tokenId).toString());
+    final MsgSignature signature = navArgs.signature;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -170,8 +172,9 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context).primaryColor,
                               ),
-                              onPressed:
-                                  loading ? null : () => {burnToken(tokenId)},
+                              onPressed: loading
+                                  ? null
+                                  : () => {burnToken(tokenIdHash, signature)},
                               child: loading
                                   ? const CircularProgressIndicator(
                                       color: Colors.grey,

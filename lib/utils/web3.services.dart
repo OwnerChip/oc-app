@@ -53,13 +53,13 @@ List<dynamic> makeSignedMintParams(String? from, Uint8List tokenIdHash,
     String tokenURI, MsgSignature signature,
     {String? gasPrice}) {
   String data = "0xcb5a7173" +
-      hexToBigInt(tokenIdHash).toString() +
-      "60".padLeft(64, '0') +
+      uint8ListTo32ByteHex(tokenIdHash) + //bytes32
+      "a0".padLeft(64, '0') + //string prefix
+      signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+      signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+      signature.v.toRadixString(16).padLeft(64, '0') + //uint8
       (tokenURI.length).toRadixString(16).padLeft(64, '0') +
-      stringToHex(tokenURI) +
-      signature.r.toString() +
-      signature.s.toString() +
-      signature.v.toString();
+      stringToHex(tokenURI); //string;
   final params = [
     {
       "from": from,
@@ -70,49 +70,6 @@ List<dynamic> makeSignedMintParams(String? from, Uint8List tokenIdHash,
     },
   ];
   return params;
-}
-
-// contract version 1
-String makeMintTransactionData(
-    String receivingWalletAddress, String tokenURI, Uint8List cardId) {
-  String from = receivingWalletAddress.substring(2).padLeft(64, '0');
-  String tokenURILocation = "60".padLeft(64, '0');
-  String tokenId = uint8ListTo32ByteHex(cardId);
-  String tokenUriLength = (tokenURI.length).toRadixString(16).padLeft(64, '0');
-  String tokenURIHex = stringToHex(tokenURI);
-  String data = "0x" +
-      "ba7aef43" +
-      from +
-      tokenURILocation +
-      tokenId +
-      tokenUriLength +
-      tokenURIHex;
-  return data;
-}
-
-// both contract versions?
-dynamic makeMintParams(
-    String from, String to, String tokenURI, Uint8List cardId,
-    {String? gasPrice}) {
-  String data = makeMintTransactionData(from, tokenURI, cardId);
-  final params = [
-    {
-      "from": from,
-      "to": to,
-      "data": data,
-      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
-      "gas": "0x30D40",
-    },
-  ];
-  return params;
-}
-
-// contract version 1
-String makeBurnTransactionData(Uint8List cardId) {
-  var burnFunctionSignature = '42966c68';
-  var tokenIdHex = uint8ListTo32ByteHex(cardId);
-  var burnTransactionData = "0x" + burnFunctionSignature + tokenIdHex;
-  return burnTransactionData;
 }
 
 // contract version 2
@@ -120,28 +77,14 @@ List<dynamic> makeSignedBurnParams(
     String? from, Uint8List tokenIdHash, MsgSignature signature,
     {String? gasPrice}) {
   String data = "0x469fd767" +
-      signature.r.toString() +
-      signature.s.toString() +
-      signature.v.toString();
+      uint8ListTo32ByteHex(tokenIdHash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0');
   final params = [
     {
       "from": from,
       "to": dotenv.env['CONTRACT_ADDRESS'],
-      "data": data,
-      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
-      "gas": "0x30D40",
-    },
-  ];
-  return params;
-}
-
-dynamic makeBurnParams(String? from, String to, Uint8List cardId,
-    {String? gasPrice}) {
-  String data = makeBurnTransactionData(cardId);
-  final params = [
-    {
-      "from": from,
-      "to": to,
       "data": data,
       "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
       "gas": "0x30D40",
@@ -157,7 +100,7 @@ dynamic makeWatchAssetParams(String imageUri) {
       "type": "ERC721",
       "options": {
         "address": dotenv.get("CONTRACT_ADDRESS"),
-        "symbol": "OC",
+        "symbol": "OCDemo",
         "decimals": 0,
         "image": imageUri
       }
