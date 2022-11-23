@@ -32,27 +32,30 @@ Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
   return result;
 }
 
-String makeBurnTransactionData(Uint8List cardId) {
-  var burnFunctionSignature = '42966c68';
-  var tokenIdHex = uint8ListTo32ByteHex(cardId);
-  var burnTransactionData = "0x" + burnFunctionSignature + tokenIdHex;
-  return burnTransactionData;
+Future<BigInt> estimateGas(Uint8List txData, String fromAddress) async {
+  final web3Client = getWeb3Client();
+  BigInt result = await web3Client.estimateGas(
+      sender: EthereumAddress.fromHex(fromAddress),
+      to: EthereumAddress.fromHex(dotenv.env['CONTRACT_ADDRESS']!),
+      data: txData);
+  return result;
 }
 
+Future<BigInt> estimateGasPrice() async {
+  final web3Client = getWeb3Client();
+  EtherAmount gasPrice = await web3Client.getGasPrice();
+  return gasPrice.getInWei;
+}
+
+// contract version 2
 Future<bool> verifyTokenSigner(String chipWalletAddressHex,
     Uint8List tokenIdHash, MsgSignature signature) async {
-  Uint8List r = Uint8List.fromList(utf8.encode(signature.r.toString()));
-  Uint8List s = Uint8List.fromList(utf8.encode(signature.s.toString()));
-  Uint8List v = Uint8List.fromList(utf8.encode(signature.v.toString()));
-  var bytes = BytesBuilder();
-  bytes.add(tokenIdHash);
-  bytes.add(r);
-  bytes.add(s);
-  bytes.add(v);
-  Uint8List data = bytes.toBytes();
+  Uint8List r = bytesFromBigInt(signature.r);
+  Uint8List s = bytesFromBigInt(signature.s);
   try {
-    var result = await query("getSigner", keccak256(data));
-    bool res = (chipWalletAddressHex == result[0]);
+    var result =
+        await query("getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
+    bool res = (chipWalletAddressHex == result[0].toString().toLowerCase());
     return res;
   } catch (e) {
     print("getSigner ERROR: $e");
@@ -60,106 +63,101 @@ Future<bool> verifyTokenSigner(String chipWalletAddressHex,
   }
 }
 
-List<dynamic> makeSignedBurnParams(
-    String? from, Uint8List tokenIdHash, MsgSignature signature,
-    {String? gasPrice}) {
-  String data = "0x" +
-      '42966c68' +
-      getEthereumAddressFromUint8List(tokenIdHash) +
-      signature.r.toString() +
-      signature.s.toString() +
-      signature.v.toString();
-  final params = [
-    {
-      "from": from,
-      "to": dotenv.env['CONTRACT_ADDRESS'],
-      "data": data,
-      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
-      "gas": "0x30D40",
-    },
-  ];
-  return params;
-}
-
-List<dynamic> makeSignedMintParams(String? from, Uint8List tokenIdHash,
+// contract version 2
+Future<List<dynamic>> makeSignedMintParams(String? from, Uint8List tokenIdHash,
     String tokenURI, MsgSignature signature,
-    {String? gasPrice}) {
-  String data = "0x" +
-      "ba7aef43" +
-      "60".padLeft(64, '0') + 
+    {String? gasPrice}) async {
+  String data = "0xcb5a7173" +
+      uint8ListTo32ByteHex(tokenIdHash) + //bytes32
+      "a0".padLeft(64, '0') + //string prefix
+      signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+      signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+      signature.v.toRadixString(16).padLeft(64, '0') + //uint8
       (tokenURI.length).toRadixString(16).padLeft(64, '0') +
-      stringToHex(tokenURI) +
-      signature.r.toString() +
-      signature.s.toString() +
-      signature.v.toString();
-  ;
+      stringToHex(tokenURI); //string;
+
+  String gasAmount = "0x249F0"; // fallback: 150000 gas
+  try {
+    BigInt gasAmountEst = await estimateGas(hexToBytes(data), from!);
+    gasAmount = "0x${gasAmountEst.toRadixString(16)}";
+    print("ESTIMATED GAS AMOUNT: $gasAmount");
+  } catch (e) {
+    print("ERROR estimating gas amount: $e");
+  }
+
+  if (gasPrice == null) {
+    try {
+      BigInt estimatedGasPrice = await estimateGasPrice();
+      gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
+      print("ESTIMATED GAS PRICE: $gasPrice");
+    } catch (e) {
+      print("ERROR estimating gas price: $e");
+      gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
+    }
+  }
+
   final params = [
     {
       "from": from,
       "to": dotenv.env['CONTRACT_ADDRESS'],
       "data": data,
-      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
-      "gas": "0x30D40",
+      "gasPrice": gasPrice,
+      "gas": gasAmount
     },
   ];
   return params;
 }
 
-dynamic makeBurnParams(String? from, String to, Uint8List cardId,
-    {String? gasPrice}) {
-  String data = makeBurnTransactionData(cardId);
+// contract version 2
+Future<List<dynamic>> makeSignedBurnParams(
+    String? from, Uint8List tokenIdHash, MsgSignature signature,
+    {String? gasPrice}) async {
+  String data = "0x469fd767" +
+      uint8ListTo32ByteHex(tokenIdHash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0');
+
+  String gasAmount = "0xC350"; // fallback: 50000 gas
+  try {
+    BigInt gasAmountEst = await estimateGas(hexToBytes(data), from!);
+    gasAmount = "0x${gasAmountEst.toRadixString(16)}";
+    print("ESTIMATED GAS AMOUNT: $gasAmount");
+  } catch (e) {
+    print("ERROR estimating gas amount: $e");
+  }
+
+  if (gasPrice == null) {
+    try {
+      BigInt estimatedGasPrice = await estimateGasPrice();
+      gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
+      print("ESTIMATED GAS PRICE: $gasPrice");
+    } catch (e) {
+      print("ERROR estimating gas price: $e");
+      gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
+    }
+  }
+
   final params = [
     {
       "from": from,
-      "to": to,
+      "to": dotenv.env['CONTRACT_ADDRESS'],
       "data": data,
-      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
-      "gas": "0x30D40",
+      "gasPrice": gasPrice,
+      "gas": gasAmount
     },
   ];
   return params;
 }
 
-String makeMintTransactionData(
-    String receivingWalletAddress, String tokenURI, Uint8List cardId) {
-  String from = receivingWalletAddress.substring(2).padLeft(64, '0');
-  String tokenURILocation = "60".padLeft(64, '0');
-  String tokenId = uint8ListTo32ByteHex(cardId);
-  String tokenUriLength = (tokenURI.length).toRadixString(16).padLeft(64, '0');
-  String tokenURIHex = stringToHex(tokenURI);
-  String data = "0x" +
-      "ba7aef43" +
-      from +
-      tokenURILocation +
-      tokenId +
-      tokenUriLength +
-      tokenURIHex;
-  return data;
-}
-
-dynamic makeMintParams(
-    String from, String to, String tokenURI, Uint8List cardId,
-    {String? gasPrice}) {
-  String data = makeMintTransactionData(from, tokenURI, cardId);
-  final params = [
-    {
-      "from": from,
-      "to": to,
-      "data": data,
-      "gasPrice": gasPrice ?? dotenv.get('DEFAULT_GAS_PRICE'),
-      "gas": "0x30D40",
-    },
-  ];
-  return params;
-}
-
+// wallet specific
 dynamic makeWatchAssetParams(String imageUri) {
   final params = [
     {
       "type": "ERC721",
       "options": {
         "address": dotenv.get("CONTRACT_ADDRESS"),
-        "symbol": "OC",
+        "symbol": "OCDemo",
         "decimals": 0,
         "image": imageUri
       }
