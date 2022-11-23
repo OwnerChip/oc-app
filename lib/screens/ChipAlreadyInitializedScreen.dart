@@ -45,7 +45,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       loadingText = context.loc.burnToken;
     });
     try {
-      var burnParams = makeSignedBurnParams(
+      var burnParams = await makeSignedBurnParams(
           widget.connector.session.accounts[0], tokenIdHash, signature);
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);

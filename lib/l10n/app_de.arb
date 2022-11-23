@@ -31,7 +31,7 @@
     "loadingData": "NFT Daten werden von IPFS geladen. \nBitte um wenige Augenblicke Geduld.",
     "tapItem": "Gegenstand scannen",
     "searchChip": "Suche nach NFC Chip",
-    "scanHint": "Halten Sie Ihr Smartphone näher an den Chip bis der nächste Screen erscheint.",
+    "scanHint": "Halten Sie Ihr Smartphone näher an den Chip \nis der nächste Screen erscheint.",
     "home": "Home",
     "moreInfo": "Mehr Information",
     "uploadImage": "Bitte laden Sie ein Bild des Gegenstands hoch",

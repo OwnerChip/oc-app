@@ -110,7 +110,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       String fullUri = "ipfs://$cid";
 
       // generate mint parameters
-      var mintParams = makeSignedMintParams(
+      var mintParams = await makeSignedMintParams(
           walletAddress,
           keccakUtf8(hexToBigInt(navArgs.tokenId).toString()),
           "ipfs://$cid",
