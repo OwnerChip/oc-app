@@ -117,20 +117,17 @@ class _ScanningScreen extends State<ScanningScreen> {
           throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
         }
 
-        /* TODO: verify chip authenticity via SMART CONTRACT
-        // To achieve this, the msg hash needs to be prefixed --> use prepareMsgForSignature()
+        // verify chip authenticity via SMART CONTRACT
         try {
           bool result = await verifyTokenSigner(
               chipEthereumAddressHexString, hashedTokenId, signature);
-          print(result);
+          print("SMART CONTRACT VERIFICATION RESULT: $result");
         } catch (e) {
           print("ERROR: $e");
         }
-        */
 
-        //get owner of nft with cardId == tokenId
+        // get owner of nft with cardId == tokenId
         try {
-          // tokenId = bytesToUnsignedInt(cardId);
           EthereumAddress ownerAddress = await getOwner(chipTokenId);
           nftOwner = ownerAddress.toString();
 
