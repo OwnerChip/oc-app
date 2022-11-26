@@ -8,6 +8,7 @@ import 'NFTDetailsScreen.dart';
 import '../widgets/AppBarWithLogo.dart';
 import '../utils/navigation_arguments.dart';
 import '../widgets/ChipInfo.dart';
+import '../widgets/CustomCard.dart';
 
 class UserScanResultsScreen extends StatelessWidget {
   const UserScanResultsScreen(

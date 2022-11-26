@@ -17,6 +17,11 @@ import '../utils/url_generator.service.dart';
 import '../utils/utils.dart';
 import 'HomeScreen.dart';
 import '../widgets/returnSnackBarWidget.dart';
+import '../widgets/CustomCard.dart';
+import '../widgets/ScreenBodyLayout.dart';
+import '../widgets/CustomImage.dart';
+import '../widgets/SmallTextContainer.dart';
+import '../widgets/CustomButton.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -35,10 +40,10 @@ class NFTDetailsScreen extends StatefulWidget {
 }
 
 class _NFTDetailsScreen extends State<NFTDetailsScreen> {
-  String statusText = "";
   String imagePath = "";
   String imageUri = "";
   Map<String, dynamic> metadata = {};
+  bool loadingImage = true;
 
   // get the metadata.json file from IPFS associated with a token
   Future<Map<String, dynamic>> _fetchMetadata(BigInt tokenId) async {
@@ -72,6 +77,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   Future<void> _fetchImage(
       String imgPath, Future<Map<String, dynamic>> meta) async {
     try {
+      setState(() {
+        loadingImage = true;
+      });
       if (imgPath != "") {
         metadata = await meta;
         imagePath = imgPath;
@@ -87,31 +95,20 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       }
 
       // updateScreen
-      statusText = context.loc.itemData;
       setState(() {
         metadata;
         imagePath;
-        statusText = "";
+        loadingImage = false;
       });
     } catch (e) {
       print("error fetching image: $e");
+      setState(() {
+        loadingImage = true;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.loadingNFTDataError, 'error'),
       );
-    }
-  }
-
-  Future<void> _addNftToMetamask(String tokenId) async {
-    try {
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-      // TODO: nothing happens yet ?!
-      await widget.connector.sendCustomRequest(
-          method: 'wallet_watchAsset',
-          params: makeWatchAssetParams(imageUri),
-          id: makeRandomInt());
-    } catch (error) {
-      print(error);
     }
   }
 
@@ -145,109 +142,85 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
 
-    statusText = "${context.loc.loadingData}";
-
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBarWithLogo(
-          loginFunction: widget.loginWithMetaMask,
-          text: context.loc.nftDetails,
-          connectedWallet: widget.connector.session.accounts.isEmpty == true
-              ? null
-              : widget.connector.session.accounts[0].toLowerCase(),
-          connector: widget.connector,
-          connected: widget.connected,
-        ),
-        body: SafeArea(
-          child: Center(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  Text('Token ID: ${navArgs.tokenId}'),
-                  // IMAGE
-                  if (imagePath != "")
-                    Image.file(
-                      File(imagePath),
-                      height: 270,
-                      // width: 300,
+      extendBodyBehindAppBar: true,
+      appBar: AppBarWithLogo(
+        loginFunction: widget.loginWithMetaMask,
+        text: context.loc.nftDetails,
+        connectedWallet: widget.connector.session.accounts.isEmpty == true
+            ? null
+            : widget.connector.session.accounts[0].toLowerCase(),
+        connector: widget.connector,
+        connected: widget.connected,
+      ),
+      body: ScreenBodyLayout(children: [
+        CustomCard(
+          heading: [
+            CustomImage(
+              loading: loadingImage,
+              imagePath: imagePath,
+              tokenId: navArgs.tokenId,
+            ),
+            //spacing
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Text(
+                    metadata['name'] ??
+                        'Loading...', //TODO: extract string to localization
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Theme.of(context).primaryColorLight,
+                        fontWeight: FontWeight
+                            .bold)), //TODO: Move font styles to separate file e.g. as "Heading style 1"
+              ],
+            )
+          ],
+          body: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                  metadata['description'] ??
+                      'Loading...', //TODO: extract string to localization
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold)),
+            ),
+            //spacing
+            SizedBox(height: 20),
+            CustomRoundedButton(
+              text: context.loc.showOnExplorer,
+              onPressed: () => {
+                launchUrl(generateBlockchainExplorerTokenDetailsUrl(
+                    navArgs.tokenId.toString()))
+              },
+            ),
+            const SizedBox(height: 15),
+            CustomRoundedButton(
+              text: context.loc.showOnOpenSea,
+              onPressed: () => {
+                launchUrl(
+                    generateOpenSeaTokenDetailsUrl(navArgs.tokenId.toString()))
+              },
+            ),
+            const SizedBox(height: 15),
+            SizedBox(
+                width: 200,
+                height: 50,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey, // background
                     ),
-                  if (imagePath == "") const SizedBox(height: 50),
-                  if (imagePath == "")
-                    Text(statusText,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  // METADATA
-                  if (metadata['name'] != null)
-                    Text(/*context.loc.itemName + */ '${metadata['name']}',
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  if (metadata['description'] != null)
-                    Text(
-                        /*context.loc.itemDescription +
-                              */
-                        '${metadata['description']}',
-                        style: TextStyle(fontSize: 20)),
-                  const SizedBox(height: 50),
-                  SizedBox(
-                    width: 200,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: () => {
-                        launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                            navArgs.tokenId.toString()))
-                      },
-                      child: Text(context.loc.showOnExplorer),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    width: 200,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: () => {
-                        launchUrl(generateOpenSeaTokenDetailsUrl(
-                            navArgs.tokenId.toString()))
-                      },
-                      child: Text(context.loc.showOnOpenSea),
-                    ),
-                  ),
-                  /*const SizedBox(height: 15),
-                    SizedBox(
-                      width: 200,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                        onPressed: () =>
-                            {_addNftToMetamask(navArgs.tokenId.toString())},
-                        child: Text(context.loc.showNftInWallet),
-                      ),
-                    ),*/
-                  const SizedBox(height: 15),
-                  SizedBox(
-                      width: 200,
-                      height: 50,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey, // background
-                          ),
-                          onPressed: () => {
-                                Navigator.pushReplacementNamed(
-                                    context, HomeScreen.routeName)
-                              },
-                          child: Text(context.loc.home))),
-                ]),
-          ),
-        ));
+                    onPressed: () => {
+                          Navigator.pushReplacementNamed(
+                              context, HomeScreen.routeName)
+                        },
+                    child: Text(context.loc.home))),
+          ],
+        )
+      ]),
+    );
   }
 }

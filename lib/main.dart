@@ -169,8 +169,10 @@ class _MyApp extends State<MyApp> {
       //color from hex
 
       theme: ThemeData(
-          primaryColor: Color.fromARGB(
-              255, 77, 122, 255)), //TODO: extract color to env file???
+        primaryColor: Color.fromARGB(255, 25, 35, 90),
+        primaryColorLight: Color.fromARGB(255, 77, 122, 255),
+        shadowColor: Color.fromARGB(100, 0, 0, 77),
+      ), //TODO: extract color to env file???
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
