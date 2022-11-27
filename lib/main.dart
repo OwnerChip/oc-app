@@ -169,9 +169,29 @@ class _MyApp extends State<MyApp> {
       //color from hex
 
       theme: ThemeData(
-        primaryColor: Color.fromARGB(255, 25, 35, 90),
-        primaryColorLight: Color.fromARGB(255, 77, 122, 255),
-        shadowColor: Color.fromARGB(100, 0, 0, 77),
+        primaryColor: const Color.fromARGB(255, 25, 35,
+            90), //Primary Color; Todo write colors to separate file!
+        primaryColorLight:
+            Color.fromARGB(255, 77, 122, 255), //Primary Color Light
+        shadowColor: Color.fromARGB(70, 0, 0, 77), //shadow color
+        scaffoldBackgroundColor:
+            Color.fromARGB(255, 240, 241, 246), //light blue background color
+        textTheme: const TextTheme(
+            headline1: TextStyle(
+                fontSize: 32.0,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 77, 122, 255)), //primary light color
+            headline2: TextStyle(
+                fontSize: 20.0,
+                color: Color.fromARGB(255, 25, 35, 90)), //primary color
+            bodyText1: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 25, 35, 90)), //primary color
+            bodyText2: TextStyle(
+              fontSize: 15.0,
+              color: Color.fromARGB(255, 25, 35, 90),
+            )),
       ), //TODO: extract color to env file???
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

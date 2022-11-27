@@ -9,42 +9,55 @@ class ChipInfo extends StatelessWidget {
       required this.walletAddress});
 
   final BigInt? tokenId;
-  final String? chipName;
+  final String chipName;
   final String walletAddress;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Chip Name: $chipName'),
-        const SizedBox(height: 5),
         Row(
           children: [
-            Text('Token ID: ${tokenId.toString().substring(0, 5)}...',
-                style: const TextStyle(fontSize: 14)),
-            //icon that copies navargs.nftowner to clipboard
-            IconButton(
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
-                iconSize: 20,
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: tokenId.toString()));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('Token ID copied to clipboard')));
-                },
-                icon: const Icon(Icons.copy))
+            Text('Chip Name: ', style: Theme.of(context).textTheme.bodyText1),
+            Text(chipName, style: Theme.of(context).textTheme.bodyText2)
           ],
         ),
         const SizedBox(height: 5),
+        tokenId != null
+            ? Row(
+                children: [
+                  Text('Token ID: ',
+                      style: Theme.of(context).textTheme.bodyText1),
+                  Text('${tokenId.toString().substring(0, 5)}...',
+                      style: Theme.of(context).textTheme.bodyText2),
+                  IconButton(
+                      color: Theme.of(context).primaryColor,
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                      iconSize: 25,
+                      onPressed: () {
+                        Clipboard.setData(
+                            ClipboardData(text: tokenId.toString()));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Token ID copied to clipboard')));
+                      },
+                      icon: const Icon(Icons.copy))
+                ],
+              )
+            : Container(),
+        const SizedBox(height: 5),
         Row(
           children: [
-            Text('Chip Wallet: ${walletAddress.substring(0, 5)}...',
-                style: const TextStyle(fontSize: 14)),
+            Text('Chip Wallet: ', style: Theme.of(context).textTheme.bodyText1),
+            Text('${walletAddress.substring(0, 5)}...',
+                style: Theme.of(context).textTheme.bodyText2),
             //icon that copies navargs.nftowner to clipboard
             IconButton(
+                color: Theme.of(context).primaryColor,
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(),
-                iconSize: 20,
+                iconSize: 25,
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: walletAddress));
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

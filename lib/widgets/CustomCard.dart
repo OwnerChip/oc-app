@@ -2,14 +2,24 @@ import 'package:flutter/material.dart';
 
 //Card widget that can take multiple children
 class CustomCard extends StatelessWidget {
-  const CustomCard({super.key, required this.heading, required this.body});
+  const CustomCard(
+      {super.key,
+      required this.children,
+      this.height,
+      this.width,
+      this.margin});
 
-  final List<Widget> heading;
-  final List<Widget> body;
+  final List<Widget> children;
+  final double? height;
+  final double? width;
+  final EdgeInsetsGeometry? margin;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: height,
+      width: width,
+      margin: margin,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -23,23 +33,7 @@ class CustomCard extends StatelessWidget {
                 offset: const Offset(3, 4)),
           ]),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ...heading,
-          //spacing
-          const SizedBox(height: 10),
-          Divider(
-            color: Theme.of(context).primaryColor,
-            height: 20,
-            thickness: 1,
-            indent: 0,
-            endIndent: 0,
-          ),
-          const SizedBox(height: 10),
-
-          ...body
-        ],
-      ),
+          crossAxisAlignment: CrossAxisAlignment.center, children: children),
     );
   }
 }

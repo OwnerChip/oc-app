@@ -62,5 +62,13 @@
     "errorHeadingSnackBar": "Fehler!",
     "loadingNFTDataError": "Daten konnten nicht geladen werden.",
     "errorConnectingWallet": "Fehler beim Verbinden der Wallet.",
-    "errorNoInternetConnection": "Keine Internetverbindung."
+    "errorNoInternetConnection": "Keine Internetverbindung.",
+    "congrats": "Congrats!",
+    "authenticityCheck": "Eigentums Check",
+    "authenticityNftFound": "Echtheits NFT auf Blockchain gefunden.",
+    "nfcCheck": "NFC Check",
+    "whoops": "Ups!",
+    "youAreNotNftOwner": "Dieser Gegenstand gehört nicht Ihnen.",
+    "youAreNFTOwner": "Dieser Gegenstand gehört Ihnen"
+
 }

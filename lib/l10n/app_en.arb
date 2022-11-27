@@ -62,5 +62,12 @@
     "errorHeadingSnackBar": "Oh Snap!",
     "loadingNFTDataError": "Error loading NFT data from IPFS.",
     "errorConnectingWallet": "Error when connecting wallet.",
-    "errorNoInternetConnection": "No internet connection."
+    "errorNoInternetConnection": "No internet connection.",
+    "congrats": "Congrats!",
+    "authenticityCheck": "Ownership check",
+    "authenticityNftFound": "Authenticity NFT found on blockchain.",
+    "nfcCheck": "NFC Check",
+    "whoops": "Whoops!",
+    "youAreNotNftOwner": "This item is not yours.",
+    "youAreNFTOwner": "This item is yours."
 }

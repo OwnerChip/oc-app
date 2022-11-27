@@ -22,7 +22,7 @@ import '../utils/utils.dart';
 import '../utils/nfc.commands.dart';
 import '../utils/web3.services.dart';
 import '../utils/signature.service.dart';
-import '../widgets/AppBarWithLogo.dart';
+import '../widgets/CustomAppBar.dart';
 import '../widgets/ScanningLoader.dart';
 import '../widgets/returnSnackBarWidget.dart';
 
@@ -166,7 +166,7 @@ class _ScanningScreen extends State<ScanningScreen> {
           } else {
             //chip not initialized: navigate to MetadataScreen
             // ignore: use_build_context_synchronously
-            Navigator.pushNamed(context, MetadataScreen.routeName,
+            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
                 arguments: ChipInitializedArguments(chipEthereumAddress,
                     chipEthereumAddressHexString, hashedTokenId, signature));
           }
@@ -189,7 +189,7 @@ class _ScanningScreen extends State<ScanningScreen> {
 
   void cancelScan() {
     NfcManager.instance.stopSession();
-    Navigator.pop(context);
+    // Navigator.pop(context);
   }
 
   @override
@@ -204,7 +204,7 @@ class _ScanningScreen extends State<ScanningScreen> {
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBarWithLogo(
+      appBar: CustomAppBar(
         connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
             ? null
             : widget.connector?.session?.accounts![0].toLowerCase(),
@@ -212,6 +212,7 @@ class _ScanningScreen extends State<ScanningScreen> {
         text: navArgs.scanningTitle,
         connector: widget.connector,
         connected: widget.connected,
+        showBackButton: false,
       ),
       body: SafeArea(
           child: Center(

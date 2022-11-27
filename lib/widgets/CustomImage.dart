@@ -47,24 +47,26 @@ class CustomImage extends StatelessWidget {
                         fit: BoxFit.cover,
                       ),
               )),
-          AspectRatio(
-              aspectRatio: 0.75,
-              child: Align(
-                alignment: const Alignment(-1.0, 0.95),
-                child:
-                    //container with rounded corners and text inside
-                    Row(children: [
-                  //spacing
-                  const SizedBox(width: 5),
-                  const SmallTextContainer(
-                    text: 'Token ID',
-                  ),
-                  const SizedBox(width: 10),
-                  SmallTextContainer(
-                    text: '${tokenId.toString().substring(0, 8)}...',
-                  ),
-                ]),
-              ))
+          tokenId != null
+              ? AspectRatio(
+                  aspectRatio: 0.75,
+                  child: Align(
+                    alignment: const Alignment(-1.0, 0.95),
+                    child:
+                        //container with rounded corners and text inside
+                        Row(children: [
+                      //spacing
+                      const SizedBox(width: 5),
+                      const SmallTextContainer(
+                        text: 'Token ID',
+                      ),
+                      const SizedBox(width: 10),
+                      SmallTextContainer(
+                        text: '${tokenId.toString().substring(0, 8)}...',
+                      ),
+                    ]),
+                  ))
+              : Container()
         ]));
   }
 }

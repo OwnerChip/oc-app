@@ -14,7 +14,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:web3dart/crypto.dart';
 
 //local imports
-import '../widgets/AppBarWithLogo.dart';
+import '../widgets/CustomAppBar.dart';
 import '../utils/ipfs.services.dart';
 import '../utils/utils.dart';
 import '../utils/images.service.dart';
@@ -178,7 +178,7 @@ class _MetadataScreen extends State<MetadataScreen> {
 
     return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBarWithLogo(
+        appBar: CustomAppBar(
           loginFunction: widget.loginWithMetaMask,
           text: '${context.loc.initializeChip} (2/3)',
           connectedWallet: widget.connector.session.accounts.isEmpty == true

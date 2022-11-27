@@ -5,7 +5,7 @@ import '../utils/localization.helper.dart';
 
 // local files
 import '../utils/url_generator.service.dart';
-import '../widgets/AppBarWithLogo.dart';
+import '../widgets/CustomAppBar.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
@@ -33,14 +33,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBarWithLogo(
-        text: 'OwnerChip Demo',
+      appBar: CustomAppBar(
         loginFunction: widget.loginWithMetaMask,
         connectedWallet: widget.connector.session.accounts.isEmpty == true
             ? null
             : widget.connector.session.accounts[0].toLowerCase(),
         connector: widget.connector,
         connected: widget.connected,
+        showBackButton: false,
       ),
       body: SafeArea(
           child: Center(

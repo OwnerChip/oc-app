@@ -15,7 +15,7 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/ipfs.services.dart';
 
 // import local files
-import '../widgets/AppBarWithLogo.dart';
+import '../widgets/CustomAppBar.dart';
 import '../utils/navigation_arguments.dart';
 import '../utils/url_generator.service.dart';
 import 'HomeScreen.dart';
@@ -135,7 +135,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
     return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBarWithLogo(
+        appBar: CustomAppBar(
           loginFunction: () => {},
           text: context.loc.initializeChip,
           connectedWallet: widget.connector.session.accounts.isEmpty == true

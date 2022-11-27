@@ -9,7 +9,7 @@ import '../utils/localization.helper.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 //local imports
-import '../widgets/AppBarWithLogo.dart';
+import '../widgets/CustomAppBar.dart';
 import '../utils/navigation_arguments.dart';
 import '../utils/ipfs.services.dart';
 import '../utils/web3.services.dart';
@@ -21,7 +21,7 @@ import '../widgets/CustomCard.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
 import '../widgets/SmallTextContainer.dart';
-import '../widgets/CustomButton.dart';
+import '../widgets/CustomRoundedButton.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -133,18 +133,13 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBarWithLogo(
+      appBar: CustomAppBar(
         loginFunction: widget.loginWithMetaMask,
         text: context.loc.nftDetails,
         connectedWallet: widget.connector.session.accounts.isEmpty == true
@@ -155,7 +150,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       ),
       body: ScreenBodyLayout(children: [
         CustomCard(
-          heading: [
+          children: [
             CustomImage(
               loading: loadingImage,
               imagePath: imagePath,
@@ -174,9 +169,14 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         fontWeight: FontWeight
                             .bold)), //TODO: Move font styles to separate file e.g. as "Heading style 1"
               ],
-            )
-          ],
-          body: [
+            ),
+            Divider(
+              color: Theme.of(context).primaryColor,
+              height: 20,
+              thickness: 1,
+              indent: 0,
+              endIndent: 0,
+            ),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -205,19 +205,6 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                     generateOpenSeaTokenDetailsUrl(navArgs.tokenId.toString()))
               },
             ),
-            const SizedBox(height: 15),
-            SizedBox(
-                width: 200,
-                height: 50,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey, // background
-                    ),
-                    onPressed: () => {
-                          Navigator.pushReplacementNamed(
-                              context, HomeScreen.routeName)
-                        },
-                    child: Text(context.loc.home))),
           ],
         )
       ]),
