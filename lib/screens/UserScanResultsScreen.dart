@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
+import 'package:web3dart/crypto.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -120,7 +121,8 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
       final UserScanResultsScreenArguments navArgs = ModalRoute.of(context)!
           .settings
           .arguments as UserScanResultsScreenArguments;
-      Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
+      Future<Map<String, dynamic>> meta =
+          _fetchMetadata(bytesToUnsignedInt(navArgs.tokenId));
       String imgPath = "";
       _fetchImage(imgPath, meta);
     } catch (e) {
@@ -318,7 +320,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                       SizedBox(height: 15),
                       ChipInfo(
                           tokenId: navArgs.chipIsInitialized
-                              ? navArgs.tokenId
+                              ? bytesToUnsignedInt(navArgs.tokenId)
                               : null,
                           chipName: 'Infineon Secora',
                           walletAddress: navArgs.chipWalletAddress)

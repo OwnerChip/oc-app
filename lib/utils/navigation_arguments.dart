@@ -11,7 +11,7 @@ class ScanningScreenArguments {
 class UserScanResultsScreenArguments {
   final String nftOwner;
   final bool chipIsInitialized;
-  final BigInt tokenId;
+  final Uint8List tokenId;
   final String chipWalletAddress;
 
   UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
@@ -40,7 +40,7 @@ class ChipInitializedArguments {
 
 class NFTDetailsScreenArguments {
   final Function? loginWithMetaMask;
-  final BigInt tokenId;
+  final Uint8List tokenId;
   final String chipWalletAddress;
   final String? localImagePath;
 

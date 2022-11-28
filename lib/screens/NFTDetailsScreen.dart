@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:web3dart/crypto.dart';
 import 'dart:io';
 import '../utils/localization.helper.dart';
 
@@ -119,7 +120,8 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       final NFTDetailsScreenArguments navArgs = ModalRoute.of(context)!
           .settings
           .arguments as NFTDetailsScreenArguments;
-      Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
+      Future<Map<String, dynamic>> meta =
+          _fetchMetadata(bytesToUnsignedInt(navArgs.tokenId));
       String imgPath = (navArgs.localImagePath) ?? "";
       _fetchImage(imgPath, meta);
     } catch (e) {
@@ -155,7 +157,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             CustomImage(
               loading: loadingImage,
               imagePath: imagePath,
-              tokenId: navArgs.tokenId,
+              tokenId: bytesToUnsignedInt(navArgs.tokenId),
             ),
             //spacing
             SizedBox(height: 20),
@@ -195,15 +197,15 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
               text: context.loc.showOnExplorer,
               onPressed: () => {
                 launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                    navArgs.tokenId.toString()))
+                    bytesToUnsignedInt(navArgs.tokenId).toString()))
               },
             ),
             const SizedBox(height: 15),
             CustomRoundedButton(
               text: context.loc.showOnOpenSea,
               onPressed: () => {
-                launchUrl(
-                    generateOpenSeaTokenDetailsUrl(navArgs.tokenId.toString()))
+                launchUrl(generateOpenSeaTokenDetailsUrl(
+                    bytesToUnsignedInt(navArgs.tokenId).toString()))
               },
             ),
           ],

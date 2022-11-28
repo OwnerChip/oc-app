@@ -142,11 +142,8 @@ class _MetadataScreen extends State<MetadataScreen> {
 
         // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(
-                widget.loginWithMetaMask,
-                bytesToUnsignedInt(navArgs.tokenId),
-                navArgs.chipWalletAddress,
-                image.path));
+            arguments: NFTDetailsScreenArguments(widget.loginWithMetaMask,
+                navArgs.tokenId, navArgs.chipWalletAddress, image.path));
 
         setState(() {
           success = true;

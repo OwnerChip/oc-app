@@ -150,7 +150,7 @@ class _ScanningScreen extends State<ScanningScreen> {
               arguments: UserScanResultsScreenArguments(
                   nftOwner,
                   chipIsInitialized,
-                  chipTokenId,
+                  chipEthereumAddress,
                   chipEthereumAddressHexString));
         } else {
           //chip already initialized: navigate to ChipAlreadyInitializedScreen
