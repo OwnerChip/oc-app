@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
@@ -165,12 +168,15 @@ class _MyApp extends State<MyApp> {
               )
             });
 
+    // fetch colors from .env
+    var primaryColor = Color(int.parse("0xFF${dotenv.get('PRIMARY_COLOR')}"));
+
     return MaterialApp(
       //color from hex
 
       theme: ThemeData(
-        primaryColor: const Color.fromARGB(255, 25, 35,
-            90), //Primary Color; Todo write colors to separate file!
+        primaryColor:
+            primaryColor, //Primary Color; Todo write colors to separate file!
         primaryColorLight:
             Color.fromARGB(255, 77, 122, 255), //Primary Color Light
         shadowColor: Color.fromARGB(70, 0, 0, 77), //shadow color
