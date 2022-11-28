@@ -54,7 +54,7 @@ class _ScanningScreen extends State<ScanningScreen> {
   void initScanning() async {
     String nftOwner;
     bool chipIsInitialized = false;
-    dynamic tokenId;
+    int randomNumber = makeRandomInt();
 
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       try {
@@ -101,8 +101,8 @@ class _ScanningScreen extends State<ScanningScreen> {
         print("$chipTokenId (Card ID as bigInt)");
 
         // get SIGNATURE from NFC chip
-        final Uint8List hashedTokenId = keccakUtf8(chipTokenId.toString());
-        final Uint8List getSigCmd = make_signature_command(0x01, hashedTokenId);
+        final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
+        final Uint8List getSigCmd = make_signature_command(0x01, hashedMsg);
         final Uint8List responseGetSignature =
             await isoDep.transceive(data: getSigCmd);
 
@@ -120,7 +120,7 @@ class _ScanningScreen extends State<ScanningScreen> {
         // verify chip authenticity via SMART CONTRACT
         try {
           bool result = await verifyTokenSigner(
-              chipEthereumAddressHexString, hashedTokenId, signature);
+              chipEthereumAddressHexString, hashedMsg, signature);
           print("SMART CONTRACT VERIFICATION RESULT: $result");
         } catch (e) {
           print("ERROR: $e");
@@ -137,7 +137,6 @@ class _ScanningScreen extends State<ScanningScreen> {
           //NFT with this token ID does not have an owner/does not exist
           print(e);
           chipIsInitialized = false;
-          tokenId = null;
           nftOwner = context.loc.ownerError;
         }
 
@@ -161,14 +160,14 @@ class _ScanningScreen extends State<ScanningScreen> {
                 arguments: ChipAlreadyInitializedScreenArguments(
                     chipEthereumAddress,
                     chipEthereumAddressHexString,
-                    hashedTokenId,
+                    hashedMsg,
                     signature));
           } else {
             //chip not initialized: navigate to MetadataScreen
             // ignore: use_build_context_synchronously
             Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
                 arguments: ChipInitializedArguments(chipEthereumAddress,
-                    chipEthereumAddressHexString, hashedTokenId, signature));
+                    chipEthereumAddressHexString, hashedMsg, signature));
           }
         }
       } catch (e) {
