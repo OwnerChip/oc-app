@@ -251,8 +251,11 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                                 backgroundColor: Theme.of(context).primaryColor,
                               ),
                               onPressed: () => {
-                                    launchUrl(generateOpenSeaTokenDetailsUrl(
-                                        bytesToUnsignedInt(tokenId).toString()))
+                                    launchUrl(
+                                        generateOpenSeaTokenDetailsUrl(
+                                            bytesToUnsignedInt(tokenId)
+                                                .toString()),
+                                        mode: LaunchMode.externalApplication)
                                   },
                               child: Text(context.loc.showOnOpenSea)),
                         ),

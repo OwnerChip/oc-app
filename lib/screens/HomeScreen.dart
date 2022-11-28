@@ -104,7 +104,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey, // background
                 ),
-                onPressed: () => {launchUrl(generateLandingPageUrl())},
+                onPressed: () => {
+                  launchUrl(generateLandingPageUrl(),
+                      mode: LaunchMode.externalApplication)
+                },
                 child: Text(context.loc.moreInfo),
               ),
             ),

@@ -196,16 +196,20 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             CustomRoundedButton(
               text: context.loc.showOnExplorer,
               onPressed: () => {
-                launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                    bytesToUnsignedInt(navArgs.tokenId).toString()))
+                launchUrl(
+                    generateBlockchainExplorerTokenDetailsUrl(
+                        bytesToUnsignedInt(navArgs.tokenId).toString()),
+                    mode: LaunchMode.externalApplication)
               },
             ),
             const SizedBox(height: 15),
             CustomRoundedButton(
               text: context.loc.showOnOpenSea,
               onPressed: () => {
-                launchUrl(generateOpenSeaTokenDetailsUrl(
-                    bytesToUnsignedInt(navArgs.tokenId).toString()))
+                launchUrl(
+                    generateOpenSeaTokenDetailsUrl(
+                        bytesToUnsignedInt(navArgs.tokenId).toString()),
+                    mode: LaunchMode.externalApplication)
               },
             ),
           ],
