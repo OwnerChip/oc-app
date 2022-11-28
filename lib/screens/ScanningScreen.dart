@@ -189,13 +189,7 @@ class _ScanningScreen extends State<ScanningScreen> {
 
   void cancelScan() {
     NfcManager.instance.stopSession();
-    // Navigator.pop(context);
-  }
-
-  @override
-  void dispose() {
-    cancelScan();
-    super.dispose();
+    Navigator.pop(context);
   }
 
   @override
@@ -226,18 +220,18 @@ class _ScanningScreen extends State<ScanningScreen> {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 90),
-          const Icon(
+          Icon(
             Icons.nfc,
-            color: Colors.black,
+            color: Theme.of(context).primaryColor,
             size: 96.0,
             semanticLabel: 'NFC Icon',
           ),
           const SizedBox(height: 15),
           const ScanningLoader(),
           const SizedBox(height: 15),
-          const Icon(
+          Icon(
             Icons.smartphone,
-            color: Colors.black,
+            color: Theme.of(context).primaryColor,
             size: 96.0,
             semanticLabel: 'Smartphone Icon',
           ),

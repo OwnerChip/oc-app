@@ -9,6 +9,7 @@ import '../widgets/CustomAppBar.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
+import '../widgets/ScreenBodyLayout.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -42,70 +43,71 @@ class _HomeScreenState extends State<HomeScreen> {
         connected: widget.connected,
         showBackButton: false,
       ),
-      body: SafeArea(
-          child: Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          SizedBox(
-            width: 200,
-            height: 150,
-            child: ElevatedButton(
+      body: ScreenBodyLayout(
+          withScrollView: false,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 220,
+              height: 200,
+              child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                  ),
+                  onPressed: widget.connector.connected
+                      ? () => Navigator.pushNamed(
+                          context, ScanningScreen.routeName,
+                          arguments: ScanningScreenArguments(
+                              '', "${context.loc.initializeChip} (1/3)"))
+                      : null,
+                  //TODO: Do i need to pass empty string first argument here?
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.auto_fix_high, size: 50),
+                      SizedBox(height: 10),
+                      Text(context.loc.initializeChip),
+                    ],
+                  )),
+            ),
+            SizedBox(height: 16),
+            SizedBox(
+              width: 220,
+              height: 200,
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
-                onPressed: widget.connector.connected
-                    ? () => Navigator.pushNamed(
-                        context, ScanningScreen.routeName,
-                        arguments: ScanningScreenArguments(
-                            '', "${context.loc.initializeChip} (1/3)"))
-                    : null,
-                //TODO: Do i need to pass empty string first argument here?
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.auto_fix_high, size: 50),
-                    SizedBox(height: 10),
-                    Text(context.loc.initializeChip),
-                  ],
-                )),
-          ),
-          SizedBox(height: 16),
-          SizedBox(
-            width: 200,
-            height: 150,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-              ),
-              onPressed: () => Navigator.pushNamed(
-                  context, ScanningScreen.routeName,
-                  arguments: ScanningScreenArguments(
-                      UserScanResultsScreen.routeName, context.loc.searchChip)),
-              child: Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.tap_and_play, size: 50),
-                      SizedBox(height: 10),
-                      Text(context.loc.tapItem),
-                    ]),
+                onPressed: () => Navigator.pushNamed(
+                    context, ScanningScreen.routeName,
+                    arguments: ScanningScreenArguments(
+                        UserScanResultsScreen.routeName,
+                        context.loc.searchChip)),
+                child: Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.tap_and_play, size: 50),
+                        SizedBox(height: 10),
+                        Text(context.loc.tapItem),
+                      ]),
+                ),
               ),
             ),
-          ),
-          //spacing
-          SizedBox(height: 70),
-          SizedBox(
-            width: 200,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey, // background
+            //spacing
+            SizedBox(height: 70),
+            SizedBox(
+              width: 200,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey, // background
+                ),
+                onPressed: () => {launchUrl(generateLandingPageUrl())},
+                child: Text(context.loc.moreInfo),
               ),
-              onPressed: () => {launchUrl(generateLandingPageUrl())},
-              child: Text(context.loc.moreInfo),
             ),
-          ),
-        ]),
-      )),
+          ]),
     );
   }
 }

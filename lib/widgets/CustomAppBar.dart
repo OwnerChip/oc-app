@@ -60,7 +60,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
-          ? 100
+          ? 120
           : null, //only change leading width if logo is shown
       leading: Padding(
           padding: EdgeInsets.only(left: 10),
@@ -91,8 +91,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
             padding: EdgeInsets.only(right: 10),
             child: connected
                 ? SizedBox(
-                    width: 50,
-                    height: 50,
+                    width: 48,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: (() => onButtonPress(context)),
                       style: ElevatedButton.styleFrom(
@@ -103,8 +103,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                     ),
                   )
                 : SizedBox(
-                    width: 50,
-                    height: 50,
+                    width: 48,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: (() => onButtonPress(context)),
                       style: ElevatedButton.styleFrom(

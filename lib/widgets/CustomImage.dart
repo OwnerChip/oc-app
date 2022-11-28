@@ -37,7 +37,7 @@ class CustomImage extends StatelessWidget {
               borderRadius: BorderRadius.circular(19),
               child: AspectRatio(
                 aspectRatio: 0.75,
-                child: loading || imagePath == null
+                child: loading || imagePath == null || imagePath == ""
                     ? Image.asset(
                         'assets/images/placeholder.jpg',
                         fit: BoxFit.cover,

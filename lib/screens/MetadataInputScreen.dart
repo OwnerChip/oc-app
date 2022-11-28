@@ -6,6 +6,10 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
+import 'package:owner_chip_admin_demo/widgets/CustomImage.dart';
+import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
+import 'package:owner_chip_admin_demo/widgets/ScreenBodyLayout.dart';
 import '../utils/localization.helper.dart';
 
 //web3 imports
@@ -53,6 +57,7 @@ class _MetadataScreen extends State<MetadataScreen> {
   String imagePath = 'assets/images/placeholder.jpg';
   bool success = false;
   bool loading = false;
+  bool showImageOptions = false;
   String loadingText = '';
 
   void setCameraImage() async {
@@ -164,6 +169,12 @@ class _MetadataScreen extends State<MetadataScreen> {
     }
   }
 
+  void onCameraButtonPressed() {
+    setState(() {
+      showImageOptions = true;
+    });
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -177,141 +188,123 @@ class _MetadataScreen extends State<MetadataScreen> {
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: CustomAppBar(
-          loginFunction: widget.loginWithMetaMask,
-          text: '${context.loc.initializeChip} (2/3)',
-          connectedWallet: widget.connector.session.accounts.isEmpty == true
-              ? null
-              : widget.connector.session.accounts[0].toLowerCase(),
-          connector: widget.connector,
-          connected: widget.connected,
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-              child: Padding(
-                  padding: EdgeInsets.all(15.0),
-                  child: Column(children: [
-                    ChipInfo(
-                        tokenId: bytesToUnsignedInt(navArgs.tokenId),
-                        chipName: 'Secora Infineon',
-                        walletAddress: navArgs.chipWalletAddress),
-                    SizedBox(height: 20),
-                    Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _titleController,
-                              decoration: InputDecoration(
-                                hintText: context.loc.title,
+      extendBodyBehindAppBar: true,
+      appBar: CustomAppBar(
+        loginFunction: widget.loginWithMetaMask,
+        text: '${context.loc.initializeChip} (2/3)',
+        connectedWallet: widget.connector.session.accounts.isEmpty == true
+            ? null
+            : widget.connector.session.accounts[0].toLowerCase(),
+        connector: widget.connector,
+        connected: widget.connected,
+      ),
+      body: ScreenBodyLayout(children: [
+        CustomCard(children: [
+          AspectRatio(
+            aspectRatio: 0.75,
+            child: image != null
+                ? CustomImage(
+                    loading: false,
+                    imagePath: imagePath,
+                  )
+                : CustomCard(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    width: double.infinity,
+                    children: [
+                        showImageOptions
+                            ? Column(
+                                children: [
+                                  CustomRoundedButton(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      icon:
+                                          const Icon(Icons.camera_alt_outlined),
+                                      width: 180,
+                                      text: context.loc.takePicture,
+                                      onPressed: () => setCameraImage()),
+                                  //spacing
+                                  SizedBox(height: 10),
+                                  CustomRoundedButton(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      icon: const Icon(Icons.image_outlined),
+                                      width: 180,
+                                      text: context.loc.selectedImage,
+                                      onPressed: () => setGalleryImage()),
+                                ],
+                              )
+                            : IconButton(
+                                iconSize: 50,
+                                icon: Icon(Icons.camera_alt_outlined),
+                                color: Theme.of(context).primaryColorLight,
+                                onPressed: () => onCameraButtonPressed(),
                               ),
-                              onChanged: (text) {
-                                metadata['name'] = text;
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return context.loc.pleaseEnterText;
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 15),
-                            TextField(
-                              maxLines: 2,
-                              keyboardType: TextInputType.multiline,
-                              controller: _descriptionController,
-                              decoration: InputDecoration(
-                                hintText: context.loc.description,
-                              ),
-                              onChanged: (text) {
-                                metadata['description'] = text;
-                              },
-                            ),
-                          ],
-                        )),
-                    //spacing
-                    SizedBox(height: 20),
-
-                    //row with height 100
-
-                    Row(
-                      //space evenly
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        //image with aspect ratio of 1
-                        Container(
-                          width: 150,
-                          height: 150,
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: image != null
-                                ? Image.file(
-                                    File(image!.path),
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    imagePath,
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
-                        ),
-
-                        Column(
-                          children: [
-                            //button with fixed width
-                            Container(
-                              width: 150,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
-                                ),
-                                onPressed: () {
-                                  setCameraImage();
-                                },
-                                child: Text(context.loc.takePicture),
-                              ),
-                            ),
-                            Container(
-                              width: 150,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
-                                ),
-                                onPressed: () {
-                                  setGalleryImage();
-                                },
-                                child: Text(context.loc.selectedImage),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
+                      ]),
+          ),
+          SizedBox(height: 20),
+          Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      hintText: context.loc.title,
                     ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: (loading
-                          ? LoadingIndicator(loadingText: loadingText)
-                          : ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
-                              ),
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  if (image != null) {
-                                    _initializeChip(metadata, image: image);
-                                  } else {
-                                    _initializeChip(metadata);
-                                  }
-                                }
-                              },
-                              child: Text(context.loc.mintNft),
-                            )),
+                    onChanged: (text) {
+                      metadata['name'] = text;
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return context.loc.pleaseEnterText;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 15),
+                  //TODO: Wrap Textfield in a container to make boxshadow
+                  TextField(
+                    maxLines: 3,
+                    keyboardType: TextInputType.multiline,
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      hintText: context.loc.description,
+                      // fillColor: Theme.of(context).scaffoldBackgroundColor,
+                      // border: OutlineInputBorder(
+                      //   borderRadius: BorderRadius.circular(13),
+                      //   borderSide: BorderSide(
+                      //     color: const Color.fromARGB(255, 249, 247,
+                      //         247), //TODO: border color externalize to theme
+                      //   ),
+                      // ),
                     ),
-                  ]))),
-        ));
+                    onChanged: (text) {
+                      metadata['description'] = text;
+                    },
+                  ),
+                ],
+              )),
+          SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: (loading
+                ? LoadingIndicator(loadingText: loadingText)
+                : CustomRoundedButton(
+                    text: context.loc.mintNft,
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        if (image != null) {
+                          _initializeChip(metadata, image: image);
+                        } else {
+                          _initializeChip(metadata);
+                        }
+                      }
+                    },
+                  )),
+          ),
+        ])
+      ]),
+    );
   }
 }

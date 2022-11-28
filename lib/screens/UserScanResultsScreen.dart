@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
+import 'dart:convert';
+import 'dart:io';
 
 //local imports
 import 'NFTDetailsScreen.dart';
@@ -14,8 +16,11 @@ import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
 import '../widgets/SmallTextContainer.dart';
 import '../widgets/CustomRoundedButton.dart';
+import '../widgets/returnSnackBarWidget.dart';
+import '../utils/ipfs.services.dart';
+import '../utils/web3.services.dart';
 
-class UserScanResultsScreen extends StatelessWidget {
+class UserScanResultsScreen extends StatefulWidget {
   const UserScanResultsScreen(
       {super.key,
       required this.connector,
@@ -27,8 +32,104 @@ class UserScanResultsScreen extends StatelessWidget {
 
   static const routeName = '/user-scan-results';
 
+  @override
+  State<UserScanResultsScreen> createState() => _UserScanResultsScreenState();
+}
+
+class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
+  String imagePath = "";
+  String imageUri = "";
+  Map<String, dynamic> metadata = {};
+  bool loadingImage = true;
+
+  // get the metadata.json file from IPFS associated with a token
+  Future<Map<String, dynamic>> _fetchMetadata(BigInt tokenId) async {
+    Map<String, dynamic> result = {};
+    try {
+      // get IPFS CID
+      String tokenUri = await getTokenUri(tokenId);
+
+      // fetch metadata json
+      String jsonCid = getCidFromIpfsLink(tokenUri);
+      final Directory directory = Directory.systemTemp;
+      File jsonFile = File("${directory.path}/$jsonCid.metadata.json");
+      await downloadMetadataFileFromIPFS(jsonCid, jsonFile.path, false);
+
+      // read metadata json
+      final String res = await jsonFile.readAsString();
+      metadata = Map<String, dynamic>.from(json.decode(res));
+      result = metadata;
+    } catch (e) {
+      print("error $e");
+      // throw Exception("Error fetching metadata: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.loadingNFTDataError, 'error'),
+      );
+    }
+    return result;
+  }
+
+  // get the path of the associated image locally if available OR from IPFS if not
+  Future<void> _fetchImage(
+      String imgPath, Future<Map<String, dynamic>> meta) async {
+    try {
+      setState(() {
+        loadingImage = true;
+      });
+      if (imgPath != "") {
+        metadata = await meta;
+        imagePath = imgPath;
+      } else {
+        Map<String, dynamic> metaSync = await meta;
+        if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
+          String imageCid = getCidFromIpfsLink(metaSync['image']!);
+          Map<String, String> result =
+              await downloadImageFileFromIPFS(imageCid);
+          imagePath = result['imagePath']!;
+          imageUri = result['imageUri']!;
+        }
+      }
+      // updateScreen
+      setState(() {
+        metadata;
+        imagePath;
+        loadingImage = false;
+      });
+    } catch (e) {
+      print("error fetching image: $e");
+      setState(() {
+        loadingImage = true;
+        imageUri = "";
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.loadingNFTDataError, 'error'),
+      );
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    try {
+      final UserScanResultsScreenArguments navArgs = ModalRoute.of(context)!
+          .settings
+          .arguments as UserScanResultsScreenArguments;
+      Future<Map<String, dynamic>> meta = _fetchMetadata(navArgs.tokenId!);
+      String imgPath = "";
+      _fetchImage(imgPath, meta);
+    } catch (e) {
+      setState(() {
+        imagePath = '';
+        loadingImage = true;
+      });
+      print(e);
+    }
   }
 
   @override
@@ -36,18 +137,18 @@ class UserScanResultsScreen extends StatelessWidget {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as UserScanResultsScreenArguments;
 
-    final connectedWallet = connector.session.accounts.length > 0
-        ? connector.session.accounts[0].toLowerCase()
+    final connectedWallet = widget.connector.session.accounts.length > 0
+        ? widget.connector.session.accounts[0].toLowerCase()
         : '';
 
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: CustomAppBar(
-          loginFunction: loginWithMetaMask,
+          loginFunction: widget.loginWithMetaMask,
           text: context.loc.tapResults,
-          connectedWallet: connected ? null : connectedWallet,
-          connector: connector,
-          connected: connected,
+          connectedWallet: widget.connected ? null : connectedWallet,
+          connector: widget.connector,
+          connected: widget.connected,
         ),
         body: ScreenBodyLayout(children: [
           Stack(
@@ -63,7 +164,7 @@ class UserScanResultsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         //Header Title
-                        connected && connectedWallet == navArgs.nftOwner
+                        widget.connected && connectedWallet == navArgs.nftOwner
                             ?
                             //connected wallet is owner
                             Text(context.loc.congrats,
@@ -84,7 +185,8 @@ class UserScanResultsScreen extends StatelessWidget {
                             Text(context.loc.nftNotFound,
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyText1)
-                            : connected && connectedWallet == navArgs.nftOwner
+                            : widget.connected &&
+                                    connectedWallet == navArgs.nftOwner
                                 ?
                                 //chip is initialized and wallet is connected
                                 Text(context.loc.authenticityNftFound,
@@ -113,7 +215,7 @@ class UserScanResultsScreen extends StatelessWidget {
                                       .orange, //TODO externalize orange as warning color to Theme
                                   size: 36,
                                 )
-                              : !connected
+                              : !widget.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
                                   const Icon(
@@ -148,7 +250,7 @@ class UserScanResultsScreen extends StatelessWidget {
                           ? //chip not initialized aka no NFT exists
                           Text(context.loc.youAreNotNftOwner,
                               style: Theme.of(context).textTheme.bodyText1)
-                          : !connected
+                          : !widget.connected
                               ?
                               //chip is initialized and wallet is NOT connected
                               Text(context.loc.noWalletConnected,
@@ -173,13 +275,13 @@ class UserScanResultsScreen extends StatelessWidget {
                           ?
                           //chip is NOT initialized
                           Container()
-                          : !connected
+                          : !widget.connected
                               ?
                               //chip is initialized and wallet is NOT connected
                               CustomRoundedButton(
                                   text: context.loc.connectWallet,
                                   onPressed: (() =>
-                                      {loginWithMetaMask!(context)}))
+                                      {widget.loginWithMetaMask!(context)}))
                               :
                               //chip is initialized and wallet is connected
                               CustomRoundedButton(
@@ -189,7 +291,7 @@ class UserScanResultsScreen extends StatelessWidget {
                                     Navigator.of(context).pushNamed(
                                         NFTDetailsScreen.routeName,
                                         arguments: NFTDetailsScreenArguments(
-                                            loginWithMetaMask,
+                                            widget.loginWithMetaMask,
                                             navArgs.tokenId,
                                             navArgs.chipWalletAddress,
                                             ""));
@@ -222,168 +324,11 @@ class UserScanResultsScreen extends StatelessWidget {
                   ]),
               CustomImage(
                 width: 130,
-                loading: true,
-                imagePath: '',
+                loading: loadingImage,
+                imagePath: imagePath,
               ),
             ],
           ),
-        ])
-
-        //  SafeArea(
-        //     child: Center(
-        //   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        //     Row(
-        //       children: [
-        //         Expanded(
-        //             flex: 3,
-        //             child: Row(
-        //                 mainAxisAlignment: MainAxisAlignment.end,
-        //                 children: [
-        //                   navArgs.chipIsInitialized
-        //                       ? const Icon(
-        //                           Icons.check_circle,
-        //                           color: Colors.green,
-        //                           size: 44,
-        //                         )
-        //                       : const Icon(
-        //                           Icons.cancel,
-        //                           color: Colors.red,
-        //                           size: 44,
-        //                         ),
-        //                   const SizedBox(width: 10),
-        //                 ])),
-        //         const SizedBox(height: 100),
-        //         Expanded(
-        //             flex: 7,
-        //             child: Column(
-        //               crossAxisAlignment: CrossAxisAlignment.start,
-        //               children: [
-        //                 Text('${context.loc.nftCheck}: ',
-        //                     style: TextStyle(fontSize: 18)),
-        //                 const SizedBox(height: 15),
-        //                 navArgs.chipIsInitialized
-        //                     ? Column(
-        //                         crossAxisAlignment: CrossAxisAlignment.start,
-        //                         children: [
-        //                           ChipInfo(
-        //                               tokenId: navArgs.tokenId,
-        //                               chipName: 'Secora Infineon',
-        //                               walletAddress: navArgs.chipWalletAddress),
-        //                           //button that navigates to nft details screen
-        //                           OutlinedButton(
-        //                               style: OutlinedButton.styleFrom(
-        //                                 foregroundColor:
-        //                                     Theme.of(context).primaryColor,
-        //                               ),
-        //                               onPressed: () {
-        //                                 print(context);
-        //                                 Navigator.of(context).pushNamed(
-        //                                     NFTDetailsScreen.routeName,
-        //                                     arguments:
-        //                                         NFTDetailsScreenArguments(
-        //                                             loginWithMetaMask,
-        //                                             navArgs.tokenId,
-        //                                             navArgs.chipWalletAddress,
-        //                                             ""));
-        //                               },
-        //                               child: Text(context.loc.viewNftDetails))
-        //                         ],
-        //                       )
-        //                     : Text(context.loc.nftNotFound,
-        //                         style: TextStyle(fontSize: 14)),
-        //               ],
-        //             )),
-        //       ],
-        //     ),
-        //     //spacing
-        //     const SizedBox(height: 40),
-        //     Row(
-        //       children: [
-        //         Expanded(
-        //             flex: 3,
-        //             child: Row(
-        //                 mainAxisAlignment: MainAxisAlignment.end,
-        //                 children: [
-        //                   connector.session.accounts.isEmpty
-        //                       ? //no wallet connected
-        //                       const Icon(
-        //                           Icons.warning_amber_rounded,
-        //                           color: Colors.orange,
-        //                           size: 44,
-        //                         )
-        //                       : connector?.session.accounts[0].toLowerCase() ==
-        //                               navArgs.nftOwner
-        //                           ? //you are the owner
-        //                           const Icon(
-        //                               Icons.check_circle,
-        //                               color: Colors.green,
-        //                               size: 44,
-        //                             )
-        //                           : const Icon(
-        //                               Icons.cancel,
-        //                               color: Colors.red,
-        //                               size: 44,
-        //                             ),
-        //                   const SizedBox(width: 10),
-        //                 ])),
-        //         Expanded(
-        //             flex: 7,
-        //             child: Column(
-        //               crossAxisAlignment: CrossAxisAlignment.start,
-        //               children: [
-        //                 Text('${context.loc.checkOwner}: ',
-        //                     style: const TextStyle(fontSize: 18)),
-        //                 const SizedBox(height: 15),
-        //                 connector.session.accounts.isEmpty
-        //                     ? Column(
-        //                         crossAxisAlignment: CrossAxisAlignment.start,
-        //                         children: [
-        //                           Text(context.loc.noWalletConnected,
-        //                               style: TextStyle(fontSize: 14)),
-        //                           const SizedBox(height: 3),
-        //                           connector.session.accounts.isEmpty
-        //                               ? OutlinedButton(
-        //                                   style: OutlinedButton.styleFrom(
-        //                                     foregroundColor:
-        //                                         Theme.of(context).primaryColor,
-        //                                   ),
-        //                                   onPressed: (() => {
-        //                                         loginWithMetaMask!(context),
-        //                                       }),
-        //                                   child:
-        //                                       Text(context.loc.connectWallet))
-        //                               : Container()
-        //                         ],
-        //                       )
-        //                     : connector?.session.accounts[0].toLowerCase() ==
-        //                             navArgs.nftOwner
-        //                         ? Column(
-        //                             crossAxisAlignment:
-        //                                 CrossAxisAlignment.start,
-        //                             children: [
-        //                               Text(context.loc.youAreNftOwner,
-        //                                   style: TextStyle(fontSize: 14)),
-        //                             ],
-        //                           )
-        //                         : Text(context.loc.noNftInWallet,
-        //                             style: TextStyle(fontSize: 14)),
-        //               ],
-        //             )),
-        //       ],
-        //     ),
-        //     const SizedBox(height: 100),
-        //     SizedBox(
-        //         width: 200,
-        //         height: 50,
-        //         child: ElevatedButton(
-        //             style: ElevatedButton.styleFrom(
-        //               backgroundColor: Colors.grey, // background
-        //             ),
-        //             onPressed: () =>
-        //                 {Navigator.pushReplacementNamed(context, '/login')},
-        //             child: Text(context.loc.home)))
-        //   ]),
-        // ))
-        );
+        ]));
   }
 }
