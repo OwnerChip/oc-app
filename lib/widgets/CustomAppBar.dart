@@ -11,16 +11,16 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       {Key? key,
       this.text,
       required this.loginFunction,
-      required this.connectedWallet,
+      required this.connectedWalletAddress,
       required this.connector,
-      required this.connected,
+      required this.isConnected,
       this.showBackButton = true})
       : super(key: key);
   final String? text;
   final dynamic loginFunction;
-  final String? connectedWallet;
+  final String? connectedWalletAddress;
   final WalletConnect connector;
-  final bool connected;
+  final bool isConnected;
   final bool showBackButton; //valid values: 'back', 'logo'
 
   //necessary to use as appbar because flutter?!
@@ -38,7 +38,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         connector.reconnect();
       }
       //if wallet is connected then kill session, else connect wallet
-      if (connected) {
+      if (isConnected) {
         connector.killSession();
       } else {
         loginFunction(context);
@@ -89,7 +89,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       actions: [
         Padding(
             padding: EdgeInsets.only(right: 10),
-            child: connected
+            child: isConnected
                 ? SizedBox(
                     width: 48,
                     height: 48,
@@ -114,53 +114,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                       child: const Icon(Icons.wallet, size: 25),
                     ),
                   )),
-
-        // child: IconButton(
-        //   icon: const Icon(Icons.wallet),
-        //   color: Colors.white,
-        //   onPressed: () => onButtonPress(context),
-        //   iconSize: 36,
-        //   style: IconButton.styleFrom(
-        //       backgroundColor:
-        //           Colors.red //Theme.of(context).primaryColor,
-        //       ),
-        // ))
       ],
 
-      // title: Row(
-      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //   children: [
-      //     Row(
-      //       children: [
-      //         Image.asset(
-      //           'assets/images/oc_logo.png',
-      //           fit: BoxFit.contain,
-      //           height: 32,
-      //         ),
-      //         Padding(
-      //           padding: EdgeInsets.only(left: 15),
-      //           child: Text(text,
-      //               style: const TextStyle(
-      //                 fontFamily: 'Ubuntu',
-      //               )),
-      //         ),
-      //       ],
-      //     ),
-      //     connected
-      //         ? IconButton(
-      //             icon: const Icon(Icons.logout),
-      //             color: Colors.black,
-      //             onPressed: () => onButtonPress(context),
-      //             iconSize: 36,
-      //           )
-      //         : IconButton(
-      //             icon: const Icon(Icons.wallet),
-      //             color: Colors.black,
-      //             onPressed: () => onButtonPress(context),
-      //             iconSize: 36,
-      //           )
-      //   ],
-      // ),
       titleTextStyle: const TextStyle(
         color: Colors.black,
         fontSize: 20,

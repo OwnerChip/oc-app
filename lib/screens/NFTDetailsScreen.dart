@@ -142,11 +142,12 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       appBar: CustomAppBar(
         loginFunction: widget.loginWithMetaMask,
         text: context.loc.nftDetails,
-        connectedWallet: widget.connector.session.accounts.isEmpty == true
-            ? null
-            : widget.connector.session.accounts[0].toLowerCase(),
+        connectedWalletAddress:
+            widget.connector.session.accounts.isEmpty == true
+                ? null
+                : widget.connector.session.accounts[0].toLowerCase(),
         connector: widget.connector,
-        connected: widget.connected,
+        isConnected: widget.connected,
       ),
       body: ScreenBodyLayout(children: [
         CustomCard(

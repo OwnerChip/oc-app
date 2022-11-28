@@ -36,11 +36,12 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
         loginFunction: widget.loginWithMetaMask,
-        connectedWallet: widget.connector.session.accounts.isEmpty == true
-            ? null
-            : widget.connector.session.accounts[0].toLowerCase(),
+        connectedWalletAddress:
+            widget.connector.session.accounts.isEmpty == true
+                ? null
+                : widget.connector.session.accounts[0].toLowerCase(),
         connector: widget.connector,
-        connected: widget.connected,
+        isConnected: widget.connected,
         showBackButton: false,
       ),
       body: ScreenBodyLayout(

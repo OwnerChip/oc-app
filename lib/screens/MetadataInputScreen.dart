@@ -192,11 +192,12 @@ class _MetadataScreen extends State<MetadataScreen> {
       appBar: CustomAppBar(
         loginFunction: widget.loginWithMetaMask,
         text: '${context.loc.initializeChip} (2/3)',
-        connectedWallet: widget.connector.session.accounts.isEmpty == true
-            ? null
-            : widget.connector.session.accounts[0].toLowerCase(),
+        connectedWalletAddress:
+            widget.connector.session.accounts.isEmpty == true
+                ? null
+                : widget.connector.session.accounts[0].toLowerCase(),
         connector: widget.connector,
-        connected: widget.connected,
+        isConnected: widget.connected,
       ),
       body: ScreenBodyLayout(children: [
         CustomCard(children: [
@@ -223,7 +224,6 @@ class _MetadataScreen extends State<MetadataScreen> {
                                       width: 180,
                                       text: context.loc.takePicture,
                                       onPressed: () => setCameraImage()),
-                                  //spacing
                                   SizedBox(height: 10),
                                   CustomRoundedButton(
                                       mainAxisAlignment:

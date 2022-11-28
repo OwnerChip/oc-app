@@ -146,9 +146,11 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
         appBar: CustomAppBar(
           loginFunction: widget.loginWithMetaMask,
           text: context.loc.tapResults,
-          connectedWallet: widget.connected ? null : connectedWallet,
-          connector: widget.connector,
-          connected: widget.connected,
+          connectedWalletAddress:
+              widget.connected ? null : connectedWallet, //wallet adresse
+          connector: widget.connector, //wallet connect connector
+          isConnected:
+              widget.connected, // wallet connect connected status boolean
         ),
         body: ScreenBodyLayout(children: [
           Stack(
@@ -212,7 +214,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                               const Icon(
                                   Icons.cancel,
                                   color: Colors
-                                      .orange, //TODO externalize orange as warning color to Theme
+                                      .orange, //TODO: externalize orange as warning color to Theme
                                   size: 36,
                                 )
                               : !widget.connected

@@ -138,11 +138,12 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         appBar: CustomAppBar(
           loginFunction: () => {},
           text: context.loc.initializeChip,
-          connectedWallet: widget.connector.session.accounts.isEmpty == true
-              ? null
-              : widget.connector.session.accounts[0].toLowerCase(),
+          connectedWalletAddress:
+              widget.connector.session.accounts.isEmpty == true
+                  ? null
+                  : widget.connector.session.accounts[0].toLowerCase(),
           connector: widget.connector,
-          connected: widget.connected,
+          isConnected: widget.connected,
         ),
         body: SafeArea(
             child: Center(

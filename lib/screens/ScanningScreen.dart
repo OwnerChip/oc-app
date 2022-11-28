@@ -199,13 +199,14 @@ class _ScanningScreen extends State<ScanningScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
-            ? null
-            : widget.connector?.session?.accounts![0].toLowerCase(),
+        connectedWalletAddress:
+            widget.connector?.session?.accounts!.isEmpty == true
+                ? null
+                : widget.connector?.session?.accounts![0].toLowerCase(),
         loginFunction: widget.loginWithMetaMask,
         text: navArgs.scanningTitle,
         connector: widget.connector,
-        connected: widget.connected,
+        isConnected: widget.connected,
         showBackButton: false,
       ),
       body: SafeArea(

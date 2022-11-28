@@ -11,6 +11,7 @@ class CustomCard extends StatelessWidget {
     this.color,
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.borderRadius = 13,
   });
 
   final List<Widget> children;
@@ -20,6 +21,7 @@ class CustomCard extends StatelessWidget {
   final Color? color;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ class CustomCard extends StatelessWidget {
           border: Border.all(
               color: Color.fromARGB(255, 249, 247, 247),
               width: 1), //TODO: externalize border color to theme
-          borderRadius: BorderRadius.circular(13),
+          borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
                 color: Theme.of(context).shadowColor,
