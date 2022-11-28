@@ -108,11 +108,11 @@ class _ScanningScreen extends State<ScanningScreen> {
 
         // TEST: extract and implicitly verify signature
         final MsgSignature signature =
-            extractSignature(chipTokenId, responseGetSignature);
+            extractSignature(chipTokenId, hashedMsg, responseGetSignature);
 
         // only if true, is the tokenId corresponding to the chip!
         bool verificationResult =
-            verifySignature(chipTokenId, signature.r, signature.s);
+            verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
         if (!verificationResult) {
           throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
         }

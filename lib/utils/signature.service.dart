@@ -21,7 +21,8 @@ Uint8List prepareMsgForSignature(String hexString) {
 }
 
 // extract & verify signature out of signatureResponse
-MsgSignature extractSignature(BigInt tokenId, Uint8List signatureResp) {
+MsgSignature extractSignature(
+    BigInt tokenId, Uint8List hashedMsg, Uint8List signatureResp) {
   String signature = hex.encode(signatureResp);
 
   // jump over counters (2x8), DER tag and length of signature bytes
@@ -52,19 +53,18 @@ MsgSignature extractSignature(BigInt tokenId, Uint8List signatureResp) {
     s = secp256k1N - s;
   }
 
-  int v = calculateV(tokenId, r, s);
+  int v = calculateV(tokenId, hashedMsg, r, s);
 
   return MsgSignature(r, s, v);
 }
 
-int calculateV(BigInt tokenId, BigInt r, BigInt s) {
+int calculateV(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   int vResult = 27;
   bool res = false;
   var vValues = [27, 28];
   for (int v in vValues) {
-    Uint8List hashedTokenId = keccakUtf8(tokenId.toString());
     MsgSignature signature = MsgSignature(r, s, v);
-    Uint8List recoveredPubKey = ecRecover(hashedTokenId, signature);
+    Uint8List recoveredPubKey = ecRecover(hashedMsg, signature);
     Uint8List recoveredAddress = publicKeyToAddress(recoveredPubKey);
     bool res = hexToBigInt(recoveredAddress) == tokenId;
     if (res) {
@@ -76,13 +76,12 @@ int calculateV(BigInt tokenId, BigInt r, BigInt s) {
 }
 
 // verify that the tokenId corresponds to the signer
-bool verifySignature(BigInt tokenId, BigInt r, BigInt s) {
+bool verifySignature(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   bool res = false;
   var vValues = [27, 28];
   for (int v in vValues) {
-    Uint8List hashedTokenId = keccakUtf8(tokenId.toString());
     MsgSignature signature = MsgSignature(r, s, v);
-    Uint8List recoveredPubKey = ecRecover(hashedTokenId, signature);
+    Uint8List recoveredPubKey = ecRecover(hashedMsg, signature);
     Uint8List recoveredAddress = publicKeyToAddress(recoveredPubKey);
     res = hexToBigInt(recoveredAddress) == tokenId;
     if (res) {
