@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:owner_chip_admin_demo/utils/url_generator.service.dart';
+import 'package:owner_chip_admin_demo/widgets/addTraitsForm.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'SpinningLoader.dart';
@@ -123,5 +124,23 @@ void showWalletConnectedPopup(BuildContext context, WalletConnect connector) {
                 },
               ),
             ]));
+      });
+}
+
+void showTraitInputFormDialog(BuildContext context) {
+  showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Center(child: Text("${context.loc.enterMetadata}:")),
+          content: //Column(children: [
+              // TODO: height of the box is too large!
+              TraitForm(),
+          // const SizedBox(height: 15),
+          // CustomRoundedButton(
+          //     text: context.loc.save,
+          //     onPressed: () => Navigator.pop(context)),
+          //])
+        );
       });
 }

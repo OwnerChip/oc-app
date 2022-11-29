@@ -226,6 +226,10 @@ class _MetadataScreen extends State<MetadataScreen> {
                         ]),
             ),
             SizedBox(height: 20),
+            CustomRoundedButton(
+                // TODO: reduze size / change layout?
+                text: context.loc.addTraits,
+                onPressed: () => showTraitInputFormDialog(context)),
             Form(
                 key: _formKey,
                 child: Column(
