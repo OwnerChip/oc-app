@@ -133,14 +133,7 @@ void showTraitInputFormDialog(BuildContext context) {
       builder: (context) {
         return AlertDialog(
           title: Center(child: Text("${context.loc.addTraits}:")),
-          content: //Column(children: [
-              // TODO: height of the box is too large!
-              TraitForm(),
-          // const SizedBox(height: 15),
-          // CustomRoundedButton(
-          //     text: context.loc.save,
-          //     onPressed: () => Navigator.pop(context)),
-          //])
+          content: TraitForm(),
         );
       });
 }

@@ -9,60 +9,21 @@ class TraitForm extends StatefulWidget {
 
 class _TraitFormState extends State<TraitForm> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _keyTextController;
-  late TextEditingController _valueTextController;
+  int count = 0;
   List<Widget> traitsTextFields = [];
-  static Map<String, String> traitsMap = {};
   static List<String> keyList = [];
   static List<String> valueList = [];
   // TODO: map keys to values
+  static Map<String, String> traitsMap = {};
 
   @override
   void initState() {
     super.initState();
-    _keyTextController = TextEditingController();
-    _valueTextController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _keyTextController.dispose();
-    _valueTextController.dispose();
     super.dispose();
-  }
-
-  /// get trait text-fields
-  List<Widget> _getTraits() {
-    for (int i = 0; i < keyList.length; i++) {
-      traitsTextFields.add(Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
-        child: Row(
-          children: [
-            Expanded(child: TraitTextFields(i)),
-            const SizedBox(width: 16),
-            _addRemoveButton(i == keyList.length - 1, i),
-          ],
-        ),
-      ));
-    }
-    return traitsTextFields;
-  }
-
-  /// add / remove button
-  Widget _addRemoveButton(bool add, int index) {
-    return Scaffold(
-        floatingActionButton: FloatingActionButton(
-      child: Text('+', style: TextStyle(fontSize: 20.0)),
-      shape: RoundedRectangleBorder(
-          side: BorderSide(
-              color: Colors.black26, width: 1.0, style: BorderStyle.solid),
-          borderRadius: BorderRadius.circular(10.0)),
-      onPressed: () {
-        setState(() {
-          traitsTextFields.add(TraitTextFields(index));
-        });
-      },
-    ));
   }
 
   @override
@@ -74,26 +35,24 @@ class _TraitFormState extends State<TraitForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(flex: 1, child: Container()),
-                Expanded(flex: 18, child: TraitTextFields(1)),
-                Expanded(flex: 1, child: Container()),
-              ]),
-              const SizedBox(
-                height: 20,
-              ),
-              // ..._getTraits(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const SizedBox(width: 50),
-                  FloatingActionButton.extended(
-                    onPressed: () => _getTraits(),
-                    label: Text(context.loc.addTrait),
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              ),
+              ...traitsTextFields,
+              if (count < 3)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const SizedBox(width: 50),
+                    FloatingActionButton.extended(
+                      onPressed: () => {
+                        setState(() {
+                          traitsTextFields.add(TraitTextFields(1));
+                          count++;
+                        }),
+                      },
+                      label: Text(context.loc.addTrait),
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
               const SizedBox(
                 height: 40,
               ),
@@ -102,6 +61,7 @@ class _TraitFormState extends State<TraitForm> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
+                      Navigator.pop(context);
                     }
                   }),
             ],
@@ -143,6 +103,7 @@ class _TraitTextFieldsState extends State<TraitTextFields> {
     });
 
     return Container(
+        margin: EdgeInsets.all(10),
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).primaryColor, width: 1),
@@ -176,7 +137,7 @@ class _TraitTextFieldsState extends State<TraitTextFields> {
                     if (v!.trim().isEmpty) return context.loc.pleaseEnterText;
                     return null;
                   },
-                )
+                ),
               ])),
           Expanded(flex: 2, child: Container())
         ]));
