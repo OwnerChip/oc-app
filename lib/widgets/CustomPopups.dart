@@ -132,7 +132,7 @@ void showTraitInputFormDialog(BuildContext context) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Center(child: Text("${context.loc.enterMetadata}:")),
+          title: Center(child: Text("${context.loc.addTraits}:")),
           content: //Column(children: [
               // TODO: height of the box is too large!
               TraitForm(),

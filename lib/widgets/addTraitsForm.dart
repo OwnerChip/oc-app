@@ -11,6 +11,7 @@ class _TraitFormState extends State<TraitForm> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _keyTextController;
   late TextEditingController _valueTextController;
+  List<Widget> traitsTextFields = [];
   static Map<String, String> traitsMap = {};
   static List<String> keyList = [];
   static List<String> valueList = [];
@@ -32,9 +33,8 @@ class _TraitFormState extends State<TraitForm> {
 
   /// get trait text-fields
   List<Widget> _getTraits() {
-    List<Widget> TraitsTextFields = [];
     for (int i = 0; i < keyList.length; i++) {
-      TraitsTextFields.add(Padding(
+      traitsTextFields.add(Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Row(
           children: [
@@ -45,32 +45,24 @@ class _TraitFormState extends State<TraitForm> {
         ),
       ));
     }
-    return TraitsTextFields;
+    return traitsTextFields;
   }
 
   /// add / remove button
   Widget _addRemoveButton(bool add, int index) {
-    return InkWell(
-      onTap: () {
-        if (add) {
-          keyList.insert(0, "");
-        } else
-          keyList.removeAt(index);
-        setState(() {});
+    return Scaffold(
+        floatingActionButton: FloatingActionButton(
+      child: Text('+', style: TextStyle(fontSize: 20.0)),
+      shape: RoundedRectangleBorder(
+          side: BorderSide(
+              color: Colors.black26, width: 1.0, style: BorderStyle.solid),
+          borderRadius: BorderRadius.circular(10.0)),
+      onPressed: () {
+        setState(() {
+          traitsTextFields.add(TraitTextFields(index));
+        });
       },
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          color: (add) ? Colors.green : Colors.red,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Icon(
-          (add) ? Icons.add : Icons.remove,
-          color: Colors.white,
-        ),
-      ),
-    );
+    ));
   }
 
   @override
@@ -84,48 +76,25 @@ class _TraitFormState extends State<TraitForm> {
             children: [
               Row(children: [
                 Expanded(flex: 1, child: Container()),
-                Expanded(
-                    flex: 18,
-                    child: Column(children: [
-                      TextFormField(
-                        controller: _keyTextController,
-                        decoration: InputDecoration(hintText: 'key'),
-                        onChanged: (k) {
-                          keyList.add(k);
-                        },
-                        validator: (v) {
-                          if (v!.trim().isEmpty)
-                            return 'Please enter something';
-                          return null;
-                        },
-                      ),
-                      TextFormField(
-                        controller: _valueTextController,
-                        decoration: InputDecoration(hintText: 'value'),
-                        onChanged: (v) {
-                          valueList.add(v);
-                        },
-                        // no validator neccessary
-                      )
-                    ])),
+                Expanded(flex: 18, child: TraitTextFields(1)),
                 Expanded(flex: 1, child: Container()),
               ]),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
-              ..._getTraits(),
+              // ..._getTraits(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   const SizedBox(width: 50),
                   FloatingActionButton.extended(
                     onPressed: () => _getTraits(),
-                    label: const Text('Add Trait'),
+                    label: Text(context.loc.addTrait),
                     icon: const Icon(Icons.add),
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 40,
               ),
               CustomRoundedButton(
@@ -169,29 +138,47 @@ class _TraitTextFieldsState extends State<TraitTextFields> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _keyController.text = _TraitFormState.keyList[widget.index];
-      _valueController.text = _TraitFormState.valueList[widget.index];
+      _keyController.text = _TraitFormState.keyList[widget.index] ?? "";
+      _valueController.text = _TraitFormState.valueList[widget.index] ?? "";
     });
 
-    return Row(children: [
-      TextFormField(
-        controller: _keyController,
-        onChanged: (v) => _TraitFormState.keyList[widget.index] = v,
-        decoration: InputDecoration(hintText: 'Enter a key'),
-        validator: (v) {
-          if (v!.trim().isEmpty) return 'Please enter something';
-          return null;
-        },
-      ),
-      TextFormField(
-        controller: _valueController,
-        onChanged: (v) => _TraitFormState.keyList[widget.index] = v,
-        decoration: InputDecoration(hintText: 'Enter a value'),
-        validator: (v) {
-          if (v!.trim().isEmpty) return 'Please enter something';
-          return null;
-        },
-      )
-    ]);
+    return Container(
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).primaryColor, width: 1),
+            borderRadius: BorderRadius.all(Radius.circular(13)),
+            boxShadow: [
+              const BoxShadow(
+                  blurRadius: 13,
+                  color: const Color.fromARGB(255, 249, 247, 247),
+                  offset: Offset(1, 3))
+            ]),
+        child: Row(children: [
+          Expanded(flex: 2, child: Container()),
+          Expanded(
+              flex: 16,
+              child: Column(children: [
+                TextFormField(
+                  controller: _keyController,
+                  onChanged: (v) => _TraitFormState.keyList[widget.index] = v,
+                  decoration: InputDecoration(hintText: context.loc.addKey),
+                  validator: (v) {
+                    if (v!.trim().isEmpty) return context.loc.pleaseEnterText;
+                    return null;
+                  },
+                ),
+                const SizedBox(width: 15),
+                TextFormField(
+                  controller: _valueController,
+                  onChanged: (v) => _TraitFormState.keyList[widget.index] = v,
+                  decoration: InputDecoration(hintText: context.loc.addValue),
+                  validator: (v) {
+                    if (v!.trim().isEmpty) return context.loc.pleaseEnterText;
+                    return null;
+                  },
+                )
+              ])),
+          Expanded(flex: 2, child: Container())
+        ]));
   }
 }
