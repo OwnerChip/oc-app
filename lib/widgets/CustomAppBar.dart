@@ -78,47 +78,48 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       actions: [
         Padding(
             padding: EdgeInsets.only(right: 10),
-            child: connector.session.accounts.length > 0
-                // if a wallet is connected, show light button
-                ? SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: (() =>
-                          showWalletConnectedPopup(context, connector)),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).scaffoldBackgroundColor,
-                          shape: const CircleBorder(),
-                          padding: EdgeInsets.all(0)),
-                      child: SvgPicture.asset(
-                        'assets/images/menu_light.svg',
-                        width: 60.0,
-                        height: 60.0,
-                      ),
-                    ),
-                  )
-                // if no wallet is connected, show dark button
-                : SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: (() => {
-                            showWalletConnectPopup(
-                                context, connector, loginFunction)
-                          }),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).scaffoldBackgroundColor,
-                          shape: const CircleBorder(),
-                          padding: EdgeInsets.all(0)),
-                      child: SvgPicture.asset(
-                        'assets/images/menu_dark.svg',
-                        width: 60.0,
-                        height: 60.0,
-                      ),
-                    ),
-                  )),
+            child:
+                (connectedWalletAddress != null && connectedWalletAddress != "")
+                    // if a wallet is connected, show light button
+                    ? SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: (() =>
+                              showWalletConnectedPopup(context, connector)),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).scaffoldBackgroundColor,
+                              shape: const CircleBorder(),
+                              padding: EdgeInsets.all(0)),
+                          child: SvgPicture.asset(
+                            'assets/images/menu_light.svg',
+                            width: 60.0,
+                            height: 60.0,
+                          ),
+                        ),
+                      )
+                    // if no wallet is connected, show dark button
+                    : SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: (() => {
+                                showWalletConnectPopup(
+                                    context, connector, loginFunction)
+                              }),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).scaffoldBackgroundColor,
+                              shape: const CircleBorder(),
+                              padding: EdgeInsets.all(0)),
+                          child: SvgPicture.asset(
+                            'assets/images/menu_dark.svg',
+                            width: 60.0,
+                            height: 60.0,
+                          ),
+                        ),
+                      )),
       ],
       titleTextStyle: const TextStyle(
         color: Colors.black,

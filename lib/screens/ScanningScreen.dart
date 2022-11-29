@@ -25,6 +25,7 @@ import '../utils/signature.service.dart';
 import '../widgets/CustomAppBar.dart';
 import '../widgets/ScanningLoader.dart';
 import '../widgets/returnSnackBarWidget.dart';
+import '../widgets/CustomRoundedButton.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
@@ -203,47 +204,61 @@ class _ScanningScreen extends State<ScanningScreen> {
                 ? null
                 : widget.connector?.session?.accounts![0].toLowerCase(),
         loginFunction: widget.loginWithMetaMask,
-        text: navArgs.scanningTitle,
+        //text: navArgs.scanningTitle,
         connector: widget.connector,
         isConnected: widget.connected,
         showBackButton: false,
       ),
       body: SafeArea(
-          child: Center(
+        child: Center(
+            child: Row(
+          children: [
+            Expanded(flex: 2, child: Container()),
+            Expanded(
+              flex: 18,
               child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            context.loc.scanHint,
-            overflow: TextOverflow.fade,
-            //center text
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 90),
-          Icon(
-            Icons.nfc,
-            color: Theme.of(context).primaryColor,
-            size: 96.0,
-            semanticLabel: 'NFC Icon',
-          ),
-          const SizedBox(height: 15),
-          const ScanningLoader(),
-          const SizedBox(height: 15),
-          Icon(
-            Icons.smartphone,
-            color: Theme.of(context).primaryColor,
-            size: 96.0,
-            semanticLabel: 'Smartphone Icon',
-          ),
-          const SizedBox(height: 90),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey, // background
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(context.loc.scanning,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold)),
+                  SizedBox(height: 50),
+                  Icon(
+                    Icons.nfc,
+                    color: Theme.of(context).primaryColor,
+                    size: 96.0,
+                    semanticLabel: 'NFC Icon',
+                  ),
+                  const SizedBox(height: 15),
+                  const ScanningLoader(),
+                  const SizedBox(height: 15),
+                  Icon(
+                    Icons.smartphone,
+                    color: Theme.of(context).primaryColor,
+                    size: 96.0,
+                    semanticLabel: 'Smartphone Icon',
+                  ),
+                  const SizedBox(height: 50),
+                  Text(
+                    context.loc.scanHint,
+                    overflow: TextOverflow.fade,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 50),
+                  CustomRoundedButton(
+                    text: context.loc.cancel,
+                    onPressed: () => cancelScan(),
+                  )
+                ],
               ),
-              onPressed: () => cancelScan(),
-              child: Text(context.loc.cancel))
-        ],
-      ))),
+            ),
+            Expanded(flex: 2, child: Container())
+          ],
+        )),
+      ),
     );
   }
 }
