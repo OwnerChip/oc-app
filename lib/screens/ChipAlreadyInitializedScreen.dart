@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
+import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:convert/convert.dart';
 import '../utils/localization.helper.dart';
@@ -40,29 +42,29 @@ class ChipAlreadyInitializedScreen extends StatefulWidget {
 }
 
 class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
-  bool loading = false;
-  String loadingText = '';
+  bool isLoading = false;
 
   Future<void> burnToken(
       BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
-    setState(() {
-      loading = true;
-      loadingText = context.loc.burnToken;
-    });
+    isLoading = true;
+    if (isLoading) {
+      showLoadingPopUp(context, "BURN");
+    }
+
     try {
       // to burn the related IPFS files here, we first need to fetch metadata.json read it and return image file CID
-      String tokenUri = await getTokenUri(tokenId);
-      String metadataFileCid = getCidFromIpfsLink(tokenUri);
-      String imageCid = "";
-      final Directory directory = Directory.systemTemp;
-      File jsonFile = File("${directory.path}/$metadataFileCid.metadata.json");
-      await downloadMetadataFileFromIPFS(metadataFileCid, jsonFile.path, false);
-      final String res = await jsonFile.readAsString();
-      Map<String, dynamic> metadata =
-          Map<String, dynamic>.from(json.decode(res));
-      if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
-        imageCid = getCidFromIpfsLink(metadata['image']!);
-      }
+      // String tokenUri = await getTokenUri(tokenId);
+      // String metadataFileCid = getCidFromIpfsLink(tokenUri);
+      // String imageCid = "";
+      // final Directory directory = Directory.systemTemp;
+      // File jsonFile = File("${directory.path}/$metadataFileCid.metadata.json");
+      // await downloadMetadataFileFromIPFS(metadataFileCid, jsonFile.path, false);
+      // final String res = await jsonFile.readAsString();
+      // Map<String, dynamic> metadata =
+      //     Map<String, dynamic>.from(json.decode(res));
+      // if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
+      //   imageCid = getCidFromIpfsLink(metadata['image']!);
+      // }
 
       var burnParams = await makeSignedBurnParams(
           widget.connector.session.accounts[0], tokenIdHash, signature);
@@ -78,35 +80,29 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         //this means burn succeeded
 
         // try deleting IPFS files
-        try {
-          bool success1 = await upinFileFromIPFS(metadataFileCid);
-          if (!success1) {
-            throw ("Could not delete image file $metadataFileCid from IPFS");
-          }
-          if (imageCid != "") {
-            bool success2 = await upinFileFromIPFS(imageCid);
-            if (!success2) {
-              throw ("Could not delete image file $imageCid from IPFS");
-            }
-          }
-        } catch (e) {
-          print("ERROR deleting files from IPFS: $e");
-        }
+        // try {
+        //   bool success1 = await upinFileFromIPFS(metadataFileCid);
+        //   if (!success1) {
+        //     throw ("Could not delete image file $metadataFileCid from IPFS");
+        //   }
+        //   if (imageCid != "") {
+        //     bool success2 = await upinFileFromIPFS(imageCid);
+        //     if (!success2) {
+        //       throw ("Could not delete image file $imageCid from IPFS");
+        //     }
+        //   }
+        // } catch (e) {
+        //   print("ERROR deleting files from IPFS: $e");
+        // }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(context.loc.successHeadingSnackbar,
-              context.loc.burnedSuccess, 'success'),
-        );
-        //delay 1 second
-        await Future.delayed(Duration(seconds: 1));
+        isLoading = false;
+        showBurnSuccessPopUp(context);
+        //delay 2 second
+        await Future.delayed(Duration(seconds: 2));
 
         //navigate to login screen
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-        setState(() {
-          loading = false;
-          loadingText = '';
-        });
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -115,10 +111,6 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.burnedError, 'error'),
       );
-      setState(() {
-        loading = false;
-        loadingText = '';
-      });
       print("Error: $e");
     }
   }
@@ -205,21 +197,13 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                         SizedBox(
                           width: 200,
                           height: 50,
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
-                              ),
-                              onPressed: loading
-                                  ? null
-                                  : () => {
-                                        burnToken(hexToBigInt(tokenId),
-                                            tokenIdHash, signature)
-                                      },
-                              child: loading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.grey,
-                                    )
-                                  : Text(context.loc.burnToken)),
+                          child: CustomRoundedButton(
+                            text: context.loc.burnToken,
+                            onPressed: () => {
+                              burnToken(hexToBigInt(tokenId), navArgs.hashedMsg,
+                                  signature)
+                            },
+                          ),
                         ),
                         const SizedBox(
                           height: 40,
@@ -227,17 +211,13 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                         SizedBox(
                           width: 200,
                           height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor,
-                            ),
-                            onPressed: () => {
-                              launchUrl(
-                                  generateBlockchainExplorerTokenDetailsUrl(
-                                      tokenId.toString()))
-                            },
-                            child: Text(context.loc.showOnExplorer),
-                          ),
+                          child: CustomRoundedButton(
+                              text: context.loc.showOnExplorer,
+                              onPressed: () => {
+                                    launchUrl(
+                                        generateBlockchainExplorerTokenDetailsUrl(
+                                            tokenId.toString()))
+                                  }),
                         ),
                         //spacing
                         const SizedBox(
@@ -246,18 +226,15 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                         SizedBox(
                           width: 200,
                           height: 50,
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
-                              ),
-                              onPressed: () => {
-                                    launchUrl(
-                                        generateOpenSeaTokenDetailsUrl(
-                                            bytesToUnsignedInt(tokenId)
-                                                .toString()),
-                                        mode: LaunchMode.externalApplication)
-                                  },
-                              child: Text(context.loc.showOnOpenSea)),
+                          child: CustomRoundedButton(
+                            text: context.loc.showOnOpenSea,
+                            onPressed: () => {
+                              launchUrl(
+                                  generateOpenSeaTokenDetailsUrl(
+                                      bytesToUnsignedInt(tokenId).toString()),
+                                  mode: LaunchMode.externalApplication)
+                            },
+                          ),
                         ),
                         const SizedBox(
                           height: 40,
@@ -265,15 +242,12 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                         SizedBox(
                           width: 200,
                           height: 50,
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey, // background
-                              ),
-                              onPressed: () => {
-                                    Navigator.pushNamed(
-                                        context, HomeScreen.routeName)
-                                  },
-                              child: Text(context.loc.cancel)),
+                          child: CustomRoundedButton(
+                            text: context.loc.cancel,
+                            onPressed: () => {
+                              Navigator.pushNamed(context, HomeScreen.routeName)
+                            },
+                          ),
                         ),
                       ],
                     )),

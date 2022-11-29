@@ -13,7 +13,7 @@
     "nfcError": "Error tapping NFC tag.",
     "isoDepError": "IsoDep is not supported.",
     "ownerError": "Error fetching owner",
-    "burning": "delete",
+    "burning": "token is burned",
     "burnedSuccess": "Token burned.",
     "burnedError": "Error when burning token.",
     "mintSuccess": "Minted token successfully",
