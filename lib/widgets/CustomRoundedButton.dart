@@ -21,13 +21,18 @@ class CustomRoundedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isActive = true;
+
     return Container(
       width: width,
       height: 40,
       child: ElevatedButton(
-          onPressed: (() => onPressed!()),
+          onPressed: (() =>
+              (onPressed != null) ? onPressed!() : isActive = false),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: isActive
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).backgroundColor, //TODO: This does not work
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(9),
             ),

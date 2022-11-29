@@ -1,6 +1,7 @@
 //boilerplate for stateless widget
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
@@ -24,37 +25,24 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   final bool isConnected;
   final bool showBackButton; //valid values: 'back', 'logo'
 
+  // Future<void> checkInternetConnection(BuildContext context) async {
+  //   try {
+  //     //check if there is internet connections
+  //     if (!await checkInternetConnection()) {
+  //       throw Exception("No internet connection");
+  //     }
+  //   } catch (e) {
+  //     //show error snackbar
+  //     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+  //         context.loc.errorHeadingSnackBar,
+  //         context.loc.errorNoInternetConnection,
+  //         'error'));
+  //   }
+  // }
+
   //necessary to use as appbar because flutter?!
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
-
-  void onButtonPress(context) async {
-    try {
-      //check if there is internet connections
-      if (!await checkInternetConnection()) {
-        throw Exception("No internet connection");
-      }
-      //if wc bridge is not connected, then reconnect
-      if (!connector.bridgeConnected) {
-        connector.reconnect();
-      }
-      //if wallet is connected then kill session, else connect wallet
-      if (isConnected) {
-        connector.killSession();
-      } else {
-        loginFunction(context);
-      }
-    } catch (e) {
-      //show error snackbar
-      ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-          "Error",
-          "No internet connection",
-          //TODO: localize strings
-          // context.loc.errorHeadingSnackBar,
-          // context.loc.errorNoInternetConnection,
-          'error'));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,31 +78,14 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       actions: [
         Padding(
             padding: EdgeInsets.only(right: 10),
-            child: isConnected
-                // if no wallet is connected, show dark button
+            child: connector.session.accounts.length > 0
+                // if a wallet is connected, show light button
                 ? SizedBox(
                     width: 48,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: (() => onButtonPress(context)),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).scaffoldBackgroundColor,
-                          shape: const CircleBorder(),
-                          padding: EdgeInsets.all(0)),
-                      child: SvgPicture.asset(
-                        'assets/images/menu_dark.svg',
-                        width: 60.0,
-                        height: 60.0,
-                      ),
-                    ),
-                  )
-                // if a wallet is connected, show light button
-                : SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: (() => onButtonPress(context)),
+                      onPressed: (() =>
+                          showWalletConnectedPopup(context, connector)),
                       style: ElevatedButton.styleFrom(
                           backgroundColor:
                               Theme.of(context).scaffoldBackgroundColor,
@@ -126,9 +97,29 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                         height: 60.0,
                       ),
                     ),
+                  )
+                // if no wallet is connected, show dark button
+                : SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: (() => {
+                            showWalletConnectPopup(
+                                context, connector, loginFunction)
+                          }),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).scaffoldBackgroundColor,
+                          shape: const CircleBorder(),
+                          padding: EdgeInsets.all(0)),
+                      child: SvgPicture.asset(
+                        'assets/images/menu_dark.svg',
+                        width: 60.0,
+                        height: 60.0,
+                      ),
+                    ),
                   )),
       ],
-
       titleTextStyle: const TextStyle(
         color: Colors.black,
         fontSize: 20,
