@@ -1,5 +1,6 @@
 //boilerplate for stateless widget
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
@@ -90,28 +91,40 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         Padding(
             padding: EdgeInsets.only(right: 10),
             child: isConnected
+                // if no wallet is connected, show dark button
                 ? SizedBox(
                     width: 48,
                     height: 48,
                     child: ElevatedButton(
                       onPressed: (() => onButtonPress(context)),
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
+                          backgroundColor:
+                              Theme.of(context).scaffoldBackgroundColor,
                           shape: const CircleBorder(),
                           padding: EdgeInsets.all(0)),
-                      child: const Icon(Icons.logout, size: 25),
+                      child: SvgPicture.asset(
+                        'assets/images/menu_dark.svg',
+                        width: 60.0,
+                        height: 60.0,
+                      ),
                     ),
                   )
+                // if a wallet is connected, show light button
                 : SizedBox(
                     width: 48,
                     height: 48,
                     child: ElevatedButton(
                       onPressed: (() => onButtonPress(context)),
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
+                          backgroundColor:
+                              Theme.of(context).scaffoldBackgroundColor,
                           shape: const CircleBorder(),
                           padding: EdgeInsets.all(0)),
-                      child: const Icon(Icons.wallet, size: 25),
+                      child: SvgPicture.asset(
+                        'assets/images/menu_light.svg',
+                        width: 60.0,
+                        height: 60.0,
+                      ),
                     ),
                   )),
       ],
