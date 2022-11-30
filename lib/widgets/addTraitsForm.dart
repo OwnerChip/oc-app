@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:collection';
 import 'CustomRoundedButton.dart';
 import '../utils/localization.helper.dart';
 
@@ -11,10 +12,15 @@ class _TraitFormState extends State<TraitForm> {
   final _formKey = GlobalKey<FormState>();
   int count = 0;
   List<Widget> traitsTextFields = [];
-  static List<String> keyList = [];
-  static List<String> valueList = [];
-  // TODO: map keys to values
-  static Map<String, String> traitsMap = {};
+  static List<String> keyList = [""];
+  static List<String> valueList = [""];
+  Map<String, String> traitsMap = {};
+
+  void mapLists() {
+    for (int i = 0; i < keyList.length; i++) {
+      traitsMap[keyList[i]] = valueList[i];
+    }
+  }
 
   @override
   void initState() {
@@ -24,6 +30,7 @@ class _TraitFormState extends State<TraitForm> {
   @override
   void dispose() {
     super.dispose();
+    count = 0;
   }
 
   @override
@@ -35,7 +42,8 @@ class _TraitFormState extends State<TraitForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ...traitsTextFields,
+              // show KEY-VALUE forms
+              for (int i = 0; i < count; i++) traitsTextFields[i],
               if (count < 3)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -61,7 +69,9 @@ class _TraitFormState extends State<TraitForm> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      Navigator.pop(context);
+                      mapLists();
+                      print(traitsMap);
+                      Navigator.pop(context, traitsMap);
                     }
                   }),
             ],
@@ -131,7 +141,7 @@ class _TraitTextFieldsState extends State<TraitTextFields> {
                 const SizedBox(width: 15),
                 TextFormField(
                   controller: _valueController,
-                  onChanged: (v) => _TraitFormState.keyList[widget.index] = v,
+                  onChanged: (v) => _TraitFormState.valueList[widget.index] = v,
                   decoration: InputDecoration(hintText: context.loc.addValue),
                   validator: (v) {
                     if (v!.trim().isEmpty) return context.loc.pleaseEnterText;
