@@ -77,5 +77,6 @@
     "nfcCheck": "NFC Check",
     "whoops": "Whoops!",
     "youAreNotNftOwner": "This item is not yours.",
-    "youAreNFTOwner": "This item is yours."
+    "youAreNFTOwner": "This item is yours.",
+    "loading": "Loading..."
 }

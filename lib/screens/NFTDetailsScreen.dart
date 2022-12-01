@@ -163,7 +163,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             SizedBox(height: 20),
             Row(
               children: [
-                Text(metadata['name'] ?? context.loc.loadingData,
+                Text(metadata['name'] ?? context.loc.loading,
                     style: TextStyle(
                         fontSize: 20,
                         color: Theme.of(context).primaryColorLight,

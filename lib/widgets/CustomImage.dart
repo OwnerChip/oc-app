@@ -58,25 +58,37 @@ class CustomImage extends StatelessWidget {
                         Row(children: [
                       //spacing
                       const SizedBox(width: 5),
-                      SmallTextContainer(
-                        text:
-                            'Token ID: ${tokenId.toString().substring(0, 8)}...',
+                      //make container touchable
+                      const SmallTextContainer(
+                        text: 'Token ID',
                       ),
-                      IconButton(
-                          color: Colors.white,
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(),
-                          iconSize: 25,
-                          onPressed: () {
-                            Clipboard.setData(
-                                ClipboardData(text: tokenId.toString()));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('Token ID copied to clipboard')));
-                          },
-                          icon: const Icon(Icons.copy))
+                      const SizedBox(width: 10),
+                      SmallTextContainer(
+                        text: '${tokenId.toString().substring(0, 8)}...',
+                      ),
                     ]),
+                    //     Row(children: [
+                    //   //spacing
+                    //   const SizedBox(width: 5),
+                    //   SmallTextContainer(
+                    //     text:
+                    //         'Token ID: ${tokenId.toString().substring(0, 8)}...',
+                    //   ),
+                    //   IconButton(
+                    //       color: Colors.white,
+                    //       padding: EdgeInsets.zero,
+                    //       constraints: BoxConstraints(),
+                    //       iconSize: 25,
+                    //       onPressed: () {
+                    //         Clipboard.setData(
+                    //             ClipboardData(text: tokenId.toString()));
+                    //         ScaffoldMessenger.of(context).showSnackBar(
+                    //             const SnackBar(
+                    //                 content:
+                    //                     Text('Token ID copied to clipboard')));
+                    //       },
+                    //       icon: const Icon(Icons.copy))
+                    // ]),
                   ))
               : Container()
         ]));

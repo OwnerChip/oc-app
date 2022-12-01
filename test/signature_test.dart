@@ -163,7 +163,7 @@ void main() {
       Uint8List msgHash = keccakUtf8(tokenId.toString());
 
       // act
-      MsgSignature sig = extractSignature(tokenId, sigResp);
+      MsgSignature sig = extractSignature(tokenId, msgHash, sigResp);
       Uint8List recoveredPubKey = ecRecover(msgHash, sig);
       Uint8List recoveredAddress = publicKeyToAddress(recoveredPubKey);
 
