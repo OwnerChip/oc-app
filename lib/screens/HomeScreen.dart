@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import '../utils/localization.helper.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // local files
 import '../utils/url_generator.service.dart';
@@ -11,6 +12,8 @@ import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
 import '../widgets/ScreenBodyLayout.dart';
+import '../widgets/CustomHomeScreenButton.dart';
+import '../widgets/CustomRoundedButton.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -49,66 +52,31 @@ class _HomeScreenState extends State<HomeScreen> {
           withScrollView: false,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 220,
-              height: 200,
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                  ),
-                  onPressed: widget.connector.connected
-                      ? () => Navigator.pushNamed(
-                          context, ScanningScreen.routeName,
-                          arguments:
-                              ScanningScreenArguments(MetadataScreen.routeName))
-                      : null,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.auto_fix_high, size: 50),
-                      SizedBox(height: 10),
-                      Text(context.loc.initializeChip),
-                    ],
-                  )),
-            ),
-            SizedBox(height: 16),
-            SizedBox(
-              width: 220,
-              height: 200,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                ),
-                onPressed: () => Navigator.pushNamed(
+            CustomHomeScreenButton(
+                text: context.loc.scanning,
+                svgPath: 'assets/images/illustration 1 small-cropped.svg',
+                onTap: () => Navigator.pushNamed(
                     context, ScanningScreen.routeName,
                     arguments: ScanningScreenArguments(
-                        UserScanResultsScreen.routeName)),
-                child: Center(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.tap_and_play, size: 50),
-                        SizedBox(height: 10),
-                        Text(context.loc.tapItem),
-                      ]),
-                ),
-              ),
-            ),
-            //spacing
+                        UserScanResultsScreen.routeName))),
+            SizedBox(height: 20),
+            CustomHomeScreenButton(
+                text: context.loc.initializeChip,
+                svgPath: 'assets/images/illustration 2-cropped.svg',
+                onTap: widget.connector.connected
+                    ? () => Navigator.pushNamed(
+                        context, ScanningScreen.routeName,
+                        arguments:
+                            ScanningScreenArguments(MetadataScreen.routeName))
+                    : null),
             SizedBox(height: 70),
-            SizedBox(
-              width: 200,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey, // background
-                ),
-                onPressed: () => {
-                  launchUrl(generateLandingPageUrl(),
-                      mode: LaunchMode.externalApplication)
-                },
-                child: Text(context.loc.moreInfo),
-              ),
+            CustomRoundedButton(
+              width: 250,
+              text: context.loc.moreInfo,
+              onPressed: () => {
+                launchUrl(generateLandingPageUrl(),
+                    mode: LaunchMode.externalApplication)
+              },
             ),
           ]),
     );

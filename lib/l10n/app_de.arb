@@ -9,7 +9,7 @@
     "getWalletAddress": "Finde Wallet Adresse",
     "burnToken": "Token löschen",
     "logout": "Logout",
-    "scanning": "Scanning",
+    "scanning": "Chip scannen",
     "nfcError": "Fehler beim Scannen des NFC Tags.",
     "isoDepError": "IsoDep nicht unterstützt.",
     "ownerError": "Fehler beim Eigentümer-Check",

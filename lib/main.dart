@@ -211,7 +211,7 @@ class _MyApp extends State<MyApp> {
                 fontWeight: FontWeight.w400)),
       ).copyWith(
         extensions: <ThemeExtension<dynamic>>[
-          BlueStyle(
+          const BlueStyle(
               borderColor: Color.fromARGB(255, 249, 247, 247),
               secondaryShadowColor: Color.fromARGB(50, 0, 0, 21),
               boxDecorationColor: Color.fromARGB(210, 160, 160, 160))

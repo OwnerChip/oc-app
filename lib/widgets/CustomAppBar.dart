@@ -40,7 +40,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   //   }
   // }
 
-  //necessary to use as appbar because flutter?!
+  //necessary to use  because flutter?!
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
@@ -76,50 +76,29 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
           )),
       centerTitle: true,
       actions: [
-        Padding(
-            padding: EdgeInsets.only(right: 10),
-            child:
-                (connectedWalletAddress != null && connectedWalletAddress != "")
-                    // if a wallet is connected, show light button
-                    ? SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: (() =>
-                              showWalletConnectedPopup(context, connector)),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).scaffoldBackgroundColor,
-                              shape: const CircleBorder(),
-                              padding: EdgeInsets.all(0)),
-                          child: SvgPicture.asset(
-                            'assets/images/menu_light.svg',
-                            width: 60.0,
-                            height: 60.0,
-                          ),
-                        ),
-                      )
-                    // if no wallet is connected, show dark button
-                    : SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: (() => {
-                                showWalletConnectPopup(
-                                    context, connector, loginFunction)
-                              }),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).scaffoldBackgroundColor,
-                              shape: const CircleBorder(),
-                              padding: EdgeInsets.all(0)),
-                          child: SvgPicture.asset(
-                            'assets/images/menu_dark.svg',
-                            width: 60.0,
-                            height: 60.0,
-                          ),
-                        ),
-                      )),
+        isConnected
+            ? GestureDetector(
+                onTap: () {
+                  showWalletConnectedPopup(context, connector);
+                },
+                child: Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: SvgPicture.asset(
+                      'assets/images/wallet connnected.svg',
+                      width: 60.0,
+                      height: 60.0,
+                    )))
+            : GestureDetector(
+                onTap: () {
+                  showWalletConnectPopup(context, connector, loginFunction);
+                },
+                child: Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: SvgPicture.asset(
+                      'assets/images/wallet disconnected .svg',
+                      width: 60.0,
+                      height: 60.0,
+                    )))
       ],
       titleTextStyle: const TextStyle(
         color: Colors.black,

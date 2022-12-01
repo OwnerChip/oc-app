@@ -185,6 +185,30 @@ class _MetadataScreen extends State<MetadataScreen> {
           isConnected: widget.connected,
         ),
         body: ScreenBodyLayout(children: [
+          Row(
+            children: [
+              //spacing
+              SizedBox(width: 22),
+              RichText(
+                text: TextSpan(
+                    text: 'Step 2/',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6!
+                        .copyWith(fontSize: 18),
+                    children: [
+                      TextSpan(
+                          text: '2',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline5!
+                              .copyWith(fontSize: 18))
+                    ]),
+              ),
+            ],
+          ),
+          //spacing
+          SizedBox(height: 20),
           CustomCard(children: [
             AspectRatio(
               aspectRatio: 0.75,
@@ -239,6 +263,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                     TextFormField(
                       controller: _titleController,
                       decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(left: 12),
                         hintText: context.loc.title,
                       ),
                       onChanged: (text) {
@@ -255,21 +280,26 @@ class _MetadataScreen extends State<MetadataScreen> {
                     Container(
                       decoration: BoxDecoration(
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(10)),
+                              const BorderRadius.all(Radius.circular(13)),
                           boxShadow: [
-                            BoxShadow(color: blueStyle.secondaryShadowColor!)
+                            BoxShadow(
+                              color: blueStyle.secondaryShadowColor!,
+                              offset: Offset(1, 3),
+                              blurRadius: 13,
+                            )
                           ]),
                       child: TextField(
                         maxLines: 3,
                         keyboardType: TextInputType.multiline,
                         controller: _descriptionController,
                         decoration: InputDecoration(
+                          focusColor: Theme.of(context).primaryColorDark,
                           hintText: context.loc.description,
+                          filled: true,
                           fillColor: Theme.of(context).scaffoldBackgroundColor,
                           border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
                             borderRadius: BorderRadius.circular(13),
-                            borderSide:
-                                BorderSide(color: blueStyle.borderColor!),
                           ),
                         ),
                         onChanged: (text) {

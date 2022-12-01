@@ -8,6 +8,7 @@ import 'SpinningLoader.dart';
 import '../screens/HomeScreen.dart';
 import '../utils/localization.helper.dart';
 import 'CustomRoundedButton.dart';
+import 'ChipInfo.dart';
 
 void showLoadingPopUp(BuildContext context, String type) {
   var loadingText = "";
@@ -93,24 +94,26 @@ void showWalletConnectedPopup(BuildContext context, WalletConnect connector) {
       context: context,
       builder: (context) {
         return AlertDialog(
-            title: Center(child: Text("${context.loc.walletConnected}:")),
-            content: Column(children: [
+            title: Center(child: Text("${context.loc.walletConnected}")),
+            content: Column(mainAxisSize: MainAxisSize.min, children: [
               // TODO: height of the box is too large!
-              Text("ID: $walletAddress"),
-              const SizedBox(height: 15),
               CustomRoundedButton(
                   text: context.loc.disconnectWallet,
                   onPressed: () =>
                       {connector.killSession(), Navigator.pop(context)}),
-              const SizedBox(height: 15),
-              CustomRoundedButton(
-                text: context.loc.showTxHistory,
-                onPressed: () => {
-                  launchUrl(
-                      generateBlockchainExplorerTxHistoryUrl(walletAddress),
-                      mode: LaunchMode.externalApplication)
-                },
-              ),
+              const SizedBox(height: 10),
+
+              ChipInfo(walletAddress: walletAddress),
+
+              // const SizedBox(height: 15),
+              // CustomRoundedButton(
+              //   text: context.loc.showTxHistory,
+              //   onPressed: () => {
+              //     launchUrl(
+              //         generateBlockchainExplorerTxHistoryUrl(walletAddress),
+              //         mode: LaunchMode.externalApplication)
+              //   },
+              // ),
             ]));
       });
 }
