@@ -181,8 +181,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                  metadata['description'] ??
-                      'Loading...', //TODO: extract string to localization
+                  metadata['description'] ?? '${context.loc.loadingData}...',
                   textAlign: TextAlign.left,
                   style: TextStyle(
                       color: Theme.of(context).primaryColor,

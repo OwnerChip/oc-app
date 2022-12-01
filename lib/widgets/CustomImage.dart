@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
 
@@ -20,18 +21,18 @@ class CustomImage extends StatelessWidget {
   final BigInt? tokenId;
   @override
   Widget build(BuildContext context) {
+    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
+
     return Container(
         width: width,
         height: height,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(19),
-            boxShadow: const [
-              BoxShadow(
-                  color: Color.fromARGB(50, 0, 0,
-                      21), //TODO: externalize color (not sure where to, there is only one shadow color in theme??)
-                  blurRadius: 5,
-                  offset: Offset(3, 2)),
-            ]),
+        decoration:
+            BoxDecoration(borderRadius: BorderRadius.circular(19), boxShadow: [
+          BoxShadow(
+              color: blueStyle.secondaryShadowColor!,
+              blurRadius: 5,
+              offset: Offset(3, 2)),
+        ]),
         child: Stack(children: [
           ClipRRect(
               borderRadius: BorderRadius.circular(19),

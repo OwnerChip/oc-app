@@ -77,19 +77,10 @@ void showWalletConnectPopup(
       builder: (context) {
         return AlertDialog(
           title: Center(child: Text(context.loc.noWalletConnected)),
-          content:
-              // Column(children: [
-              CustomRoundedButton(
-                  text: context.loc.connectWallet,
-                  onPressed: () =>
-                      {loginFunction(context), Navigator.pop(context)}),
-          //   const SizedBox(height: 15),
-          //   CustomRoundedButton(
-          //     text: context.loc.showTxHistory,
-          //     onPressed:
-          //         null, // TODO: this does not have any effect with "CustomRoundedButton"
-          //   ),
-          // ]),
+          content: CustomRoundedButton(
+              text: context.loc.connectWallet,
+              onPressed: () =>
+                  {loginFunction(context), Navigator.pop(context)}),
         );
       });
 }
@@ -109,11 +100,8 @@ void showWalletConnectedPopup(BuildContext context, WalletConnect connector) {
               const SizedBox(height: 15),
               CustomRoundedButton(
                   text: context.loc.disconnectWallet,
-                  onPressed: () => {
-                        connector
-                            .killSession(), // TODO: this does NOT work well!
-                        Navigator.pop(context)
-                      }),
+                  onPressed: () =>
+                      {connector.killSession(), Navigator.pop(context)}),
               const SizedBox(height: 15),
               CustomRoundedButton(
                 text: context.loc.showTxHistory,

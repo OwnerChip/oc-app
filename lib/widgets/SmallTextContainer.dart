@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 
 class SmallTextContainer extends StatelessWidget {
   const SmallTextContainer({super.key, required this.text});
@@ -7,17 +8,18 @@ class SmallTextContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
+
     return Container(
       padding: EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(210, 160, 160, 160),
+      decoration: BoxDecoration(
+        color: blueStyle.boxDecorationColor,
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          color:
-              Color.fromARGB(255, 255, 255, 255), //TODO: change to theme color
+        style: TextStyle(
+          color: Theme.of(context).scaffoldBackgroundColor,
           fontSize: 12,
           fontFamily: 'Roboto', //TODO: change to theme font
           fontWeight: FontWeight.w400,

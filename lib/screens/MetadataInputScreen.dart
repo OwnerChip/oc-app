@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomImage.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
@@ -169,6 +170,7 @@ class _MetadataScreen extends State<MetadataScreen> {
   Widget build(BuildContext context) {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
+    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
 
     return Scaffold(
         extendBodyBehindAppBar: true,
@@ -226,10 +228,10 @@ class _MetadataScreen extends State<MetadataScreen> {
                         ]),
             ),
             SizedBox(height: 20),
-            CustomRoundedButton(
-                // TODO: reduze size / change layout?
-                text: context.loc.addTraits,
-                onPressed: () => showTraitInputFormDialog(context)),
+            // CustomRoundedButton(
+            //     // TODO: reduze size / change layout?
+            //     text: context.loc.addTraits,
+            //     onPressed: () => showTraitInputFormDialog(context)),
             Form(
                 key: _formKey,
                 child: Column(
@@ -250,26 +252,31 @@ class _MetadataScreen extends State<MetadataScreen> {
                       },
                     ),
                     const SizedBox(height: 15),
-                    //TODO: Wrap Textfield in a container to make boxshadow
-                    TextField(
-                      maxLines: 3,
-                      keyboardType: TextInputType.multiline,
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        hintText: context.loc.description,
-                        fillColor: Theme.of(context).scaffoldBackgroundColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(13),
-                          borderSide: BorderSide(
-                            color: const Color.fromARGB(255, 249, 247,
-                                247), //TODO: border color externalize to theme
+                    Container(
+                      decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
+                          boxShadow: [
+                            BoxShadow(color: blueStyle.secondaryShadowColor!)
+                          ]),
+                      child: TextField(
+                        maxLines: 3,
+                        keyboardType: TextInputType.multiline,
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          hintText: context.loc.description,
+                          fillColor: Theme.of(context).scaffoldBackgroundColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(13),
+                            borderSide:
+                                BorderSide(color: blueStyle.borderColor!),
                           ),
                         ),
+                        onChanged: (text) {
+                          metadata['description'] = text;
+                        },
                       ),
-                      onChanged: (text) {
-                        metadata['description'] = text;
-                      },
-                    ),
+                    )
                   ],
                 )),
             SizedBox(height: 20),
