@@ -1,3 +1,4 @@
+import 'package:owner_chip_admin_demo/screens/MetadataInputScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
@@ -58,10 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: widget.connector.connected
                       ? () => Navigator.pushNamed(
                           context, ScanningScreen.routeName,
-                          arguments: ScanningScreenArguments(
-                              '', "${context.loc.initializeChip} (1/3)"))
+                          arguments:
+                              ScanningScreenArguments(MetadataScreen.routeName))
                       : null,
-                  //TODO: Do i need to pass empty string first argument here?
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -82,8 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () => Navigator.pushNamed(
                     context, ScanningScreen.routeName,
                     arguments: ScanningScreenArguments(
-                        UserScanResultsScreen.routeName,
-                        context.loc.searchChip)),
+                        UserScanResultsScreen.routeName)),
                 child: Center(
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

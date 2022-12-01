@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
 
@@ -17,7 +18,6 @@ class CustomImage extends StatelessWidget {
   final double? height;
   final bool loading;
   final BigInt? tokenId;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -57,13 +57,24 @@ class CustomImage extends StatelessWidget {
                         Row(children: [
                       //spacing
                       const SizedBox(width: 5),
-                      const SmallTextContainer(
-                        text: 'Token ID',
-                      ),
-                      const SizedBox(width: 10),
                       SmallTextContainer(
-                        text: '${tokenId.toString().substring(0, 8)}...',
+                        text:
+                            'Token ID: ${tokenId.toString().substring(0, 8)}...',
                       ),
+                      IconButton(
+                          color: Colors.white,
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                          iconSize: 25,
+                          onPressed: () {
+                            Clipboard.setData(
+                                ClipboardData(text: tokenId.toString()));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Token ID copied to clipboard')));
+                          },
+                          icon: const Icon(Icons.copy))
                     ]),
                   ))
               : Container()

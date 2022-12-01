@@ -133,7 +133,7 @@ void showTraitInputFormDialog(BuildContext context) {
       builder: (context) {
         return AlertDialog(
           title: Center(child: Text("${context.loc.addTraits}:")),
-          content: TraitForm(),
+          content: TraitForm(), //TODO: pass parent function
         );
       });
 }

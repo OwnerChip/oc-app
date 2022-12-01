@@ -204,7 +204,6 @@ class _ScanningScreen extends State<ScanningScreen> {
                 ? null
                 : widget.connector?.session?.accounts![0].toLowerCase(),
         loginFunction: widget.loginWithMetaMask,
-        //text: navArgs.scanningTitle,
         connector: widget.connector,
         isConnected: widget.connected,
         showBackButton: false,
@@ -219,29 +218,24 @@ class _ScanningScreen extends State<ScanningScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(context.loc.scanning,
+                  Text(
+                      (navArgs.nextRoute == MetadataScreen.routeName)
+                          ? "${context.loc.initializeChip} (1/3)"
+                          : context.loc.scanning,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontSize: 28,
                           fontWeight: FontWeight.bold)),
-                  SizedBox(height: 50),
-                  Icon(
-                    Icons.nfc,
-                    color: Theme.of(context).primaryColor,
-                    size: 96.0,
-                    semanticLabel: 'NFC Icon',
-                  ),
-                  const SizedBox(height: 15),
-                  const ScanningLoader(),
-                  const SizedBox(height: 15),
-                  Icon(
-                    Icons.smartphone,
-                    color: Theme.of(context).primaryColor,
-                    size: 96.0,
-                    semanticLabel: 'Smartphone Icon',
-                  ),
                   const SizedBox(height: 50),
+                  Image.asset("assets/images/chip.png"),
+                  const SizedBox(height: 15),
+                  (navArgs.nextRoute == MetadataScreen.routeName)
+                      ? Image.asset("assets/images/arrow_connect.png")
+                      : const ScanningLoader(),
+                  const SizedBox(height: 15),
+                  Image.asset("assets/images/small_phone.png"),
+                  const SizedBox(height: 30),
                   Text(
                     context.loc.scanHint,
                     overflow: TextOverflow.fade,

@@ -213,37 +213,20 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                           //Ownerchip Check Icon
                           !navArgs.chipIsInitialized
                               ? //chip not initialized aka no NFT exists
-                              const Icon(
-                                  Icons.cancel,
-                                  color: Colors
-                                      .orange, //TODO: externalize orange as warning color to Theme
-                                  size: 36,
-                                )
+                              Image.asset("assets/images/cross_alert.png")
                               : !widget.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
-                                  const Icon(
-                                      Icons.warning_amber_rounded,
-                                      color: Colors
-                                          .orange, //TODO externalize orange as warning color to Theme
-                                      size: 36,
-                                    )
+                                  Image.asset(
+                                      "assets/images/triangle_alert.png")
                                   : connectedWallet == navArgs.nftOwner
                                       ?
                                       //chip is initialized and wallet is connected and wallet is owner
-                                      Icon(
-                                          Icons.check_circle,
-                                          color: Theme.of(context)
-                                              .primaryColorLight,
-                                          size: 36,
-                                        )
+                                      Image.asset("assets/images/check.png")
                                       :
                                       //chip is initialized and wallet is connected and wallet is NOT owner
-                                      const Icon(
-                                          Icons.cancel,
-                                          color: Colors.orange,
-                                          size: 36,
-                                        )
+                                      Image.asset(
+                                          "assets/images/cross_alert.png")
                         ],
                       ),
                       //spacing
@@ -311,9 +294,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                           Text(context.loc.nfcCheck,
                               style: Theme.of(context).textTheme.headline2),
                           //checkmark icon
-                          Icon(Icons.check_circle,
-                              size: 36,
-                              color: Theme.of(context).primaryColorLight),
+                          Image.asset("assets/images/check.png"),
                         ],
                       ),
                       //spacing

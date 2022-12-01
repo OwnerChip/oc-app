@@ -163,9 +163,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             SizedBox(height: 20),
             Row(
               children: [
-                Text(
-                    metadata['name'] ??
-                        'Loading...', //TODO: extract string to localization
+                Text(metadata['name'] ?? context.loc.loadingData,
                     style: TextStyle(
                         fontSize: 20,
                         color: Theme.of(context).primaryColorLight,

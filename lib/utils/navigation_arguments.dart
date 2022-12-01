@@ -4,8 +4,7 @@ import 'package:web3dart/crypto.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
-  final String scanningTitle;
-  ScanningScreenArguments(this.nextRoute, this.scanningTitle);
+  ScanningScreenArguments(this.nextRoute);
 }
 
 class UserScanResultsScreenArguments {

@@ -166,15 +166,11 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                             Expanded(
                                 flex: 3,
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: const [
-                                    Icon(
-                                      Icons.warning_amber_rounded,
-                                      color: Colors.orange,
-                                      size: 40,
-                                    ),
-                                  ],
-                                )),
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Image.asset(
+                                          "assets/images/circle_alert.png")
+                                    ])),
                             //spacing
                             const SizedBox(width: 10),
                             Expanded(

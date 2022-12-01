@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class CustomIconButton extends StatelessWidget {
   CustomIconButton({super.key, required this.icon, required this.onPressed});
 
-  final Icon icon; //TODO: change to SVG for custom icons
+  final Image icon; //TODO: change to SVG for custom icons
   final Function onPressed;
 
   @override

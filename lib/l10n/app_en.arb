@@ -9,7 +9,7 @@
     "theOwnerIs": "the owner is",
     "burnToken": "Burn token",
     "logout": "Logout",
-    "scanning": "Scanning",
+    "scanning": "Tap an item",
     "nfcError": "Error tapping NFC tag.",
     "isoDepError": "IsoDep is not supported.",
     "ownerError": "Error fetching owner",
