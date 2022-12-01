@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
 import '../utils/localization.helper.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -26,6 +27,7 @@ import '../widgets/CustomAppBar.dart';
 import '../widgets/ScanningLoader.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../widgets/CustomRoundedButton.dart';
+import '../widgets/ScreenBodyLayout.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
@@ -197,62 +199,75 @@ class _ScanningScreen extends State<ScanningScreen> {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: CustomAppBar(
-        connectedWalletAddress:
-            widget.connector?.session?.accounts!.isEmpty == true
-                ? null
-                : widget.connector?.session?.accounts![0].toLowerCase(),
-        loginFunction: widget.loginWithMetaMask,
-        connector: widget.connector,
-        isConnected: widget.connected,
-        showBackButton: false,
-      ),
-      body: SafeArea(
-        child: Center(
-            child: Row(
+        extendBodyBehindAppBar: true,
+        appBar: CustomAppBar(
+          connectedWalletAddress:
+              widget.connector.session.accounts.isEmpty == true
+                  ? null
+                  : widget.connector.session.accounts[0].toLowerCase(),
+          loginFunction: widget.loginWithMetaMask,
+          connector: widget.connector,
+          isConnected: widget.connected,
+          showBackButton: false,
+        ),
+        body: ScreenBodyLayout(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          withScrollView: false,
           children: [
-            Expanded(flex: 2, child: Container()),
-            Expanded(
-              flex: 18,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                      (navArgs.nextRoute == MetadataScreen.routeName)
-                          ? "${context.loc.initializeChip} (1/3)"
-                          : context.loc.scanning,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 50),
-                  Image.asset("assets/images/chip.png"),
-                  const SizedBox(height: 15),
-                  (navArgs.nextRoute == MetadataScreen.routeName)
-                      ? Image.asset("assets/images/arrow_connect.png")
-                      : const ScanningLoader(),
-                  const SizedBox(height: 15),
-                  Image.asset("assets/images/small_phone.png"),
-                  const SizedBox(height: 30),
-                  Text(
-                    context.loc.scanHint,
+            (navArgs.nextRoute == MetadataScreen.routeName)
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.loc.initializeChip,
+                          style: Theme.of(context).textTheme.headline2),
+                      RichText(
+                        text: TextSpan(
+                            text: 'Step 1/',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline6!
+                                .copyWith(fontSize: 18),
+                            children: [
+                              TextSpan(
+                                  text: '2',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline5!
+                                      .copyWith(fontSize: 18))
+                            ]),
+                      )
+                    ],
+                  )
+                : Text(context.loc.scanning,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headline2),
+            Column(
+              children: [
+                SvgPicture.asset(
+                  'assets/images/chip_light_blue.svg',
+                  width: 70.0,
+                ),
+                const SizedBox(height: 20),
+                const ScanningLoader(),
+                const SizedBox(height: 20),
+                SvgPicture.asset(
+                  'assets/images/phone icon.svg',
+                  width: 70.0,
+                ),
+                const SizedBox(height: 30),
+                Text(context.loc.scanHint,
                     overflow: TextOverflow.fade,
                     textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 50),
-                  CustomRoundedButton(
-                    text: context.loc.cancel,
-                    onPressed: () => cancelScan(),
-                  )
-                ],
-              ),
+                    style: Theme.of(context).textTheme.bodyText1!
+                    // .copyWith(fontWeight: FontWeight.w400),
+                    ),
+              ],
             ),
-            Expanded(flex: 2, child: Container())
+            CustomRoundedButton(
+              text: context.loc.cancel,
+              onPressed: () => cancelScan(),
+            )
           ],
-        )),
-      ),
-    );
+        ));
   }
 }

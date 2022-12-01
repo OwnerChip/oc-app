@@ -187,16 +187,28 @@ class _MyApp extends State<MyApp> {
                 fontWeight: FontWeight.bold,
                 color: Color.fromARGB(255, 77, 122, 255)), //primary light color
             headline2: TextStyle(
+                fontSize: 32.0,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 25, 35, 90)), //primary color
+            headline4: TextStyle(
                 fontSize: 20.0,
                 color: Color.fromARGB(255, 25, 35, 90)), //primary color
-            bodyText1: TextStyle(
+            headline5: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
                 color: Color.fromARGB(255, 25, 35, 90)), //primary color
+            headline6: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 77, 122, 255)), //primary light color
+            bodyText1: TextStyle(
+                fontSize: 15.0,
+                color: Color.fromARGB(255, 77, 122, 255), //primary light color
+                fontWeight: FontWeight.w400),
             bodyText2: TextStyle(
-              fontSize: 15.0,
-              color: Color.fromARGB(255, 25, 35, 90),
-            )),
+                fontSize: 15.0,
+                color: Color.fromARGB(255, 25, 35, 90), //primary color
+                fontWeight: FontWeight.w400)),
       ).copyWith(
         extensions: <ThemeExtension<dynamic>>[
           BlueStyle(

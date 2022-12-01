@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ScanningLoader extends StatefulWidget {
   const ScanningLoader({Key? key}) : super(key: key);
@@ -16,7 +17,7 @@ class _ScanningLoaderState extends State<ScanningLoader>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     )..repeat(reverse: true);
     _animation = Tween<double>(begin: 0.2, end: 1).animate(_controller);
@@ -38,12 +39,17 @@ class _ScanningLoaderState extends State<ScanningLoader>
           child: child,
         );
       },
-      child: Icon(
-        Icons.wifi,
-        color: Theme.of(context).primaryColor,
-        size: 48.0,
-        semanticLabel: 'Icon of a wifi signal',
+      child: SvgPicture.asset(
+        'assets/images/arrow_light_blue_vertical.svg',
+        height: 80.0,
       ),
+
+      // Icon(
+      //   Icons.wifi,
+      //   color: Theme.of(context).primaryColor,
+      //   size: 48.0,
+      //   semanticLabel: 'Icon of a wifi signal',
+      // ),
     );
   }
 }

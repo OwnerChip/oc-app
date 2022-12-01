@@ -18,7 +18,7 @@ class ChipInfo extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(
           children: [
-            Text('Chip Name: ', style: Theme.of(context).textTheme.bodyText1),
+            Text('Chip Name: ', style: Theme.of(context).textTheme.headline5),
             Text(chipName, style: Theme.of(context).textTheme.bodyText2)
           ],
         ),
@@ -27,7 +27,7 @@ class ChipInfo extends StatelessWidget {
             ? Row(
                 children: [
                   Text('Token ID: ',
-                      style: Theme.of(context).textTheme.bodyText1),
+                      style: Theme.of(context).textTheme.headline5),
                   Text('${tokenId.toString().substring(0, 5)}...',
                       style: Theme.of(context).textTheme.bodyText2),
                   IconButton(
@@ -49,7 +49,7 @@ class ChipInfo extends StatelessWidget {
         const SizedBox(height: 5),
         Row(
           children: [
-            Text('Chip Wallet: ', style: Theme.of(context).textTheme.bodyText1),
+            Text('Chip Wallet: ', style: Theme.of(context).textTheme.headline5),
             Text('${walletAddress.substring(0, 5)}...',
                 style: Theme.of(context).textTheme.bodyText2),
             //icon that copies navargs.nftowner to clipboard

@@ -188,7 +188,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                             //chip is not initialized aka NFT does not exist
                             Text(context.loc.nftNotFound,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyText1)
+                                style: Theme.of(context).textTheme.headline5)
                             : widget.connected &&
                                     connectedWallet == navArgs.nftOwner
                                 ?
@@ -196,7 +196,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                                 Text(context.loc.authenticityNftFound,
                                     textAlign: TextAlign.center,
                                     style:
-                                        Theme.of(context).textTheme.bodyText1)
+                                        Theme.of(context).textTheme.headline5)
                                 :
                                 //chip is initialized and wallet is NOT connected
                                 Container()
@@ -208,7 +208,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(context.loc.authenticityCheck,
-                              style: Theme.of(context).textTheme.headline2),
+                              style: Theme.of(context).textTheme.headline4),
 
                           //Ownerchip Check Icon
                           !navArgs.chipIsInitialized
@@ -236,24 +236,24 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                       !navArgs.chipIsInitialized
                           ? //chip not initialized aka no NFT exists
                           Text(context.loc.youAreNotNftOwner,
-                              style: Theme.of(context).textTheme.bodyText1)
+                              style: Theme.of(context).textTheme.headline5)
                           : !widget.connected
                               ?
                               //chip is initialized and wallet is NOT connected
                               Text(context.loc.noWalletConnected,
-                                  style: Theme.of(context).textTheme.bodyText1)
+                                  style: Theme.of(context).textTheme.headline5)
                               : connectedWallet == navArgs.nftOwner
                                   ?
                                   //chip is initialized and wallet is connected and wallet is owner
                                   Text(context.loc.youAreNftOwner,
                                       style:
-                                          Theme.of(context).textTheme.bodyText1)
+                                          Theme.of(context).textTheme.headline5)
                                   :
                                   //chip is initialized and wallet is connected and wallet is NOT owner
                                   Text(context.loc.youAreNotNftOwner,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyText1),
+                                          .headline5),
 
                       SizedBox(height: 15),
 
@@ -292,7 +292,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(context.loc.nfcCheck,
-                              style: Theme.of(context).textTheme.headline2),
+                              style: Theme.of(context).textTheme.headline4),
                           //checkmark icon
                           Image.asset("assets/images/check.png"),
                         ],
