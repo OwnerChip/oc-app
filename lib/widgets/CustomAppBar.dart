@@ -95,7 +95,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                 child: Padding(
                     padding: EdgeInsets.only(right: 10),
                     child: SvgPicture.asset(
-                      'assets/images/wallet disconnected .svg',
+                      'assets/images/wallet disconnected.svg',
                       width: 60.0,
                       height: 60.0,
                     )))

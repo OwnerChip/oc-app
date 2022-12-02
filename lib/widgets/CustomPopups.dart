@@ -88,6 +88,7 @@ void showWalletConnectPopup(
 
 // only to be called with a connected wallet!
 void showWalletConnectedPopup(BuildContext context, WalletConnect connector) {
+  // String walletAddress = connector.session.accounts[0];
   String walletAddress = connector.session.accounts[0];
 
   showDialog(
