@@ -25,20 +25,33 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   final bool isConnected;
   final bool showBackButton; //valid values: 'back', 'logo'
 
-  // Future<void> checkInternetConnection(BuildContext context) async {
-  //   try {
-  //     //check if there is internet connections
-  //     if (!await checkInternetConnection()) {
-  //       throw Exception("No internet connection");
-  //     }
-  //   } catch (e) {
-  //     //show error snackbar
-  //     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-  //         context.loc.errorHeadingSnackBar,
-  //         context.loc.errorNoInternetConnection,
-  //         'error'));
-  //   }
-  // }
+  void onButtonPress(context) async {
+    try {
+      //check if there is internet connections
+      if (!await checkInternetConnection()) {
+        throw Exception("No internet connection");
+      }
+      //if wc bridge is not connected, then reconnect
+      if (!connector.bridgeConnected) {
+        connector.reconnect();
+      }
+      //if wallet is connected then kill session, else connect wallet
+      if (isConnected) {
+        connector.killSession();
+      } else {
+        loginFunction(context);
+      }
+    } catch (e) {
+      //show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+          "Error",
+          "No internet connection",
+          //TODO: localize strings
+          // context.loc.errorHeadingSnackBar,
+          // context.loc.errorNoInternetConnection,
+          'error'));
+    }
+  }
 
   //necessary to use  because flutter?!
   @override
@@ -77,28 +90,42 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       centerTitle: true,
       actions: [
         isConnected
-            ? GestureDetector(
-                onTap: () {
-                  showWalletConnectedPopup(context, connector);
-                },
-                child: Padding(
-                    padding: EdgeInsets.only(right: 10),
-                    child: SvgPicture.asset(
-                      'assets/images/wallet connnected.svg',
-                      width: 60.0,
-                      height: 60.0,
-                    )))
-            : GestureDetector(
-                onTap: () {
-                  showWalletConnectPopup(context, connector, loginFunction);
-                },
-                child: Padding(
-                    padding: EdgeInsets.only(right: 10),
-                    child: SvgPicture.asset(
-                      'assets/images/wallet disconnected.svg',
-                      width: 60.0,
-                      height: 60.0,
-                    )))
+            ? IconButton(
+                icon: const Icon(Icons.logout),
+                color: Colors.black,
+                onPressed: () => onButtonPress(context),
+                iconSize: 36,
+              )
+            : IconButton(
+                icon: const Icon(Icons.wallet),
+                color: Colors.black,
+                onPressed: () => onButtonPress(context),
+                iconSize: 36,
+              )
+
+        // isConnected
+        //     ? GestureDetector(
+        //         onTap: () {
+        //           showWalletConnectedPopup(context, connector);
+        //         },
+        //         child: Padding(
+        //             padding: EdgeInsets.only(right: 10),
+        //             child: SvgPicture.asset(
+        //               'assets/images/wallet connnected.svg',
+        //               width: 60.0,
+        //               height: 60.0,
+        //             )))
+        //     : GestureDetector(
+        //         onTap: () {
+        //           showWalletConnectPopup(context, connector, loginFunction);
+        //         },
+        //         child: Padding(
+        //             padding: EdgeInsets.only(right: 10),
+        //             child: SvgPicture.asset(
+        //               'assets/images/wallet disconnected.svg',
+        //               width: 60.0,
+        //               height: 60.0,
+        //             )))
       ],
       titleTextStyle: const TextStyle(
         color: Colors.black,

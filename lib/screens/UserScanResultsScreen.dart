@@ -20,6 +20,7 @@ import '../widgets/CustomRoundedButton.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/ipfs.services.dart';
 import '../utils/web3.services.dart';
+import '../widgets/LoadingOverlay.dart';
 
 class UserScanResultsScreen extends StatefulWidget {
   const UserScanResultsScreen(

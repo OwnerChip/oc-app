@@ -43,13 +43,6 @@ class _ScanningLoaderState extends State<ScanningLoader>
         'assets/images/arrow_light_blue_vertical.svg',
         height: 80.0,
       ),
-
-      // Icon(
-      //   Icons.wifi,
-      //   color: Theme.of(context).primaryColor,
-      //   size: 48.0,
-      //   semanticLabel: 'Icon of a wifi signal',
-      // ),
     );
   }
 }

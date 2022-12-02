@@ -4,7 +4,7 @@ import 'package:owner_chip_admin_demo/utils/url_generator.service.dart';
 import 'package:owner_chip_admin_demo/widgets/addTraitsForm.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'SpinningLoader.dart';
+import 'PopupLoader.dart';
 import '../screens/HomeScreen.dart';
 import '../utils/localization.helper.dart';
 import 'CustomRoundedButton.dart';
@@ -31,7 +31,7 @@ void showLoadingPopUp(BuildContext context, String type) {
       builder: (context) {
         return AlertDialog(
           title: Center(child: Text("$loadingText...")),
-          content: const SpinningLoader(),
+          content: Text('Loading..'),
           // actions: <Widget>[
           //   TextButton(
           //       onPressed: () {
