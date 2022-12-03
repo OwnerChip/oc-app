@@ -5,6 +5,7 @@ import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -64,11 +65,25 @@ class _ScanningScreen extends State<ScanningScreen> {
       if (!await checkInternetConnection()) {
         throw Exception("No internet connection");
       }
-      final navArgs =
-          ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
+    } catch (e) {
+      //error reading chip
+      print(context.loc.isoDepError + ": $e");
+      NfcManager.instance.stopSession();
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorNoInternetConnection, 'error'),
+      );
+      //delay for 1 second
+      await Future.delayed(Duration(seconds: 1));
+      //navigate back to previous screen
+      Navigator.pop(context);
+    }
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
-      //start NFC scan
-      NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+    //start NFC scan
+    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      try {
         var isoDep = IsoDep.from(tag);
 
         //check if isodep is available and exit if not
@@ -106,6 +121,13 @@ class _ScanningScreen extends State<ScanningScreen> {
         final Uint8List responseGetSignature =
             await isoDep.transceive(data: getSigCmd);
 
+        //vibrate phone
+        HapticFeedback.vibrate();
+        await Future.delayed(Duration(milliseconds: 50));
+        HapticFeedback.vibrate();
+        await Future.delayed(Duration(milliseconds: 50));
+        HapticFeedback.vibrate();
+
         // TEST: extract and implicitly verify signature
         final MsgSignature signature =
             extractSignature(chipTokenId, hashedMsg, responseGetSignature);
@@ -121,9 +143,9 @@ class _ScanningScreen extends State<ScanningScreen> {
         try {
           bool result = await verifyTokenSigner(
               chipEthereumAddressHexString, hashedMsg, signature);
-          print("SMART CONTRACT VERIFICATION RESULT: $result");
         } catch (e) {
           print("ERROR: $e");
+          throw ("NFC Chip not valid, signature verification failed");
         }
 
         // get owner of nft with cardId == tokenId
@@ -135,7 +157,6 @@ class _ScanningScreen extends State<ScanningScreen> {
           chipIsInitialized = true;
         } catch (e) {
           //NFT with this token ID does not have an owner/does not exist
-          print(e);
           chipIsInitialized = false;
           nftOwner = context.loc.ownerError;
         }
@@ -170,20 +191,18 @@ class _ScanningScreen extends State<ScanningScreen> {
                     chipEthereumAddressHexString, hashedMsg, signature));
           }
         }
-      });
-    } catch (e) {
-      //error reading chip
-      print(context.loc.isoDepError + ": $e");
-      NfcManager.instance.stopSession();
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
-      );
-      //delay for 1 second
-      await Future.delayed(Duration(seconds: 1));
-      //navigate back to previous screen
-      Navigator.pop(context);
-    }
+      } catch (e) {
+        //error reading chip
+        NfcManager.instance.stopSession();
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
+        );
+        //delay for 1 second
+        await Future.delayed(Duration(seconds: 1));
+        Navigator.pop(context);
+      }
+    });
   }
 
   void cancelScan() {

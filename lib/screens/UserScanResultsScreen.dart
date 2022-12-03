@@ -122,10 +122,13 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
       final UserScanResultsScreenArguments navArgs = ModalRoute.of(context)!
           .settings
           .arguments as UserScanResultsScreenArguments;
-      Future<Map<String, dynamic>> meta =
-          _fetchMetadata(bytesToUnsignedInt(navArgs.tokenId));
-      String imgPath = "";
-      _fetchImage(imgPath, meta);
+
+      if (navArgs.chipIsInitialized) {
+        Future<Map<String, dynamic>> meta =
+            _fetchMetadata(bytesToUnsignedInt(navArgs.tokenId));
+        String imgPath = "";
+        _fetchImage(imgPath, meta);
+      }
     } catch (e) {
       setState(() {
         imagePath = '';

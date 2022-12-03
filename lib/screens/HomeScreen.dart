@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 // local files
 import '../utils/url_generator.service.dart';
+import '../utils/utils.dart';
 import '../widgets/CustomAppBar.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
@@ -14,6 +15,7 @@ import '../utils/navigation_arguments.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomHomeScreenButton.dart';
 import '../widgets/CustomRoundedButton.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -31,6 +33,42 @@ class HomeScreen extends StatefulWidget {
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
+}
+
+Future<bool> onScanButtonPress(context) async {
+  try {
+    //check if there is internet connections
+    if (!await checkInternetConnection()) {
+      throw Exception("No internet connection");
+    }
+
+    Navigator.pushNamed(context, ScanningScreen.routeName,
+        arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
+    return false;
+  } catch (e) {
+    return true;
+  }
+}
+
+Future<bool> onInitializeButtonPress(
+    context, isConnected, loginWithMetaMask) async {
+  try {
+    //check if there is internet connections
+    if (!await checkInternetConnection()) {
+      print('no internet');
+      throw Exception("No internet connection");
+    }
+
+    if (!isConnected) {
+      await loginWithMetaMask(context);
+    }
+
+    Navigator.pushNamed(context, ScanningScreen.routeName,
+        arguments: ScanningScreenArguments(MetadataScreen.routeName));
+    return false;
+  } catch (e) {
+    return true;
+  }
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -55,20 +93,31 @@ class _HomeScreenState extends State<HomeScreen> {
             CustomHomeScreenButton(
                 text: context.loc.scanning,
                 svgPath: 'assets/images/illustration 1 small-cropped.svg',
-                onTap: () => Navigator.pushNamed(
-                    context, ScanningScreen.routeName,
-                    arguments: ScanningScreenArguments(
-                        UserScanResultsScreen.routeName))),
+                onTap: () async {
+                  bool showInternetError = await onScanButtonPress(context);
+
+                  if (showInternetError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                          context.loc.errorNoInternetConnection, 'error'),
+                    );
+                  }
+                }),
             SizedBox(height: 20),
             CustomHomeScreenButton(
                 text: context.loc.initializeChip,
                 svgPath: 'assets/images/illustration 2-cropped.svg',
-                onTap: widget.connector.connected
-                    ? () => Navigator.pushNamed(
-                        context, ScanningScreen.routeName,
-                        arguments:
-                            ScanningScreenArguments(MetadataScreen.routeName))
-                    : null),
+                onTap: () async {
+                  bool showInternetError = await onInitializeButtonPress(
+                      context, widget.connected, widget.loginWithMetaMask);
+
+                  if (showInternetError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                          context.loc.errorNoInternetConnection, 'error'),
+                    );
+                  }
+                }),
             SizedBox(height: 70),
             CustomRoundedButton(
               width: 250,

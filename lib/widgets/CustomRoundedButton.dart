@@ -34,7 +34,7 @@ class CustomRoundedButton extends StatelessWidget {
                 ? Theme.of(context).primaryColor
                 : Theme.of(context).backgroundColor, //TODO: This does not work
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(18),
             ),
           ),
           child: Row(

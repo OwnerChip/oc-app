@@ -1,14 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
 import 'package:owner_chip_admin_demo/widgets/LoadingOverlay.dart';
+import 'package:owner_chip_admin_demo/widgets/ScreenBodyLayout.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:convert/convert.dart';
 import '../utils/localization.helper.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter_svg/flutter_svg.dart';
 
 //web3 imports
 import 'package:url_launcher/url_launcher_string.dart';
@@ -46,6 +49,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   bool isLoading = false;
   bool isRotating = true;
   String loadingSvgPath = 'assets/images/chip_dark_blue.svg';
+  String loadingText = '';
 
   Future<void> burnToken(
       BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
@@ -80,6 +84,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
       setState(() {
         isLoading = true;
+        loadingText = context.loc.burning;
       });
 
       var txnReceipt = await getTxnReceipt(txnHash);
@@ -105,14 +110,15 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
         setState(() {
           isRotating = false;
           loadingSvgPath = "assets/images/trash bin.svg";
+          loadingText = context.loc.burnedSuccess;
         });
 
-        setState(() {
-          isLoading = false;
-        });
-        showBurnSuccessPopUp(context);
         //delay 2 second
         await Future.delayed(Duration(seconds: 2));
+
+        // setState(() {
+        //   isLoading = false;
+        // });
 
         //navigate to login screen
         // ignore: use_build_context_synchronously
@@ -143,146 +149,103 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
     final MsgSignature signature = navArgs.signature;
 
     return LoadingOverlay(
-        isLoading: isLoading,
-        loadingText: context.loc.burning,
-        rotateIcon: isRotating,
-        svgPath: loadingSvgPath,
-        child: Scaffold(
-            extendBodyBehindAppBar: true,
-            appBar: CustomAppBar(
-              loginFunction: () => {},
-              text: context.loc.initializeChip,
-              connectedWalletAddress:
-                  widget.connector.session.accounts.isEmpty == true
-                      ? null
-                      : widget.connector.session.accounts[0].toLowerCase(),
-              connector: widget.connector,
-              isConnected: widget.connected,
-            ),
-            body: SafeArea(
-                child: Center(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            flex: 2,
-                            child: Row(
-                              children: [],
-                            )),
-                        Expanded(
-                            flex: 10,
-                            child: Column(
-                              children: [
-                                //bold red text
-                                Text(
-                                  context.loc.warning,
-                                  style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                //spacing
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                        flex: 3,
-                                        child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Image.asset(
-                                                  "assets/images/circle_alert.png")
-                                            ])),
-                                    //spacing
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                        flex: 10,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              context.loc.alreadyLinked,
-                                            )
-                                          ],
-                                        ))
-                                  ],
-                                ),
-                                //spacing
-                                const SizedBox(
-                                  height: 50,
-                                ),
+      isLoading: isLoading,
+      loadingText: loadingText,
+      rotateIcon: isRotating,
+      svgPath: loadingSvgPath,
+      child: Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: CustomAppBar(
+            loginFunction: () => {},
+            text: context.loc.initializeChip,
+            connectedWalletAddress:
+                widget.connector.session.accounts.isEmpty == true
+                    ? null
+                    : widget.connector.session.accounts[0].toLowerCase(),
+            connector: widget.connector,
+            isConnected: widget.connected,
+          ),
+          body: ScreenBodyLayout(
+            withScrollView: false,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomCard(width: 300, children: [
+                //orange round ember warning icon
+                const Icon(Icons.warning_amber_rounded,
+                    color: Colors.orange, size: 80),
+                //spacing
+                const SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  context.loc.warning,
+                  style: const TextStyle(
+                      color: Colors.orange,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold),
+                ),
+                //spacing
+                const SizedBox(height: 10),
+                Text(
+                  textAlign: TextAlign.center,
+                  context.loc.alreadyLinked,
+                  style: Theme.of(context).textTheme.headline5,
+                ),
 
-                                SizedBox(
-                                  width: 200,
-                                  height: 50,
-                                  child: CustomRoundedButton(
-                                    text: context.loc.burnToken,
-                                    onPressed: () => {
-                                      burnToken(hexToBigInt(tokenId),
-                                          navArgs.hashedMsg, signature)
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 40,
-                                ),
-                                SizedBox(
-                                  width: 200,
-                                  height: 50,
-                                  child: CustomRoundedButton(
-                                      text: context.loc.showOnExplorer,
-                                      onPressed: () => {
-                                            launchUrl(
-                                                generateBlockchainExplorerTokenDetailsUrl(
-                                                    tokenId.toString()))
-                                          }),
-                                ),
-                                //spacing
-                                const SizedBox(
-                                  height: 8,
-                                ),
-                                SizedBox(
-                                  width: 200,
-                                  height: 50,
-                                  child: CustomRoundedButton(
-                                    text: context.loc.showOnOpenSea,
-                                    onPressed: () => {
-                                      launchUrl(
-                                          generateOpenSeaTokenDetailsUrl(
-                                              bytesToUnsignedInt(tokenId)
-                                                  .toString()),
-                                          mode: LaunchMode.externalApplication)
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 40,
-                                ),
-                                SizedBox(
-                                  width: 200,
-                                  height: 50,
-                                  child: CustomRoundedButton(
-                                    text: context.loc.cancel,
-                                    onPressed: () => {
-                                      Navigator.pushNamed(
-                                          context, HomeScreen.routeName)
-                                    },
-                                  ),
-                                ),
-                              ],
-                            )),
-                        Expanded(
-                            flex: 2,
-                            child: Column(
-                              children: [],
-                            )),
-                      ],
-                    ),
-                  ]),
-            ))));
+                //spacing
+                const SizedBox(
+                  height: 50,
+                ),
+
+                CustomRoundedButton(
+                  width: 250,
+                  text: context.loc.burnToken,
+                  onPressed: () => {
+                    burnToken(
+                        hexToBigInt(tokenId), navArgs.hashedMsg, signature)
+                  },
+                ),
+
+                const SizedBox(
+                  height: 40,
+                ),
+                CustomRoundedButton(
+                    width: 250,
+                    text: context.loc.showOnExplorer,
+                    onPressed: () => {
+                          launchUrl(generateBlockchainExplorerTokenDetailsUrl(
+                              tokenId.toString()))
+                        }),
+                //spacing
+                const SizedBox(
+                  height: 8,
+                ),
+                CustomRoundedButton(
+                  width: 250,
+                  text: context.loc.showOnOpenSea,
+                  onPressed: () => {
+                    launchUrl(
+                        generateOpenSeaTokenDetailsUrl(
+                            bytesToUnsignedInt(tokenId).toString()),
+                        mode: LaunchMode.externalApplication)
+                  },
+                ),
+                const SizedBox(
+                  height: 40,
+                ),
+              ]),
+              //spacing
+              const SizedBox(
+                height: 20,
+              ),
+              CustomRoundedButton(
+                width: 250,
+                text: context.loc.cancel,
+                onPressed: () =>
+                    {Navigator.pushNamed(context, HomeScreen.routeName)},
+              ),
+            ],
+          )),
+    );
   }
 }
