@@ -67,6 +67,11 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       var burnParams = await makeSignedBurnParams(
           widget.connector.session.accounts[0], tokenIdHash, signature);
 
+      //if wc bridge is not connected, then reconnect
+      if (!widget.connector.bridgeConnected) {
+        widget.connector.reconnect();
+      }
+
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
       var txnHash = await widget.connector.sendCustomRequest(
           method: 'eth_sendTransaction',

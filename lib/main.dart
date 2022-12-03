@@ -52,7 +52,7 @@ void main(List<String> args) async {
 
     return WalletConnect(
         bridge: 'https://bridge.walletconnect.org',
-        session: session!.connected ? session : null,
+        session: session == null || !session!.connected ? null : session,
         sessionStorage: sessionStorage,
         clientMeta: const PeerMeta(
             name: 'OwnerChip Demo',
@@ -112,7 +112,7 @@ class _MyApp extends State<MyApp> {
     // if (!connector.connected) {
     try {
       var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: '1'));
-      var sessionStatus = await connector.createSession(
+      var sessionStatus = await connector.connect(
           chainId: chainId,
           onDisplayUri: (uri) async {
             await launchUrlString(uri, mode: LaunchMode.externalApplication);

@@ -96,6 +96,11 @@ class _MetadataScreen extends State<MetadataScreen> {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
+    //if wc bridge is not connected, then reconnect
+    if (!widget.connector.bridgeConnected) {
+      widget.connector.reconnect();
+    }
+
     String walletAddress = widget.connector.session.accounts[0].toLowerCase();
 
     // upload image to ipfs
@@ -145,7 +150,7 @@ class _MetadataScreen extends State<MetadataScreen> {
 
       if (txnReceipt?.status == true) {
         // ignore: use_build_context_synchronously
-        Navigator.pushNamed(context, NFTDetailsScreen.routeName,
+        Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName,
             arguments: NFTDetailsScreenArguments(widget.loginWithMetaMask,
                 navArgs.tokenId, navArgs.chipWalletAddress, image.path));
 

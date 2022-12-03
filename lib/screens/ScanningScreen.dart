@@ -59,17 +59,18 @@ class _ScanningScreen extends State<ScanningScreen> {
     bool chipIsInitialized = false;
     int randomNumber = makeRandomInt();
 
-    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      try {
-        //check if there is internet connections
-        if (!await checkInternetConnection()) {
-          throw Exception("No internet connection");
-        }
+    try {
+      //check if there is internet connections
+      if (!await checkInternetConnection()) {
+        throw Exception("No internet connection");
+      }
+      final navArgs =
+          ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
-        final navArgs = ModalRoute.of(context)!.settings.arguments
-            as ScanningScreenArguments;
-
+      //start NFC scan
+      NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
         var isoDep = IsoDep.from(tag);
+
         //check if isodep is available and exit if not
         if (isoDep == null) {
           NfcManager.instance.stopSession();
@@ -83,7 +84,6 @@ class _ScanningScreen extends State<ScanningScreen> {
         //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
             responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
-          print('first key does not exist yet');
           //if first generated wallet does not yet exist, generate it on chip
           var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
           //get first key info after generating new key
@@ -94,14 +94,11 @@ class _ScanningScreen extends State<ScanningScreen> {
             responseGetKeyInfo[responseGetKeyInfo.length - 1] == 00)) {
           throw Exception("Error while generating key");
         }
-        print('first key already exists');
         Uint8List chipPubKey = getPublicKeyFromChipResponse(responseGetKeyInfo);
         Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
         String chipEthereumAddressHexString =
             getEthereumAddressHexString(chipEthereumAddress);
-        print("$chipEthereumAddressHexString  (Card ID as HexString)");
         BigInt chipTokenId = hexToBigInt(chipEthereumAddress);
-        print("$chipTokenId (Card ID as bigInt)");
 
         // get SIGNATURE from NFC chip
         final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
@@ -173,20 +170,20 @@ class _ScanningScreen extends State<ScanningScreen> {
                     chipEthereumAddressHexString, hashedMsg, signature));
           }
         }
-      } catch (e) {
-        //error reading chip
-        print(context.loc.isoDepError + ": $e");
-        NfcManager.instance.stopSession();
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-              context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
-        );
-        //delay for 1 second
-        await Future.delayed(Duration(seconds: 1));
-        //navigate back to previous screen
-        Navigator.pop(context);
-      }
-    });
+      });
+    } catch (e) {
+      //error reading chip
+      print(context.loc.isoDepError + ": $e");
+      NfcManager.instance.stopSession();
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
+      );
+      //delay for 1 second
+      await Future.delayed(Duration(seconds: 1));
+      //navigate back to previous screen
+      Navigator.pop(context);
+    }
   }
 
   void cancelScan() {
