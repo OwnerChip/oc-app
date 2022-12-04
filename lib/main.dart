@@ -83,7 +83,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyApp();
 }
 
-class _MyApp extends State<MyApp> {
+class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   bool connected = false;
   //connector has to be initialized with WC instance
   WalletConnect connector = WalletConnect(
@@ -94,6 +94,33 @@ class _MyApp extends State<MyApp> {
           description: 'Connecting physical objects to the blockchain.',
           url: 'https://walletconnect.org',
           icons: ["assets/images/oc_logo.png"]));
+
+  //listen to lifecycle events (e.g. resume app from background)
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  //remove lifecycle events listener
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  //do stuff on resume
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    //make new wallet connect connector when app is resumed(brought to foreground); necessary to prevent errors with metamask
+    if (state == AppLifecycleState.resumed) {
+      var _connector = await widget.createWalletConnector();
+      setState(() {
+        connector = _connector;
+        connected = connector.connected;
+      });
+    }
+  }
 
   @override
   void didChangeDependencies() async {

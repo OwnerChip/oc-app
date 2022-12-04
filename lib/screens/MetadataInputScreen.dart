@@ -133,9 +133,9 @@ class _MetadataScreen extends State<MetadataScreen> {
       setState(() {
         isLoading = false;
       });
-
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+
       var txnHash = await widget.connector.sendCustomRequest(
           method: 'eth_sendTransaction',
           params: mintParams,
@@ -149,6 +149,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
 
       if (txnReceipt?.status == true) {
+        // if (true) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName,
             arguments: NFTDetailsScreenArguments(widget.loginWithMetaMask,
@@ -200,7 +201,7 @@ class _MetadataScreen extends State<MetadataScreen> {
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
             loginFunction: widget.loginWithMetaMask,
-            text: '${context.loc.initializeChip} (2/3)',
+            text: '${context.loc.initializeChip}',
             connectedWalletAddress:
                 widget.connector.session.accounts.isEmpty == true
                     ? null

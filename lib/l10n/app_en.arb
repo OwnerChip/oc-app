@@ -13,7 +13,7 @@
     "nfcError": "Error tapping NFC tag.",
     "isoDepError": "IsoDep is not supported.",
     "ownerError": "Error fetching owner",
-    "burning": "token is burned",
+    "burning": "Burning token",
     "burnedSuccess": "Token burned.",
     "burnedError": "Error when burning token.",
     "mintSuccess": "NFT created successfully",
@@ -78,5 +78,6 @@
     "whoops": "Whoops!",
     "youAreNotNftOwner": "This NFT is not in your wallet.",
     "youAreNFTOwner": "This item is yours.",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "authentic": "Authentisch"
 }

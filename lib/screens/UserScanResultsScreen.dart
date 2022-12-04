@@ -178,11 +178,17 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                             Text(context.loc.congrats,
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.headline1)
-                            :
-                            //connected wallet is not owner
-                            Text(context.loc.whoops,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline1),
+                            : navArgs.chipIsInitialized
+                                ? Text(context.loc.authentic,
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        Theme.of(context).textTheme.headline1)
+                                :
+                                //connected wallet is not owner
+                                Text(context.loc.whoops,
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        Theme.of(context).textTheme.headline1),
 
                         SizedBox(height: 15),
 

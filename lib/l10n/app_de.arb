@@ -78,5 +78,6 @@
     "whoops": "Ups!",
     "youAreNotNftOwner": "Dieser Gegenstand gehört nicht Ihnen.",
     "youAreNFTOwner": "Dieser Gegenstand gehört Ihnen",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "authentic": "Authentisch"
 }
