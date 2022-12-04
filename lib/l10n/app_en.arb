@@ -79,5 +79,7 @@
     "youAreNotNftOwner": "This NFT is not in your wallet.",
     "youAreNFTOwner": "This item is yours.",
     "loading": "Loading...",
-    "authentic": "Authentisch"
+    "authentic": "Authentisch",
+    "ownershipCouldNotBeVerified": "Ownership could not be verified."
+
 }

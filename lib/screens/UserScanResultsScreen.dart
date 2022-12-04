@@ -245,7 +245,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                       //Ownerchip Check Icon
                       !navArgs.chipIsInitialized
                           ? //chip not initialized aka no NFT exists
-                          Text(context.loc.youAreNotNftOwner,
+                          Text(context.loc.ownershipCouldNotBeVerified,
                               style: Theme.of(context).textTheme.headline5)
                           : !widget.connected
                               ?

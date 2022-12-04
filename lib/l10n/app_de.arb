@@ -79,5 +79,6 @@
     "youAreNotNftOwner": "Dieser Gegenstand gehört nicht Ihnen.",
     "youAreNFTOwner": "Dieser Gegenstand gehört Ihnen",
     "loading": "Loading...",
-    "authentic": "Authentisch"
+    "authentic": "Authentisch",
+    "ownershipCouldNotBeVerified": "Eigentum konnte nicht festgestellt werden."
 }
