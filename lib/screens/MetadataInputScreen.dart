@@ -237,9 +237,18 @@ class _MetadataScreen extends State<MetadataScreen> {
               AspectRatio(
                 aspectRatio: 0.75,
                 child: image != null
-                    ? CustomImage(
-                        loading: false,
-                        imagePath: imagePath,
+                    ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            showImageOptions = true;
+                            imagePath = 'assets/images/placeholder.jpg';
+                            image = null;
+                          });
+                        },
+                        child: CustomImage(
+                          loading: false,
+                          imagePath: imagePath,
+                        ),
                       )
                     : CustomCard(
                         color: Theme.of(context).scaffoldBackgroundColor,
@@ -341,6 +350,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                   child: CustomRoundedButton(
                     text: context.loc.mintNft,
                     onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
                       if (_formKey.currentState!.validate()) {
                         if (image != null) {
                           _initializeChip(metadata, image: image);
