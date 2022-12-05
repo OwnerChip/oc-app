@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -196,52 +198,57 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               )
             });
 
-    //TODO: fetch colors from .env ??
-    var primaryColor = Color(int.parse("0xFF${dotenv.get('PRIMARY_COLOR')}"));
-
     return MaterialApp(
       theme: ThemeData(
-        primaryColor:
-            primaryColor, //Primary Color; Todo write colors to separate file!
-        primaryColorLight:
-            Color.fromARGB(255, 77, 122, 255), //Primary Color Light
-        shadowColor: Color.fromARGB(70, 0, 0, 77), //shadow color
-        scaffoldBackgroundColor:
-            Color.fromARGB(255, 240, 241, 246), //light blue background color
-        textTheme: const TextTheme(
-            headline1: TextStyle(
-                fontSize: 32.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 77, 122, 255)), //primary light color
-            headline2: TextStyle(
-                fontSize: 32.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 25, 35, 90)), //primary color
-            headline4: TextStyle(
-                fontSize: 20.0,
-                color: Color.fromARGB(255, 25, 35, 90)), //primary color
-            headline5: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 25, 35, 90)), //primary color
-            headline6: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 77, 122, 255)), //primary light color
-            bodyText1: TextStyle(
-                fontSize: 15.0,
-                color: Color.fromARGB(255, 77, 122, 255), //primary light color
-                fontWeight: FontWeight.w400),
-            bodyText2: TextStyle(
-                fontSize: 15.0,
-                color: Color.fromARGB(255, 25, 35, 90), //primary color
-                fontWeight: FontWeight.w400)),
+        primaryColor: primaryColor,
+        primaryColorLight: primaryColorLight,
+        shadowColor: shadowColor,
+        scaffoldBackgroundColor: scaffoldBackgroundColor,
+        textTheme: TextTheme(
+          headline1: TextStyle(
+            fontSize: 32.0,
+            fontWeight: FontWeight.bold,
+            color: headline1Color,
+            fontFamily: headerFont,
+          ),
+          headline2: TextStyle(
+              fontSize: 32.0,
+              fontFamily: headerFont,
+              fontWeight: FontWeight.bold,
+              color: headline2Color),
+          headline4: TextStyle(
+              fontSize: 20.0, fontFamily: headerFont, color: headline4Color),
+          headline5: TextStyle(
+              fontSize: 16.0,
+              fontFamily: headerFont,
+              fontWeight: FontWeight.bold,
+              color: headline5Color),
+          headline6: TextStyle(
+              fontSize: 16.0,
+              fontFamily: headerFont,
+              fontWeight: FontWeight.bold,
+              color: headline6Color),
+          bodyText1: TextStyle(
+              fontSize: 15.0,
+              fontFamily: primaryFont,
+              color: bodyText1Color,
+              fontWeight: FontWeight.w400),
+          bodyText2: TextStyle(
+              fontSize: 15.0,
+              fontFamily: primaryFont,
+              color: bodyText2Color,
+              fontWeight: FontWeight.w400),
+        ),
       ).copyWith(
         extensions: <ThemeExtension<dynamic>>[
           const BlueStyle(
-              borderColor: Color.fromARGB(255, 249, 247, 247),
-              secondaryShadowColor: Color.fromARGB(50, 0, 0, 21),
-              boxDecorationColor: Color.fromARGB(210, 160, 160, 160))
+              borderColor: borderColor,
+              successColor: successColor,
+              warningColor: warningColor,
+              errorColor: errorColor,
+              progressBarColor: progressBarColor,
+              secondaryShadowColor: secondaryShadowColor,
+              boxDecorationColor: boxDecorationColor)
         ],
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
