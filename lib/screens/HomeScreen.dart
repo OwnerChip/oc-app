@@ -3,7 +3,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import '../utils/localization.helper.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 // local files
 import '../utils/url_generator.service.dart';
@@ -103,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
                 }),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             CustomHomeScreenButton(
                 text: context.loc.initializeChip,
                 svgPath: 'assets/images/illustration 2-cropped.svg',
@@ -118,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
                 }),
-            SizedBox(height: 70),
+            const SizedBox(height: 70),
             CustomRoundedButton(
               width: 250,
               text: context.loc.moreInfo,

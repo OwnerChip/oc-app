@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'package:flutter/services.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class SmallTextContainer extends StatelessWidget {
   const SmallTextContainer({super.key, required this.text});
@@ -20,17 +21,15 @@ class SmallTextContainer extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: blueStyle.boxDecorationColor,
+            color: blueStyle.boxDecorationColor!,
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           child: Text(
             text,
-            style: TextStyle(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              fontSize: 12,
-              fontFamily: 'Roboto', //TODO: change to theme font
-              fontWeight: FontWeight.w400,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .bodyText1!
+                .copyWith(fontSize: 12.0, color: scaffoldBackgroundColor),
             textAlign: TextAlign.left,
           ),
         ));

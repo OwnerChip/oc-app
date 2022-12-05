@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:io';
 import '../utils/localization.helper.dart';
@@ -15,13 +14,10 @@ import '../utils/navigation_arguments.dart';
 import '../utils/ipfs.services.dart';
 import '../utils/web3.services.dart';
 import '../utils/url_generator.service.dart';
-import '../utils/utils.dart';
-import 'HomeScreen.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../widgets/CustomCard.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
-import '../widgets/SmallTextContainer.dart';
 import '../widgets/CustomRoundedButton.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
@@ -164,11 +160,10 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             Row(
               children: [
                 Text(metadata['name'] ?? context.loc.loading,
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Theme.of(context).primaryColorLight,
-                        fontWeight: FontWeight
-                            .bold)), //TODO: Move font styles to separate file e.g. as "Heading style 1"
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyText1!
+                        .copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
               ],
             ),
             Divider(

@@ -1,5 +1,6 @@
 //CircularProgressIndicator widget that is displayed when loading is true
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/themes/blueTheme.dart';
 
 class LoadingIndicator extends StatefulWidget {
   final String loadingText;
@@ -13,10 +14,12 @@ class LoadingIndicator extends StatefulWidget {
 class _LoadingIndicatorState extends State<LoadingIndicator> {
   @override
   Widget build(BuildContext context) {
+    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
+
     return Column(
       children: [
         CircularProgressIndicator(
-          color: Colors.blue,
+          color: blueStyle.progressBarColor!,
         ),
         Padding(
           padding: EdgeInsets.all(5),
