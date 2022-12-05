@@ -34,7 +34,7 @@ class CustomCard extends StatelessWidget {
       margin: margin,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: color == null ? Theme.of(context).cardColor : color,
+          color: color ?? Theme.of(context).cardColor,
           border: Border.all(color: blueStyle.borderColor!, width: 1),
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [

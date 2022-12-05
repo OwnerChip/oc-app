@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/themes/blueTheme.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
@@ -144,6 +145,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
+    final BlueStyle? blueStyle = Theme.of(context).extension<BlueStyle>();
     final Uint8List tokenId = navArgs.tokenId;
     final Uint8List tokenIdHash = keccakUtf8(hexToBigInt(tokenId).toString());
     final MsgSignature signature = navArgs.signature;
@@ -171,16 +173,21 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
             children: [
               CustomCard(width: 300, children: [
                 //orange round ember warning icon
-                const Icon(Icons.warning_amber_rounded,
-                    color: Colors.orange, size: 80),
+                Icon(Icons.warning_amber_rounded,
+                    color: blueStyle != null
+                        ? blueStyle.warningColor
+                        : Colors.orange,
+                    size: 80),
                 //spacing
                 const SizedBox(
                   height: 20,
                 ),
                 Text(
                   context.loc.warning,
-                  style: const TextStyle(
-                      color: Colors.orange,
+                  style: TextStyle(
+                      color: blueStyle != null
+                          ? blueStyle.warningColor
+                          : Colors.orange,
                       fontSize: 28,
                       fontWeight: FontWeight.bold),
                 ),
@@ -189,7 +196,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                 Text(
                   textAlign: TextAlign.center,
                   context.loc.alreadyLinked,
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headline5!,
                 ),
 
                 //spacing

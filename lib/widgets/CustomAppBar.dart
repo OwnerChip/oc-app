@@ -1,6 +1,7 @@
 //boilerplate for stateless widget
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:owner_chip_admin_demo/themes/blueTheme.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
@@ -59,6 +60,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final BlueStyle? blueStyle = Theme.of(context).extension<BlueStyle>();
+
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
@@ -83,22 +86,23 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                   'assets/images/oc_logo.png',
                   fit: BoxFit.contain,
                 )),
-      title: Text(text ?? '',
-          style: const TextStyle(
-            fontFamily: 'Ubuntu',
-          )),
+      title: Text(text ?? '', style: Theme.of(context).textTheme.bodyText1),
       centerTitle: true,
       actions: [
         isConnected
             ? IconButton(
-                icon: const Icon(Icons.logout),
-                color: Colors.black,
+                icon: Icon(Icons.logout),
+                color: (blueStyle != null)
+                    ? blueStyle.secondaryShadowColor
+                    : Colors.black,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
             : IconButton(
-                icon: const Icon(Icons.wallet),
-                color: Colors.black,
+                icon: Icon(Icons.wallet),
+                color: (blueStyle != null)
+                    ? blueStyle.secondaryShadowColor
+                    : Colors.black,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
@@ -127,8 +131,9 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         //               height: 60.0,
         //             )))
       ],
-      titleTextStyle: const TextStyle(
-        color: Colors.black,
+      titleTextStyle: TextStyle(
+        color:
+            (blueStyle != null) ? blueStyle.secondaryShadowColor : Colors.black,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
