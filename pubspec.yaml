@@ -3,7 +3,7 @@ description: Connecting physical goods to the blockchain.
 
 publish_to: 'none'
 
-version: 0.9.0+4
+version: 0.9.0+5
 
 environment:
   sdk: '>=2.18.1 <3.0.0'
@@ -60,3 +60,9 @@ flutter:
     - family: Ubuntu
       fonts:
         - asset: assets/fonts/Ubuntu-Regular.ttf
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/RobotoSlab-Regular.ttf
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.otf
