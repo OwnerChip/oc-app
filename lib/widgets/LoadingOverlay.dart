@@ -38,6 +38,7 @@ class LoadingOverlay extends StatelessWidget {
                 color: color.withOpacity(opacity),
                 child: Center(
                   child: CustomCard(
+                      borderColor: Theme.of(context).primaryColor,
                       height: 300,
                       width: 300,
                       mainAxisAlignment: MainAxisAlignment.center,

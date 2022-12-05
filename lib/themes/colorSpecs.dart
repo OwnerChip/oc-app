@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 const primaryColor = Color.fromARGB(255, 25, 35, 90);
 const primaryColorLight = Color.fromARGB(255, 77, 122, 255);
 const shadowColor = Color.fromARGB(70, 0, 0, 77);
+const cardColor = Colors.white;
 const scaffoldBackgroundColor = Color.fromARGB(255, 240, 241, 246);
 const headline1Color = primaryColorLight;
 const headline2Color = primaryColor;

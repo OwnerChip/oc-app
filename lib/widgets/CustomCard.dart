@@ -12,6 +12,7 @@ class CustomCard extends StatelessWidget {
     this.color,
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.borderColor,
     this.borderRadius = 13,
   });
 
@@ -22,6 +23,7 @@ class CustomCard extends StatelessWidget {
   final Color? color;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
+  final Color? borderColor;
   final double borderRadius;
 
   @override
@@ -35,7 +37,8 @@ class CustomCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
           color: color ?? Theme.of(context).cardColor,
-          border: Border.all(color: blueStyle.borderColor!, width: 1),
+          border: Border.all(
+              color: borderColor ?? blueStyle.borderColor!, width: 1),
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(

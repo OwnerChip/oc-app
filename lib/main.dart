@@ -204,6 +204,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         primaryColorLight: primaryColorLight,
         shadowColor: shadowColor,
         scaffoldBackgroundColor: scaffoldBackgroundColor,
+        cardColor: cardColor,
         textTheme: TextTheme(
           headline1: TextStyle(
             fontSize: 32.0,
