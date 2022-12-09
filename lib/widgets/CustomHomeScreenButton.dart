@@ -43,10 +43,7 @@ class CustomHomeScreenButton extends StatelessWidget {
       const SizedBox(height: 10),
       Text(
         text,
-        style: Theme.of(context)
-            .textTheme
-            .headline4!
-            .copyWith(fontWeight: FontWeight.w500),
+        style: Theme.of(context).textTheme.headline3,
       )
     ]);
   }

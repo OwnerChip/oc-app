@@ -1,8 +1,5 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
@@ -10,7 +7,6 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
@@ -59,7 +55,7 @@ void main(List<String> args) async {
             name: 'OwnerChip Demo',
             description: 'Connecting physical objects to the blockchain.',
             url: 'https://walletconnect.org',
-            icons: ["assets/images/oc_logo.png"]));
+            icons: ["assets/images/app_logo.png"]));
   }
 
   runApp(
@@ -94,7 +90,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           name: 'OwnerChip Demo',
           description: 'Connecting physical objects to the blockchain.',
           url: 'https://walletconnect.org',
-          icons: ["assets/images/oc_logo.png"]));
+          icons: ["assets/images/app_logo.png"]));
 
   //listen to lifecycle events (e.g. resume app from background)
   @override
@@ -149,7 +145,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
       //save session
       connector.sessionStorage?.store(connector.session);
 
-      //TODO: Test without this code: I think this piece of code is needed but unsure why
       if (!mounted) {
         return;
       }
@@ -206,11 +201,10 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         cardColor: CustomColors.cardColor,
         textTheme: TextTheme(
           headline1: TextStyle(
-            fontSize: CustomFonts.headline1FontSize,
-            fontWeight: CustomFonts.headline1FontWeight,
-            color: CustomColors.headline1Color,
-            fontFamily: CustomFonts.headline1Font,
-          ),
+              fontSize: CustomFonts.headline1FontSize,
+              fontWeight: CustomFonts.headline1FontWeight,
+              color: CustomColors.headline1Color,
+              fontFamily: CustomFonts.headline1Font),
           headline2: TextStyle(
               fontSize: CustomFonts.headline2FontSize,
               fontFamily: CustomFonts.headline2Font,

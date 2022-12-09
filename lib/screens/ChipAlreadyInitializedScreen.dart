@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
@@ -110,7 +111,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
         setState(() {
           isRotating = false;
-          loadingSvgPath = "assets/images/trash bin.svg";
+          loadingSvgPath = "assets/images/burn_success_icon.svg";
           loadingText = context.loc.burnedSuccess;
         });
 
@@ -173,7 +174,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               CustomCard(width: 300, children: [
                 //orange round ember warning icon
                 Icon(Icons.warning_amber_rounded,
-                    color: CustomColors.warningColor, size: 80), //spacing
+                    color: CustomColors.warningColor,
+                    size: CustomFonts.AdminWarningHeadlineFontSize), //spacing
                 const SizedBox(
                   height: 20,
                 ),
@@ -181,8 +183,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                   context.loc.warning,
                   style: TextStyle(
                       color: CustomColors.warningColor,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold),
+                      fontSize: CustomFonts.AdminWarningSubtextFontSize,
+                      fontWeight: CustomFonts.AdminWarningSubtextFontWeight),
                 ),
                 //spacing
                 const SizedBox(height: 10),

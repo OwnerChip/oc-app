@@ -6,7 +6,6 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/localization.helper.dart';
-import 'CustomIconButton.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
@@ -54,7 +53,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
     }
   }
 
-  //necessary to use  because flutter?!
+  //necessary to use because flutter?!
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
@@ -81,21 +80,23 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                   ),
                 )
               : Image.asset(
-                  'assets/images/oc_logo.png',
+                  'assets/images/app_logo.png',
                   fit: BoxFit.contain,
                 )),
-      title: Text(text ?? '', style: Theme.of(context).textTheme.bodyText1),
+      title: Text(text ?? '', style: Theme.of(context).textTheme.headline3),
       centerTitle: true,
       actions: [
         isConnected
             ? IconButton(
-                icon: Icon(Icons.logout),
+                icon: SvgPicture.asset(
+                    "assets/images/wallet_connnected_icon.svg"),
                 color: CustomColors.black,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
             : IconButton(
-                icon: Icon(Icons.wallet),
+                icon:
+                    SvgPicture.asset("assets/images/wallet_connnect_icon.svg"),
                 color: CustomColors.black,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
@@ -125,11 +126,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         //               height: 60.0,
         //             )))
       ],
-      titleTextStyle: TextStyle(
-        color: CustomColors.secondaryShadowColor,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
+      titleTextStyle: Theme.of(context).textTheme.headline3,
       backgroundColor: Colors.transparent,
       elevation: 0,
     );

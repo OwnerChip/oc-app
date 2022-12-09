@@ -119,9 +119,9 @@ class _TraitTextFieldsState extends State<TraitTextFields> {
             border: Border.all(color: Theme.of(context).primaryColor, width: 1),
             borderRadius: BorderRadius.all(Radius.circular(13)),
             boxShadow: [
-              const BoxShadow(
+              BoxShadow(
                   blurRadius: 13,
-                  color: const Color.fromARGB(255, 249, 247, 247),
+                  color: Theme.of(context).shadowColor,
                   offset: Offset(1, 3))
             ]),
         child: Row(children: [

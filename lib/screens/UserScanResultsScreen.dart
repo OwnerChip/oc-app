@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
@@ -223,20 +224,21 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                           //Ownerchip Check Icon
                           !navArgs.chipIsInitialized
                               ? //chip not initialized aka no NFT exists
-                              Image.asset("assets/images/cross_alert.png")
+                              SvgPicture.asset("assets/images/alert_cross.svg")
                               : !widget.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
-                                  Image.asset(
-                                      "assets/images/triangle_alert.png")
+                                  SvgPicture.asset(
+                                      "assets/images/alert_triangle.svg")
                                   : connectedWallet == navArgs.nftOwner
                                       ?
                                       //chip is initialized and wallet is connected and wallet is owner
-                                      Image.asset("assets/images/check.png")
+                                      SvgPicture.asset(
+                                          "assets/images/check.svg")
                                       :
                                       //chip is initialized and wallet is connected and wallet is NOT owner
-                                      Image.asset(
-                                          "assets/images/cross_alert.png")
+                                      SvgPicture.asset(
+                                          "assets/images/alert_cross.svg")
                         ],
                       ),
                       //spacing
@@ -304,7 +306,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                           Text(context.loc.nfcCheck,
                               style: Theme.of(context).textTheme.headline4),
                           //checkmark icon
-                          Image.asset("assets/images/check.png"),
+                          SvgPicture.asset("assets/images/check.svg"),
                         ],
                       ),
                       //spacing
