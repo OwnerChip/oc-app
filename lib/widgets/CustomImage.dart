@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class CustomImage extends StatelessWidget {
   CustomImage({
@@ -21,15 +22,13 @@ class CustomImage extends StatelessWidget {
   final BigInt? tokenId;
   @override
   Widget build(BuildContext context) {
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
-
     return Container(
         width: width,
         height: height,
         decoration:
             BoxDecoration(borderRadius: BorderRadius.circular(19), boxShadow: [
           BoxShadow(
-              color: blueStyle.secondaryShadowColor!,
+              color: CustomColors.secondaryShadowColor!,
               blurRadius: 5,
               offset: Offset(3, 2)),
         ]),

@@ -10,8 +10,6 @@ class SmallTextContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
-
     return GestureDetector(
         onTap: () {
           Clipboard.setData(ClipboardData(text: text.toString()));
@@ -21,15 +19,13 @@ class SmallTextContainer extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: blueStyle.boxDecorationColor!,
+            color: CustomColors.boxDecorationColor!,
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           child: Text(
             text,
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(fontSize: 12.0, color: scaffoldBackgroundColor),
+            style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                fontSize: 12.0, color: CustomColors.scaffoldBackgroundColor),
             textAlign: TextAlign.left,
           ),
         ));

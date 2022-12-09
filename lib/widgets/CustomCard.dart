@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 //Card widget that can take multiple children
 class CustomCard extends StatelessWidget {
@@ -28,8 +29,6 @@ class CustomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
-
     return Container(
       height: height,
       width: width,
@@ -38,7 +37,7 @@ class CustomCard extends StatelessWidget {
       decoration: BoxDecoration(
           color: color ?? Theme.of(context).cardColor,
           border: Border.all(
-              color: borderColor ?? blueStyle.borderColor!, width: 1),
+              color: borderColor ?? CustomColors.borderColor!, width: 1),
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(

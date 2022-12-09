@@ -33,6 +33,7 @@ import '../widgets/ChipInfo.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import 'HomeScreen.dart';
 import '../widgets/LoadingOverlay.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -191,7 +192,6 @@ class _MetadataScreen extends State<MetadataScreen> {
   Widget build(BuildContext context) {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
 
     return LoadingOverlay(
       isLoading: isLoading,
@@ -318,7 +318,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                 const BorderRadius.all(Radius.circular(13)),
                             boxShadow: [
                               BoxShadow(
-                                color: blueStyle.secondaryShadowColor!,
+                                color: CustomColors.secondaryShadowColor!,
                                 offset: Offset(1, 3),
                                 blurRadius: 13,
                               )

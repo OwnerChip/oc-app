@@ -200,57 +200,48 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
 
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: primaryColor,
-        primaryColorLight: primaryColorLight,
-        shadowColor: shadowColor,
-        scaffoldBackgroundColor: scaffoldBackgroundColor,
-        cardColor: cardColor,
+        primaryColor: CustomColors.primaryColor,
+        primaryColorLight: CustomColors.primaryColorLight,
+        shadowColor: CustomColors.shadowColor,
+        scaffoldBackgroundColor: CustomColors.scaffoldBackgroundColor,
+        cardColor: CustomColors.cardColor,
         textTheme: TextTheme(
           headline1: TextStyle(
             fontSize: 32.0,
             fontWeight: FontWeight.bold,
-            color: headline1Color,
+            color: CustomColors.headline1Color,
             fontFamily: headerFont,
           ),
           headline2: TextStyle(
               fontSize: 32.0,
               fontFamily: headerFont,
               fontWeight: FontWeight.bold,
-              color: headline2Color),
+              color: CustomColors.headline2Color),
           headline4: TextStyle(
-              fontSize: 20.0, fontFamily: headerFont, color: headline4Color),
+              fontSize: 20.0,
+              fontFamily: headerFont,
+              color: CustomColors.headline4Color),
           headline5: TextStyle(
               fontSize: 16.0,
               fontFamily: headerFont,
               fontWeight: FontWeight.bold,
-              color: headline5Color),
+              color: CustomColors.headline5Color),
           headline6: TextStyle(
               fontSize: 16.0,
               fontFamily: headerFont,
               fontWeight: FontWeight.bold,
-              color: headline6Color),
+              color: CustomColors.headline6Color),
           bodyText1: TextStyle(
               fontSize: 15.0,
               fontFamily: primaryFont,
-              color: bodyText1Color,
+              color: CustomColors.bodyText1Color,
               fontWeight: FontWeight.w400),
           bodyText2: TextStyle(
               fontSize: 15.0,
               fontFamily: primaryFont,
-              color: bodyText2Color,
+              color: CustomColors.bodyText2Color,
               fontWeight: FontWeight.w400),
         ),
-      ).copyWith(
-        extensions: <ThemeExtension<dynamic>>[
-          const BlueStyle(
-              borderColor: borderColor,
-              successColor: successColor,
-              warningColor: warningColor,
-              errorColor: errorColor,
-              progressBarColor: progressBarColor,
-              secondaryShadowColor: secondaryShadowColor,
-              boxDecorationColor: boxDecorationColor)
-        ],
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
