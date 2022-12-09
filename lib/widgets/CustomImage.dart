@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
+import '../themes/customColors.dart';
 
 class CustomImage extends StatelessWidget {
   CustomImage({
@@ -29,7 +30,7 @@ class CustomImage extends StatelessWidget {
         decoration:
             BoxDecoration(borderRadius: BorderRadius.circular(19), boxShadow: [
           BoxShadow(
-              color: blueStyle.secondaryShadowColor!,
+              color: CustomColors.secondaryShadowColor!,
               blurRadius: 5,
               offset: Offset(3, 2)),
         ]),

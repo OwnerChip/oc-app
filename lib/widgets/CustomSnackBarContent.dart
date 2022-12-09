@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:owner_chip_admin_demo/themes/blueTheme.dart';
+import '../themes/customColors.dart';
 
 class CustomSnackBarContent extends StatelessWidget {
   const CustomSnackBarContent(

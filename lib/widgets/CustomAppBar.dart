@@ -8,6 +8,7 @@ import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/localization.helper.dart';
 import 'CustomIconButton.dart';
+import '../themes/customColors.dart';
 
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   const CustomAppBar(
@@ -60,8 +61,6 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
-
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
@@ -92,13 +91,13 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         isConnected
             ? IconButton(
                 icon: Icon(Icons.logout),
-                color: blueStyle.secondaryShadowColor,
+                color: CustomColors.secondaryShadowColor,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
             : IconButton(
                 icon: Icon(Icons.wallet),
-                color: blueStyle.secondaryShadowColor,
+                color: CustomColors.secondaryShadowColor,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
@@ -128,7 +127,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         //             )))
       ],
       titleTextStyle: TextStyle(
-        color: blueStyle.secondaryShadowColor,
+        color: CustomColors.secondaryShadowColor,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
