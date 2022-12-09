@@ -1,6 +1,6 @@
 //CircularProgressIndicator widget that is displayed when loading is true
 import 'package:flutter/material.dart';
-import '../themes/customColors.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class LoadingIndicator extends StatefulWidget {
   final String loadingText;

@@ -12,6 +12,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
 
 //screens and widgets
 import 'screens/HomeScreen.dart';
@@ -200,41 +202,48 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
 
     return MaterialApp(
       theme: ThemeData(
-        primaryColor:
-            primaryColor, //Primary Color; Todo write colors to separate file!
-        primaryColorLight:
-            Color.fromARGB(255, 77, 122, 255), //Primary Color Light
-        shadowColor: Color.fromARGB(70, 0, 0, 77), //shadow color
-        scaffoldBackgroundColor:
-            Color.fromARGB(255, 240, 241, 246), //light blue background color
-        textTheme: const TextTheme(
-            headline1: TextStyle(
-                fontSize: 32.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 77, 122, 255)), //primary light color
-            headline2: TextStyle(
-                fontSize: 32.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 25, 35, 90)), //primary color
-            headline4: TextStyle(
-                fontSize: 20.0,
-                color: Color.fromARGB(255, 25, 35, 90)), //primary color
-            headline5: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 25, 35, 90)), //primary color
-            headline6: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 77, 122, 255)), //primary light color
-            bodyText1: TextStyle(
-                fontSize: 15.0,
-                color: Color.fromARGB(255, 77, 122, 255), //primary light color
-                fontWeight: FontWeight.w400),
-            bodyText2: TextStyle(
-                fontSize: 15.0,
-                color: Color.fromARGB(255, 25, 35, 90), //primary color
-                fontWeight: FontWeight.w400)),
+        primaryColor: CustomColors.primaryColor,
+        primaryColorLight: CustomColors.primaryColorLight,
+        shadowColor: CustomColors.shadowColor,
+        scaffoldBackgroundColor: CustomColors.scaffoldBackgroundColor,
+        cardColor: CustomColors.cardColor,
+        textTheme: TextTheme(
+          headline1: TextStyle(
+            fontSize: 32.0,
+            fontWeight: FontWeight.bold,
+            color: CustomColors.headline1Color,
+            fontFamily: headerFont,
+          ),
+          headline2: TextStyle(
+              fontSize: 32.0,
+              fontFamily: headerFont,
+              fontWeight: FontWeight.bold,
+              color: CustomColors.headline2Color),
+          headline4: TextStyle(
+              fontSize: 20.0,
+              fontFamily: headerFont,
+              color: CustomColors.headline4Color),
+          headline5: TextStyle(
+              fontSize: 16.0,
+              fontFamily: headerFont,
+              fontWeight: FontWeight.bold,
+              color: CustomColors.headline5Color),
+          headline6: TextStyle(
+              fontSize: 16.0,
+              fontFamily: headerFont,
+              fontWeight: FontWeight.bold,
+              color: CustomColors.headline6Color),
+          bodyText1: TextStyle(
+              fontSize: 15.0,
+              fontFamily: primaryFont,
+              color: CustomColors.bodyText1Color,
+              fontWeight: FontWeight.w400),
+          bodyText2: TextStyle(
+              fontSize: 15.0,
+              fontFamily: primaryFont,
+              color: CustomColors.bodyText2Color,
+              fontWeight: FontWeight.w400),
+        ),
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

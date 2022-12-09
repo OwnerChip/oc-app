@@ -7,7 +7,7 @@ import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/localization.helper.dart';
 import 'CustomIconButton.dart';
-import '../themes/customColors.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   const CustomAppBar(

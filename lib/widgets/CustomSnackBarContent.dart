@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/customColors.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class CustomSnackBarContent extends StatelessWidget {
   const CustomSnackBarContent(
@@ -20,7 +20,9 @@ class CustomSnackBarContent extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         height: 70,
         decoration: BoxDecoration(
-            color: alertType == 'success' ? Colors.green : Colors.red,
+            color: alertType == 'success'
+                ? CustomColors.successColor
+                : CustomColors.errorColor,
             borderRadius: const BorderRadius.all(Radius.circular(20))),
         child: Row(
           children: [

@@ -28,7 +28,7 @@ import 'HomeScreen.dart';
 import '../utils/utils.dart';
 import '../utils/web3.services.dart';
 import '../widgets/returnSnackBarWidget.dart';
-import '../themes/customColors.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
@@ -173,8 +173,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               CustomCard(width: 300, children: [
                 //orange round ember warning icon
                 Icon(Icons.warning_amber_rounded,
-                    color: CustomColors.warningColor, size: 80),
-                //spacing
+                    color: CustomColors.warningColor, size: 80), //spacing
                 const SizedBox(
                   height: 20,
                 ),

@@ -32,7 +32,7 @@ import '../widgets/ChipInfo.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import 'HomeScreen.dart';
 import '../widgets/LoadingOverlay.dart';
-import '../themes/customColors.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {

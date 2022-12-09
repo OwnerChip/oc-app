@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../themes/customColors.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 //Card widget that can take multiple children
 class CustomCard extends StatelessWidget {

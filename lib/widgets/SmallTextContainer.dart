@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
-import '../themes/customColors.dart';
 
 class SmallTextContainer extends StatelessWidget {
   const SmallTextContainer({super.key, required this.text});
@@ -24,10 +23,8 @@ class SmallTextContainer extends StatelessWidget {
           ),
           child: Text(
             text,
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(fontSize: 12.0, color: scaffoldBackgroundColor),
+            style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                fontSize: 12.0, color: CustomColors.scaffoldBackgroundColor),
             textAlign: TextAlign.left,
           ),
         ));
