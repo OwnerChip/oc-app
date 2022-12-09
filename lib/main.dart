@@ -197,9 +197,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
               )
             });
 
-    //TODO: fetch colors from .env ??
-    var primaryColor = Color(int.parse("0xFF${dotenv.get('PRIMARY_COLOR')}"));
-
     return MaterialApp(
       theme: ThemeData(
         primaryColor: CustomColors.primaryColor,
@@ -209,40 +206,46 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         cardColor: CustomColors.cardColor,
         textTheme: TextTheme(
           headline1: TextStyle(
-            fontSize: 32.0,
-            fontWeight: FontWeight.bold,
+            fontSize: CustomFonts.headline1FontSize,
+            fontWeight: CustomFonts.headline1FontWeight,
             color: CustomColors.headline1Color,
-            fontFamily: headerFont,
+            fontFamily: CustomFonts.headline1Font,
           ),
           headline2: TextStyle(
-              fontSize: 32.0,
-              fontFamily: headerFont,
-              fontWeight: FontWeight.bold,
+              fontSize: CustomFonts.headline2FontSize,
+              fontFamily: CustomFonts.headline2Font,
+              fontWeight: CustomFonts.headline2FontWeight,
               color: CustomColors.headline2Color),
+          headline3: TextStyle(
+              fontSize: CustomFonts.headline3FontSize,
+              fontFamily: CustomFonts.headline3Font,
+              fontWeight: CustomFonts.headline3FontWeight,
+              color: CustomColors.headline3Color),
           headline4: TextStyle(
-              fontSize: 20.0,
-              fontFamily: headerFont,
+              fontSize: CustomFonts.headline4FontSize,
+              fontFamily: CustomFonts.headline4Font,
+              fontWeight: CustomFonts.headline4FontWeight,
               color: CustomColors.headline4Color),
           headline5: TextStyle(
-              fontSize: 16.0,
-              fontFamily: headerFont,
-              fontWeight: FontWeight.bold,
+              fontSize: CustomFonts.headline5FontSize,
+              fontFamily: CustomFonts.headline5Font,
+              fontWeight: CustomFonts.headline5FontWeight,
               color: CustomColors.headline5Color),
           headline6: TextStyle(
-              fontSize: 16.0,
-              fontFamily: headerFont,
-              fontWeight: FontWeight.bold,
+              fontSize: CustomFonts.headline6FontSize,
+              fontFamily: CustomFonts.headline6Font,
+              fontWeight: CustomFonts.headline6FontWeight,
               color: CustomColors.headline6Color),
           bodyText1: TextStyle(
-              fontSize: 15.0,
-              fontFamily: primaryFont,
+              fontSize: CustomFonts.bodyText1FontSize,
+              fontFamily: CustomFonts.bodyText1Font,
               color: CustomColors.bodyText1Color,
-              fontWeight: FontWeight.w400),
+              fontWeight: CustomFonts.bodyText1FontWeight),
           bodyText2: TextStyle(
-              fontSize: 15.0,
-              fontFamily: primaryFont,
+              fontSize: CustomFonts.bodyText2FontSize,
+              fontFamily: CustomFonts.bodyText2Font,
               color: CustomColors.bodyText2Color,
-              fontWeight: FontWeight.w400),
+              fontWeight: CustomFonts.bodyText2FontWeight),
         ),
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:io';
@@ -160,10 +161,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             Row(
               children: [
                 Text(metadata['name'] ?? context.loc.loading,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyText1!
-                        .copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
+                    style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                        fontSize: CustomFonts.MetadataNameFontSize,
+                        fontWeight: CustomFonts.MetadataNameFontWeight)),
               ],
             ),
             Divider(
@@ -180,8 +180,8 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                   textAlign: TextAlign.left,
                   style: TextStyle(
                       color: Theme.of(context).primaryColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold)),
+                      fontSize: CustomFonts.MetadataDescriptionFontSize,
+                      fontWeight: CustomFonts.MetadataDescriptionFontWeight)),
             ),
             //spacing
             SizedBox(height: 20),
