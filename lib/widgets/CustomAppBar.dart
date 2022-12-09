@@ -60,7 +60,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BlueStyle? blueStyle = Theme.of(context).extension<BlueStyle>();
+    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
 
     return AppBar(
       automaticallyImplyLeading: false,
@@ -92,17 +92,13 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         isConnected
             ? IconButton(
                 icon: Icon(Icons.logout),
-                color: (blueStyle != null)
-                    ? blueStyle.secondaryShadowColor
-                    : Colors.black,
+                color: blueStyle.secondaryShadowColor,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
             : IconButton(
                 icon: Icon(Icons.wallet),
-                color: (blueStyle != null)
-                    ? blueStyle.secondaryShadowColor
-                    : Colors.black,
+                color: blueStyle.secondaryShadowColor,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
@@ -132,8 +128,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         //             )))
       ],
       titleTextStyle: TextStyle(
-        color:
-            (blueStyle != null) ? blueStyle.secondaryShadowColor : Colors.black,
+        color: blueStyle.secondaryShadowColor,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),

@@ -145,7 +145,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final BlueStyle? blueStyle = Theme.of(context).extension<BlueStyle>();
+    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
     final Uint8List tokenId = navArgs.tokenId;
     final Uint8List tokenIdHash = keccakUtf8(hexToBigInt(tokenId).toString());
     final MsgSignature signature = navArgs.signature;
@@ -174,10 +174,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               CustomCard(width: 300, children: [
                 //orange round ember warning icon
                 Icon(Icons.warning_amber_rounded,
-                    color: blueStyle != null
-                        ? blueStyle.warningColor
-                        : Colors.orange,
-                    size: 80),
+                    color: blueStyle.warningColor, size: 80),
                 //spacing
                 const SizedBox(
                   height: 20,
@@ -185,9 +182,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                 Text(
                   context.loc.warning,
                   style: TextStyle(
-                      color: blueStyle != null
-                          ? blueStyle.warningColor
-                          : Colors.orange,
+                      color: blueStyle.warningColor,
                       fontSize: 28,
                       fontWeight: FontWeight.bold),
                 ),
