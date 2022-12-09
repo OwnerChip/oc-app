@@ -7,6 +7,12 @@ Uri generateBlockchainExplorerTokenDetailsUrl(String tokenId) {
   return Uri.parse(res);
 }
 
+Uri generateBlockchainExplorerTxHistoryUrl(String walletAddress) {
+  final String baseUrl = dotenv.get('CHAIN_EXPLORER_URL');
+  final String res = "${baseUrl}/address/${walletAddress}";
+  return Uri.parse(res);
+}
+
 Uri generateOpenSeaTokenDetailsUrl(String tokenId) {
   final String baseUrl = dotenv.get('OPENSEA_URL');
   final String contractAddress = dotenv.get('CONTRACT_ADDRESS');

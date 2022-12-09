@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'dart:typed_data';
 import '../utils/localization.helper.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -22,9 +24,11 @@ import '../utils/utils.dart';
 import '../utils/nfc.commands.dart';
 import '../utils/web3.services.dart';
 import '../utils/signature.service.dart';
-import '../widgets/AppBarWithLogo.dart';
+import '../widgets/CustomAppBar.dart';
 import '../widgets/ScanningLoader.dart';
 import '../widgets/returnSnackBarWidget.dart';
+import '../widgets/CustomRoundedButton.dart';
+import '../widgets/ScreenBodyLayout.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
@@ -54,19 +58,34 @@ class _ScanningScreen extends State<ScanningScreen> {
   void initScanning() async {
     String nftOwner;
     bool chipIsInitialized = false;
-    dynamic tokenId;
+    int randomNumber = makeRandomInt();
 
+    try {
+      //check if there is internet connections
+      if (!await checkInternetConnection()) {
+        throw Exception("No internet connection");
+      }
+    } catch (e) {
+      //error reading chip
+      print(context.loc.isoDepError + ": $e");
+      NfcManager.instance.stopSession();
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorNoInternetConnection, 'error'),
+      );
+      //delay for 1 second
+      await Future.delayed(Duration(seconds: 1));
+      //navigate back to previous screen
+      Navigator.pop(context);
+    }
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
+
+    //start NFC scan
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       try {
-        //check if there is internet connections
-        if (!await checkInternetConnection()) {
-          throw Exception("No internet connection");
-        }
-
-        final navArgs = ModalRoute.of(context)!.settings.arguments
-            as ScanningScreenArguments;
-
         var isoDep = IsoDep.from(tag);
+
         //check if isodep is available and exit if not
         if (isoDep == null) {
           NfcManager.instance.stopSession();
@@ -80,7 +99,6 @@ class _ScanningScreen extends State<ScanningScreen> {
         //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
         if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
             responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
-          print('first key does not exist yet');
           //if first generated wallet does not yet exist, generate it on chip
           var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
           //get first key info after generating new key
@@ -91,28 +109,32 @@ class _ScanningScreen extends State<ScanningScreen> {
             responseGetKeyInfo[responseGetKeyInfo.length - 1] == 00)) {
           throw Exception("Error while generating key");
         }
-        print('first key already exists');
         Uint8List chipPubKey = getPublicKeyFromChipResponse(responseGetKeyInfo);
         Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
         String chipEthereumAddressHexString =
             getEthereumAddressHexString(chipEthereumAddress);
-        print("$chipEthereumAddressHexString  (Card ID as HexString)");
         BigInt chipTokenId = hexToBigInt(chipEthereumAddress);
-        print("$chipTokenId (Card ID as bigInt)");
 
         // get SIGNATURE from NFC chip
-        final Uint8List hashedTokenId = keccakUtf8(chipTokenId.toString());
-        final Uint8List getSigCmd = make_signature_command(0x01, hashedTokenId);
+        final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
+        final Uint8List getSigCmd = make_signature_command(0x01, hashedMsg);
         final Uint8List responseGetSignature =
             await isoDep.transceive(data: getSigCmd);
 
+        //vibrate phone
+        HapticFeedback.vibrate();
+        await Future.delayed(Duration(milliseconds: 50));
+        HapticFeedback.vibrate();
+        await Future.delayed(Duration(milliseconds: 50));
+        HapticFeedback.vibrate();
+
         // TEST: extract and implicitly verify signature
         final MsgSignature signature =
-            extractSignature(chipTokenId, responseGetSignature);
+            extractSignature(chipTokenId, hashedMsg, responseGetSignature);
 
         // only if true, is the tokenId corresponding to the chip!
         bool verificationResult =
-            verifySignature(chipTokenId, signature.r, signature.s);
+            verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
         if (!verificationResult) {
           throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
         }
@@ -120,10 +142,10 @@ class _ScanningScreen extends State<ScanningScreen> {
         // verify chip authenticity via SMART CONTRACT
         try {
           bool result = await verifyTokenSigner(
-              chipEthereumAddressHexString, hashedTokenId, signature);
-          print("SMART CONTRACT VERIFICATION RESULT: $result");
+              chipEthereumAddressHexString, hashedMsg, signature);
         } catch (e) {
           print("ERROR: $e");
+          throw ("NFC Chip not valid, signature verification failed");
         }
 
         // get owner of nft with cardId == tokenId
@@ -135,9 +157,7 @@ class _ScanningScreen extends State<ScanningScreen> {
           chipIsInitialized = true;
         } catch (e) {
           //NFT with this token ID does not have an owner/does not exist
-          print(e);
           chipIsInitialized = false;
-          tokenId = null;
           nftOwner = context.loc.ownerError;
         }
 
@@ -150,7 +170,7 @@ class _ScanningScreen extends State<ScanningScreen> {
               arguments: UserScanResultsScreenArguments(
                   nftOwner,
                   chipIsInitialized,
-                  chipTokenId,
+                  chipEthereumAddress,
                   chipEthereumAddressHexString));
         } else {
           //chip already initialized: navigate to ChipAlreadyInitializedScreen
@@ -161,19 +181,18 @@ class _ScanningScreen extends State<ScanningScreen> {
                 arguments: ChipAlreadyInitializedScreenArguments(
                     chipEthereumAddress,
                     chipEthereumAddressHexString,
-                    hashedTokenId,
+                    hashedMsg,
                     signature));
           } else {
             //chip not initialized: navigate to MetadataScreen
             // ignore: use_build_context_synchronously
-            Navigator.pushNamed(context, MetadataScreen.routeName,
+            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
                 arguments: ChipInitializedArguments(chipEthereumAddress,
-                    chipEthereumAddressHexString, hashedTokenId, signature));
+                    chipEthereumAddressHexString, hashedMsg, signature));
           }
         }
       } catch (e) {
         //error reading chip
-        print(context.loc.isoDepError + ": $e");
         NfcManager.instance.stopSession();
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(
@@ -181,7 +200,6 @@ class _ScanningScreen extends State<ScanningScreen> {
         );
         //delay for 1 second
         await Future.delayed(Duration(seconds: 1));
-        //navigate back to previous screen
         Navigator.pop(context);
       }
     });
@@ -193,62 +211,79 @@ class _ScanningScreen extends State<ScanningScreen> {
   }
 
   @override
-  void dispose() {
-    cancelScan();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBarWithLogo(
-        connectedWallet: widget.connector?.session?.accounts!.isEmpty == true
-            ? null
-            : widget.connector?.session?.accounts![0].toLowerCase(),
-        loginFunction: widget.loginWithMetaMask,
-        text: navArgs.scanningTitle,
-        connector: widget.connector,
-        connected: widget.connected,
-      ),
-      body: SafeArea(
-          child: Center(
-              child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            context.loc.scanHint,
-            overflow: TextOverflow.fade,
-            //center text
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 90),
-          const Icon(
-            Icons.nfc,
-            color: Colors.black,
-            size: 96.0,
-            semanticLabel: 'NFC Icon',
-          ),
-          const SizedBox(height: 15),
-          const ScanningLoader(),
-          const SizedBox(height: 15),
-          const Icon(
-            Icons.smartphone,
-            color: Colors.black,
-            size: 96.0,
-            semanticLabel: 'Smartphone Icon',
-          ),
-          const SizedBox(height: 90),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey, // background
-              ),
+        extendBodyBehindAppBar: true,
+        appBar: CustomAppBar(
+          connectedWalletAddress:
+              widget.connector.session.accounts.isEmpty == true
+                  ? null
+                  : widget.connector.session.accounts[0].toLowerCase(),
+          loginFunction: widget.loginWithMetaMask,
+          connector: widget.connector,
+          isConnected: widget.connected,
+          showBackButton: false,
+        ),
+        body: ScreenBodyLayout(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          withScrollView: false,
+          children: [
+            (navArgs.nextRoute == MetadataScreen.routeName)
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.loc.initializeChip,
+                          style: Theme.of(context).textTheme.headline2),
+                      RichText(
+                        text: TextSpan(
+                            text: 'Step 1/',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline6!
+                                .copyWith(fontSize: 18),
+                            children: [
+                              TextSpan(
+                                  text: '2',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline5!
+                                      .copyWith(fontSize: 18))
+                            ]),
+                      )
+                    ],
+                  )
+                : Text(context.loc.scanning,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headline2),
+            Column(
+              children: [
+                SvgPicture.asset(
+                  'assets/images/chip_light_blue.svg',
+                  width: 70.0,
+                ),
+                const SizedBox(height: 20),
+                const ScanningLoader(),
+                const SizedBox(height: 20),
+                SvgPicture.asset(
+                  'assets/images/phone icon.svg',
+                  width: 70.0,
+                ),
+                const SizedBox(height: 30),
+                Text(context.loc.scanHint,
+                    overflow: TextOverflow.fade,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyText1!
+                    // .copyWith(fontWeight: FontWeight.w400),
+                    ),
+              ],
+            ),
+            CustomRoundedButton(
+              text: context.loc.cancel,
               onPressed: () => cancelScan(),
-              child: Text(context.loc.cancel))
-        ],
-      ))),
-    );
+            )
+          ],
+        ));
   }
 }

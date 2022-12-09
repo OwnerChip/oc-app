@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class CustomSnackBarContent extends StatelessWidget {
   const CustomSnackBarContent(
@@ -19,26 +20,29 @@ class CustomSnackBarContent extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         height: 70,
         decoration: BoxDecoration(
-            color: alertType == 'success' ? Colors.green : Color(0xFFC72C41),
+            color: alertType == 'success'
+                ? CustomColors.successColor
+                : CustomColors.errorColor,
             borderRadius: const BorderRadius.all(Radius.circular(20))),
         child: Row(
           children: [
             SizedBox(
                 width: 48,
                 child: Icon(
-                  alertType == 'success' ? Icons.check_circle : Icons.error,
-                  size: 36,
-                  color: Colors.white,
-                )),
+                    alertType == 'success' ? Icons.check_circle : Icons.error,
+                    size: 36,
+                    color: Theme.of(context).cardColor)),
             Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(heading,
-                        style: TextStyle(fontSize: 18, color: Colors.white)),
+                        style: TextStyle(
+                            fontSize: 18, color: Theme.of(context).cardColor)),
                     Text(
                       text,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      style: TextStyle(
+                          color: Theme.of(context).cardColor, fontSize: 12),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     )

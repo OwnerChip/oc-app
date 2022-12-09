@@ -3,7 +3,6 @@ import 'package:test/test.dart';
 import 'package:owner_chip_admin_demo/utils/signature.service.dart';
 import 'package:owner_chip_admin_demo/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
-import 'dart:convert';
 
 void main() {
   group('signature helpers', () {
@@ -163,7 +162,7 @@ void main() {
       Uint8List msgHash = keccakUtf8(tokenId.toString());
 
       // act
-      MsgSignature sig = extractSignature(tokenId, sigResp);
+      MsgSignature sig = extractSignature(tokenId, msgHash, sigResp);
       Uint8List recoveredPubKey = ecRecover(msgHash, sig);
       Uint8List recoveredAddress = publicKeyToAddress(recoveredPubKey);
 

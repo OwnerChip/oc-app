@@ -1,3 +1,4 @@
+import 'package:owner_chip_admin_demo/screens/MetadataInputScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
@@ -5,10 +6,15 @@ import '../utils/localization.helper.dart';
 
 // local files
 import '../utils/url_generator.service.dart';
-import '../widgets/AppBarWithLogo.dart';
+import '../utils/utils.dart';
+import '../widgets/CustomAppBar.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
 import '../utils/navigation_arguments.dart';
+import '../widgets/ScreenBodyLayout.dart';
+import '../widgets/CustomHomeScreenButton.dart';
+import '../widgets/CustomRoundedButton.dart';
+import '../widgets/returnSnackBarWidget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -28,84 +34,99 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+Future<bool> onScanButtonPress(context) async {
+  try {
+    //check if there is internet connections
+    if (!await checkInternetConnection()) {
+      throw Exception("No internet connection");
+    }
+
+    Navigator.pushNamed(context, ScanningScreen.routeName,
+        arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
+    return false;
+  } catch (e) {
+    return true;
+  }
+}
+
+Future<bool> onInitializeButtonPress(
+    context, isConnected, loginWithMetaMask) async {
+  try {
+    //check if there is internet connections
+    if (!await checkInternetConnection()) {
+      print('no internet');
+      throw Exception("No internet connection");
+    }
+
+    if (!isConnected) {
+      await loginWithMetaMask(context);
+    }
+
+    Navigator.pushNamed(context, ScanningScreen.routeName,
+        arguments: ScanningScreenArguments(MetadataScreen.routeName));
+    return false;
+  } catch (e) {
+    return true;
+  }
+}
+
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBarWithLogo(
-        text: 'OwnerChip Demo',
+      appBar: CustomAppBar(
         loginFunction: widget.loginWithMetaMask,
-        connectedWallet: widget.connector.session.accounts.isEmpty == true
-            ? null
-            : widget.connector.session.accounts[0].toLowerCase(),
+        connectedWalletAddress:
+            widget.connector.session.accounts.isEmpty == true
+                ? null
+                : widget.connector.session.accounts[0].toLowerCase(),
         connector: widget.connector,
-        connected: widget.connected,
+        isConnected: widget.connected,
+        showBackButton: false,
       ),
-      body: SafeArea(
-          child: Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          SizedBox(
-            width: 200,
-            height: 150,
-            child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                ),
-                onPressed: widget.connector.connected
-                    ? () => Navigator.pushNamed(
-                        context, ScanningScreen.routeName,
-                        arguments: ScanningScreenArguments(
-                            '', "${context.loc.initializeChip} (1/3)"))
-                    : null,
-                //TODO: Do i need to pass empty string first argument here?
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.auto_fix_high, size: 50),
-                    SizedBox(height: 10),
-                    Text(context.loc.initializeChip),
-                  ],
-                )),
-          ),
-          SizedBox(height: 16),
-          SizedBox(
-            width: 200,
-            height: 150,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-              ),
-              onPressed: () => Navigator.pushNamed(
-                  context, ScanningScreen.routeName,
-                  arguments: ScanningScreenArguments(
-                      UserScanResultsScreen.routeName, context.loc.searchChip)),
-              child: Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.tap_and_play, size: 50),
-                      SizedBox(height: 10),
-                      Text(context.loc.tapItem),
-                    ]),
-              ),
+      body: ScreenBodyLayout(
+          withScrollView: false,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CustomHomeScreenButton(
+                text: context.loc.scanning,
+                svgPath: 'assets/images/illustration 1 small-cropped.svg',
+                onTap: () async {
+                  bool showInternetError = await onScanButtonPress(context);
+
+                  if (showInternetError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                          context.loc.errorNoInternetConnection, 'error'),
+                    );
+                  }
+                }),
+            const SizedBox(height: 20),
+            CustomHomeScreenButton(
+                text: context.loc.initializeChip,
+                svgPath: 'assets/images/illustration 2-cropped.svg',
+                onTap: () async {
+                  bool showInternetError = await onInitializeButtonPress(
+                      context, widget.connected, widget.loginWithMetaMask);
+
+                  if (showInternetError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                          context.loc.errorNoInternetConnection, 'error'),
+                    );
+                  }
+                }),
+            const SizedBox(height: 70),
+            CustomRoundedButton(
+              width: 250,
+              text: context.loc.moreInfo,
+              onPressed: () => {
+                launchUrl(generateLandingPageUrl(),
+                    mode: LaunchMode.externalApplication)
+              },
             ),
-          ),
-          //spacing
-          SizedBox(height: 70),
-          SizedBox(
-            width: 200,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey, // background
-              ),
-              onPressed: () => {launchUrl(generateLandingPageUrl())},
-              child: Text(context.loc.moreInfo),
-            ),
-          ),
-        ]),
-      )),
+          ]),
     );
   }
 }

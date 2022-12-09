@@ -7,8 +7,9 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
 
 //screens and widgets
 import 'screens/HomeScreen.dart';
@@ -48,13 +49,13 @@ void main(List<String> args) async {
 
     return WalletConnect(
         bridge: 'https://bridge.walletconnect.org',
-        session: session,
+        session: session == null || !session!.connected ? null : session,
         sessionStorage: sessionStorage,
         clientMeta: const PeerMeta(
             name: 'OwnerChip Demo',
             description: 'Connecting physical objects to the blockchain.',
             url: 'https://walletconnect.org',
-            icons: ["assets/images/oc_logo.png"]));
+            icons: ["assets/images/app_logo.png"]));
   }
 
   runApp(
@@ -79,7 +80,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyApp();
 }
 
-class _MyApp extends State<MyApp> {
+class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   bool connected = false;
   //connector has to be initialized with WC instance
   WalletConnect connector = WalletConnect(
@@ -89,7 +90,34 @@ class _MyApp extends State<MyApp> {
           name: 'OwnerChip Demo',
           description: 'Connecting physical objects to the blockchain.',
           url: 'https://walletconnect.org',
-          icons: ["assets/images/oc_logo.png"]));
+          icons: ["assets/images/app_logo.png"]));
+
+  //listen to lifecycle events (e.g. resume app from background)
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  //remove lifecycle events listener
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  //do stuff on resume
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    //make new wallet connect connector when app is resumed(brought to foreground); necessary to prevent errors with metamask
+    if (state == AppLifecycleState.resumed) {
+      var _connector = await widget.createWalletConnector();
+      setState(() {
+        connector = _connector;
+        connected = connector.connected;
+      });
+    }
+  }
 
   @override
   void didChangeDependencies() async {
@@ -117,7 +145,6 @@ class _MyApp extends State<MyApp> {
       //save session
       connector.sessionStorage?.store(connector.session);
 
-      //TODO: Test without this code: I think this piece of code is needed but unsure why
       if (!mounted) {
         return;
       }
@@ -166,11 +193,55 @@ class _MyApp extends State<MyApp> {
             });
 
     return MaterialApp(
-      //color from hex
-
       theme: ThemeData(
-          primaryColor: Color.fromARGB(
-              255, 77, 122, 255)), //TODO: extract color to env file???
+        primaryColor: CustomColors.primaryColor,
+        primaryColorLight: CustomColors.primaryColorLight,
+        shadowColor: CustomColors.shadowColor,
+        scaffoldBackgroundColor: CustomColors.scaffoldBackgroundColor,
+        cardColor: CustomColors.cardColor,
+        textTheme: TextTheme(
+          headline1: TextStyle(
+              fontSize: CustomFonts.headline1FontSize,
+              fontWeight: CustomFonts.headline1FontWeight,
+              color: CustomColors.headline1Color,
+              fontFamily: CustomFonts.headline1Font),
+          headline2: TextStyle(
+              fontSize: CustomFonts.headline2FontSize,
+              fontFamily: CustomFonts.headline2Font,
+              fontWeight: CustomFonts.headline2FontWeight,
+              color: CustomColors.headline2Color),
+          headline3: TextStyle(
+              fontSize: CustomFonts.headline3FontSize,
+              fontFamily: CustomFonts.headline3Font,
+              fontWeight: CustomFonts.headline3FontWeight,
+              color: CustomColors.headline3Color),
+          headline4: TextStyle(
+              fontSize: CustomFonts.headline4FontSize,
+              fontFamily: CustomFonts.headline4Font,
+              fontWeight: CustomFonts.headline4FontWeight,
+              color: CustomColors.headline4Color),
+          headline5: TextStyle(
+              fontSize: CustomFonts.headline5FontSize,
+              fontFamily: CustomFonts.headline5Font,
+              fontWeight: CustomFonts.headline5FontWeight,
+              color: CustomColors.headline5Color),
+          headline6: TextStyle(
+              fontSize: CustomFonts.headline6FontSize,
+              fontFamily: CustomFonts.headline6Font,
+              fontWeight: CustomFonts.headline6FontWeight,
+              color: CustomColors.headline6Color),
+          bodyText1: TextStyle(
+              fontSize: CustomFonts.bodyText1FontSize,
+              fontFamily: CustomFonts.bodyText1Font,
+              color: CustomColors.bodyText1Color,
+              fontWeight: CustomFonts.bodyText1FontWeight),
+          bodyText2: TextStyle(
+              fontSize: CustomFonts.bodyText2FontSize,
+              fontFamily: CustomFonts.bodyText2Font,
+              color: CustomColors.bodyText2Color,
+              fontWeight: CustomFonts.bodyText2FontWeight),
+        ),
+      ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,

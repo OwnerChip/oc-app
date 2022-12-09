@@ -4,14 +4,13 @@ import 'package:web3dart/crypto.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
-  final String scanningTitle;
-  ScanningScreenArguments(this.nextRoute, this.scanningTitle);
+  ScanningScreenArguments(this.nextRoute);
 }
 
 class UserScanResultsScreenArguments {
   final String nftOwner;
   final bool chipIsInitialized;
-  final BigInt tokenId;
+  final Uint8List tokenId;
   final String chipWalletAddress;
 
   UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
@@ -21,26 +20,26 @@ class UserScanResultsScreenArguments {
 class ChipAlreadyInitializedScreenArguments {
   final Uint8List tokenId;
   final String chipWalletAddress;
-  final Uint8List tokenIdHash;
+  final Uint8List hashedMsg;
   final MsgSignature signature;
 
   ChipAlreadyInitializedScreenArguments(
-      this.tokenId, this.chipWalletAddress, this.tokenIdHash, this.signature);
+      this.tokenId, this.chipWalletAddress, this.hashedMsg, this.signature);
 }
 
 class ChipInitializedArguments {
   final Uint8List tokenId;
   final String chipWalletAddress;
-  final Uint8List tokenIdHash;
+  final Uint8List hashedMsg;
   final MsgSignature signature;
 
   ChipInitializedArguments(
-      this.tokenId, this.chipWalletAddress, this.tokenIdHash, this.signature);
+      this.tokenId, this.chipWalletAddress, this.hashedMsg, this.signature);
 }
 
 class NFTDetailsScreenArguments {
   final Function? loginWithMetaMask;
-  final BigInt tokenId;
+  final Uint8List tokenId;
   final String chipWalletAddress;
   final String? localImagePath;
 
