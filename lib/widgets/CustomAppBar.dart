@@ -1,7 +1,6 @@
 //boilerplate for stateless widget
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:owner_chip_admin_demo/themes/blueTheme.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
@@ -91,13 +90,13 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
         isConnected
             ? IconButton(
                 icon: Icon(Icons.logout),
-                color: CustomColors.secondaryShadowColor,
+                color: CustomColors.black,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )
             : IconButton(
                 icon: Icon(Icons.wallet),
-                color: CustomColors.secondaryShadowColor,
+                color: CustomColors.black,
                 onPressed: () => onButtonPress(context),
                 iconSize: 36,
               )

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/themes/blueTheme.dart';
 import '../themes/customColors.dart';
 
 class CustomSnackBarContent extends StatelessWidget {
@@ -17,8 +16,6 @@ class CustomSnackBarContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BlueStyle? blueStyle = Theme.of(context).extension<BlueStyle>();
-
     return Container(
         padding: const EdgeInsets.all(16.0),
         height: 70,

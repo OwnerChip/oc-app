@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/themes/blueTheme.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
@@ -146,7 +145,6 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
     final Uint8List tokenId = navArgs.tokenId;
     final Uint8List tokenIdHash = keccakUtf8(hexToBigInt(tokenId).toString());
     final MsgSignature signature = navArgs.signature;

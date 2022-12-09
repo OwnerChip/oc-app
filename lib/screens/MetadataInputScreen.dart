@@ -6,7 +6,6 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomImage.dart';
 import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
@@ -192,7 +191,6 @@ class _MetadataScreen extends State<MetadataScreen> {
   Widget build(BuildContext context) {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
 
     return LoadingOverlay(
       isLoading: isLoading,

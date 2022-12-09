@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
-import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -236,13 +235,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
                 fontSize: 15.0,
                 color: Color.fromARGB(255, 25, 35, 90), //primary color
                 fontWeight: FontWeight.w400)),
-      ).copyWith(
-        extensions: <ThemeExtension<dynamic>>[
-          const BlueStyle(
-              borderColor: Color.fromARGB(255, 249, 247, 247),
-              secondaryShadowColor: Color.fromARGB(50, 0, 0, 21),
-              boxDecorationColor: Color.fromARGB(210, 160, 160, 160))
-        ],
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

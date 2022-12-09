@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'package:flutter/services.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 import '../themes/customColors.dart';
@@ -11,8 +10,6 @@ class SmallTextContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
-
     return GestureDetector(
         onTap: () {
           Clipboard.setData(ClipboardData(text: text.toString()));

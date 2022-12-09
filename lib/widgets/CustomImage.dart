@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:owner_chip_admin_demo/themes/BlueTheme.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
 import '../themes/customColors.dart';
@@ -22,8 +21,6 @@ class CustomImage extends StatelessWidget {
   final BigInt? tokenId;
   @override
   Widget build(BuildContext context) {
-    final BlueStyle blueStyle = Theme.of(context).extension<BlueStyle>()!;
-
     return Container(
         width: width,
         height: height,
