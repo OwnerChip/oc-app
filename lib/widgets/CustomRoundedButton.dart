@@ -44,14 +44,9 @@ class CustomRoundedButton extends StatelessWidget {
               icon != null ? icon! : Container(),
               //spacing
               const SizedBox(width: 10),
-              Text(
-                text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                ),
-              )
+              Text(text,
+                  style: Theme.of(context).textTheme.headline5!.copyWith(
+                      color: Theme.of(context).scaffoldBackgroundColor)),
             ],
           )),
     );
