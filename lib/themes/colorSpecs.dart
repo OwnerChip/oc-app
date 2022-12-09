@@ -24,4 +24,7 @@ class CustomColors {
   static Color secondaryShadowColor = Color.fromARGB(50, 0, 0, 21);
   static Color boxDecorationColor = Color.fromARGB(210, 160, 160, 160);
   static Color black = Colors.black;
+  static Color metadataImagePickerIconsColor = Colors.white;
+  static Color customRoundedButtonColor = scaffoldBackgroundColor;
+  static Color customHomeScreenButtonShadowColor = shadowColor;
 }

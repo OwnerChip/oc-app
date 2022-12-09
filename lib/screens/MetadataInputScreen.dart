@@ -233,7 +233,7 @@ class _MetadataScreen extends State<MetadataScreen> {
             ),
             //spacing
             SizedBox(height: 20),
-            CustomCard(children: [
+            CustomCard(color: CustomColors.cardColor, children: [
               AspectRatio(
                 aspectRatio: 0.75,
                 child: image != null
@@ -261,8 +261,9 @@ class _MetadataScreen extends State<MetadataScreen> {
                                       CustomRoundedButton(
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
-                                          icon: const Icon(
-                                              Icons.camera_alt_outlined),
+                                          icon: Icon(Icons.camera_alt_outlined,
+                                              color: CustomColors
+                                                  .metadataImagePickerIconsColor),
                                           width: 180,
                                           text: context.loc.takePicture,
                                           onPressed: () => setCameraImage()),
@@ -270,8 +271,9 @@ class _MetadataScreen extends State<MetadataScreen> {
                                       CustomRoundedButton(
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
-                                          icon:
-                                              const Icon(Icons.image_outlined),
+                                          icon: Icon(Icons.image_outlined,
+                                              color: CustomColors
+                                                  .metadataImagePickerIconsColor),
                                           width: 180,
                                           text: context.loc.selectedImage,
                                           onPressed: () => setGalleryImage()),

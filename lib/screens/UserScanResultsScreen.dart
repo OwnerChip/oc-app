@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
@@ -214,7 +215,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                       ],
                     ),
                     SizedBox(height: 15),
-                    CustomCard(children: [
+                    CustomCard(color: CustomColors.cardColor, children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

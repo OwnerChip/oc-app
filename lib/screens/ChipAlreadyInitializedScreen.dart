@@ -171,7 +171,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
             withScrollView: false,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CustomCard(width: 300, children: [
+              CustomCard(color: CustomColors.cardColor, width: 300, children: [
                 //orange round ember warning icon
                 Icon(Icons.warning_amber_rounded,
                     color: CustomColors.warningColor,

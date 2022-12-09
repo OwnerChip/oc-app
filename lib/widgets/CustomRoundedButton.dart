@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class CustomRoundedButton extends StatelessWidget {
   const CustomRoundedButton({
@@ -45,8 +46,10 @@ class CustomRoundedButton extends StatelessWidget {
               //spacing
               const SizedBox(width: 10),
               Text(text,
-                  style: Theme.of(context).textTheme.headline5!.copyWith(
-                      color: Theme.of(context).scaffoldBackgroundColor)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline5!
+                      .copyWith(color: CustomColors.customRoundedButtonColor)),
             ],
           )),
     );
