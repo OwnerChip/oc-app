@@ -67,29 +67,14 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       leading: Padding(
           padding: EdgeInsets.only(left: 10),
           child: showBackButton
-              ?
-
-              // SizedBox(
-              //     width: 50,
-              //     height: 50,
-              //     child: ElevatedButton(
-              //       onPressed: () => Navigator.of(context).pop(),
-              //       style: ElevatedButton.styleFrom(
-              //           backgroundColor: Theme.of(context).primaryColor,
-              //           shape: const CircleBorder(),
-              //           padding: EdgeInsets.all(0)),
-              //       child: const Icon(Icons.arrow_back, size: 25),
-              //     ),
-              //   )
-
-              Stack(
+              ? Stack(
                   alignment: Alignment.topCenter,
                   children: [
                     IconButton(
                       padding: new EdgeInsets.all(0.0),
                       icon: SvgPicture.asset("assets/images/back button.svg"),
                       color: CustomColors.black,
-                      onPressed: () => onButtonPress(context),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 )
