@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
@@ -84,32 +85,38 @@ class _ScanningScreen extends State<ScanningScreen> {
     //start NFC scan
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       try {
-        var isoDep = IsoDep.from(tag);
+        var nfc = NFCPlatform(tag);
 
-        //check if isodep is available and exit if not
-        if (isoDep == null) {
+        //check if iso7816 or isodep is available and exit if not
+        if (nfc == null) {
           NfcManager.instance.stopSession();
           throw Exception('Tag is not ISO-DEP.');
         }
-        var selectAppResponse = await isoDep.transceive(data: SELECT_APP);
+        var selectAppResponse = await nfc.sendCommand(SELECT_APP);
         Uint8List GET_KEY_INFO = make_get_key_info_command(
             0x01); //make command to get first generated wallet
-        var responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
+        var responseGetKeyInfo = await nfc.sendCommand(GET_KEY_INFO);
 
+        Uint8List getKeyInfoData = responseGetKeyInfo[0];
+        int getKeyInfoSw1 = responseGetKeyInfo[1];
+        int getKeyIinfoSw2 = responseGetKeyInfo[2];
         //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
-        if (responseGetKeyInfo[responseGetKeyInfo.length - 2] == 106 &&
-            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 136) {
+        if (getKeyInfoSw1 == 106 &&
+            getKeyIinfoSw2 == 136) {
           //if first generated wallet does not yet exist, generate it on chip
-          var responseGenerateKey = await isoDep.transceive(data: GENERATE_KEY);
+          var responseGenerateKey = await nfc.sendCommand(GENERATE_KEY);
           //get first key info after generating new key
-          responseGetKeyInfo = await isoDep.transceive(data: GET_KEY_INFO);
+          responseGetKeyInfo = await nfc.sendCommand(GET_KEY_INFO);
+          getKeyInfoData = responseGetKeyInfo[0];
+          getKeyInfoSw1 = responseGetKeyInfo[1];
+          getKeyIinfoSw2 = responseGetKeyInfo[2];
         }
         //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
-        else if (!(responseGetKeyInfo[responseGetKeyInfo.length - 2] == 144 &&
-            responseGetKeyInfo[responseGetKeyInfo.length - 1] == 00)) {
+        else if (!(getKeyInfoSw1 == 144 &&
+            getKeyIinfoSw2 == 00)) {
           throw Exception("Error while generating key");
         }
-        Uint8List chipPubKey = getPublicKeyFromChipResponse(responseGetKeyInfo);
+        Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
         Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
         String chipEthereumAddressHexString =
             getEthereumAddressHexString(chipEthereumAddress);
@@ -118,8 +125,10 @@ class _ScanningScreen extends State<ScanningScreen> {
         // get SIGNATURE from NFC chip
         final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
         final Uint8List getSigCmd = make_signature_command(0x01, hashedMsg);
-        final Uint8List responseGetSignature =
-            await isoDep.transceive(data: getSigCmd);
+        final List responseGetSignature = await nfc.sendCommand(getSigCmd);
+        final Uint8List chipSignatureData = responseGetSignature[0];
+        final int chipSignatureSw1 = responseGetSignature[1];
+        final int chipSignatureSw2 = responseGetSignature[2];
 
         //vibrate phone
         HapticFeedback.vibrate();
@@ -130,7 +139,7 @@ class _ScanningScreen extends State<ScanningScreen> {
 
         // TEST: extract and implicitly verify signature
         final MsgSignature signature =
-            extractSignature(chipTokenId, hashedMsg, responseGetSignature);
+            extractSignature(chipTokenId, hashedMsg, chipSignatureData);
 
         // only if true, is the tokenId corresponding to the chip!
         bool verificationResult =

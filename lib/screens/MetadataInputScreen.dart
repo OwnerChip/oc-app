@@ -275,7 +275,7 @@ class _MetadataScreen extends State<MetadataScreen> {
                                               color: CustomColors
                                                   .metadataImagePickerIconsColor),
                                           width: 180,
-                                          text: context.loc.selectedImage,
+                                          text: context.loc.selectImage,
                                           onPressed: () => setGalleryImage()),
                                     ],
                                   )

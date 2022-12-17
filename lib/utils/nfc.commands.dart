@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager/platform_tags.dart';
 
 Uint8List SELECT_APP = Uint8List.fromList([
   0x00,
@@ -55,4 +57,28 @@ Uint8List make_signature_command(int hex_key_number, Uint8List data_to_sign) {
   bytes.add(Uint8List.fromList([0x00]));
   Uint8List res = bytes.toBytes();
   return res;
+}
+
+class NFCPlatform {
+  var platform = defaultTargetPlatform;
+  final NfcTag tag;
+  late final nfc;
+  NFCPlatform(this.tag){
+    if (Platform.isIOS) {
+      nfc = Iso7816.from(tag);
+    } else if (Platform.isAndroid) {
+      nfc = IsoDep.from(tag);
+    }
+  }
+
+  Future<List> sendCommand(Uint8List data) async{
+    if (Platform.isIOS) {
+      Iso7816ResponseApdu res = await nfc.sendCommandRaw(data);
+      return [res.payload, res.statusWord1, res.statusWord2];
+    } else if (Platform.isAndroid) {
+      Uint8List res = nfc.transceive(data: data);
+      return [res.sublist(0, res.length-2), res[res.length - 2], res[res.length - 1]];
+    }
+    throw Exception("Unsupported platform");
+  }
 }
