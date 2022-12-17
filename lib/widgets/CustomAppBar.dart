@@ -86,21 +86,53 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       title: Text(text ?? '', style: Theme.of(context).textTheme.headline3),
       centerTitle: true,
       actions: [
-        isConnected
-            ? IconButton(
-                icon: SvgPicture.asset(
-                    "assets/images/wallet_connnected_icon.svg"),
-                color: CustomColors.black,
-                onPressed: () => onButtonPress(context),
-                iconSize: 36,
-              )
-            : IconButton(
-                icon:
-                    SvgPicture.asset("assets/images/wallet_connnect_icon.svg"),
-                color: CustomColors.black,
-                onPressed: () => onButtonPress(context),
-                iconSize: 36,
-              )
+        Padding(
+            padding: EdgeInsets.only(right: 5),
+            child: isConnected
+                ? Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      IconButton(
+                        padding: new EdgeInsets.all(0.0),
+                        icon: SvgPicture.asset(
+                            "assets/images/wallet_connnected_icon.svg"),
+                        color: CustomColors.black,
+                        onPressed: () => onButtonPress(context),
+                      ),
+                      Align(
+                        alignment: const Alignment(0.0, 0.95),
+                        child: Text(
+                          context.loc.disconnect,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText2!
+                              .copyWith(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  )
+                : Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      IconButton(
+                        padding: new EdgeInsets.all(0.0),
+                        icon: SvgPicture.asset(
+                            "assets/images/wallet_connnect_icon.svg"),
+                        color: CustomColors.black,
+                        onPressed: () => onButtonPress(context),
+                      ),
+                      Align(
+                        alignment: const Alignment(0.0, 0.95),
+                        child: Text(
+                          context.loc.connect,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText2!
+                              .copyWith(fontSize: 10),
+                        ),
+                      ),
+                    ],
+                  ))
 
         // isConnected
         //     ? GestureDetector(

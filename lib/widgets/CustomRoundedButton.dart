@@ -48,7 +48,7 @@ class CustomRoundedButton extends StatelessWidget {
               Text(text,
                   style: Theme.of(context)
                       .textTheme
-                      .headline5!
+                      .bodyText1!
                       .copyWith(color: CustomColors.customRoundedButtonColor)),
             ],
           )),
