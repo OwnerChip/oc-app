@@ -51,6 +51,8 @@
 		<false/>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>The app would like to access your photos.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>The app would like to access your camera.</string>
 		<key>NFCReaderUsageDescription</key>
 		<string>We need to use NFC</string>
 		<key>com.apple.developer.nfc.readersession.felica.systemcodes</key>
