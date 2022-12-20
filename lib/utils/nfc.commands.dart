@@ -63,7 +63,7 @@ class NFCPlatform {
   var platform = defaultTargetPlatform;
   final NfcTag tag;
   late final nfc;
-  NFCPlatform(this.tag){
+  NFCPlatform(this.tag) {
     if (Platform.isIOS) {
       nfc = Iso7816.from(tag);
     } else if (Platform.isAndroid) {
@@ -71,13 +71,17 @@ class NFCPlatform {
     }
   }
 
-  Future<List> sendCommand(Uint8List data) async{
+  Future<List> sendCommand(Uint8List data) async {
     if (Platform.isIOS) {
       Iso7816ResponseApdu res = await nfc.sendCommandRaw(data);
       return [res.payload, res.statusWord1, res.statusWord2];
     } else if (Platform.isAndroid) {
-      Uint8List res = nfc.transceive(data: data);
-      return [res.sublist(0, res.length-2), res[res.length - 2], res[res.length - 1]];
+      Uint8List res = await nfc.transceive(data: data);
+      return [
+        res.sublist(0, res.length - 2),
+        res[res.length - 2],
+        res[res.length - 1]
+      ];
     }
     throw Exception("Unsupported platform");
   }
