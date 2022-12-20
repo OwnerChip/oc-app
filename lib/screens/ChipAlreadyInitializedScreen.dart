@@ -244,7 +244,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                 width: 250,
                 text: context.loc.cancel,
                 onPressed: () =>
-                    {Navigator.pushNamed(context, HomeScreen.routeName)},
+                    {Navigator.pushReplacementNamed(context, HomeScreen.routeName)},
               ),
             ],
           )),

@@ -49,7 +49,7 @@ void main(List<String> args) async {
 
     return WalletConnect(
         bridge: 'https://bridge.walletconnect.org',
-        session: session == null || !session!.connected ? null : session,
+        session: session == null || !session.connected ? null : session,
         sessionStorage: sessionStorage,
         clientMeta: const PeerMeta(
             name: 'OwnerChip Demo',
@@ -90,7 +90,7 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
           name: 'OwnerChip Demo',
           description: 'Connecting physical objects to the blockchain.',
           url: 'https://walletconnect.org',
-          icons: ["assets/images/app_logo.png"]));
+          icons: ["assets/images/app_logo_splash.png"]));
 
   //listen to lifecycle events (e.g. resume app from background)
   @override

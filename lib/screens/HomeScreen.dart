@@ -54,7 +54,6 @@ Future<bool> onInitializeButtonPress(
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {
-      print('no internet');
       throw Exception("No internet connection");
     }
 
