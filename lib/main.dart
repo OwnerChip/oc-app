@@ -58,45 +58,46 @@ void main(List<String> args) async {
             icons: ["assets/images/app_logo.png"]));
   }
 
+  WalletConnect initialConnector = await createWalletConnector();
+
   runApp(
       //wrapper to enable app restarts
       RestartWidget(
           child: MyApp(
               initialRoute: initialRoute,
-              createWalletConnector: createWalletConnector)));
+              createWalletConnector: createWalletConnector,
+              initialConnector: initialConnector)));
 }
 
 class MyApp extends StatefulWidget {
   const MyApp(
       {Key? key,
       required this.initialRoute,
-      required this.createWalletConnector})
+      required this.createWalletConnector,
+      required this.initialConnector})
       : super(key: key);
 
   final String initialRoute;
   final Function createWalletConnector;
+  final WalletConnect initialConnector;
 
   @override
   State<MyApp> createState() => _MyApp();
 }
 
 class _MyApp extends State<MyApp> with WidgetsBindingObserver {
-  bool connected = false;
-  //connector has to be initialized with WC instance
-  WalletConnect connector = WalletConnect(
-      bridge: 'https://bridge.walletconnect.org',
-      sessionStorage: WalletConnectSecureStorage(),
-      clientMeta: const PeerMeta(
-          name: 'OwnerChip Demo',
-          description: 'Connecting physical objects to the blockchain.',
-          url: 'https://walletconnect.org',
-          icons: ["assets/images/app_logo_splash.png"]));
+  late bool connected;
+  late WalletConnect connector;
 
   //listen to lifecycle events (e.g. resume app from background)
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     super.initState();
+    setState(() {
+      connector = widget.initialConnector;
+      connected = widget.initialConnector.connected;
+    });
   }
 
   //remove lifecycle events listener
@@ -111,26 +112,26 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     //make new wallet connect connector when app is resumed(brought to foreground); necessary to prevent errors with metamask
     if (state == AppLifecycleState.resumed) {
-      var _connector = await widget.createWalletConnector();
+      var wc = await widget.createWalletConnector();
       setState(() {
-        connector = _connector;
-        connected = connector.connected;
+        connector = wc;
+        connected = wc.connected;
       });
     }
   }
 
-  @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-    //stop scanning for NFC tags in case the app is restarted
-    NfcManager.instance.stopSession();
-    //after mounting connector is created
-    var _connector = await widget.createWalletConnector();
-    setState(() {
-      connector = _connector;
-      connected = connector.connected;
-    });
-  }
+  // @override
+  // void didChangeDependencies() async {
+  //   super.didChangeDependencies();
+  //   //stop scanning for NFC tags in case the app is restarted
+  //   NfcManager.instance.stopSession();
+  //   //after mounting connector is created
+  //   var wc = await widget.createWalletConnector();
+  //   setState(() {
+  //     connector = wc;
+  //     connected = wc.connected;
+  //   });
+  // }
 
   Future<void> loginWithMetaMask(BuildContext context) async {
     // if (!connector.connected) {
