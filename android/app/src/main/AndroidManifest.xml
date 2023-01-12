@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${PACKAGE_NAME}">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ownerchip.demo">
     <uses-permission android:name="android.permission.NFC"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA" />
@@ -8,7 +8,7 @@
             android:name="android.hardware.nfc"
             android:required="true" />
     <application
-        android:label="${APP_LABEL}"
+        android:label="OwnerChip Demo"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
