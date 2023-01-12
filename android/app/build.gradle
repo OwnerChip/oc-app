@@ -50,12 +50,13 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.ownerchip.demo"
+        applicationId System.getenv("BITRISEIO_PACKAGE_NAME")
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        minSdkVersion 18   
+        minSdkVersion 18
+        manifestPlaceholders = [PACKAGE_NAME: System.getenv("BITRISEIO_PACKAGE_NAME"), APP_LABEL: System.getenv("BITRISEIO_APP_LABEL")]
     }
 
     signingConfigs {
