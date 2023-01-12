@@ -68,7 +68,7 @@ android {
 
             keyAlias System.getenv("BITRISEIO_ANDROID_KEYSTORE_ALIAS")
             keyPassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
-            storeFile file(System.getenv("HOME") + "/keystores/my_keystore.jks")
+            storeFile file(System.getenv("BITRISE_SOURCE_DIR") + "/keystores/my_keystore.jks")
             storePassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PASSWORD")
         }
     }
