@@ -60,11 +60,16 @@ android {
 
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            // storeFile file(keystoreProperties['storeFile'])
-            storeFile file("key.jks")
-            storePassword keystoreProperties['storePassword']
+            // keyAlias keystoreProperties['keyAlias']
+            // keyPassword keystoreProperties['keyPassword']
+            // // storeFile file(keystoreProperties['storeFile'])
+            // storeFile file("key.jks")
+            // storePassword keystoreProperties['storePassword']
+
+            keyAlias System.getenv("BITRISEIO_ANDROID_KEYSTORE_ALIAS")
+            keyPassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
+            storeFile file(System.getenv("HOME") + "/keystores/my_keystore.jks")
+            storePassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PASSWORD")
         }
     }
     
