@@ -225,13 +225,12 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                           //Ownerchip Check Icon
                           !navArgs.chipIsInitialized
                               ? //chip not initialized aka no NFT exists
-                              SvgPicture.asset(
-                                  "assets/images/triangle_small.svg")
+                              SvgPicture.asset("assets/images/alert_cross.svg")
                               : !widget.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
                                   SvgPicture.asset(
-                                      "assets/images/alert_triangle.svg")
+                                      "assets/images/triangle_small.svg")
                                   : connectedWallet == navArgs.nftOwner
                                       ?
                                       //chip is initialized and wallet is connected and wallet is owner

@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             CustomHomeScreenButton(
                 text: context.loc.scanning,
-                svgPath: 'assets/images/illustration 1 small-cropped.svg',
+                svgPath: 'assets/images/homescreen_button_scan.svg',
                 onTap: () async {
                   bool showInternetError = await onScanButtonPress(context);
 
@@ -104,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             CustomHomeScreenButton(
                 text: context.loc.initializeChip,
-                svgPath: 'assets/images/illustration 2-cropped.svg',
+                svgPath: 'assets/images/homescreen_button_initialize.svg',
                 onTap: () async {
                   bool showInternetError = await onInitializeButtonPress(
                       context, widget.connected, widget.loginWithMetaMask);

@@ -72,7 +72,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                   children: [
                     IconButton(
                       padding: new EdgeInsets.all(0.0),
-                      icon: SvgPicture.asset("assets/images/back button.svg"),
+                      icon: SvgPicture.asset("assets/images/back.svg"),
                       color: CustomColors.black,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
@@ -93,8 +93,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                     children: [
                       IconButton(
                         padding: new EdgeInsets.all(0.0),
-                        icon: SvgPicture.asset(
-                            "assets/images/wallet_connnected_icon.svg"),
+                        icon: SvgPicture.asset("assets/images/disconnect.svg"),
                         color: CustomColors.black,
                         onPressed: () => onButtonPress(context),
                       ),
@@ -115,8 +114,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                     children: [
                       IconButton(
                         padding: new EdgeInsets.all(0.0),
-                        icon: SvgPicture.asset(
-                            "assets/images/wallet_connnect_icon.svg"),
+                        icon: SvgPicture.asset("assets/images/connect.svg"),
                         color: CustomColors.black,
                         onPressed: () => onButtonPress(context),
                       ),

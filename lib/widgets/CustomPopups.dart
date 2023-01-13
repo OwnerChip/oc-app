@@ -50,7 +50,7 @@ void showMintSuccessPopUp(BuildContext context) {
         return AlertDialog(
             title: Center(child: Text(context.loc.mintSuccess)),
             content: SvgPicture.asset(
-              'assets/images/mint_success_icon.svg',
+              'assets/images/mint.svg',
               width: 75.0,
               height: 130.0,
             ));
@@ -64,7 +64,7 @@ void showBurnSuccessPopUp(BuildContext context) {
         return AlertDialog(
             title: Center(child: Text(context.loc.burnedSuccess)),
             content: SvgPicture.asset(
-              'assets/images/burn_success_icon.svg',
+              'assets/images/burn.svg',
               width: 75.0,
               height: 130.0,
             ));

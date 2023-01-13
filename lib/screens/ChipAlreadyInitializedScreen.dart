@@ -111,7 +111,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
         setState(() {
           isRotating = false;
-          loadingSvgPath = "assets/images/burn_success_icon.svg";
+          loadingSvgPath = "assets/images/burn.svg";
           loadingText = context.loc.burnedSuccess;
         });
 
@@ -243,8 +243,9 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
               CustomRoundedButton(
                 width: 250,
                 text: context.loc.cancel,
-                onPressed: () =>
-                    {Navigator.pushReplacementNamed(context, HomeScreen.routeName)},
+                onPressed: () => {
+                  Navigator.pushReplacementNamed(context, HomeScreen.routeName)
+                },
               ),
             ],
           )),
