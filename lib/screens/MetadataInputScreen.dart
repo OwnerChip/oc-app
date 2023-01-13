@@ -59,7 +59,7 @@ class _MetadataScreen extends State<MetadataScreen> {
 
   Map<String, String> metadata = {};
   XFile? image;
-  String imagePath = 'assets/images/placeholder.jpg';
+  String imagePath = '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
   bool success = false;
   bool showImageOptions = false;
   bool isLoading = false;
@@ -71,7 +71,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       image = imageFile;
       imagePath = (imageFile != null)
           ? imageFile.path
-          : 'assets/images/placeholder.jpg';
+          : '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
     });
   }
 
@@ -81,7 +81,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       image = imageFile;
       imagePath = (imageFile != null)
           ? imageFile.path
-          : 'assets/images/placeholder.jpg';
+          : '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
     });
   }
 
@@ -195,7 +195,7 @@ class _MetadataScreen extends State<MetadataScreen> {
     return LoadingOverlay(
       isLoading: isLoading,
       loadingText: loadingText,
-      svgPath: 'assets/images/chip_dark_blue.svg',
+      svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
       child: Scaffold(
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
@@ -241,7 +241,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                         onTap: () {
                           setState(() {
                             showImageOptions = true;
-                            imagePath = 'assets/images/placeholder.jpg';
+                            imagePath =
+                                '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
                             image = null;
                           });
                         },

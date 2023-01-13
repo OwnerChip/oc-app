@@ -52,10 +52,11 @@ void main(List<String> args) async {
         session: session == null || !session.connected ? null : session,
         sessionStorage: sessionStorage,
         clientMeta: const PeerMeta(
-            name: 'OwnerChip Demo',
-            description: 'Connecting physical objects to the blockchain.',
-            url: 'https://walletconnect.org',
-            icons: ["assets/images/app_logo.png"]));
+          name: 'OwnerChip Demo',
+          description: 'Connecting physical objects to the blockchain.',
+          url: 'https://walletconnect.org',
+          // icons: ["${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png"]
+        ));
   }
 
   WalletConnect initialConnector = await createWalletConnector();

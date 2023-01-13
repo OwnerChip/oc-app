@@ -7,6 +7,7 @@ import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/localization.helper.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   const CustomAppBar(
@@ -72,14 +73,15 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                   children: [
                     IconButton(
                       padding: new EdgeInsets.all(0.0),
-                      icon: SvgPicture.asset("assets/images/back.svg"),
+                      icon: SvgPicture.asset(
+                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/back.svg"),
                       color: CustomColors.black,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 )
               : Image.asset(
-                  'assets/images/app_logo.png',
+                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png',
                   fit: BoxFit.contain,
                 )),
       title: Text(text ?? '', style: Theme.of(context).textTheme.headline3),
@@ -93,7 +95,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                     children: [
                       IconButton(
                         padding: new EdgeInsets.all(0.0),
-                        icon: SvgPicture.asset("assets/images/disconnect.svg"),
+                        icon: SvgPicture.asset(
+                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/disconnect.svg"),
                         color: CustomColors.black,
                         onPressed: () => onButtonPress(context),
                       ),
@@ -114,7 +117,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                     children: [
                       IconButton(
                         padding: new EdgeInsets.all(0.0),
-                        icon: SvgPicture.asset("assets/images/connect.svg"),
+                        icon: SvgPicture.asset(
+                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/connect.svg"),
                         color: CustomColors.black,
                         onPressed: () => onButtonPress(context),
                       ),
@@ -130,30 +134,6 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                       ),
                     ],
                   ))
-
-        // isConnected
-        //     ? GestureDetector(
-        //         onTap: () {
-        //           showWalletConnectedPopup(context, connector);
-        //         },
-        //         child: Padding(
-        //             padding: EdgeInsets.only(right: 10),
-        //             child: SvgPicture.asset(
-        //               'assets/images/wallet connnected.svg',
-        //               width: 60.0,
-        //               height: 60.0,
-        //             )))
-        //     : GestureDetector(
-        //         onTap: () {
-        //           showWalletConnectPopup(context, connector, loginFunction);
-        //         },
-        //         child: Padding(
-        //             padding: EdgeInsets.only(right: 10),
-        //             child: SvgPicture.asset(
-        //               'assets/images/wallet disconnected.svg',
-        //               width: 60.0,
-        //               height: 60.0,
-        //             )))
       ],
       titleTextStyle: Theme.of(context).textTheme.headline3,
       backgroundColor: Colors.transparent,

@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
@@ -267,14 +268,14 @@ class _ScanningScreen extends State<ScanningScreen> {
             Column(
               children: [
                 SvgPicture.asset(
-                  'assets/images/chip_light_blue.svg',
+                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_light_blue.svg',
                   width: 70.0,
                 ),
                 const SizedBox(height: 20),
                 const ScanningLoader(),
                 const SizedBox(height: 20),
                 SvgPicture.asset(
-                  'assets/images/phone.svg',
+                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/phone.svg',
                   width: 70.0,
                 ),
                 const SizedBox(height: 30),

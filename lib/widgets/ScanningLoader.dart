@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ScanningLoader extends StatefulWidget {
   const ScanningLoader({Key? key}) : super(key: key);
@@ -40,7 +41,7 @@ class _ScanningLoaderState extends State<ScanningLoader>
         );
       },
       child: SvgPicture.asset(
-        'assets/images/arrow_vertical.svg',
+        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/arrow_vertical.svg',
         height: 80.0,
       ),
     );

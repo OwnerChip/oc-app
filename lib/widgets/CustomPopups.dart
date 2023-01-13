@@ -9,6 +9,7 @@ import '../screens/HomeScreen.dart';
 import '../utils/localization.helper.dart';
 import 'CustomRoundedButton.dart';
 import 'ChipInfo.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void showLoadingPopUp(BuildContext context, String type) {
   var loadingText = "";
@@ -50,7 +51,7 @@ void showMintSuccessPopUp(BuildContext context) {
         return AlertDialog(
             title: Center(child: Text(context.loc.mintSuccess)),
             content: SvgPicture.asset(
-              'assets/images/mint.svg',
+              '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg',
               width: 75.0,
               height: 130.0,
             ));
@@ -64,7 +65,7 @@ void showBurnSuccessPopUp(BuildContext context) {
         return AlertDialog(
             title: Center(child: Text(context.loc.burnedSuccess)),
             content: SvgPicture.asset(
-              'assets/images/burn.svg',
+              '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg',
               width: 75.0,
               height: 130.0,
             ));

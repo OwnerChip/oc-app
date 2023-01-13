@@ -50,7 +50,8 @@ class ChipAlreadyInitializedScreen extends StatefulWidget {
 class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
   bool isLoading = false;
   bool isRotating = true;
-  String loadingSvgPath = 'assets/images/chip_dark_blue.svg';
+  String loadingSvgPath =
+      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
   Future<void> burnToken(
@@ -111,7 +112,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
         setState(() {
           isRotating = false;
-          loadingSvgPath = "assets/images/burn.svg";
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
           loadingText = context.loc.burnedSuccess;
         });
 

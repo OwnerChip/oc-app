@@ -7,6 +7,7 @@ import '../utils/localization.helper.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //local imports
 import 'NFTDetailsScreen.dart';
@@ -225,21 +226,22 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                           //Ownerchip Check Icon
                           !navArgs.chipIsInitialized
                               ? //chip not initialized aka no NFT exists
-                              SvgPicture.asset("assets/images/alert_cross.svg")
+                              SvgPicture.asset(
+                                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
                               : !widget.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
                                   SvgPicture.asset(
-                                      "assets/images/triangle_small.svg")
+                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
                                   : connectedWallet == navArgs.nftOwner
                                       ?
                                       //chip is initialized and wallet is connected and wallet is owner
                                       SvgPicture.asset(
-                                          "assets/images/check.svg")
+                                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
                                       :
                                       //chip is initialized and wallet is connected and wallet is NOT owner
                                       SvgPicture.asset(
-                                          "assets/images/alert_cross.svg")
+                                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
                         ],
                       ),
                       //spacing
@@ -307,7 +309,8 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                           Text(context.loc.nfcCheck,
                               style: Theme.of(context).textTheme.headline4),
                           //checkmark icon
-                          SvgPicture.asset("assets/images/check.svg"),
+                          SvgPicture.asset(
+                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg"),
                         ],
                       ),
                       //spacing

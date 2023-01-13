@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomImage extends StatelessWidget {
   CustomImage({
@@ -38,7 +39,7 @@ class CustomImage extends StatelessWidget {
                 aspectRatio: 0.75,
                 child: loading || imagePath == null || imagePath == ""
                     ? Image.asset(
-                        'assets/images/placeholder.jpg',
+                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg',
                         fit: BoxFit.cover,
                       )
                     : Image.file(

@@ -2,6 +2,7 @@ import 'package:owner_chip_admin_demo/screens/MetadataInputScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../utils/localization.helper.dart';
 
 // local files
@@ -90,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             CustomHomeScreenButton(
                 text: context.loc.scanning,
-                svgPath: 'assets/images/homescreen_button_scan.svg',
+                svgPath:
+                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}homescreen_button_scan.svg',
                 onTap: () async {
                   bool showInternetError = await onScanButtonPress(context);
 
@@ -104,7 +106,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             CustomHomeScreenButton(
                 text: context.loc.initializeChip,
-                svgPath: 'assets/images/homescreen_button_initialize.svg',
+                svgPath:
+                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
                 onTap: () async {
                   bool showInternetError = await onInitializeButtonPress(
                       context, widget.connected, widget.loginWithMetaMask);
