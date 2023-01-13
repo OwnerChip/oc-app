@@ -40,7 +40,7 @@ class _ScanningLoaderState extends State<ScanningLoader>
         );
       },
       child: SvgPicture.asset(
-        'assets/images/arrow_light_blue_vertical.svg',
+        'assets/images/arrow_vertical.svg',
         height: 80.0,
       ),
     );

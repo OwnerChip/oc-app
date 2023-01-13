@@ -101,8 +101,7 @@ class _ScanningScreen extends State<ScanningScreen> {
         int getKeyInfoSw1 = responseGetKeyInfo[1];
         int getKeyIinfoSw2 = responseGetKeyInfo[2];
         //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
-        if (getKeyInfoSw1 == 106 &&
-            getKeyIinfoSw2 == 136) {
+        if (getKeyInfoSw1 == 106 && getKeyIinfoSw2 == 136) {
           //if first generated wallet does not yet exist, generate it on chip
           var responseGenerateKey = await nfc.sendCommand(GENERATE_KEY);
           //get first key info after generating new key
@@ -112,8 +111,7 @@ class _ScanningScreen extends State<ScanningScreen> {
           getKeyIinfoSw2 = responseGetKeyInfo[2];
         }
         //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
-        else if (!(getKeyInfoSw1 == 144 &&
-            getKeyIinfoSw2 == 00)) {
+        else if (!(getKeyInfoSw1 == 144 && getKeyIinfoSw2 == 00)) {
           throw Exception("Error while generating key");
         }
         Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
@@ -276,7 +274,7 @@ class _ScanningScreen extends State<ScanningScreen> {
                 const ScanningLoader(),
                 const SizedBox(height: 20),
                 SvgPicture.asset(
-                  'assets/images/phone icon.svg',
+                  'assets/images/phone.svg',
                   width: 70.0,
                 ),
                 const SizedBox(height: 30),
