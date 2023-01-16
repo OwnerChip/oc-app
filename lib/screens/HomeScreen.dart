@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
             CustomHomeScreenButton(
                 text: context.loc.scanning,
                 svgPath:
-                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}homescreen_button_scan.svg',
+                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
                 onTap: () async {
                   bool showInternetError = await onScanButtonPress(context);
 

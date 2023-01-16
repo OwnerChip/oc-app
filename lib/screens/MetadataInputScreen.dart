@@ -239,7 +239,7 @@ class _MetadataScreen extends State<MetadataScreen> {
         child: LoadingOverlay(
           isLoading: isLoading,
           loadingText: loadingText,
-          svgPath: 'assets/images/chip_dark_blue.svg',
+          svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
           child: Scaffold(
               extendBodyBehindAppBar: true,
               appBar: CustomAppBar(
@@ -286,7 +286,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                             onTap: () {
                               setState(() {
                                 showImageOptions = true;
-                                imagePath = 'assets/images/placeholder.jpg';
+                                imagePath =
+                                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
                                 image = null;
                               });
                             },

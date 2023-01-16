@@ -121,19 +121,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  // @override
-  // void didChangeDependencies() async {
-  //   super.didChangeDependencies();
-  //   //stop scanning for NFC tags in case the app is restarted
-  //   NfcManager.instance.stopSession();
-  //   //after mounting connector is created
-  //   var wc = await widget.createWalletConnector();
-  //   setState(() {
-  //     connector = wc;
-  //     connected = wc.connected;
-  //   });
-  // }
-
   Future<void> loginWithMetaMask(BuildContext context) async {
     // if (!connector.connected) {
     try {

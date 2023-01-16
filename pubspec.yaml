@@ -55,7 +55,8 @@ flutter_native_splash:
 
 flutter:
   assets:
-    - assets/images/
+    - assets/images/ownerchip/
+    - assets/images/stebo
     - assets/contracts/contract.abi.json
     - .env
   generate: true
