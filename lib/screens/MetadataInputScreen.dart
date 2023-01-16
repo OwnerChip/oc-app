@@ -33,6 +33,9 @@ import '../widgets/returnSnackBarWidget.dart';
 import 'HomeScreen.dart';
 import '../widgets/LoadingOverlay.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import '../widgets/CustomOverlay.dart';
+import '../themes/fontSpecs.dart';
+import '../widgets/TraitsForm.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
@@ -57,13 +60,21 @@ class _MetadataScreen extends State<MetadataScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  Map<String, String> metadata = {};
+  late Map<String, dynamic> metadata;
   XFile? image;
   String imagePath = '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
   bool success = false;
   bool showImageOptions = false;
   bool isLoading = false;
   String loadingText = '';
+  bool showTraitsForm = false;
+
+  void initState() {
+    super.initState();
+    metadata = {
+      'traits': [],
+    };
+  }
 
   void setCameraImage() async {
     XFile? imageFile = await getImageFromCamera();
@@ -85,7 +96,7 @@ class _MetadataScreen extends State<MetadataScreen> {
     });
   }
 
-  void _initializeChip(Map<String, String> metadata, {XFile? image}) async {
+  void _initializeChip(Map<String, dynamic> metadata, {XFile? image}) async {
     // showLoadingPopUp(context, "UPLOAD");
     setState(() {
       isLoading = true;
@@ -174,6 +185,19 @@ class _MetadataScreen extends State<MetadataScreen> {
     }
   }
 
+  void toggleTraitsForm() {
+    setState(() {
+      showTraitsForm = !showTraitsForm;
+    });
+  }
+
+  void setTraits(List traits) {
+    setState(() {
+      metadata["traits"] = traits;
+    });
+    toggleTraitsForm();
+  }
+
   void onCameraButtonPressed() {
     setState(() {
       showImageOptions = true;
@@ -192,179 +216,223 @@ class _MetadataScreen extends State<MetadataScreen> {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
-    return LoadingOverlay(
-      isLoading: isLoading,
-      loadingText: loadingText,
-      svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
-      child: Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: CustomAppBar(
-            loginFunction: widget.loginWithMetaMask,
-            text: '${context.loc.initializeChip}',
-            connectedWalletAddress:
-                widget.connector.session.accounts.isEmpty == true
-                    ? null
-                    : widget.connector.session.accounts[0].toLowerCase(),
-            connector: widget.connector,
-            isConnected: widget.connected,
-          ),
-          body: ScreenBodyLayout(children: [
-            Row(
-              children: [
-                //spacing
-                SizedBox(width: 22),
-                RichText(
-                  text: TextSpan(
-                      text: 'Step 2/',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6!
-                          .copyWith(fontSize: 18),
-                      children: [
-                        TextSpan(
-                            text: '2',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline5!
-                                .copyWith(fontSize: 18))
-                      ]),
-                ),
-              ],
-            ),
-            //spacing
-            SizedBox(height: 20),
-            CustomCard(color: CustomColors.cardColor, children: [
-              AspectRatio(
-                aspectRatio: 0.75,
-                child: image != null
-                    ? GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            showImageOptions = true;
-                            imagePath =
-                                '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
-                            image = null;
-                          });
-                        },
-                        child: CustomImage(
-                          loading: false,
-                          imagePath: imagePath,
-                        ),
-                      )
-                    : CustomCard(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        width: double.infinity,
-                        children: [
-                            showImageOptions
-                                ? Column(
-                                    children: [
-                                      CustomRoundedButton(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          icon: Icon(Icons.camera_alt_outlined,
-                                              color: CustomColors
-                                                  .metadataImagePickerIconsColor),
-                                          width: 180,
-                                          text: context.loc.takePicture,
-                                          onPressed: () => setCameraImage()),
-                                      SizedBox(height: 10),
-                                      CustomRoundedButton(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          icon: Icon(Icons.image_outlined,
-                                              color: CustomColors
-                                                  .metadataImagePickerIconsColor),
-                                          width: 180,
-                                          text: context.loc.selectImage,
-                                          onPressed: () => setGalleryImage()),
-                                    ],
-                                  )
-                                : IconButton(
-                                    iconSize: 50,
-                                    icon: Icon(Icons.camera_alt_outlined),
-                                    color: Theme.of(context).primaryColorLight,
-                                    onPressed: () => onCameraButtonPressed(),
-                                  ),
-                          ]),
+    return CustomOverlay(
+        show: showTraitsForm,
+        content: CustomCard(
+            mainAxisSize: MainAxisSize.min,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            withScrollView: true,
+            children: [
+              Text(
+                context.loc.addTraits,
+                style: Theme.of(context).textTheme.headline2,
               ),
-              SizedBox(height: 20),
-              // CustomRoundedButton(
-              //     // TODO: reduze size / change layout?
-              //     text: context.loc.addTraits,
-              //     onPressed: () => showTraitInputFormDialog(context)),
-              Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _titleController,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(left: 12),
-                          hintText: context.loc.title,
-                        ),
-                        onChanged: (text) {
-                          metadata['name'] = text;
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return context.loc.pleaseEnterText;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 15),
-                      Container(
-                        decoration: BoxDecoration(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(13)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: CustomColors.secondaryShadowColor!,
-                                offset: Offset(1, 3),
-                                blurRadius: 13,
-                              )
-                            ]),
-                        child: TextField(
-                          maxLines: 3,
-                          keyboardType: TextInputType.multiline,
-                          controller: _descriptionController,
-                          decoration: InputDecoration(
-                            focusColor: Theme.of(context).primaryColorDark,
-                            hintText: context.loc.description,
-                            filled: true,
-                            fillColor:
-                                Theme.of(context).scaffoldBackgroundColor,
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(13),
+              SizedBox(height: 10),
+              Material(
+                  child: TraitsForm(
+                submitFunction: setTraits,
+                toggleTraitsForm: toggleTraitsForm,
+                initialTraitsArray: metadata['traits'],
+              ))
+            ]),
+        child: LoadingOverlay(
+          isLoading: isLoading,
+          loadingText: loadingText,
+          svgPath: 'assets/images/chip_dark_blue.svg',
+          child: Scaffold(
+              extendBodyBehindAppBar: true,
+              appBar: CustomAppBar(
+                loginFunction: widget.loginWithMetaMask,
+                text: '${context.loc.initializeChip}',
+                connectedWalletAddress:
+                    widget.connector.session.accounts.isEmpty == true
+                        ? null
+                        : widget.connector.session.accounts[0].toLowerCase(),
+                connector: widget.connector,
+                isConnected: widget.connected,
+              ),
+              body: ScreenBodyLayout(children: [
+                Row(
+                  children: [
+                    //spacing
+                    SizedBox(width: 22),
+                    RichText(
+                      text: TextSpan(
+                          text: 'Step 2/',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline6!
+                              .copyWith(fontSize: 18),
+                          children: [
+                            TextSpan(
+                                text: '2',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline5!
+                                    .copyWith(fontSize: 18))
+                          ]),
+                    ),
+                  ],
+                ),
+
+//spacing
+                SizedBox(height: 20),
+                CustomCard(color: CustomColors.cardColor, children: [
+                  AspectRatio(
+                    aspectRatio: 0.75,
+                    child: image != null
+                        ? GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                showImageOptions = true;
+                                imagePath = 'assets/images/placeholder.jpg';
+                                image = null;
+                              });
+                            },
+                            child: CustomImage(
+                              loading: false,
+                              imagePath: imagePath,
                             ),
-                          ),
-                          onChanged: (text) {
-                            metadata['description'] = text;
-                          },
-                        ),
-                      )
-                    ],
-                  )),
-              SizedBox(height: 20),
-              Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: CustomRoundedButton(
-                    text: context.loc.mintNft,
-                    onPressed: () {
-                      FocusManager.instance.primaryFocus?.unfocus();
-                      if (_formKey.currentState!.validate()) {
-                        if (image != null) {
-                          _initializeChip(metadata, image: image);
-                        } else {
-                          _initializeChip(metadata);
-                        }
-                      }
-                    },
-                  )),
-            ])
-          ])),
-    );
+                          )
+                        : CustomCard(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            width: double.infinity,
+                            children: [
+                                showImageOptions
+                                    ? Column(
+                                        children: [
+                                          CustomRoundedButton(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              icon: Icon(
+                                                  Icons.camera_alt_outlined,
+                                                  color: CustomColors
+                                                      .metadataImagePickerIconsColor),
+                                              width: 180,
+                                              text: context.loc.takePicture,
+                                              onPressed: () =>
+                                                  setCameraImage()),
+                                          SizedBox(height: 10),
+                                          CustomRoundedButton(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              icon: Icon(Icons.image_outlined,
+                                                  color: CustomColors
+                                                      .metadataImagePickerIconsColor),
+                                              width: 180,
+                                              text: context.loc.selectImage,
+                                              onPressed: () =>
+                                                  setGalleryImage()),
+                                        ],
+                                      )
+                                    : IconButton(
+                                        iconSize: 50,
+                                        icon: Icon(Icons.camera_alt_outlined),
+                                        color:
+                                            Theme.of(context).primaryColorLight,
+                                        onPressed: () =>
+                                            onCameraButtonPressed(),
+                                      ),
+                              ]),
+                  ),
+                  SizedBox(height: 20),
+                  Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Row(children: [
+                            Expanded(
+                              flex: 5,
+                              child: TextFormField(
+                                controller: _titleController,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.only(left: 12),
+                                  hintText: context.loc.title,
+                                ),
+                                onChanged: (text) {
+                                  metadata['name'] = text;
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return context.loc.pleaseEnterText;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: CustomRoundedButton(
+                                  height: 25,
+                                  // width: 100,
+                                  textStyle: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .copyWith(
+                                          color: CustomColors
+                                              .customRoundedButtonColor,
+                                          fontSize:
+                                              CustomFonts.bodyText2FontSize /
+                                                  1.3),
+                                  // TODO: reduze size / change layout?
+                                  text: context.loc.traits,
+                                  onPressed: () => toggleTraitsForm()),
+                            )
+                          ]),
+                          const SizedBox(height: 15),
+                          Container(
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(13)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CustomColors.secondaryShadowColor!,
+                                    offset: Offset(1, 3),
+                                    blurRadius: 13,
+                                  )
+                                ]),
+                            child: TextField(
+                              maxLines: 3,
+                              keyboardType: TextInputType.multiline,
+                              controller: _descriptionController,
+                              decoration: InputDecoration(
+                                focusColor: Theme.of(context).primaryColorDark,
+                                hintText: context.loc.description,
+                                filled: true,
+                                fillColor:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide.none,
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                              ),
+                              onChanged: (text) {
+                                metadata['description'] = text;
+                              },
+                            ),
+                          )
+                        ],
+                      )),
+                  SizedBox(height: 20),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: CustomRoundedButton(
+                        text: context.loc.mintNft,
+                        onPressed: () {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          if (_formKey.currentState!.validate()) {
+                            if (image != null) {
+                              _initializeChip(metadata, image: image);
+                            } else {
+                              _initializeChip(metadata);
+                            }
+                          }
+                        },
+                      )),
+                ])
+              ])),
+        ));
   }
 }

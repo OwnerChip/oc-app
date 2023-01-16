@@ -43,8 +43,8 @@
     "enterText":"Please enter some text",
     "title": "Title",
     "description":"Description",
-    "addTraits": "Add additional data (traits)",
-    "addTrait": "Add Trait",
+    "traits": "Traits",
+    "addTraits": "Add traits",
     "addKey": "Enter a key",
     "addValue": "Enter a value",
     "processing":"Processing",
@@ -82,5 +82,11 @@
     "authentic": "Authentisch",
     "ownershipCouldNotBeVerified": "Ownership could not be verified.",
     "disconnect": "Disconnect",
-    "connect": "Connect"
+    "connect": "Connect",
+    "remove": "Remove",
+    "add": "Add",
+    "type": "Type",
+    "value": "Value",
+    "showTraits": "Show traits",
+    "showDescription": "Show description"
 }

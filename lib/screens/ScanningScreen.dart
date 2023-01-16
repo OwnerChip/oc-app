@@ -27,7 +27,7 @@ import '../utils/nfc.commands.dart';
 import '../utils/web3.services.dart';
 import '../utils/signature.service.dart';
 import '../widgets/CustomAppBar.dart';
-import '../widgets/ScanningLoader.dart';
+import '../widgets/ScanningIndicator.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../widgets/CustomRoundedButton.dart';
 import '../widgets/ScreenBodyLayout.dart';
@@ -272,7 +272,7 @@ class _ScanningScreen extends State<ScanningScreen> {
                   width: 70.0,
                 ),
                 const SizedBox(height: 20),
-                const ScanningLoader(),
+                const ScanningIndicator(),
                 const SizedBox(height: 20),
                 SvgPicture.asset(
                   '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/phone.svg',

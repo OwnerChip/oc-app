@@ -45,8 +45,8 @@ class CustomFonts {
   static FontWeight AdminWarningSubtextFontWeight = FontWeight.bold;
   static double AdminWarningSubtextFontSize = 28.0;
 
-  static FontWeight MetadataNameFontWeight = FontWeight.normal;
-  static double MetadataNameFontSize = 14.0;
+  static FontWeight MetadataNameFontWeight = FontWeight.bold;
+  static double MetadataNameFontSize = 20.0;
 
   static FontWeight MetadataDescriptionFontWeight = FontWeight.normal;
   static double MetadataDescriptionFontSize = 14.0;

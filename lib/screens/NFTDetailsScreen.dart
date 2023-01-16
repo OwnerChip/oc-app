@@ -20,6 +20,7 @@ import '../widgets/CustomCard.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
 import '../widgets/CustomRoundedButton.dart';
+import '../themes/colorSpecs.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -42,6 +43,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
   String imageUri = "";
   Map<String, dynamic> metadata = {};
   bool loadingImage = true;
+  bool showDescription = true;
 
   // get the metadata.json file from IPFS associated with a token
   Future<Map<String, dynamic>> _fetchMetadata(BigInt tokenId) async {
@@ -110,6 +112,12 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     }
   }
 
+  void toggleDescription() {
+    setState(() {
+      showDescription = !showDescription;
+    });
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -159,11 +167,28 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
             //spacing
             SizedBox(height: 20),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(metadata['name'] ?? context.loc.loading,
                     style: Theme.of(context).textTheme.bodyText1!.copyWith(
                         fontSize: CustomFonts.MetadataNameFontSize,
                         fontWeight: CustomFonts.MetadataNameFontWeight)),
+                metadata['traits'] != null && metadata['traits']!.isNotEmpty
+                    ? CustomRoundedButton(
+                        height: 25,
+                        width: 170,
+                        textStyle: Theme.of(context)
+                            .textTheme
+                            .bodyText1!
+                            .copyWith(
+                                color: CustomColors.customRoundedButtonColor,
+                                fontSize: CustomFonts.bodyText2FontSize / 1.3),
+                        // TODO: reduze size / change layout?
+                        text: showDescription
+                            ? context.loc.showTraits
+                            : context.loc.showDescription,
+                        onPressed: () => toggleDescription())
+                    : Container(),
               ],
             ),
             Divider(
@@ -173,16 +198,45 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
               indent: 0,
               endIndent: 0,
             ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                  metadata['description'] ?? '${context.loc.loadingData}...',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: CustomFonts.MetadataDescriptionFontSize,
-                      fontWeight: CustomFonts.MetadataDescriptionFontWeight)),
-            ),
+
+            showDescription
+                ? Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                        metadata['description'] ??
+                            '${context.loc.loadingData}...',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontSize: CustomFonts.MetadataDescriptionFontSize,
+                            fontWeight:
+                                CustomFonts.MetadataDescriptionFontWeight)),
+                  )
+                : Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(children: <Widget>[
+                      ...metadata['traits']
+                          .map((e) => Row(
+                                children: [
+                                  Text(e['trait_type'] + ': ',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2!
+                                          .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: CustomFonts
+                                                .MetadataDescriptionFontSize,
+                                          )),
+                                  Text(e['value'],
+                                      style: TextStyle(
+                                        fontSize: CustomFonts
+                                            .MetadataDescriptionFontSize,
+                                      )),
+                                ],
+                              ))
+                          .toList()
+                    ])),
+
             //spacing
             SizedBox(height: 20),
             CustomRoundedButton(

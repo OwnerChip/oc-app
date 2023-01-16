@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:owner_chip_admin_demo/utils/url_generator.service.dart';
-import 'package:owner_chip_admin_demo/widgets/addTraitsForm.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'PopupLoader.dart';
@@ -120,13 +119,13 @@ void showWalletConnectedPopup(BuildContext context, WalletConnect connector) {
       });
 }
 
-void showTraitInputFormDialog(BuildContext context) {
-  showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Center(child: Text("${context.loc.addTraits}:")),
-          content: TraitForm(), //TODO: pass parent function
-        );
-      });
-}
+// void showTraitInputFormDialog(BuildContext context) {
+//   showDialog(
+//       context: context,
+//       builder: (context) {
+//         return AlertDialog(
+//           title: Center(child: Text("${context.loc.addTraits}:")),
+//           content: TraitForm(), //TODO: pass parent function
+//         );
+//       });
+// }

@@ -43,8 +43,8 @@
     "enterText":"Bitte Text eingeben",
     "title": "Titel",
     "description":"Beschreibung",
-    "addTraits": "Weitere Daten eingeben",
-    "addTrait": "neuer Tag",
+    "traits": "Merkmale",
+    "addTraits": "Neue Merkmale",
     "addKey": "Tag eingeben",
     "addValue": "Wert eingeben",
     "processing":"Daten verarbeiten",
@@ -82,5 +82,11 @@
     "authentic": "Authentisch",
     "ownershipCouldNotBeVerified": "Eigentum konnte nicht festgestellt werden.",
     "disconnect": "Disconnect",
-    "connect": "Connect"
+    "connect": "Connect",
+    "remove": "Entfernen",
+    "add": "Hinzufügen",
+    "type": "Typ",
+    "value": "Wert",
+    "showTraits": "Merkmale anzeigen",
+    "showDescription": "Beschreibung anzeigen"
 }

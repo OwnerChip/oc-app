@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
 
 class CustomRoundedButton extends StatelessWidget {
-  const CustomRoundedButton({
+  CustomRoundedButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.icon,
+    this.height = 40,
     this.width = double.infinity,
+    this.backgroundColor = CustomColors.primaryColor,
+    this.textStyle,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
   });
@@ -16,9 +19,12 @@ class CustomRoundedButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final Icon? icon; //TODO: Make this SVG to use custom marta icons
+  final double height;
   final double width;
+  final Color backgroundColor;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
+  TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -26,14 +32,12 @@ class CustomRoundedButton extends StatelessWidget {
 
     return Container(
       width: width,
-      height: 40,
+      height: height,
       child: ElevatedButton(
           onPressed: (() =>
               (onPressed != null) ? onPressed!() : isActive = false),
           style: ElevatedButton.styleFrom(
-            backgroundColor: isActive
-                ? Theme.of(context).primaryColor
-                : Theme.of(context).backgroundColor, //TODO: This does not work
+            backgroundColor: backgroundColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -43,13 +47,11 @@ class CustomRoundedButton extends StatelessWidget {
             crossAxisAlignment: crossAxisAlignment,
             children: [
               icon != null ? icon! : Container(),
-              //spacing
-              const SizedBox(width: 10),
+              icon != null ? const SizedBox(width: 10) : Container(),
               Text(text,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyText1!
-                      .copyWith(color: CustomColors.customRoundedButtonColor)),
+                  style: textStyle ??
+                      Theme.of(context).textTheme.bodyText1!.copyWith(
+                          color: CustomColors.customRoundedButtonColor)),
             ],
           )),
     );

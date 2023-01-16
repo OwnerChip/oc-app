@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class ScanningLoader extends StatefulWidget {
-  const ScanningLoader({Key? key}) : super(key: key);
+class ScanningIndicator extends StatefulWidget {
+  const ScanningIndicator({Key? key}) : super(key: key);
 
   @override
-  _ScanningLoaderState createState() => _ScanningLoaderState();
+  _ScanningIndicatorState createState() => _ScanningIndicatorState();
 }
 
-class _ScanningLoaderState extends State<ScanningLoader>
+class _ScanningIndicatorState extends State<ScanningIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;

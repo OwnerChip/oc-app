@@ -8,27 +8,36 @@ class CustomCard extends StatelessWidget {
     required this.children,
     this.height,
     this.width,
+    this.maxHeight = double.infinity,
+    this.maxWidth = double.infinity,
     this.margin,
     this.color,
+    this.mainAxisSize = MainAxisSize.max,
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.borderColor,
     this.borderRadius = 13,
+    this.withScrollView = false,
   });
 
   final List<Widget> children;
   final double? height;
   final double? width;
+  final double maxHeight;
+  final double maxWidth;
   final EdgeInsetsGeometry? margin;
   final Color? color;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
+  final MainAxisSize mainAxisSize;
   final Color? borderColor;
   final double borderRadius;
+  final bool withScrollView;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
       height: height,
       width: width,
       margin: margin,
@@ -44,10 +53,19 @@ class CustomCard extends StatelessWidget {
                 blurRadius: 5,
                 offset: const Offset(3, 4)),
           ]),
-      child: Column(
-          mainAxisAlignment: mainAxisAlignment,
-          crossAxisAlignment: crossAxisAlignment,
-          children: children),
+      child: withScrollView
+          ? SingleChildScrollView(
+              child: Column(
+                  mainAxisAlignment: mainAxisAlignment,
+                  crossAxisAlignment: crossAxisAlignment,
+                  mainAxisSize: mainAxisSize,
+                  children: children),
+            )
+          : Column(
+              mainAxisAlignment: mainAxisAlignment,
+              crossAxisAlignment: crossAxisAlignment,
+              mainAxisSize: mainAxisSize,
+              children: children),
     );
   }
 }
