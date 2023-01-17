@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomSnackBarContent extends StatelessWidget {
   const CustomSnackBarContent(
@@ -21,8 +22,8 @@ class CustomSnackBarContent extends StatelessWidget {
         height: 70,
         decoration: BoxDecoration(
             color: alertType == 'success'
-                ? CustomColors.successColor
-                : CustomColors.errorColor,
+                ? CustomColors(dotenv.get('APP_ID')).successColor
+                : CustomColors(dotenv.get('APP_ID')).errorColor,
             borderRadius: const BorderRadius.all(Radius.circular(20))),
         child: Row(
           children: [

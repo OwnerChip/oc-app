@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //Card widget that can take multiple children
 class CustomCard extends StatelessWidget {
@@ -45,7 +46,9 @@ class CustomCard extends StatelessWidget {
       decoration: BoxDecoration(
           color: color ?? Theme.of(context).cardColor,
           border: Border.all(
-              color: borderColor ?? CustomColors.borderColor!, width: 1),
+              color: borderColor ??
+                  CustomColors(dotenv.get('APP_ID')).borderColor!,
+              width: 1),
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(

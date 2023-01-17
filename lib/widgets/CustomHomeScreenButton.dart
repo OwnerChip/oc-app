@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomHomeScreenButton extends StatelessWidget {
   const CustomHomeScreenButton({
@@ -30,7 +31,8 @@ class CustomHomeScreenButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(13),
               boxShadow: [
                 BoxShadow(
-                  color: CustomColors.customHomeScreenButtonShadowColor,
+                  color: CustomColors(dotenv.get('APP_ID'))
+                      .customHomeScreenButtonShadowColor,
                   blurRadius: 5,
                   offset: const Offset(3, 4),
                 ),

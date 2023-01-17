@@ -8,8 +8,8 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/localization.helper.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
-import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs_ownerchip.dart';
 
 //screens and widgets
 import 'screens/HomeScreen.dart';
@@ -183,51 +183,52 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
 
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: CustomColors.primaryColor,
-        primaryColorLight: CustomColors.primaryColorLight,
-        shadowColor: CustomColors.shadowColor,
-        scaffoldBackgroundColor: CustomColors.scaffoldBackgroundColor,
-        cardColor: CustomColors.cardColor,
+        primaryColor: CustomColors(dotenv.get('APP_ID')).primaryColor,
+        primaryColorLight: CustomColors(dotenv.get('APP_ID')).primaryColorLight,
+        shadowColor: CustomColors(dotenv.get('APP_ID')).shadowColor,
+        scaffoldBackgroundColor:
+            CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor,
+        cardColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         textTheme: TextTheme(
           headline1: TextStyle(
               fontSize: CustomFonts.headline1FontSize,
               fontWeight: CustomFonts.headline1FontWeight,
-              color: CustomColors.headline1Color,
+              color: CustomColors(dotenv.get('APP_ID')).headline1Color,
               fontFamily: CustomFonts.headline1Font),
           headline2: TextStyle(
               fontSize: CustomFonts.headline2FontSize,
               fontFamily: CustomFonts.headline2Font,
               fontWeight: CustomFonts.headline2FontWeight,
-              color: CustomColors.headline2Color),
+              color: CustomColors(dotenv.get('APP_ID')).headline2Color),
           headline3: TextStyle(
               fontSize: CustomFonts.headline3FontSize,
               fontFamily: CustomFonts.headline3Font,
               fontWeight: CustomFonts.headline3FontWeight,
-              color: CustomColors.headline3Color),
+              color: CustomColors(dotenv.get('APP_ID')).headline3Color),
           headline4: TextStyle(
               fontSize: CustomFonts.headline4FontSize,
               fontFamily: CustomFonts.headline4Font,
               fontWeight: CustomFonts.headline4FontWeight,
-              color: CustomColors.headline4Color),
+              color: CustomColors(dotenv.get('APP_ID')).headline4Color),
           headline5: TextStyle(
               fontSize: CustomFonts.headline5FontSize,
               fontFamily: CustomFonts.headline5Font,
               fontWeight: CustomFonts.headline5FontWeight,
-              color: CustomColors.headline5Color),
+              color: CustomColors(dotenv.get('APP_ID')).headline5Color),
           headline6: TextStyle(
               fontSize: CustomFonts.headline6FontSize,
               fontFamily: CustomFonts.headline6Font,
               fontWeight: CustomFonts.headline6FontWeight,
-              color: CustomColors.headline6Color),
+              color: CustomColors(dotenv.get('APP_ID')).headline6Color),
           bodyText1: TextStyle(
               fontSize: CustomFonts.bodyText1FontSize,
               fontFamily: CustomFonts.bodyText1Font,
-              color: CustomColors.bodyText1Color,
+              color: CustomColors(dotenv.get('APP_ID')).bodyText1Color,
               fontWeight: CustomFonts.bodyText1FontWeight),
           bodyText2: TextStyle(
               fontSize: CustomFonts.bodyText2FontSize,
               fontFamily: CustomFonts.bodyText2Font,
-              color: CustomColors.bodyText2Color,
+              color: CustomColors(dotenv.get('APP_ID')).bodyText2Color,
               fontWeight: CustomFonts.bodyText2FontWeight),
         ),
       ),

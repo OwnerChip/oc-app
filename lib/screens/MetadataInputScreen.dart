@@ -6,11 +6,11 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomImage.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
-import 'package:owner_chip_admin_demo/widgets/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomImage.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomPopups.dart';
+import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -32,9 +32,9 @@ import '../widgets/ChipInfo.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import 'HomeScreen.dart';
 import '../widgets/LoadingOverlay.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
 import '../widgets/CustomOverlay.dart';
-import '../themes/fontSpecs.dart';
+import '../themes/fontSpecs_ownerchip.dart';
 import '../widgets/TraitsForm.dart';
 
 //stateful widget with name MetadataScreen
@@ -278,161 +278,191 @@ class _MetadataScreen extends State<MetadataScreen> {
 
 //spacing
                 SizedBox(height: 20),
-                CustomCard(color: CustomColors.cardColor, children: [
-                  AspectRatio(
-                    aspectRatio: 0.75,
-                    child: image != null
-                        ? GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                showImageOptions = true;
-                                imagePath =
-                                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
-                                image = null;
-                              });
-                            },
-                            child: CustomImage(
-                              loading: false,
-                              imagePath: imagePath,
-                            ),
-                          )
-                        : CustomCard(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            width: double.infinity,
-                            children: [
-                                showImageOptions
-                                    ? Column(
-                                        children: [
-                                          CustomRoundedButton(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              icon: Icon(
-                                                  Icons.camera_alt_outlined,
-                                                  color: CustomColors
-                                                      .metadataImagePickerIconsColor),
-                                              width: 180,
-                                              text: context.loc.takePicture,
-                                              onPressed: () =>
-                                                  setCameraImage()),
-                                          SizedBox(height: 10),
-                                          CustomRoundedButton(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              icon: Icon(Icons.image_outlined,
-                                                  color: CustomColors
-                                                      .metadataImagePickerIconsColor),
-                                              width: 180,
-                                              text: context.loc.selectImage,
-                                              onPressed: () =>
-                                                  setGalleryImage()),
-                                        ],
-                                      )
-                                    : IconButton(
-                                        iconSize: 50,
-                                        icon: Icon(Icons.camera_alt_outlined),
-                                        color:
-                                            Theme.of(context).primaryColorLight,
-                                        onPressed: () =>
-                                            onCameraButtonPressed(),
-                                      ),
-                              ]),
-                  ),
-                  SizedBox(height: 20),
-                  Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Row(children: [
-                            Expanded(
-                              flex: 5,
-                              child: TextFormField(
-                                controller: _titleController,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.only(left: 12),
-                                  hintText: context.loc.title,
+                CustomCard(
+                    color: CustomColors(dotenv.get('APP_ID')).cardColor,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 0.75,
+                        child: image != null
+                            ? GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    showImageOptions = true;
+                                    imagePath =
+                                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
+                                    image = null;
+                                  });
+                                },
+                                child: CustomImage(
+                                  loading: false,
+                                  imagePath: imagePath,
                                 ),
-                                onChanged: (text) {
-                                  metadata['name'] = text;
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return context.loc.pleaseEnterText;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: CustomRoundedButton(
-                                  height: 25,
-                                  // width: 100,
-                                  textStyle: Theme.of(context)
-                                      .textTheme
-                                      .bodyText1!
-                                      .copyWith(
-                                          color: CustomColors
-                                              .customRoundedButtonColor,
-                                          fontSize:
-                                              CustomFonts.bodyText2FontSize /
-                                                  1.3),
-                                  // TODO: reduze size / change layout?
-                                  text: context.loc.traits,
-                                  onPressed: () => toggleTraitsForm()),
-                            )
-                          ]),
-                          const SizedBox(height: 15),
-                          Container(
-                            decoration: BoxDecoration(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(13)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: CustomColors.secondaryShadowColor!,
-                                    offset: Offset(1, 3),
-                                    blurRadius: 13,
-                                  )
-                                ]),
-                            child: TextField(
-                              maxLines: 3,
-                              keyboardType: TextInputType.multiline,
-                              controller: _descriptionController,
-                              decoration: InputDecoration(
-                                focusColor: Theme.of(context).primaryColorDark,
-                                hintText: context.loc.description,
-                                filled: true,
-                                fillColor:
+                              )
+                            : CustomCard(
+                                color:
                                     Theme.of(context).scaffoldBackgroundColor,
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(13),
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                width: double.infinity,
+                                children: [
+                                    showImageOptions
+                                        ? Column(
+                                            children: [
+                                              CustomRoundedButton(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  icon: Icon(
+                                                      Icons.camera_alt_outlined,
+                                                      color: CustomColors(dotenv
+                                                              .get('APP_ID'))
+                                                          .metadataImagePickerIconsColor),
+                                                  width: 180,
+                                                  text: context.loc.takePicture,
+                                                  onPressed: () =>
+                                                      setCameraImage()),
+                                              SizedBox(height: 10),
+                                              CustomRoundedButton(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  icon: Icon(
+                                                      Icons.image_outlined,
+                                                      color: CustomColors(dotenv
+                                                              .get('APP_ID'))
+                                                          .metadataImagePickerIconsColor),
+                                                  width: 180,
+                                                  text: context.loc.selectImage,
+                                                  onPressed: () =>
+                                                      setGalleryImage()),
+                                            ],
+                                          )
+                                        : IconButton(
+                                            iconSize: 50,
+                                            icon:
+                                                Icon(Icons.camera_alt_outlined),
+                                            color: Theme.of(context)
+                                                .primaryColorLight,
+                                            onPressed: () =>
+                                                onCameraButtonPressed(),
+                                          ),
+                                  ]),
+                      ),
+                      SizedBox(height: 20),
+                      Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              Row(children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: TextFormField(
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2,
+                                    controller: _titleController,
+                                    decoration: InputDecoration(
+                                        enabledBorder: new UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor),
+                                        ),
+// and:
+                                        focusedBorder: new UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor),
+                                        ),
+                                        contentPadding:
+                                            EdgeInsets.only(left: 12),
+                                        hintText: context.loc.title,
+                                        hintStyle: Theme.of(context)
+                                            .textTheme
+                                            .bodyText2),
+                                    onChanged: (text) {
+                                      metadata['name'] = text;
+                                    },
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return context.loc.pleaseEnterText;
+                                      }
+                                      return null;
+                                    },
+                                  ),
                                 ),
-                              ),
-                              onChanged: (text) {
-                                metadata['description'] = text;
-                              },
-                            ),
-                          )
-                        ],
-                      )),
-                  SizedBox(height: 20),
-                  Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: CustomRoundedButton(
-                        text: context.loc.mintNft,
-                        onPressed: () {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          if (_formKey.currentState!.validate()) {
-                            if (image != null) {
-                              _initializeChip(metadata, image: image);
-                            } else {
-                              _initializeChip(metadata);
-                            }
-                          }
-                        },
-                      )),
-                ])
+                                Expanded(
+                                  flex: 3,
+                                  child: CustomRoundedButton(
+                                      height: 25,
+                                      // width: 100,
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1!
+                                          .copyWith(
+                                              color: CustomColors(
+                                                      dotenv.get('APP_ID'))
+                                                  .customRoundedButtonColor,
+                                              fontSize: CustomFonts
+                                                      .bodyText2FontSize /
+                                                  1.3),
+                                      // TODO: reduze size / change layout?
+                                      text: context.loc.traits,
+                                      onPressed: () => toggleTraitsForm()),
+                                )
+                              ]),
+                              const SizedBox(height: 15),
+                              Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(13)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .secondaryShadowColor!,
+                                        offset: Offset(1, 3),
+                                        blurRadius: 13,
+                                      )
+                                    ]),
+                                child: TextField(
+                                  style: Theme.of(context).textTheme.bodyText2,
+                                  maxLines: 3,
+                                  keyboardType: TextInputType.multiline,
+                                  controller: _descriptionController,
+                                  decoration: InputDecoration(
+                                    focusColor:
+                                        Theme.of(context).primaryColorDark,
+                                    hintText: context.loc.description,
+                                    hintStyle:
+                                        Theme.of(context).textTheme.bodyText2,
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .scaffoldBackgroundColor,
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(13),
+                                    ),
+                                  ),
+                                  onChanged: (text) {
+                                    metadata['description'] = text;
+                                  },
+                                ),
+                              )
+                            ],
+                          )),
+                      SizedBox(height: 20),
+                      Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: CustomRoundedButton(
+                            text: context.loc.mintNft,
+                            onPressed: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              if (_formKey.currentState!.validate()) {
+                                if (image != null) {
+                                  _initializeChip(metadata, image: image);
+                                } else {
+                                  _initializeChip(metadata);
+                                }
+                              }
+                            },
+                          )),
+                    ])
               ])),
         ));
   }

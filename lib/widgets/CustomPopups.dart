@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:owner_chip_admin_demo/utils/url_generator.service.dart';
+import 'package:ownerchip_whitelabel/utils/url_generator.service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'PopupLoader.dart';

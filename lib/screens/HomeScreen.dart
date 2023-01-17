@@ -1,4 +1,4 @@
-import 'package:owner_chip_admin_demo/screens/MetadataInputScreen.dart';
+import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';

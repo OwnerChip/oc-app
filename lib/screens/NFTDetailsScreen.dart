@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs_ownerchip.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:io';
 import '../utils/localization.helper.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -20,7 +21,7 @@ import '../widgets/CustomCard.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
 import '../widgets/CustomRoundedButton.dart';
-import '../themes/colorSpecs.dart';
+import '../themes/colorSpecs_ownerchip.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -175,13 +176,14 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         fontWeight: CustomFonts.MetadataNameFontWeight)),
                 metadata['traits'] != null && metadata['traits']!.isNotEmpty
                     ? CustomRoundedButton(
-                        height: 25,
+                        height: 30,
                         width: 170,
                         textStyle: Theme.of(context)
                             .textTheme
                             .bodyText1!
                             .copyWith(
-                                color: CustomColors.customRoundedButtonColor,
+                                color: CustomColors(dotenv.get('APP_ID'))
+                                    .customRoundedButtonColor,
                                 fontSize: CustomFonts.bodyText2FontSize / 1.3),
                         // TODO: reduze size / change layout?
                         text: showDescription
@@ -207,7 +209,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                             '${context.loc.loadingData}...',
                         textAlign: TextAlign.left,
                         style: TextStyle(
-                            color: Theme.of(context).primaryColor,
+                            // color: Theme.of(context).primaryColor,
                             fontSize: CustomFonts.MetadataDescriptionFontSize,
                             fontWeight:
                                 CustomFonts.MetadataDescriptionFontWeight)),

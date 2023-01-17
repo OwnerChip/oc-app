@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomImage extends StatelessWidget {
@@ -28,7 +28,7 @@ class CustomImage extends StatelessWidget {
         decoration:
             BoxDecoration(borderRadius: BorderRadius.circular(19), boxShadow: [
           BoxShadow(
-              color: CustomColors.secondaryShadowColor!,
+              color: CustomColors(dotenv.get('APP_ID')).secondaryShadowColor!,
               blurRadius: 5,
               offset: Offset(3, 2)),
         ]),

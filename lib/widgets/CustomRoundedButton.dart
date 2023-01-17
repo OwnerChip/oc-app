@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomRoundedButton extends StatelessWidget {
   CustomRoundedButton({
@@ -10,7 +11,7 @@ class CustomRoundedButton extends StatelessWidget {
     this.icon,
     this.height = 40,
     this.width = double.infinity,
-    this.backgroundColor = CustomColors.primaryColor,
+    this.backgroundColor,
     this.textStyle,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
@@ -21,7 +22,7 @@ class CustomRoundedButton extends StatelessWidget {
   final Icon? icon; //TODO: Make this SVG to use custom marta icons
   final double height;
   final double width;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
   TextStyle? textStyle;
@@ -37,7 +38,8 @@ class CustomRoundedButton extends StatelessWidget {
           onPressed: (() =>
               (onPressed != null) ? onPressed!() : isActive = false),
           style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor,
+            backgroundColor: backgroundColor ??
+                CustomColors(dotenv.get('APP_ID')).primaryColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -51,7 +53,8 @@ class CustomRoundedButton extends StatelessWidget {
               Text(text,
                   style: textStyle ??
                       Theme.of(context).textTheme.bodyText1!.copyWith(
-                          color: CustomColors.customRoundedButtonColor)),
+                          color: CustomColors(dotenv.get('APP_ID'))
+                              .customRoundedButtonColor)),
             ],
           )),
     );

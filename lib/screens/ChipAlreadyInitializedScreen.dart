@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/themes/fontSpecs.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomCard.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
-import 'package:owner_chip_admin_demo/widgets/LoadingOverlay.dart';
-import 'package:owner_chip_admin_demo/widgets/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomPopups.dart';
+import 'package:ownerchip_whitelabel/widgets/LoadingOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:convert/convert.dart';
 import '../utils/localization.helper.dart';
@@ -29,7 +29,7 @@ import 'HomeScreen.dart';
 import '../utils/utils.dart';
 import '../utils/web3.services.dart';
 import '../widgets/returnSnackBarWidget.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
@@ -172,71 +172,78 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
             withScrollView: false,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CustomCard(color: CustomColors.cardColor, width: 300, children: [
-                //orange round ember warning icon
-                Icon(Icons.warning_amber_rounded,
-                    color: CustomColors.warningColor,
-                    size: CustomFonts.AdminWarningHeadlineFontSize), //spacing
-                const SizedBox(
-                  height: 20,
-                ),
-                Text(
-                  context.loc.warning,
-                  style: TextStyle(
-                      color: CustomColors.warningColor,
-                      fontSize: CustomFonts.AdminWarningSubtextFontSize,
-                      fontWeight: CustomFonts.AdminWarningSubtextFontWeight),
-                ),
-                //spacing
-                const SizedBox(height: 10),
-                Text(
-                  textAlign: TextAlign.center,
-                  context.loc.alreadyLinked,
-                  style: Theme.of(context).textTheme.headline5!,
-                ),
+              CustomCard(
+                  color: CustomColors(dotenv.get('APP_ID')).cardColor,
+                  width: 300,
+                  children: [
+                    //orange round ember warning icon
+                    Icon(Icons.warning_amber_rounded,
+                        color: CustomColors(dotenv.get('APP_ID')).warningColor,
+                        size:
+                            CustomFonts.AdminWarningHeadlineFontSize), //spacing
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Text(
+                      context.loc.warning,
+                      style: TextStyle(
+                          color:
+                              CustomColors(dotenv.get('APP_ID')).warningColor,
+                          fontSize: CustomFonts.AdminWarningSubtextFontSize,
+                          fontWeight:
+                              CustomFonts.AdminWarningSubtextFontWeight),
+                    ),
+                    //spacing
+                    const SizedBox(height: 10),
+                    Text(
+                      textAlign: TextAlign.center,
+                      context.loc.alreadyLinked,
+                      style: Theme.of(context).textTheme.headline5!,
+                    ),
 
-                //spacing
-                const SizedBox(
-                  height: 50,
-                ),
+                    //spacing
+                    const SizedBox(
+                      height: 50,
+                    ),
 
-                CustomRoundedButton(
-                  width: 250,
-                  text: context.loc.burnToken,
-                  onPressed: () => {
-                    burnToken(
-                        hexToBigInt(tokenId), navArgs.hashedMsg, signature)
-                  },
-                ),
+                    CustomRoundedButton(
+                      width: 250,
+                      text: context.loc.burnToken,
+                      onPressed: () => {
+                        burnToken(
+                            hexToBigInt(tokenId), navArgs.hashedMsg, signature)
+                      },
+                    ),
 
-                const SizedBox(
-                  height: 40,
-                ),
-                CustomRoundedButton(
-                    width: 250,
-                    text: context.loc.showOnExplorer,
-                    onPressed: () => {
-                          launchUrl(generateBlockchainExplorerTokenDetailsUrl(
-                              tokenId.toString()))
-                        }),
-                //spacing
-                const SizedBox(
-                  height: 8,
-                ),
-                CustomRoundedButton(
-                  width: 250,
-                  text: context.loc.showOnOpenSea,
-                  onPressed: () => {
-                    launchUrl(
-                        generateOpenSeaTokenDetailsUrl(
-                            bytesToUnsignedInt(tokenId).toString()),
-                        mode: LaunchMode.externalApplication)
-                  },
-                ),
-                const SizedBox(
-                  height: 40,
-                ),
-              ]),
+                    const SizedBox(
+                      height: 40,
+                    ),
+                    CustomRoundedButton(
+                        width: 250,
+                        text: context.loc.showOnExplorer,
+                        onPressed: () => {
+                              launchUrl(
+                                  generateBlockchainExplorerTokenDetailsUrl(
+                                      tokenId.toString()))
+                            }),
+                    //spacing
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    CustomRoundedButton(
+                      width: 250,
+                      text: context.loc.showOnOpenSea,
+                      onPressed: () => {
+                        launchUrl(
+                            generateOpenSeaTokenDetailsUrl(
+                                bytesToUnsignedInt(tokenId).toString()),
+                            mode: LaunchMode.externalApplication)
+                      },
+                    ),
+                    const SizedBox(
+                      height: 40,
+                    ),
+                  ]),
               //spacing
               const SizedBox(
                 height: 20,

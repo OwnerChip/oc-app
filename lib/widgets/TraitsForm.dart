@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomRoundedButton.dart';
-import '../themes/fontSpecs.dart';
-import '../themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
+import '../themes/fontSpecs_ownerchip.dart';
+import '../themes/colorSpecs_ownerchip.dart';
 import '../utils/localization.helper.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TraitsForm extends StatefulWidget {
   TraitsForm(
@@ -55,57 +56,67 @@ class _TraitsForm extends State<TraitsForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-        key: _formKey,
-        child: Column(children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
+    return Container(
+        color: CustomColors(dotenv.get('APP_ID')).cardColor,
+        child: Form(
+            key: _formKey,
+            child: Column(children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CustomRoundedButton(
+                      height: 25,
+                      width: 100,
+                      backgroundColor: Colors.grey,
+                      text: context.loc.remove,
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyText1!
+                          .copyWith(
+                              color: CustomColors(dotenv.get('APP_ID'))
+                                  .customRoundedButtonColor,
+                              fontSize: CustomFonts.bodyText2FontSize / 1.3),
+                      onPressed: () => removeTraitInput()),
+                  SizedBox(width: 10),
+                  CustomRoundedButton(
+                      height: 25,
+                      width: 100,
+                      text: context.loc.add,
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyText1!
+                          .copyWith(
+                              color: CustomColors(dotenv.get('APP_ID'))
+                                  .customRoundedButtonColor,
+                              fontSize: CustomFonts.bodyText2FontSize / 1.3),
+                      onPressed: () => addTraitInput()),
+                ],
+              ),
+              ...traitsTextFields,
+              SizedBox(height: 20),
               CustomRoundedButton(
-                  height: 25,
-                  width: 100,
-                  backgroundColor: Colors.grey,
-                  text: context.loc.remove,
-                  textStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
-                      color: CustomColors.customRoundedButtonColor,
-                      fontSize: CustomFonts.bodyText2FontSize / 1.3),
-                  onPressed: () => removeTraitInput()),
-              SizedBox(width: 10),
-              CustomRoundedButton(
-                  height: 25,
-                  width: 100,
-                  text: context.loc.add,
-                  textStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
-                      color: CustomColors.customRoundedButtonColor,
-                      fontSize: CustomFonts.bodyText2FontSize / 1.3),
-                  onPressed: () => addTraitInput()),
-            ],
-          ),
-          ...traitsTextFields,
-          SizedBox(height: 20),
-          CustomRoundedButton(
-              text: context.loc.save,
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
+                  text: context.loc.save,
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
 
-                  //check if key or value of map in traitsArray is empty string
-                  for (int i = 0; i < traitsArray.length; i++) {
-                    if (traitsArray[i]["trait_type"] == "" ||
-                        traitsArray[i]["value"] == "") {
-                      traitsArray.removeAt(i);
+                      //check if key or value of map in traitsArray is empty string
+                      for (int i = 0; i < traitsArray.length; i++) {
+                        if (traitsArray[i]["trait_type"] == "" ||
+                            traitsArray[i]["value"] == "") {
+                          traitsArray.removeAt(i);
+                        }
+                      }
+                      widget.submitFunction(traitsArray);
                     }
-                  }
-                  widget.submitFunction(traitsArray);
-                }
-              }),
-          SizedBox(height: 10),
-          CustomRoundedButton(
-              text: context.loc.cancel,
-              backgroundColor: Colors.grey,
-              onPressed: () =>
-                  {traitsArray.removeLast(), widget.toggleTraitsForm()})
-        ]));
+                  }),
+              SizedBox(height: 10),
+              CustomRoundedButton(
+                  text: context.loc.cancel,
+                  backgroundColor: Colors.grey,
+                  onPressed: () =>
+                      {traitsArray.removeLast(), widget.toggleTraitsForm()})
+            ])));
   }
 }
 
@@ -145,10 +156,20 @@ class _TraitTextInput extends State<TraitTextInput> {
         Expanded(
           flex: 4,
           child: TextFormField(
+            style: Theme.of(context).textTheme.bodyText2,
             controller: _keyController,
             decoration: InputDecoration(
-              labelText: context.loc.type,
-              // hintText: 'Enter name of trait',
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).primaryColor),
+              ),
+// and:
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).primaryColor),
+              ),
+              // contentPadding: EdgeInsets.only(left: 12),
+              hintStyle: Theme.of(context).textTheme.bodyText2,
+              // labelText: context.loc.type,
+              hintText: context.loc.type,
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -166,10 +187,20 @@ class _TraitTextInput extends State<TraitTextInput> {
         Expanded(
             flex: 4,
             child: TextFormField(
+              style: Theme.of(context).textTheme.bodyText2,
               controller: _valueController,
               decoration: InputDecoration(
-                labelText: context.loc.value,
-                // hintText: 'Enter trait value',
+                // labelText: context.loc.value,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+// and:
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+                // contentPadding: EdgeInsets.only(left: 12),
+                hintStyle: Theme.of(context).textTheme.bodyText2,
+                hintText: context.loc.value,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {

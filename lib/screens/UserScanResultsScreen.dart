@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
@@ -14,7 +14,6 @@ import 'NFTDetailsScreen.dart';
 import '../widgets/CustomAppBar.dart';
 import '../utils/navigation_arguments.dart';
 import '../widgets/ChipInfo.dart';
-import '../widgets/CustomCard.dart';
 import '../widgets/CustomCard.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
@@ -216,112 +215,120 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                       ],
                     ),
                     SizedBox(height: 15),
-                    CustomCard(color: CustomColors.cardColor, children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    CustomCard(
+                        color: CustomColors(dotenv.get('APP_ID'))
+                            .scaffoldBackgroundColor,
                         children: [
-                          Text(context.loc.authenticityCheck,
-                              style: Theme.of(context).textTheme.headline4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(context.loc.authenticityCheck,
+                                  style: Theme.of(context).textTheme.headline4),
+
+                              //Ownerchip Check Icon
+                              !navArgs.chipIsInitialized
+                                  ? //chip not initialized aka no NFT exists
+                                  SvgPicture.asset(
+                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
+                                  : !widget.connected
+                                      ?
+                                      //chip is initialized and wallet is NOT connected
+                                      SvgPicture.asset(
+                                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                      : connectedWallet == navArgs.nftOwner
+                                          ?
+                                          //chip is initialized and wallet is connected and wallet is owner
+                                          SvgPicture.asset(
+                                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
+                                          :
+                                          //chip is initialized and wallet is connected and wallet is NOT owner
+                                          SvgPicture.asset(
+                                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
+                            ],
+                          ),
+                          //spacing
+                          SizedBox(height: 15),
 
                           //Ownerchip Check Icon
                           !navArgs.chipIsInitialized
                               ? //chip not initialized aka no NFT exists
-                              SvgPicture.asset(
-                                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
+                              Text(context.loc.ownershipCouldNotBeVerified,
+                                  style: Theme.of(context).textTheme.headline5)
                               : !widget.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
-                                  SvgPicture.asset(
-                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                  Text(context.loc.noWalletConnected,
+                                      style:
+                                          Theme.of(context).textTheme.headline5)
                                   : connectedWallet == navArgs.nftOwner
                                       ?
                                       //chip is initialized and wallet is connected and wallet is owner
-                                      SvgPicture.asset(
-                                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
+                                      Text(context.loc.youAreNftOwner,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5)
                                       :
                                       //chip is initialized and wallet is connected and wallet is NOT owner
-                                      SvgPicture.asset(
-                                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
-                        ],
-                      ),
-                      //spacing
-                      SizedBox(height: 15),
+                                      Text(context.loc.youAreNotNftOwner,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5),
 
-                      //Ownerchip Check Icon
-                      !navArgs.chipIsInitialized
-                          ? //chip not initialized aka no NFT exists
-                          Text(context.loc.ownershipCouldNotBeVerified,
-                              style: Theme.of(context).textTheme.headline5)
-                          : !widget.connected
+                          SizedBox(height: 15),
+
+                          //Ownerchip Check Button
+                          !navArgs.chipIsInitialized
                               ?
-                              //chip is initialized and wallet is NOT connected
-                              Text(context.loc.noWalletConnected,
-                                  style: Theme.of(context).textTheme.headline5)
-                              : connectedWallet == navArgs.nftOwner
+                              //chip is NOT initialized
+                              Container()
+                              : !widget.connected
                                   ?
-                                  //chip is initialized and wallet is connected and wallet is owner
-                                  Text(context.loc.youAreNftOwner,
-                                      style:
-                                          Theme.of(context).textTheme.headline5)
+                                  //chip is initialized and wallet is NOT connected
+                                  CustomRoundedButton(
+                                      text: context.loc.connectWallet,
+                                      onPressed: (() =>
+                                          {widget.loginWithMetaMask!(context)}))
                                   :
-                                  //chip is initialized and wallet is connected and wallet is NOT owner
-                                  Text(context.loc.youAreNotNftOwner,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headline5),
-
-                      SizedBox(height: 15),
-
-                      //Ownerchip Check Button
-                      !navArgs.chipIsInitialized
-                          ?
-                          //chip is NOT initialized
-                          Container()
-                          : !widget.connected
-                              ?
-                              //chip is initialized and wallet is NOT connected
-                              CustomRoundedButton(
-                                  text: context.loc.connectWallet,
-                                  onPressed: (() =>
-                                      {widget.loginWithMetaMask!(context)}))
-                              :
-                              //chip is initialized and wallet is connected
-                              CustomRoundedButton(
-                                  text: context.loc.viewNftDetails,
-                                  onPressed: () {
-                                    print(context);
-                                    Navigator.of(context).pushNamed(
-                                        NFTDetailsScreen.routeName,
-                                        arguments: NFTDetailsScreenArguments(
-                                            widget.loginWithMetaMask,
-                                            navArgs.tokenId,
-                                            navArgs.chipWalletAddress,
-                                            ""));
-                                  }),
-                    ]),
+                                  //chip is initialized and wallet is connected
+                                  CustomRoundedButton(
+                                      text: context.loc.viewNftDetails,
+                                      onPressed: () {
+                                        print(context);
+                                        Navigator.of(context).pushNamed(
+                                            NFTDetailsScreen.routeName,
+                                            arguments:
+                                                NFTDetailsScreenArguments(
+                                                    widget.loginWithMetaMask,
+                                                    navArgs.tokenId,
+                                                    navArgs.chipWalletAddress,
+                                                    ""));
+                                      }),
+                        ]),
                     //spacing
                     SizedBox(height: 20),
-                    CustomCard(children: [
-                      Row(
-                        //space between
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    CustomCard(
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         children: [
-                          Text(context.loc.nfcCheck,
-                              style: Theme.of(context).textTheme.headline4),
-                          //checkmark icon
-                          SvgPicture.asset(
-                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg"),
-                        ],
-                      ),
-                      //spacing
-                      SizedBox(height: 15),
-                      ChipInfo(
-                          tokenId: navArgs.chipIsInitialized
-                              ? bytesToUnsignedInt(navArgs.tokenId)
-                              : null,
-                          chipName: 'Infineon Secora',
-                          walletAddress: navArgs.chipWalletAddress)
-                    ])
+                          Row(
+                            //space between
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(context.loc.nfcCheck,
+                                  style: Theme.of(context).textTheme.headline4),
+                              //checkmark icon
+                              SvgPicture.asset(
+                                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg"),
+                            ],
+                          ),
+                          //spacing
+                          SizedBox(height: 15),
+                          ChipInfo(
+                              tokenId: navArgs.chipIsInitialized
+                                  ? bytesToUnsignedInt(navArgs.tokenId)
+                                  : null,
+                              chipName: 'Infineon Secora',
+                              walletAddress: navArgs.chipWalletAddress)
+                        ])
                   ]),
               CustomImage(
                 width: 130,

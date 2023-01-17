@@ -1,12 +1,12 @@
 //boilerplate for stateless widget
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:owner_chip_admin_demo/widgets/CustomPopups.dart';
+import 'package:ownerchip_whitelabel/widgets/CustomPopups.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/localization.helper.dart';
-import 'package:owner_chip_admin_demo/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
@@ -75,7 +75,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                       padding: new EdgeInsets.all(0.0),
                       icon: SvgPicture.asset(
                           "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/back.svg"),
-                      color: CustomColors.black,
+                      color: CustomColors(dotenv.get('APP_ID')).black,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -97,7 +97,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                         padding: new EdgeInsets.all(0.0),
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/disconnect.svg"),
-                        color: CustomColors.black,
+                        color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () => onButtonPress(context),
                       ),
                       Align(
@@ -119,7 +119,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                         padding: new EdgeInsets.all(0.0),
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/connect.svg"),
-                        color: CustomColors.black,
+                        color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () => onButtonPress(context),
                       ),
                       Align(
