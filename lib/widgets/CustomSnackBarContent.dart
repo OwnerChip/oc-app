@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomSnackBarContent extends StatelessWidget {

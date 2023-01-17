@@ -32,9 +32,9 @@ import '../widgets/ChipInfo.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import 'HomeScreen.dart';
 import '../widgets/LoadingOverlay.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import '../widgets/CustomOverlay.dart';
-import '../themes/fontSpecs_ownerchip.dart';
+import '../themes/fontSpecs.dart';
 import '../widgets/TraitsForm.dart';
 
 //stateful widget with name MetadataScreen
@@ -398,7 +398,8 @@ class _MetadataScreen extends State<MetadataScreen> {
                                               color: CustomColors(
                                                       dotenv.get('APP_ID'))
                                                   .customRoundedButtonColor,
-                                              fontSize: CustomFonts
+                                              fontSize: CustomFonts(
+                                                          dotenv.get('APP_ID'))
                                                       .bodyText2FontSize /
                                                   1.3),
                                       // TODO: reduze size / change layout?

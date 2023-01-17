@@ -8,8 +8,8 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
 //screens and widgets
 import 'screens/HomeScreen.dart';
@@ -191,45 +191,47 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         cardColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         textTheme: TextTheme(
           headline1: TextStyle(
-              fontSize: CustomFonts.headline1FontSize,
-              fontWeight: CustomFonts.headline1FontWeight,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).headline1FontSize,
+              fontWeight: CustomFonts(dotenv.get('APP_ID')).headline1FontWeight,
               color: CustomColors(dotenv.get('APP_ID')).headline1Color,
-              fontFamily: CustomFonts.headline1Font),
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).headline1Font),
           headline2: TextStyle(
-              fontSize: CustomFonts.headline2FontSize,
-              fontFamily: CustomFonts.headline2Font,
-              fontWeight: CustomFonts.headline2FontWeight,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).headline2FontSize,
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).headline2Font,
+              fontWeight: CustomFonts(dotenv.get('APP_ID')).headline2FontWeight,
               color: CustomColors(dotenv.get('APP_ID')).headline2Color),
           headline3: TextStyle(
-              fontSize: CustomFonts.headline3FontSize,
-              fontFamily: CustomFonts.headline3Font,
-              fontWeight: CustomFonts.headline3FontWeight,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).headline3FontSize,
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).headline3Font,
+              fontWeight: CustomFonts(dotenv.get('APP_ID')).headline3FontWeight,
               color: CustomColors(dotenv.get('APP_ID')).headline3Color),
           headline4: TextStyle(
-              fontSize: CustomFonts.headline4FontSize,
-              fontFamily: CustomFonts.headline4Font,
-              fontWeight: CustomFonts.headline4FontWeight,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).headline4FontSize,
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).headline4Font,
+              fontWeight: CustomFonts(dotenv.get('APP_ID')).headline4FontWeight,
               color: CustomColors(dotenv.get('APP_ID')).headline4Color),
           headline5: TextStyle(
-              fontSize: CustomFonts.headline5FontSize,
-              fontFamily: CustomFonts.headline5Font,
-              fontWeight: CustomFonts.headline5FontWeight,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).headline5FontSize,
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).headline5Font,
+              fontWeight: CustomFonts(dotenv.get('APP_ID')).headline5FontWeight,
               color: CustomColors(dotenv.get('APP_ID')).headline5Color),
           headline6: TextStyle(
-              fontSize: CustomFonts.headline6FontSize,
-              fontFamily: CustomFonts.headline6Font,
-              fontWeight: CustomFonts.headline6FontWeight,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).headline6FontSize,
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).headline6Font,
+              fontWeight: CustomFonts(dotenv.get('APP_ID')).headline6FontWeight,
               color: CustomColors(dotenv.get('APP_ID')).headline6Color),
           bodyText1: TextStyle(
-              fontSize: CustomFonts.bodyText1FontSize,
-              fontFamily: CustomFonts.bodyText1Font,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).bodyText1FontSize,
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).bodyText1Font,
               color: CustomColors(dotenv.get('APP_ID')).bodyText1Color,
-              fontWeight: CustomFonts.bodyText1FontWeight),
+              fontWeight:
+                  CustomFonts(dotenv.get('APP_ID')).bodyText1FontWeight),
           bodyText2: TextStyle(
-              fontSize: CustomFonts.bodyText2FontSize,
-              fontFamily: CustomFonts.bodyText2Font,
+              fontSize: CustomFonts(dotenv.get('APP_ID')).bodyText2FontSize,
+              fontFamily: CustomFonts(dotenv.get('APP_ID')).bodyText2Font,
               color: CustomColors(dotenv.get('APP_ID')).bodyText2Color,
-              fontWeight: CustomFonts.bodyText2FontWeight),
+              fontWeight:
+                  CustomFonts(dotenv.get('APP_ID')).bodyText2FontWeight),
         ),
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

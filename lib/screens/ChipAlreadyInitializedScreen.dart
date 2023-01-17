@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomPopups.dart';
@@ -29,7 +29,7 @@ import 'HomeScreen.dart';
 import '../utils/utils.dart';
 import '../utils/web3.services.dart';
 import '../widgets/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
@@ -179,8 +179,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                     //orange round ember warning icon
                     Icon(Icons.warning_amber_rounded,
                         color: CustomColors(dotenv.get('APP_ID')).warningColor,
-                        size:
-                            CustomFonts.AdminWarningHeadlineFontSize), //spacing
+                        size: CustomFonts(dotenv.get('APP_ID'))
+                            .AdminWarningHeadlineFontSize), //spacing
                     const SizedBox(
                       height: 20,
                     ),
@@ -189,9 +189,10 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
                       style: TextStyle(
                           color:
                               CustomColors(dotenv.get('APP_ID')).warningColor,
-                          fontSize: CustomFonts.AdminWarningSubtextFontSize,
-                          fontWeight:
-                              CustomFonts.AdminWarningSubtextFontWeight),
+                          fontSize: CustomFonts(dotenv.get('APP_ID'))
+                              .AdminWarningSubtextFontSize,
+                          fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                              .AdminWarningSubtextFontWeight),
                     ),
                     //spacing
                     const SizedBox(height: 10),

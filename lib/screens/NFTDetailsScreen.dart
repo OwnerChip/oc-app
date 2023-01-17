@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs_ownerchip.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:io';
@@ -21,7 +21,7 @@ import '../widgets/CustomCard.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
 import '../widgets/CustomRoundedButton.dart';
-import '../themes/colorSpecs_ownerchip.dart';
+import '../themes/colorSpecs.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
@@ -172,8 +172,10 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
               children: [
                 Text(metadata['name'] ?? context.loc.loading,
                     style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                        fontSize: CustomFonts.MetadataNameFontSize,
-                        fontWeight: CustomFonts.MetadataNameFontWeight)),
+                        fontSize: CustomFonts(dotenv.get('APP_ID'))
+                            .MetadataNameFontSize,
+                        fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                            .MetadataNameFontWeight)),
                 metadata['traits'] != null && metadata['traits']!.isNotEmpty
                     ? CustomRoundedButton(
                         height: 30,
@@ -184,7 +186,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                             .copyWith(
                                 color: CustomColors(dotenv.get('APP_ID'))
                                     .customRoundedButtonColor,
-                                fontSize: CustomFonts.bodyText2FontSize / 1.3),
+                                fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                        .bodyText2FontSize /
+                                    1.3),
                         // TODO: reduze size / change layout?
                         text: showDescription
                             ? context.loc.showTraits
@@ -210,9 +214,10 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                         textAlign: TextAlign.left,
                         style: TextStyle(
                             // color: Theme.of(context).primaryColor,
-                            fontSize: CustomFonts.MetadataDescriptionFontSize,
-                            fontWeight:
-                                CustomFonts.MetadataDescriptionFontWeight)),
+                            fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                .MetadataDescriptionFontSize,
+                            fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                                .MetadataDescriptionFontWeight)),
                   )
                 : Align(
                     alignment: Alignment.centerLeft,
@@ -226,13 +231,15 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
                                           .bodyText2!
                                           .copyWith(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: CustomFonts
+                                            fontSize: CustomFonts(
+                                                    dotenv.get('APP_ID'))
                                                 .MetadataDescriptionFontSize,
                                           )),
                                   Text(e['value'],
                                       style: TextStyle(
-                                        fontSize: CustomFonts
-                                            .MetadataDescriptionFontSize,
+                                        fontSize:
+                                            CustomFonts(dotenv.get('APP_ID'))
+                                                .MetadataDescriptionFontSize,
                                       )),
                                 ],
                               ))

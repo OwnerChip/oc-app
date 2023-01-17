@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
-import '../themes/fontSpecs_ownerchip.dart';
-import '../themes/colorSpecs_ownerchip.dart';
+import '../themes/fontSpecs.dart';
+import '../themes/colorSpecs.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -75,7 +75,9 @@ class _TraitsForm extends State<TraitsForm> {
                           .copyWith(
                               color: CustomColors(dotenv.get('APP_ID'))
                                   .customRoundedButtonColor,
-                              fontSize: CustomFonts.bodyText2FontSize / 1.3),
+                              fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                      .bodyText2FontSize /
+                                  1.3),
                       onPressed: () => removeTraitInput()),
                   SizedBox(width: 10),
                   CustomRoundedButton(
@@ -88,7 +90,9 @@ class _TraitsForm extends State<TraitsForm> {
                           .copyWith(
                               color: CustomColors(dotenv.get('APP_ID'))
                                   .customRoundedButtonColor,
-                              fontSize: CustomFonts.bodyText2FontSize / 1.3),
+                              fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                      .bodyText2FontSize /
+                                  1.3),
                       onPressed: () => addTraitInput()),
                 ],
               ),
