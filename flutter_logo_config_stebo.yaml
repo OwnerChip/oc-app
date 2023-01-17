@@ -1,11 +1,11 @@
 flutter_native_splash:
   color: "#1B1B1B"
-  image: "assets/images/stebo/app_logo_splash.jpg"
+  image: "assets/images/stebo/app_logo.png"
 
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/stebo/app_logo.png"
+  image_path: "assets/images/stebo/app_logo_splash.jpg"
   min_sdk_android: 21 # android min sdk min:16, default 21
-  image_path_ios: "assets/images/stebo/app_logo.png"
+  image_path_ios: "assets/images/stebo/app_logo_splash.jpg"
   remove_alpha_ios: true
