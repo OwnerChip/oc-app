@@ -43,15 +43,15 @@ dev_dependencies:
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: ./logo.png
+  image_path: logo.png
   min_sdk_android: 21 # android min sdk min:16, default 21
-  image_path_ios: ./logo.png
+  image_path_ios: logo.png
   remove_alpha_ios: true
 
-
-flutter_native_splash:
-  color: "#19235a"
-  image: "./logo.png"
+# got replaced by separate yaml file!
+# flutter_native_splash:
+#   color: "#19235a"
+#   image: "logo.png"
 
 flutter:
   assets:
