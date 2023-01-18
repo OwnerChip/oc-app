@@ -104,21 +104,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 }),
             const SizedBox(height: 20),
-            CustomHomeScreenButton(
-                text: context.loc.initializeChip,
-                svgPath:
-                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
-                onTap: () async {
-                  bool showInternetError = await onInitializeButtonPress(
-                      context, widget.connected, widget.loginWithMetaMask);
+            dotenv.get('IS_ADMIN') == 'true'
+                ? CustomHomeScreenButton(
+                    text: context.loc.initializeChip,
+                    svgPath:
+                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
+                    onTap: () async {
+                      bool showInternetError = await onInitializeButtonPress(
+                          context, widget.connected, widget.loginWithMetaMask);
 
-                  if (showInternetError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                          context.loc.errorNoInternetConnection, 'error'),
-                    );
-                  }
-                }),
+                      if (showInternetError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                              context.loc.errorNoInternetConnection, 'error'),
+                        );
+                      }
+                    })
+                : Container(),
             const SizedBox(height: 70),
             CustomRoundedButton(
               width: 250,
