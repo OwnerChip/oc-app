@@ -9,6 +9,7 @@ import 'utils.dart';
 
 Web3Client getWeb3Client() {
   var rpcUrl = dotenv.get('CHAIN_RPC');
+  print("rpcUrl: $rpcUrl");
   var client = Web3Client(rpcUrl, Client());
   return client;
 }
@@ -24,6 +25,8 @@ Future<DeployedContract> getContract() async {
 }
 
 Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
+  print('functionName: $functionName');
+  print('args: $args');
   DeployedContract contract = await getContract();
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client();
@@ -55,6 +58,8 @@ Future<bool> verifyTokenSigner(String chipWalletAddressHex,
   try {
     var result =
         await query("getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
+    print('result: $result');
+    print('result to string: ${result[0].toString().toLowerCase()}');
     bool res = (chipWalletAddressHex == result[0].toString().toLowerCase());
     return res;
   } catch (e) {
@@ -168,6 +173,7 @@ dynamic makeWatchAssetParams(String imageUri) {
 
 Future<dynamic> getOwner(BigInt tokenId) async {
   try {
+    print('tokenId: $tokenId');
     var owner = await query("ownerOf", [tokenId]);
     print(owner);
     return owner[0];
