@@ -1,6 +1,6 @@
 flutter_native_splash:
   color: "#19235a"
-  image: "assets/images/ownerchip/app_logo.png"
+  image: "assets/images/ownerchip/app_logo_splash.jpg"
 
 
 flutter_icons:
