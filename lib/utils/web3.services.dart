@@ -16,8 +16,6 @@ Web3Client getWeb3Client() {
 Future<DeployedContract> getContract() async {
   String abi =
       await rootBundle.loadString("assets/contracts/contract.abi.json");
-  print('contract name: ${dotenv.get('CONTRACT_NAME')}');
-  print('contract address: ${dotenv.get('CONTRACT_ADDRESS')}');
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, dotenv.get('CONTRACT_NAME')),
     EthereumAddress.fromHex(dotenv.get('CONTRACT_ADDRESS')),
