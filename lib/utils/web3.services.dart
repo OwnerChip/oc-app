@@ -8,9 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'utils.dart';
 
 Web3Client getWeb3Client() {
-  print('inside getWeb3Client()');
   var rpcUrl = dotenv.get('CHAIN_RPC');
-  print("rpcUrl: $rpcUrl");
   var client = Web3Client(rpcUrl, Client());
   return client;
 }
@@ -18,27 +16,21 @@ Web3Client getWeb3Client() {
 Future<DeployedContract> getContract() async {
   String abi =
       await rootBundle.loadString("assets/contracts/contract.abi.json");
-  print('abi: $abi');
   print('contract name: ${dotenv.get('CONTRACT_NAME')}');
   print('contract address: ${dotenv.get('CONTRACT_ADDRESS')}');
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, dotenv.get('CONTRACT_NAME')),
     EthereumAddress.fromHex(dotenv.get('CONTRACT_ADDRESS')),
   );
-  print('contract: $contract');
   return contract;
 }
 
 Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
-  print('functionName: $functionName');
-  print('args: $args');
   DeployedContract contract = await getContract();
-  print('contract: $contract');
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client();
   List<dynamic> result = await web3Client.call(
       contract: contract, function: function, params: args);
-  print('result from query: $result');
   return result;
 }
 
@@ -62,18 +54,12 @@ Future<bool> verifyTokenSigner(String chipWalletAddressHex,
     Uint8List tokenIdHash, MsgSignature signature) async {
   Uint8List r = bytesFromBigInt(signature.r);
   Uint8List s = bytesFromBigInt(signature.s);
-  print('tokenIdHash: $tokenIdHash');
-  print('r: $r');
-  print('s: $s');
   try {
     var result =
         await query("getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
-    print('result: $result');
-    print('result to string: ${result[0].toString().toLowerCase()}');
     bool res = (chipWalletAddressHex == result[0].toString().toLowerCase());
     return res;
   } catch (e) {
-    print("getSigner ERROR: $e");
     return false;
   }
 }
@@ -183,9 +169,7 @@ dynamic makeWatchAssetParams(String imageUri) {
 
 Future<dynamic> getOwner(BigInt tokenId) async {
   try {
-    print('tokenId: $tokenId');
     var owner = await query("ownerOf", [tokenId]);
-    print(owner);
     return owner[0];
   } catch (e) {
     print('Error while fetching owner of tokenId $tokenId: $e');
@@ -196,7 +180,6 @@ Future<dynamic> getOwner(BigInt tokenId) async {
 Future<dynamic> getTokenUri(BigInt tokenId) async {
   try {
     var uri = await query("tokenURI", [tokenId]);
-    print(uri);
     return uri[0];
   } catch (e) {
     print('Error while fetching uri of tokenId $tokenId: $e');
