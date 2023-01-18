@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'utils.dart';
 
 Web3Client getWeb3Client() {
+  print('inside getWeb3Client()');
   var rpcUrl = dotenv.get('CHAIN_RPC');
   print("rpcUrl: $rpcUrl");
   var client = Web3Client(rpcUrl, Client());
@@ -17,10 +18,14 @@ Web3Client getWeb3Client() {
 Future<DeployedContract> getContract() async {
   String abi =
       await rootBundle.loadString("assets/contracts/contract.abi.json");
+  print('abi: $abi');
+  print('contract name: ${dotenv.get('CONTRACT_NAME')}');
+  print('contract address: ${dotenv.get('CONTRACT_ADDRESS')}');
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, dotenv.get('CONTRACT_NAME')),
     EthereumAddress.fromHex(dotenv.get('CONTRACT_ADDRESS')),
   );
+  print('contract: $contract');
   return contract;
 }
 
@@ -28,10 +33,12 @@ Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
   print('functionName: $functionName');
   print('args: $args');
   DeployedContract contract = await getContract();
+  print('contract: $contract');
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client();
   List<dynamic> result = await web3Client.call(
       contract: contract, function: function, params: args);
+  print('result from query: $result');
   return result;
 }
 
@@ -55,6 +62,9 @@ Future<bool> verifyTokenSigner(String chipWalletAddressHex,
     Uint8List tokenIdHash, MsgSignature signature) async {
   Uint8List r = bytesFromBigInt(signature.r);
   Uint8List s = bytesFromBigInt(signature.s);
+  print('tokenIdHash: $tokenIdHash');
+  print('r: $r');
+  print('s: $s');
   try {
     var result =
         await query("getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
