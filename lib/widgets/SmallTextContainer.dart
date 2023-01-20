@@ -23,7 +23,7 @@ class SmallTextContainer extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           child: Text(
-            text,
+            '${text.toString().substring(0, 8)}...',
             style: Theme.of(context).textTheme.bodyText1!.copyWith(
                 fontSize: 12.0,
                 color:

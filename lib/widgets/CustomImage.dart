@@ -63,7 +63,7 @@ class CustomImage extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                       SmallTextContainer(
-                        text: '${tokenId.toString().substring(0, 8)}...',
+                        text: tokenId.toString(),
                       ),
                     ]),
                     //     Row(children: [

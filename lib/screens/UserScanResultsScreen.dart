@@ -17,7 +17,6 @@ import '../widgets/ChipInfo.dart';
 import '../widgets/CustomCard.dart';
 import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomImage.dart';
-import '../widgets/SmallTextContainer.dart';
 import '../widgets/CustomRoundedButton.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/ipfs.services.dart';
