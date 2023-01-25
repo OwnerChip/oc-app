@@ -9,7 +9,6 @@ import 'package:cross_file/cross_file.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomPopups.dart';
 import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -40,13 +39,9 @@ import '../widgets/TraitsForm.dart';
 //stateful widget with name MetadataScreen
 class MetadataScreen extends StatefulWidget {
   const MetadataScreen(
-      {super.key,
-      required this.connector,
-      this.loginWithMetaMask,
-      required this.connected});
+      {super.key, required this.connector, required this.connected});
 
   final WalletConnect connector;
-  final Function? loginWithMetaMask;
   final bool connected;
 
   static const routeName = '/metadata-input';
@@ -97,7 +92,6 @@ class _MetadataScreen extends State<MetadataScreen> {
   }
 
   void _initializeChip(Map<String, dynamic> metadata, {XFile? image}) async {
-    // showLoadingPopUp(context, "UPLOAD");
     setState(() {
       isLoading = true;
       success = false;
@@ -163,7 +157,7 @@ class _MetadataScreen extends State<MetadataScreen> {
         // if (true) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(widget.loginWithMetaMask,
+            arguments: NFTDetailsScreenArguments(
                 navArgs.tokenId, navArgs.chipWalletAddress, image.path));
 
         setState(() {
@@ -243,7 +237,6 @@ class _MetadataScreen extends State<MetadataScreen> {
           child: Scaffold(
               extendBodyBehindAppBar: true,
               appBar: CustomAppBar(
-                loginFunction: widget.loginWithMetaMask,
                 text: '${context.loc.initializeChip}',
                 connectedWalletAddress:
                     widget.connector.session.accounts.isEmpty == true

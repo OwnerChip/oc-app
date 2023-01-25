@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 //local imports
 import 'NFTDetailsScreen.dart';
@@ -22,15 +22,12 @@ import '../widgets/returnSnackBarWidget.dart';
 import '../utils/ipfs.services.dart';
 import '../utils/web3.services.dart';
 import '../widgets/LoadingOverlay.dart';
+import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
 
 class UserScanResultsScreen extends StatefulWidget {
   const UserScanResultsScreen(
-      {super.key,
-      required this.connector,
-      this.loginWithMetaMask,
-      required this.connected});
+      {super.key, required this.connector, required this.connected});
   final WalletConnect connector;
-  final Function? loginWithMetaMask;
   final bool connected;
 
   static const routeName = '/user-scan-results';
@@ -151,7 +148,6 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: CustomAppBar(
-          loginFunction: widget.loginWithMetaMask,
           text: context.loc.tapResults,
           connectedWalletAddress:
               widget.connected ? null : connectedWallet, //wallet adresse
@@ -285,8 +281,10 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                                   //chip is initialized and wallet is NOT connected
                                   CustomRoundedButton(
                                       text: context.loc.connectWallet,
-                                      onPressed: (() =>
-                                          {widget.loginWithMetaMask!(context)}))
+                                      onPressed: (() => {
+                                            startWalletConnection(
+                                                context, widget.connector)
+                                          }))
                                   :
                                   //chip is initialized and wallet is connected
                                   CustomRoundedButton(
@@ -297,7 +295,6 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                                             NFTDetailsScreen.routeName,
                                             arguments:
                                                 NFTDetailsScreenArguments(
-                                                    widget.loginWithMetaMask,
                                                     navArgs.tokenId,
                                                     navArgs.chipWalletAddress,
                                                     ""));

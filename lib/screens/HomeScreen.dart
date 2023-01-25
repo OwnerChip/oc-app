@@ -16,17 +16,13 @@ import '../widgets/ScreenBodyLayout.dart';
 import '../widgets/CustomHomeScreenButton.dart';
 import '../widgets/CustomRoundedButton.dart';
 import '../widgets/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen(
-      {Key? key,
-      required this.connector,
-      this.loginWithMetaMask,
-      required this.connected})
+  const HomeScreen({Key? key, required this.connector, required this.connected})
       : super(key: key);
 
   final WalletConnect connector;
-  final Function? loginWithMetaMask;
   final bool connected;
 
   static const routeName = '/login';
@@ -35,38 +31,46 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-Future<bool> onScanButtonPress(context) async {
+void onScanButtonPress(BuildContext context, mounted) async {
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {
       throw Exception("No internet connection");
     }
 
-    Navigator.pushNamed(context, ScanningScreen.routeName,
-        arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
-    return false;
+    if (mounted) {
+      Navigator.pushNamed(context, ScanningScreen.routeName,
+          arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
+    }
   } catch (e) {
-    return true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+          context.loc.errorNoInternetConnection, 'error'),
+    );
   }
 }
 
-Future<bool> onInitializeButtonPress(
-    context, isConnected, loginWithMetaMask) async {
+void onInitializeButtonPress(
+    BuildContext context, WalletConnect connector, mounted) async {
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {
       throw Exception("No internet connection");
     }
 
-    if (!isConnected) {
-      await loginWithMetaMask(context);
+    if (!connector.connected) {
+      await startWalletConnection(context, connector);
     }
 
-    Navigator.pushNamed(context, ScanningScreen.routeName,
-        arguments: ScanningScreenArguments(MetadataScreen.routeName));
-    return false;
+    if (mounted) {
+      Navigator.pushNamed(context, ScanningScreen.routeName,
+          arguments: ScanningScreenArguments(MetadataScreen.routeName));
+    }
   } catch (e) {
-    return true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+          context.loc.errorNoInternetConnection, 'error'),
+    );
   }
 }
 
@@ -76,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        loginFunction: widget.loginWithMetaMask,
         connectedWalletAddress:
             widget.connector.session.accounts.isEmpty == true
                 ? null
@@ -93,33 +96,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 text: context.loc.scanning,
                 svgPath:
                     '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                onTap: () async {
-                  bool showInternetError = await onScanButtonPress(context);
-
-                  if (showInternetError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                          context.loc.errorNoInternetConnection, 'error'),
-                    );
-                  }
-                }),
+                onTap: () => onScanButtonPress(context, mounted)),
             const SizedBox(height: 20),
             dotenv.get('IS_ADMIN') == 'true'
                 ? CustomHomeScreenButton(
                     text: context.loc.initializeChip,
                     svgPath:
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
-                    onTap: () async {
-                      bool showInternetError = await onInitializeButtonPress(
-                          context, widget.connected, widget.loginWithMetaMask);
-
-                      if (showInternetError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                              context.loc.errorNoInternetConnection, 'error'),
-                        );
-                      }
-                    })
+                    onTap: () => onInitializeButtonPress(
+                        context, widget.connector, mounted))
                 : Container(),
             const SizedBox(height: 70),
             CustomRoundedButton(

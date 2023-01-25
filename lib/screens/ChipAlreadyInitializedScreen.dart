@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomPopups.dart';
 import 'package:ownerchip_whitelabel/widgets/LoadingOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,12 +32,8 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class ChipAlreadyInitializedScreen extends StatefulWidget {
   const ChipAlreadyInitializedScreen(
-      {super.key,
-      required this.connector,
-      this.loginWithMetaMask,
-      required this.connected});
+      {super.key, required this.connector, required this.connected});
   final WalletConnect connector;
-  final Function? loginWithMetaMask;
   final bool connected;
 
   static const routeName = '/scan-already-initialized';
@@ -159,7 +154,6 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       child: Scaffold(
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
-            loginFunction: () => {},
             text: context.loc.initializeChip,
             connectedWalletAddress:
                 widget.connector.session.accounts.isEmpty == true

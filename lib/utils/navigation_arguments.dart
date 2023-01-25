@@ -38,11 +38,10 @@ class ChipInitializedArguments {
 }
 
 class NFTDetailsScreenArguments {
-  final Function? loginWithMetaMask;
   final Uint8List tokenId;
   final String chipWalletAddress;
   final String? localImagePath;
 
-  NFTDetailsScreenArguments(this.loginWithMetaMask, this.tokenId,
-      this.chipWalletAddress, this.localImagePath);
+  NFTDetailsScreenArguments(
+      this.tokenId, this.chipWalletAddress, this.localImagePath);
 }

@@ -25,12 +25,8 @@ import '../themes/colorSpecs.dart';
 
 class NFTDetailsScreen extends StatefulWidget {
   const NFTDetailsScreen(
-      {super.key,
-      required this.connector,
-      this.loginWithMetaMask,
-      required this.connected});
+      {super.key, required this.connector, required this.connected});
   final WalletConnect connector;
-  final Function? loginWithMetaMask;
   final bool connected;
 
   static const routeName = '/nft-details';
@@ -148,7 +144,6 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        loginFunction: widget.loginWithMetaMask,
         text: context.loc.nftDetails,
         connectedWalletAddress:
             widget.connector.session.accounts.isEmpty == true

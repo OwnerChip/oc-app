@@ -34,13 +34,9 @@ import '../widgets/ScreenBodyLayout.dart';
 
 class ScanningScreen extends StatefulWidget {
   const ScanningScreen(
-      {super.key,
-      required this.connector,
-      this.loginWithMetaMask,
-      required this.connected});
+      {super.key, required this.connector, required this.connected});
 
   final WalletConnect connector;
-  final Function? loginWithMetaMask;
   final bool connected;
 
   static const routeName = '/scanning';
@@ -229,7 +225,6 @@ class _ScanningScreen extends State<ScanningScreen> {
               widget.connector.session.accounts.isEmpty == true
                   ? null
                   : widget.connector.session.accounts[0].toLowerCase(),
-          loginFunction: widget.loginWithMetaMask,
           connector: widget.connector,
           isConnected: widget.connected,
           showBackButton: false,

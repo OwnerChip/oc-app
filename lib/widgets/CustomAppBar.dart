@@ -1,26 +1,24 @@
 //boilerplate for stateless widget
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomPopups.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
 
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   const CustomAppBar(
       {Key? key,
       this.text,
-      required this.loginFunction,
       required this.connectedWalletAddress,
       required this.connector,
       required this.isConnected,
       this.showBackButton = true})
       : super(key: key);
   final String? text;
-  final dynamic loginFunction;
   final String? connectedWalletAddress;
   final WalletConnect connector;
   final bool isConnected;
@@ -40,7 +38,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       if (isConnected) {
         connector.killSession();
       } else {
-        loginFunction(context);
+        startWalletConnection(context, connector);
       }
     } catch (e) {
       //show error snackbar

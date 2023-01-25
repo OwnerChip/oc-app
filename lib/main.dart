@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
+import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
 
 //screens and widgets
 import 'screens/HomeScreen.dart';
@@ -33,7 +32,8 @@ void main(List<String> args) async {
   _setupLogging();
   await dotenv.load(fileName: ".env");
 
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding =
+      WidgetsFlutterBinding.ensureInitialized(); //app lifecycle events listener
 
   //prevent landscape mode
   SystemChrome.setPreferredOrientations(
@@ -42,44 +42,21 @@ void main(List<String> args) async {
   //set initialRoute accordingly
   String initialRoute = HomeScreen.routeName;
 
-  //create wallet connector function
-  Future<WalletConnect> createWalletConnector() async {
-    WalletConnectSecureStorage sessionStorage = WalletConnectSecureStorage();
-    WalletConnectSession? session = await sessionStorage.getSession();
-
-    return WalletConnect(
-        bridge: 'https://bridge.walletconnect.org',
-        session: session == null || !session.connected ? null : session,
-        sessionStorage: sessionStorage,
-        clientMeta: const PeerMeta(
-          name: 'OwnerChip Demo',
-          description: 'Connecting physical objects to the blockchain.',
-          url: 'https://walletconnect.org',
-          // icons: ["${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png"]
-        ));
-  }
-
   WalletConnect initialConnector = await createWalletConnector();
 
   runApp(
       //wrapper to enable app restarts
       RestartWidget(
           child: MyApp(
-              initialRoute: initialRoute,
-              createWalletConnector: createWalletConnector,
-              initialConnector: initialConnector)));
+              initialRoute: initialRoute, initialConnector: initialConnector)));
 }
 
 class MyApp extends StatefulWidget {
   const MyApp(
-      {Key? key,
-      required this.initialRoute,
-      required this.createWalletConnector,
-      required this.initialConnector})
+      {Key? key, required this.initialRoute, required this.initialConnector})
       : super(key: key);
 
   final String initialRoute;
-  final Function createWalletConnector;
   final WalletConnect initialConnector;
 
   @override
@@ -113,39 +90,12 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     //make new wallet connect connector when app is resumed(brought to foreground); necessary to prevent errors with metamask
     if (state == AppLifecycleState.resumed) {
-      var wc = await widget.createWalletConnector();
+      var wc = await createWalletConnector();
       setState(() {
         connector = wc;
         connected = wc.connected;
       });
     }
-  }
-
-  Future<void> loginWithMetaMask(BuildContext context) async {
-    // if (!connector.connected) {
-    try {
-      var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: '1'));
-      var sessionStatus = await connector.connect(
-          chainId: chainId,
-          onDisplayUri: (uri) async {
-            await launchUrlString(uri, mode: LaunchMode.externalApplication);
-          });
-
-      //save session
-      connector.sessionStorage?.store(connector.session);
-
-      if (!mounted) {
-        return;
-      }
-    } catch (e) {
-      //returnSnackBar
-      ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-          context.loc.errorHeadingSnackBar,
-          context.loc.errorConnectingWallet,
-          'success'));
-      print(e);
-    }
-    // }
   }
 
   @override
@@ -241,30 +191,27 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver {
         HomeScreen.routeName: (context) => HomeScreen(
               connector: connector,
               connected: connected,
-              loginWithMetaMask: loginWithMetaMask,
             ),
         ScanningScreen.routeName: (context) => ScanningScreen(
-            connector: connector,
-            connected: connected,
-            loginWithMetaMask: loginWithMetaMask),
+              connector: connector,
+              connected: connected,
+            ),
         ChipAlreadyInitializedScreen.routeName: (context) =>
             ChipAlreadyInitializedScreen(
-                connector: connector,
-                connected: connected,
-                loginWithMetaMask: loginWithMetaMask),
+              connector: connector,
+              connected: connected,
+            ),
         MetadataScreen.routeName: (context) => MetadataScreen(
-            connector: connector,
-            connected: connected,
-            loginWithMetaMask: loginWithMetaMask),
+              connector: connector,
+              connected: connected,
+            ),
         UserScanResultsScreen.routeName: (context) => UserScanResultsScreen(
               connector: connector,
               connected: connected,
-              loginWithMetaMask: loginWithMetaMask,
             ),
         NFTDetailsScreen.routeName: (context) => NFTDetailsScreen(
               connector: connector,
               connected: connected,
-              loginWithMetaMask: loginWithMetaMask,
             ),
       },
     );
