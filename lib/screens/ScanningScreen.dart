@@ -1,9 +1,5 @@
-import 'dart:convert';
-import 'dart:io' show Platform;
-import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
-import 'dart:typed_data';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +11,6 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/platform_tags.dart';
 
 //local imports
 import 'UserScanResultsScreen.dart';

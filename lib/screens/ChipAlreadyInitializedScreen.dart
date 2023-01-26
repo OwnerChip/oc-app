@@ -6,19 +6,14 @@ import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/LoadingOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:convert/convert.dart';
 import '../utils/localization.helper.dart';
-import 'dart:io';
-import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter_svg/flutter_svg.dart';
 
 //web3 imports
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import '../utils/ipfs.services.dart';
 
 // import local files
 import '../widgets/CustomAppBar.dart';

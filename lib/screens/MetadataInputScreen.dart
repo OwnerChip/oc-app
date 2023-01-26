@@ -1,7 +1,6 @@
 //flutter imports
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,14 +10,12 @@ import 'package:ownerchip_whitelabel/widgets/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
 import '../utils/localization.helper.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
 //web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:web3dart/crypto.dart';
 
 //local imports
 import '../widgets/CustomAppBar.dart';
@@ -28,10 +25,7 @@ import '../utils/images.service.dart';
 import '../utils/web3.services.dart';
 import '../utils/navigation_arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
-import '../widgets/LoadingIndicator.dart';
-import '../widgets/ChipInfo.dart';
 import '../widgets/returnSnackBarWidget.dart';
-import 'HomeScreen.dart';
 import '../widgets/LoadingOverlay.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import '../widgets/CustomOverlay.dart';
