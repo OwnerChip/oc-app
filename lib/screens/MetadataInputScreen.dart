@@ -12,6 +12,8 @@ import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
 //web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -37,20 +39,16 @@ import '../themes/fontSpecs.dart';
 import '../widgets/TraitsForm.dart';
 
 //stateful widget with name MetadataScreen
-class MetadataScreen extends StatefulWidget {
-  const MetadataScreen(
-      {super.key, required this.connector, required this.connected});
-
-  final WalletConnect connector;
-  final bool connected;
+class MetadataScreen extends ConsumerStatefulWidget {
+  const MetadataScreen({super.key});
 
   static const routeName = '/metadata-input';
 
   @override
-  State<MetadataScreen> createState() => _MetadataScreen();
+  _MetadataScreen createState() => _MetadataScreen();
 }
 
-class _MetadataScreen extends State<MetadataScreen> {
+class _MetadataScreen extends ConsumerState<MetadataScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -60,9 +58,9 @@ class _MetadataScreen extends State<MetadataScreen> {
   String imagePath = '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
   bool success = false;
   bool showImageOptions = false;
+  bool showTraitsForm = false;
   bool isLoading = false;
   String loadingText = '';
-  bool showTraitsForm = false;
 
   void initState() {
     super.initState();
@@ -91,7 +89,8 @@ class _MetadataScreen extends State<MetadataScreen> {
     });
   }
 
-  void _initializeChip(Map<String, dynamic> metadata, {XFile? image}) async {
+  void initializeChip(Map<String, dynamic> metadata, {XFile? image}) async {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     setState(() {
       isLoading = true;
       success = false;
@@ -102,11 +101,11 @@ class _MetadataScreen extends State<MetadataScreen> {
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
     //if wc bridge is not connected, then reconnect
-    if (!widget.connector.bridgeConnected) {
-      widget.connector.reconnect();
+    if (!wc.bridgeConnected) {
+      wc.reconnect();
     }
 
-    String walletAddress = widget.connector.session.accounts[0].toLowerCase();
+    String walletAddress = wc.session.accounts[0].toLowerCase();
 
     // upload image to ipfs
     String imageCid;
@@ -141,7 +140,7 @@ class _MetadataScreen extends State<MetadataScreen> {
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
-      var txnHash = await widget.connector.sendCustomRequest(
+      var txnHash = await wc.sendCustomRequest(
           method: 'eth_sendTransaction',
           params: mintParams,
           id: makeRandomInt());
@@ -207,6 +206,7 @@ class _MetadataScreen extends State<MetadataScreen> {
 
   @override
   Widget build(BuildContext context) {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
 
@@ -238,12 +238,9 @@ class _MetadataScreen extends State<MetadataScreen> {
               extendBodyBehindAppBar: true,
               appBar: CustomAppBar(
                 text: '${context.loc.initializeChip}',
-                connectedWalletAddress:
-                    widget.connector.session.accounts.isEmpty == true
-                        ? null
-                        : widget.connector.session.accounts[0].toLowerCase(),
-                connector: widget.connector,
-                isConnected: widget.connected,
+                connectedWalletAddress: wc.session.accounts.isEmpty == true
+                    ? null
+                    : wc.session.accounts[0].toLowerCase(),
               ),
               body: ScreenBodyLayout(children: [
                 Row(
@@ -449,9 +446,9 @@ class _MetadataScreen extends State<MetadataScreen> {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
                                 if (image != null) {
-                                  _initializeChip(metadata, image: image);
+                                  initializeChip(metadata, image: image);
                                 } else {
-                                  _initializeChip(metadata);
+                                  initializeChip(metadata);
                                 }
                               }
                             },

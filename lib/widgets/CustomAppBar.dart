@@ -2,43 +2,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:web3dart/web3dart.dart';
 import '../utils/utils.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
-class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
+class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
   const CustomAppBar(
       {Key? key,
       this.text,
       required this.connectedWalletAddress,
-      required this.connector,
-      required this.isConnected,
       this.showBackButton = true})
       : super(key: key);
   final String? text;
   final String? connectedWalletAddress;
-  final WalletConnect connector;
-  final bool isConnected;
   final bool showBackButton; //valid values: 'back', 'logo'
 
-  void onButtonPress(context) async {
+  void onButtonPress(BuildContext context, WalletConnect wc) async {
     try {
       //check if there is internet connections
       if (!await checkInternetConnection()) {
         throw Exception("No internet connection");
       }
       //if wc bridge is not connected, then reconnect
-      if (!connector.bridgeConnected) {
-        connector.reconnect();
+      if (!wc.bridgeConnected) {
+        wc.reconnect();
       }
       //if wallet is connected then kill session, else connect wallet
-      if (isConnected) {
-        connector.killSession();
+      if (wc.connected) {
+        wc.killSession();
       } else {
-        startWalletConnection(context, connector);
+        startWalletConnection(context, wc);
       }
     } catch (e) {
       //show error snackbar
@@ -57,7 +57,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
@@ -87,7 +88,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       actions: [
         Padding(
             padding: EdgeInsets.only(right: 5),
-            child: isConnected
+            child: wc.connected
                 ? Stack(
                     alignment: Alignment.topCenter,
                     children: [
@@ -96,7 +97,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/disconnect.svg"),
                         color: CustomColors(dotenv.get('APP_ID')).black,
-                        onPressed: () => onButtonPress(context),
+                        onPressed: () => onButtonPress(context, wc),
                       ),
                       Align(
                         alignment: const Alignment(0.0, 0.95),
@@ -118,7 +119,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/connect.svg"),
                         color: CustomColors(dotenv.get('APP_ID')).black,
-                        onPressed: () => onButtonPress(context),
+                        onPressed: () => onButtonPress(context, wc),
                       ),
                       Align(
                         alignment: const Alignment(0.0, 0.95),

@@ -31,22 +31,20 @@ import '../widgets/ScanningIndicator.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import '../widgets/CustomRoundedButton.dart';
 import '../widgets/ScreenBodyLayout.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
-class ScanningScreen extends StatefulWidget {
-  const ScanningScreen(
-      {super.key, required this.connector, required this.connected});
-
-  final WalletConnect connector;
-  final bool connected;
+class ScanningScreen extends ConsumerStatefulWidget {
+  const ScanningScreen({super.key});
 
   static const routeName = '/scanning';
 
   @override
-  State<ScanningScreen> createState() => _ScanningScreen();
+  _ScanningScreen createState() => _ScanningScreen();
 }
 
 //flutter stateless widget
-class _ScanningScreen extends State<ScanningScreen> {
+class _ScanningScreen extends ConsumerState<ScanningScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -216,17 +214,15 @@ class _ScanningScreen extends State<ScanningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: CustomAppBar(
-          connectedWalletAddress:
-              widget.connector.session.accounts.isEmpty == true
-                  ? null
-                  : widget.connector.session.accounts[0].toLowerCase(),
-          connector: widget.connector,
-          isConnected: widget.connected,
+          connectedWalletAddress: wc.session.accounts.isEmpty == true
+              ? null
+              : wc.session.accounts[0].toLowerCase(),
           showBackButton: false,
         ),
         body: ScreenBodyLayout(

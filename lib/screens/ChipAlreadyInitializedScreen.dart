@@ -29,20 +29,20 @@ import '../utils/utils.dart';
 import '../utils/web3.services.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
-class ChipAlreadyInitializedScreen extends StatefulWidget {
-  const ChipAlreadyInitializedScreen(
-      {super.key, required this.connector, required this.connected});
-  final WalletConnect connector;
-  final bool connected;
+class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
+  const ChipAlreadyInitializedScreen({super.key});
 
   static const routeName = '/scan-already-initialized';
 
   @override
-  State<StatefulWidget> createState() => _ChipAlreadyInitializedState();
+  _ChipAlreadyInitializedState createState() => _ChipAlreadyInitializedState();
 }
 
-class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
+class _ChipAlreadyInitializedState
+    extends ConsumerState<ChipAlreadyInitializedScreen> {
   bool isLoading = false;
   bool isRotating = true;
   String loadingSvgPath =
@@ -51,6 +51,8 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
   Future<void> burnToken(
       BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
+    WalletConnect wc = ref.watch(walletConnectProvider);
+
     try {
       // to burn the related IPFS files here, we first need to fetch metadata.json read it and return image file CID
       // String tokenUri = await getTokenUri(tokenId);
@@ -67,15 +69,15 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
       // }
 
       var burnParams = await makeSignedBurnParams(
-          widget.connector.session.accounts[0], tokenIdHash, signature);
+          wc.session.accounts[0], tokenIdHash, signature);
 
       //if wc bridge is not connected, then reconnect
-      if (!widget.connector.bridgeConnected) {
-        widget.connector.reconnect();
+      if (!wc.bridgeConnected) {
+        wc.reconnect();
       }
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-      var txnHash = await widget.connector.sendCustomRequest(
+      var txnHash = await wc.sendCustomRequest(
           method: 'eth_sendTransaction',
           params: burnParams,
           id: makeRandomInt());
@@ -140,6 +142,7 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
     final Uint8List tokenId = navArgs.tokenId;
@@ -155,12 +158,9 @@ class _ChipAlreadyInitializedState extends State<ChipAlreadyInitializedScreen> {
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
             text: context.loc.initializeChip,
-            connectedWalletAddress:
-                widget.connector.session.accounts.isEmpty == true
-                    ? null
-                    : widget.connector.session.accounts[0].toLowerCase(),
-            connector: widget.connector,
-            isConnected: widget.connected,
+            connectedWalletAddress: wc.session.accounts.isEmpty == true
+                ? null
+                : wc.session.accounts[0].toLowerCase(),
           ),
           body: ScreenBodyLayout(
             withScrollView: false,

@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/widgets/returnSnackBarWidget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 //create wallet connector function
 Future<WalletConnect> createWalletConnector() async {

@@ -6,6 +6,9 @@ import 'package:web3dart/crypto.dart';
 import 'dart:io';
 import '../utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+//import flutter riverpod
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
 //web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -23,19 +26,16 @@ import '../widgets/CustomImage.dart';
 import '../widgets/CustomRoundedButton.dart';
 import '../themes/colorSpecs.dart';
 
-class NFTDetailsScreen extends StatefulWidget {
-  const NFTDetailsScreen(
-      {super.key, required this.connector, required this.connected});
-  final WalletConnect connector;
-  final bool connected;
+class NFTDetailsScreen extends ConsumerStatefulWidget {
+  const NFTDetailsScreen({super.key});
 
   static const routeName = '/nft-details';
 
   @override
-  State<NFTDetailsScreen> createState() => _NFTDetailsScreen();
+  _NFTDetailsScreen createState() => _NFTDetailsScreen();
 }
 
-class _NFTDetailsScreen extends State<NFTDetailsScreen> {
+class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
   String imagePath = "";
   String imageUri = "";
   Map<String, dynamic> metadata = {};
@@ -138,6 +138,7 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
 
@@ -145,12 +146,9 @@ class _NFTDetailsScreen extends State<NFTDetailsScreen> {
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
         text: context.loc.nftDetails,
-        connectedWalletAddress:
-            widget.connector.session.accounts.isEmpty == true
-                ? null
-                : widget.connector.session.accounts[0].toLowerCase(),
-        connector: widget.connector,
-        isConnected: widget.connected,
+        connectedWalletAddress: wc.session.accounts.isEmpty == true
+            ? null
+            : wc.session.accounts[0].toLowerCase(),
       ),
       body: ScreenBodyLayout(children: [
         CustomCard(

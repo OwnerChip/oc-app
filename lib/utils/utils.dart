@@ -82,13 +82,6 @@ String uint8ListTo32ByteHex(Uint8List uint8List) {
   return hex.padLeft(64, '0');
 }
 
-//int to hex left padded to 32 bytes
-String intTo32ByteHex(int intToConvert) {
-  var hex = intToConvert.toRadixString(16);
-  //pad length of hex to multiple of 64
-  return hex.padLeft(64, '0');
-}
-
 String convertTokenIdToEthereumAddress(BigInt intToConvert) {
   var hex = intToConvert.toRadixString(16);
   return "0x${hex.padLeft(40)}";

@@ -8,6 +8,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
 //local imports
 import 'NFTDetailsScreen.dart';
@@ -24,19 +26,16 @@ import '../utils/web3.services.dart';
 import '../widgets/LoadingOverlay.dart';
 import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
 
-class UserScanResultsScreen extends StatefulWidget {
-  const UserScanResultsScreen(
-      {super.key, required this.connector, required this.connected});
-  final WalletConnect connector;
-  final bool connected;
+class UserScanResultsScreen extends ConsumerStatefulWidget {
+  const UserScanResultsScreen({super.key});
 
   static const routeName = '/user-scan-results';
 
   @override
-  State<UserScanResultsScreen> createState() => _UserScanResultsScreenState();
+  _UserScanResultsScreenState createState() => _UserScanResultsScreenState();
 }
 
-class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
+class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
   String imagePath = "";
   String imageUri = "";
   Map<String, dynamic> metadata = {};
@@ -138,11 +137,12 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as UserScanResultsScreenArguments;
 
-    final connectedWallet = widget.connector.session.accounts.length > 0
-        ? widget.connector.session.accounts[0].toLowerCase()
+    final connectedWallet = wc.session.accounts.length > 0
+        ? wc.session.accounts[0].toLowerCase()
         : '';
 
     return Scaffold(
@@ -150,10 +150,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
         appBar: CustomAppBar(
           text: context.loc.tapResults,
           connectedWalletAddress:
-              widget.connected ? null : connectedWallet, //wallet adresse
-          connector: widget.connector, //wallet connect connector
-          isConnected:
-              widget.connected, // wallet connect connected status boolean
+              wc.connected ? null : connectedWallet, //wallet adresse
         ),
         body: ScreenBodyLayout(children: [
           Stack(
@@ -169,7 +166,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         //Header Title
-                        widget.connected && connectedWallet == navArgs.nftOwner
+                        wc.connected && connectedWallet == navArgs.nftOwner
                             ?
                             //connected wallet is owner
                             Text(context.loc.congrats,
@@ -196,7 +193,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                             Text(context.loc.nftNotFound,
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.headline5)
-                            : widget.connected &&
+                            : wc.connected &&
                                     connectedWallet == navArgs.nftOwner
                                 ?
                                 //chip is initialized and wallet is connected
@@ -225,7 +222,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                                   ? //chip not initialized aka no NFT exists
                                   SvgPicture.asset(
                                       "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
-                                  : !widget.connected
+                                  : !wc.connected
                                       ?
                                       //chip is initialized and wallet is NOT connected
                                       SvgPicture.asset(
@@ -249,7 +246,7 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                               ? //chip not initialized aka no NFT exists
                               Text(context.loc.ownershipCouldNotBeVerified,
                                   style: Theme.of(context).textTheme.headline5)
-                              : !widget.connected
+                              : !wc.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
                                   Text(context.loc.noWalletConnected,
@@ -276,15 +273,13 @@ class _UserScanResultsScreenState extends State<UserScanResultsScreen> {
                               ?
                               //chip is NOT initialized
                               Container()
-                              : !widget.connected
+                              : !wc.connected
                                   ?
                                   //chip is initialized and wallet is NOT connected
                                   CustomRoundedButton(
                                       text: context.loc.connectWallet,
-                                      onPressed: (() => {
-                                            startWalletConnection(
-                                                context, widget.connector)
-                                          }))
+                                      onPressed: (() =>
+                                          {startWalletConnection(context, wc)}))
                                   :
                                   //chip is initialized and wallet is connected
                                   CustomRoundedButton(

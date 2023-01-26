@@ -17,18 +17,16 @@ import '../widgets/CustomHomeScreenButton.dart';
 import '../widgets/CustomRoundedButton.dart';
 import '../widgets/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/utils/providers.service.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key, required this.connector, required this.connected})
-      : super(key: key);
-
-  final WalletConnect connector;
-  final bool connected;
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
   static const routeName = '/login';
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
 void onScanButtonPress(BuildContext context, mounted) async {
@@ -51,15 +49,15 @@ void onScanButtonPress(BuildContext context, mounted) async {
 }
 
 void onInitializeButtonPress(
-    BuildContext context, WalletConnect connector, mounted) async {
+    BuildContext context, WalletConnect wc, mounted) async {
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {
       throw Exception("No internet connection");
     }
 
-    if (!connector.connected) {
-      await startWalletConnection(context, connector);
+    if (!wc.connected) {
+      await startWalletConnection(context, wc);
     }
 
     if (mounted) {
@@ -74,18 +72,16 @@ void onInitializeButtonPress(
   }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    WalletConnect wc = ref.watch(walletConnectProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        connectedWalletAddress:
-            widget.connector.session.accounts.isEmpty == true
-                ? null
-                : widget.connector.session.accounts[0].toLowerCase(),
-        connector: widget.connector,
-        isConnected: widget.connected,
+        connectedWalletAddress: wc.session.accounts.isEmpty == true
+            ? null
+            : wc.session.accounts[0].toLowerCase(),
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
@@ -103,8 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     text: context.loc.initializeChip,
                     svgPath:
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
-                    onTap: () => onInitializeButtonPress(
-                        context, widget.connector, mounted))
+                    onTap: () => onInitializeButtonPress(context, wc, mounted))
                 : Container(),
             const SizedBox(height: 70),
             CustomRoundedButton(
