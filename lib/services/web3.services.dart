@@ -5,7 +5,7 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'utils.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 
 Web3Client getWeb3Client() {
   var rpcUrl = dotenv.get('CHAIN_RPC');

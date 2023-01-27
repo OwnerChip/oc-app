@@ -46,7 +46,7 @@ Future<String> uploadFileToIPFS(XFile xfile, String fileMimeType) async {
 }
 
 /// download a file from IPFS
-Future<void> downloadMetadataFileFromIPFS(
+Future<void> DEPRECATED_downloadMetadataFileFromIPFS(
     String cid, String savePath, bool retry) async {
   try {
     // get filename
@@ -67,12 +67,60 @@ Future<void> downloadMetadataFileFromIPFS(
   } catch (e) {
     print("ERROR while downloading metadata file from IPFS: $e");
     // RETRY using alternative IPFS gateway
-    await downloadMetadataFileFromIPFS(cid, savePath, true);
+    await DEPRECATED_downloadMetadataFileFromIPFS(cid, savePath, true);
+  }
+}
+
+/// download a file from IPFS
+Future<dynamic> downloadMetadataFromIPFS(String cid) async {
+  try {
+    var ipfs = getIpfsGatewayClient(false);
+    Response response = await ipfs.get(
+      cid,
+      options: Options(
+          responseType: ResponseType.json,
+          followRedirects: false,
+          validateStatus: (status) {
+            return status! < 500;
+          }),
+    );
+
+    return response.data;
+  } catch (e) {
+    print("ERROR while downloading metadata from IPFS: $e");
   }
 }
 
 /// download an image file from IPFS and return file path
-Future<Map<String, String>> downloadImageFileFromIPFS(String cid) async {
+Future<Map<String, String>> DEPRECATED_downloadImageFileFromIPFS(
+    String cid) async {
+  try {
+    var ipfs = getIpfsGatewayClient(false);
+    Response response = await ipfs.get(
+      cid,
+      options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+          validateStatus: (status) {
+            return status! < 500;
+          }),
+    );
+
+    final Directory directory = Directory.systemTemp;
+    final File imageFile = File("${directory.path}/$cid");
+    await imageFile.writeAsBytes(response.data);
+    final String imagePath = imageFile.path;
+    String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
+    Map<String, String> result = {"imagePath": imagePath, "imageUri": imageUri};
+    return result;
+  } catch (e) {
+    print("ERROR while downloading image file from IPFS...");
+    print(e);
+    return {};
+  }
+}
+
+Future<Map<String, String>> getIpfsProviderImageUrl(String cid) async {
   try {
     var ipfs = getIpfsGatewayClient(false);
     Response response = await ipfs.get(

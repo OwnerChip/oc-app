@@ -5,32 +5,32 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomCard.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomImage.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/utils/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 //web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 //local imports
-import '../widgets/CustomAppBar.dart';
-import '../utils/ipfs.services.dart';
+import '../widgets/ui/CustomAppBar.dart';
+import '../services/ipfs.services.dart';
 import '../utils/utils.dart';
-import '../utils/images.service.dart';
-import '../utils/web3.services.dart';
-import '../utils/navigation_arguments.dart';
+import 'package:ownerchip_whitelabel/services/images.service.dart';
+import '../services/web3.services.dart';
+import '../utils/navigation.arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
-import '../widgets/returnSnackBarWidget.dart';
-import '../widgets/LoadingOverlay.dart';
+import '../widgets/ui/returnSnackBarWidget.dart';
+import '../widgets/ui/LoadingOverlay.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import '../widgets/CustomOverlay.dart';
+import '../widgets/layout/CustomOverlay.dart';
 import '../themes/fontSpecs.dart';
-import '../widgets/TraitsForm.dart';
+import '../widgets/ui/TraitsForm.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends ConsumerStatefulWidget {
@@ -342,13 +342,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                         Theme.of(context).textTheme.bodyText2,
                                     controller: _titleController,
                                     decoration: InputDecoration(
-                                        enabledBorder: new UnderlineInputBorder(
+                                        enabledBorder: UnderlineInputBorder(
                                           borderSide: BorderSide(
                                               color: Theme.of(context)
                                                   .primaryColor),
                                         ),
 // and:
-                                        focusedBorder: new UnderlineInputBorder(
+                                        focusedBorder: UnderlineInputBorder(
                                           borderSide: BorderSide(
                                               color: Theme.of(context)
                                                   .primaryColor),

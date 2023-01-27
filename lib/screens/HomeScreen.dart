@@ -6,19 +6,19 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../utils/localization.helper.dart';
 
 // local files
-import '../utils/url_generator.service.dart';
+import '../services/url_generator.service.dart';
 import '../utils/utils.dart';
-import '../widgets/CustomAppBar.dart';
+import '../widgets/ui/CustomAppBar.dart';
 import 'ScanningScreen.dart';
 import 'UserScanResultsScreen.dart';
-import '../utils/navigation_arguments.dart';
-import '../widgets/ScreenBodyLayout.dart';
-import '../widgets/CustomHomeScreenButton.dart';
-import '../widgets/CustomRoundedButton.dart';
-import '../widgets/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
+import '../utils/navigation.arguments.dart';
+import '../widgets/layout/ScreenBodyLayout.dart';
+import '../widgets/ui/CustomHomeScreenButton.dart';
+import '../widgets/ui/CustomRoundedButton.dart';
+import '../widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/utils/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);

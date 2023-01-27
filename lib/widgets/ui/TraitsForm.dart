@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
-import '../themes/fontSpecs.dart';
-import '../themes/colorSpecs.dart';
-import '../utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TraitsForm extends StatefulWidget {
@@ -166,13 +166,10 @@ class _TraitTextInput extends State<TraitTextInput> {
               enabledBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
-// and:
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
-              // contentPadding: EdgeInsets.only(left: 12),
               hintStyle: Theme.of(context).textTheme.bodyText2,
-              // labelText: context.loc.type,
               hintText: context.loc.type,
             ),
             validator: (value) {
@@ -194,15 +191,12 @@ class _TraitTextInput extends State<TraitTextInput> {
               style: Theme.of(context).textTheme.bodyText2,
               controller: _valueController,
               decoration: InputDecoration(
-                // labelText: context.loc.value,
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
-// and:
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
-                // contentPadding: EdgeInsets.only(left: 12),
                 hintStyle: Theme.of(context).textTheme.bodyText2,
                 hintText: context.loc.value,
               ),

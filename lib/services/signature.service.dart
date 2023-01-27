@@ -3,7 +3,7 @@ import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:io';
-import 'utils.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 
 // calculate msg digest (with addded prefix for compliance with personal_sign)
 Uint8List prepareMsgForSignature(String hexString) {

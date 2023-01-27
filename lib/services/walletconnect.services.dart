@@ -2,7 +2,7 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/widgets/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

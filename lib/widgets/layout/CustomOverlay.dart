@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'CustomCard.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'PopupLoader.dart';
 
 class CustomOverlay extends StatelessWidget {
   const CustomOverlay({

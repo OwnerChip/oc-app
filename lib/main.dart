@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
-import 'package:ownerchip_whitelabel/utils/providers.service.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
 
 //screens and widgets
@@ -16,7 +14,7 @@ import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
-import 'widgets/RestartWidget.dart';
+import 'widgets/logic/RestartWidget.dart';
 
 // setup logger
 void _setupLogging() {

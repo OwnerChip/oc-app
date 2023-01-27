@@ -42,8 +42,8 @@ class CustomImage extends StatelessWidget {
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg',
                         fit: BoxFit.cover,
                       )
-                    : Image.file(
-                        File(imagePath),
+                    : Image.network(
+                        imagePath,
                         fit: BoxFit.cover,
                       ),
               )),

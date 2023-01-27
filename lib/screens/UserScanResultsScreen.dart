@@ -9,21 +9,21 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/utils/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 //local imports
 import 'NFTDetailsScreen.dart';
-import '../widgets/CustomAppBar.dart';
-import '../utils/navigation_arguments.dart';
-import '../widgets/ChipInfo.dart';
-import '../widgets/CustomCard.dart';
-import '../widgets/ScreenBodyLayout.dart';
-import '../widgets/CustomImage.dart';
-import '../widgets/CustomRoundedButton.dart';
-import '../widgets/returnSnackBarWidget.dart';
-import '../utils/ipfs.services.dart';
-import '../utils/web3.services.dart';
-import 'package:ownerchip_whitelabel/utils/walletConnect.dart';
+import '../widgets/ui/CustomAppBar.dart';
+import '../utils/navigation.arguments.dart';
+import '../widgets/ui/ChipInfo.dart';
+import '../widgets/ui/CustomCard.dart';
+import '../widgets/layout/ScreenBodyLayout.dart';
+import '../widgets/ui/CustomImage.dart';
+import '../widgets/ui/CustomRoundedButton.dart';
+import '../widgets/ui/returnSnackBarWidget.dart';
+import '../services/ipfs.services.dart';
+import '../services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
   const UserScanResultsScreen({super.key});
@@ -35,110 +35,21 @@ class UserScanResultsScreen extends ConsumerStatefulWidget {
 }
 
 class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
-  String imagePath = "";
-  String imageUri = "";
-  Map<String, dynamic> metadata = {};
   bool loadingImage = true;
-
-  // get the metadata.json file from IPFS associated with a token
-  Future<Map<String, dynamic>> _fetchMetadata(BigInt tokenId) async {
-    Map<String, dynamic> result = {};
-    try {
-      // get IPFS CID
-      String tokenUri = await getTokenUri(tokenId);
-
-      // fetch metadata json
-      String jsonCid = getCidFromIpfsLink(tokenUri);
-      final Directory directory = Directory.systemTemp;
-      File jsonFile = File("${directory.path}/$jsonCid.metadata.json");
-      await downloadMetadataFileFromIPFS(jsonCid, jsonFile.path, false);
-
-      // read metadata json
-      final String res = await jsonFile.readAsString();
-      metadata = Map<String, dynamic>.from(json.decode(res));
-      result = metadata;
-    } catch (e) {
-      print("error $e");
-      // throw Exception("Error fetching metadata: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.loadingNFTDataError, 'error'),
-      );
-    }
-    return result;
-  }
-
-  // get the path of the associated image locally if available OR from IPFS if not
-  Future<void> _fetchImage(
-      String imgPath, Future<Map<String, dynamic>> meta) async {
-    try {
-      setState(() {
-        loadingImage = true;
-      });
-      if (imgPath != "") {
-        metadata = await meta;
-        imagePath = imgPath;
-      } else {
-        Map<String, dynamic> metaSync = await meta;
-        if (metaSync.containsKey("image") && metaSync['image']!.isNotEmpty) {
-          String imageCid = getCidFromIpfsLink(metaSync['image']!);
-          Map<String, String> result =
-              await downloadImageFileFromIPFS(imageCid);
-          imagePath = result['imagePath']!;
-          imageUri = result['imageUri']!;
-        }
-      }
-      // updateScreen
-      setState(() {
-        metadata;
-        imagePath;
-        loadingImage = false;
-      });
-    } catch (e) {
-      print("error fetching image: $e");
-      setState(() {
-        loadingImage = true;
-        imageUri = "";
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.loadingNFTDataError, 'error'),
-      );
-    }
-  }
 
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    try {
-      final UserScanResultsScreenArguments navArgs = ModalRoute.of(context)!
-          .settings
-          .arguments as UserScanResultsScreenArguments;
-
-      if (navArgs.chipIsInitialized) {
-        Future<Map<String, dynamic>> meta =
-            _fetchMetadata(bytesToUnsignedInt(navArgs.tokenId));
-        String imgPath = "";
-        _fetchImage(imgPath, meta);
-      }
-    } catch (e) {
-      setState(() {
-        imagePath = '';
-        loadingImage = true;
-      });
-      print(e);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as UserScanResultsScreenArguments;
+    final nftMetadata =
+        ref.watch(nftMetadataProvider(bytesToUnsignedInt(navArgs.tokenId)));
+    final nftImageUri =
+        ref.watch(nftImageProvider(bytesToUnsignedInt(navArgs.tokenId)));
+    WalletConnect wc = ref.watch(walletConnectProvider);
 
     final connectedWallet = wc.session.accounts.length > 0
         ? wc.session.accounts[0].toLowerCase()
@@ -320,10 +231,22 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               walletAddress: navArgs.chipWalletAddress)
                         ])
                   ]),
-              CustomImage(
-                width: 130,
-                loading: loadingImage,
-                imagePath: imagePath,
+              nftImageUri.when(
+                loading: () => CustomImage(
+                  width: 130,
+                  loading: true,
+                  imagePath: '',
+                ),
+                error: (e, s) => CustomImage(
+                  width: 130,
+                  loading: false,
+                  imagePath: '',
+                ),
+                data: (data) => CustomImage(
+                  width: 130,
+                  loading: false,
+                  imagePath: data,
+                ),
               ),
             ],
           ),

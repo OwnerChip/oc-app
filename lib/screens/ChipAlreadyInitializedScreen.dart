@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomCard.dart';
-import 'package:ownerchip_whitelabel/widgets/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/LoadingOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/localization.helper.dart';
 import 'dart:typed_data';
@@ -16,16 +16,16 @@ import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 // import local files
-import '../widgets/CustomAppBar.dart';
-import '../utils/navigation_arguments.dart';
-import '../utils/url_generator.service.dart';
+import '../widgets/ui/CustomAppBar.dart';
+import '../utils/navigation.arguments.dart';
+import '../services/url_generator.service.dart';
 import 'HomeScreen.dart';
 import '../utils/utils.dart';
-import '../utils/web3.services.dart';
-import '../widgets/returnSnackBarWidget.dart';
+import '../services/web3.services.dart';
+import '../widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/utils/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
   const ChipAlreadyInitializedScreen({super.key});
@@ -55,7 +55,7 @@ class _ChipAlreadyInitializedState
       // String imageCid = "";
       // final Directory directory = Directory.systemTemp;
       // File jsonFile = File("${directory.path}/$metadataFileCid.metadata.json");
-      // await downloadMetadataFileFromIPFS(metadataFileCid, jsonFile.path, false);
+      // await DEPRECATED_downloadMetadataFileFromIPFS(metadataFileCid, jsonFile.path, false);
       // final String res = await jsonFile.readAsString();
       // Map<String, dynamic> metadata =
       //     Map<String, dynamic>.from(json.decode(res));
@@ -86,22 +86,6 @@ class _ChipAlreadyInitializedState
       if (txnReceipt?.status == true) {
         //this means burn succeeded
 
-        // try deleting IPFS files
-        // try {
-        //   bool success1 = await upinFileFromIPFS(metadataFileCid);
-        //   if (!success1) {
-        //     throw ("Could not delete image file $metadataFileCid from IPFS");
-        //   }
-        //   if (imageCid != "") {
-        //     bool success2 = await upinFileFromIPFS(imageCid);
-        //     if (!success2) {
-        //       throw ("Could not delete image file $imageCid from IPFS");
-        //     }
-        //   }
-        // } catch (e) {
-        //   print("ERROR deleting files from IPFS: $e");
-        // }
-
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
@@ -111,11 +95,6 @@ class _ChipAlreadyInitializedState
         //delay 2 second
         await Future.delayed(Duration(seconds: 2));
 
-        // setState(() {
-        //   isLoading = false;
-        // });
-
-        //navigate to login screen
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, HomeScreen.routeName);
       } else {

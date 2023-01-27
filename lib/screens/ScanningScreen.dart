@@ -16,18 +16,18 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'UserScanResultsScreen.dart';
 import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
-import '../utils/navigation_arguments.dart';
+import '../utils/navigation.arguments.dart';
 import '../utils/utils.dart';
 import '../utils/nfc.commands.dart';
-import '../utils/web3.services.dart';
-import '../utils/signature.service.dart';
-import '../widgets/CustomAppBar.dart';
-import '../widgets/ScanningIndicator.dart';
-import '../widgets/returnSnackBarWidget.dart';
-import '../widgets/CustomRoundedButton.dart';
-import '../widgets/ScreenBodyLayout.dart';
+import '../services/web3.services.dart';
+import '../services/signature.service.dart';
+import '../widgets/ui/CustomAppBar.dart';
+import '../widgets/ui/ScanningIndicator.dart';
+import '../widgets/ui/returnSnackBarWidget.dart';
+import '../widgets/ui/CustomRoundedButton.dart';
+import '../widgets/layout/ScreenBodyLayout.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/utils/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
   const ScanningScreen({super.key});
