@@ -38,11 +38,9 @@ void main(List<String> args) async {
   //set initialRoute accordingly
   String initialRoute = HomeScreen.routeName;
 
-  runApp(
-      //wrapper to enable app restarts
-      RestartWidget(
-          child: ProviderScope(
-              child: MyApp(
+  runApp(RestartWidget(
+      child: ProviderScope(
+          child: MyApp(
     initialRoute: initialRoute,
   ))));
 }

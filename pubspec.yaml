@@ -30,6 +30,7 @@ dependencies:
   flutter_native_splash: ^2.2.16
   flutter_svg: ^1.1.6
   riverpod_annotation: ^1.1.1
+  shared_preferences: ^2.0.17
 
 dev_dependencies:
   flutter_test:
