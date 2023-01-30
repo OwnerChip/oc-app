@@ -119,8 +119,8 @@ class _ChipAlreadyInitializedState
     WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final Uint8List tokenId = navArgs.tokenId;
-    final Uint8List tokenIdHash = keccakUtf8(hexToBigInt(tokenId).toString());
+    final BigInt tokenId = navArgs.tokenId;
+    final Uint8List tokenIdHash = keccakUtf8(tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
     return LoadingOverlay(
@@ -178,10 +178,8 @@ class _ChipAlreadyInitializedState
                     CustomRoundedButton(
                       width: 250,
                       text: context.loc.burnToken,
-                      onPressed: () => {
-                        burnToken(
-                            hexToBigInt(tokenId), navArgs.hashedMsg, signature)
-                      },
+                      onPressed: () =>
+                          {burnToken(tokenId, navArgs.hashedMsg, signature)},
                     ),
 
                     const SizedBox(
@@ -204,8 +202,7 @@ class _ChipAlreadyInitializedState
                       text: context.loc.showOnOpenSea,
                       onPressed: () => {
                         launchUrl(
-                            generateOpenSeaTokenDetailsUrl(
-                                bytesToUnsignedInt(tokenId).toString()),
+                            generateOpenSeaTokenDetailsUrl(tokenId.toString()),
                             mode: LaunchMode.externalApplication)
                       },
                     ),

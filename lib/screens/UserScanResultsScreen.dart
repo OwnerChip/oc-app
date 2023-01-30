@@ -45,10 +45,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as UserScanResultsScreenArguments;
-    final nftMetadata =
-        ref.watch(nftMetadataProvider(bytesToUnsignedInt(navArgs.tokenId)));
-    final nftImageUri =
-        ref.watch(nftImageProvider(bytesToUnsignedInt(navArgs.tokenId)));
+    final nftMetadata = ref.watch(nftMetadataProvider(navArgs.tokenId));
+    final nftImageUri = ref.watch(nftImageProvider(navArgs.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
 
     final connectedWallet = wc.session.accounts.length > 0
@@ -225,7 +223,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           SizedBox(height: 15),
                           ChipInfo(
                               tokenId: navArgs.chipIsInitialized
-                                  ? bytesToUnsignedInt(navArgs.tokenId)
+                                  ? navArgs.tokenId
                                   : null,
                               chipName: 'Infineon Secora',
                               walletAddress: navArgs.chipWalletAddress)
@@ -235,12 +233,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                 loading: () => CustomImage(
                   width: 130,
                   loading: true,
-                  imagePath: '',
                 ),
                 error: (e, s) => CustomImage(
                   width: 130,
                   loading: false,
-                  imagePath: '',
                 ),
                 data: (data) => CustomImage(
                   width: 130,

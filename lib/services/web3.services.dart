@@ -181,7 +181,7 @@ Future<dynamic> getTokenUri(BigInt tokenId) async {
     return uri[0];
   } catch (e) {
     print('Error while fetching uri of tokenId $tokenId: $e');
-    return e;
+    throw Exception('Error while fetching uri of tokenId $tokenId: $e');
   }
 }
 

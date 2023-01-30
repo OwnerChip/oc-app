@@ -18,7 +18,7 @@ import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation.arguments.dart';
 import '../utils/utils.dart';
-import '../utils/nfc.commands.dart';
+import '../utils/nfc_commands.dart';
 import '../services/web3.services.dart';
 import '../services/signature.service.dart';
 import '../widgets/ui/CustomAppBar.dart';
@@ -28,6 +28,7 @@ import '../widgets/ui/CustomRoundedButton.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/nfc.service.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
   const ScanningScreen({super.key});
@@ -77,38 +78,11 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
       try {
         var nfc = NFCPlatform(tag);
 
-        //check if iso7816 or isodep is available and exit if not
-        if (nfc == null) {
-          NfcManager.instance.stopSession();
-          throw Exception('Tag is not ISO-DEP.');
-        }
-        var selectAppResponse = await nfc.sendCommand(SELECT_APP);
-        Uint8List GET_KEY_INFO = make_get_key_info_command(
-            0x01); //make command to get first generated wallet
-        var responseGetKeyInfo = await nfc.sendCommand(GET_KEY_INFO);
+        await nfcPlatformCheck(context, nfc);
 
-        Uint8List getKeyInfoData = responseGetKeyInfo[0];
-        int getKeyInfoSw1 = responseGetKeyInfo[1];
-        int getKeyIinfoSw2 = responseGetKeyInfo[2];
-        //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
-        if (getKeyInfoSw1 == 106 && getKeyIinfoSw2 == 136) {
-          //if first generated wallet does not yet exist, generate it on chip
-          var responseGenerateKey = await nfc.sendCommand(GENERATE_KEY);
-          //get first key info after generating new key
-          responseGetKeyInfo = await nfc.sendCommand(GET_KEY_INFO);
-          getKeyInfoData = responseGetKeyInfo[0];
-          getKeyInfoSw1 = responseGetKeyInfo[1];
-          getKeyIinfoSw2 = responseGetKeyInfo[2];
-        }
-        //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
-        else if (!(getKeyInfoSw1 == 144 && getKeyIinfoSw2 == 00)) {
-          throw Exception("Error while generating key");
-        }
-        Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
-        Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
-        String chipEthereumAddressHexString =
-            getEthereumAddressHexString(chipEthereumAddress);
-        BigInt chipTokenId = hexToBigInt(chipEthereumAddress);
+        List result = await initializeChip(nfc);
+        String chipEthereumAddress = result[0];
+        BigInt chipTokenId = result[1];
 
         // get SIGNATURE from NFC chip
         final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
@@ -139,7 +113,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         // verify chip authenticity via SMART CONTRACT
         try {
           bool result = await verifyTokenSigner(
-              chipEthereumAddressHexString, hashedMsg, signature);
+              chipEthereumAddress, hashedMsg, signature);
         } catch (e) {
           print("ERROR: $e");
           throw ("NFC Chip not valid, signature verification failed");
@@ -164,11 +138,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
           // ignore: use_build_context_synchronously
           Navigator.pushReplacementNamed(
               context, UserScanResultsScreen.routeName,
-              arguments: UserScanResultsScreenArguments(
-                  nftOwner,
-                  chipIsInitialized,
-                  chipEthereumAddress,
-                  chipEthereumAddressHexString));
+              arguments: UserScanResultsScreenArguments(nftOwner,
+                  chipIsInitialized, chipTokenId, chipEthereumAddress));
         } else {
           //chip already initialized: navigate to ChipAlreadyInitializedScreen
           if (chipIsInitialized) {
@@ -176,16 +147,13 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             Navigator.pushReplacementNamed(
                 context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
-                    chipEthereumAddress,
-                    chipEthereumAddressHexString,
-                    hashedMsg,
-                    signature));
+                    chipTokenId, chipEthereumAddress, hashedMsg, signature));
           } else {
             //chip not initialized: navigate to MetadataScreen
             // ignore: use_build_context_synchronously
             Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
-                arguments: ChipInitializedArguments(chipEthereumAddress,
-                    chipEthereumAddressHexString, hashedMsg, signature));
+                arguments: MetadataScreenArguments(
+                    chipTokenId, chipEthereumAddress, hashedMsg, signature));
           }
         }
       } catch (e) {

@@ -25,6 +25,12 @@ class WalletConnector extends StateNotifier<WalletConnect> {
   }
 }
 
+//token ID provider
+final tokenIdProvider = FutureProvider.autoDispose<BigInt>((ref) async {
+  var result = await query("tokenId", []);
+  return result[0];
+});
+
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
   String tokenUri = await getTokenUri(tokenId);

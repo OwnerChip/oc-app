@@ -8,14 +8,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class CustomImage extends StatelessWidget {
   CustomImage({
     super.key,
-    required this.imagePath,
+    this.imagePath,
+    this.imageFile,
     this.width,
     this.height,
     this.loading = true,
     this.tokenId,
   });
 
-  final dynamic? imagePath;
+  final dynamic imagePath;
+  final dynamic imageFile;
   final double? width;
   final double? height;
   final bool loading;
@@ -42,10 +44,15 @@ class CustomImage extends StatelessWidget {
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg',
                         fit: BoxFit.cover,
                       )
-                    : Image.network(
-                        imagePath,
-                        fit: BoxFit.cover,
-                      ),
+                    : imageFile != null
+                        ? Image.file(
+                            File(imagePath),
+                            fit: BoxFit.cover,
+                          )
+                        : Image.network(
+                            imagePath,
+                            fit: BoxFit.cover,
+                          ),
               )),
           tokenId != null
               ? AspectRatio(
@@ -66,28 +73,6 @@ class CustomImage extends StatelessWidget {
                         text: tokenId.toString(),
                       ),
                     ]),
-                    //     Row(children: [
-                    //   //spacing
-                    //   const SizedBox(width: 5),
-                    //   SmallTextContainer(
-                    //     text:
-                    //         'Token ID: ${tokenId.toString().substring(0, 8)}...',
-                    //   ),
-                    //   IconButton(
-                    //       color: Colors.white,
-                    //       padding: EdgeInsets.zero,
-                    //       constraints: BoxConstraints(),
-                    //       iconSize: 25,
-                    //       onPressed: () {
-                    //         Clipboard.setData(
-                    //             ClipboardData(text: tokenId.toString()));
-                    //         ScaffoldMessenger.of(context).showSnackBar(
-                    //             const SnackBar(
-                    //                 content:
-                    //                     Text('Token ID copied to clipboard')));
-                    //       },
-                    //       icon: const Icon(Icons.copy))
-                    // ]),
                   ))
               : Container()
         ]));

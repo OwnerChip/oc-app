@@ -48,10 +48,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
   Widget build(BuildContext context) {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
-    final nftMetadata =
-        ref.watch(nftMetadataProvider(bytesToUnsignedInt(navArgs.tokenId)));
-    final nftImageUri =
-        ref.watch(nftImageProvider(bytesToUnsignedInt(navArgs.tokenId)));
+    final nftMetadata = ref.watch(nftMetadataProvider(navArgs.tokenId));
+    final nftImageUri = ref.watch(nftImageProvider(navArgs.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
 
     return Scaffold(
@@ -68,18 +66,16 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
             nftImageUri.when(
               loading: () => CustomImage(
                 loading: loadingImage,
-                imagePath: '',
-                tokenId: bytesToUnsignedInt(navArgs.tokenId),
+                tokenId: navArgs.tokenId,
               ),
               error: (e, s) => CustomImage(
                 loading: loadingImage,
-                imagePath: '',
-                tokenId: bytesToUnsignedInt(navArgs.tokenId),
+                tokenId: navArgs.tokenId,
               ),
               data: (data) => CustomImage(
                 loading: loadingImage,
                 imagePath: data,
-                tokenId: bytesToUnsignedInt(navArgs.tokenId),
+                tokenId: navArgs.tokenId,
               ),
             ),
             //spacing
@@ -87,26 +83,18 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                nftMetadata.when(
-                  loading: () => Text(context.loc.loading,
-                      style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                          fontSize: CustomFonts(dotenv.get('APP_ID'))
-                              .MetadataNameFontSize,
-                          fontWeight: CustomFonts(dotenv.get('APP_ID'))
-                              .MetadataNameFontWeight)),
-                  data: (data) => Text(data['name'] ?? context.loc.loading,
-                      style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                          fontSize: CustomFonts(dotenv.get('APP_ID'))
-                              .MetadataNameFontSize,
-                          fontWeight: CustomFonts(dotenv.get('APP_ID'))
-                              .MetadataNameFontWeight)),
-                  error: (e, s) => Text(context.loc.loading,
-                      style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                          fontSize: CustomFonts(dotenv.get('APP_ID'))
-                              .MetadataNameFontSize,
-                          fontWeight: CustomFonts(dotenv.get('APP_ID'))
-                              .MetadataNameFontWeight)),
-                ),
+                Text(
+                    nftMetadata.when(
+                        loading: () => context.loc.loading,
+                        data: (data) => data['name'],
+                        error: (e, s) => context.loc.loading),
+                    style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                        fontSize: CustomFonts(dotenv.get('APP_ID'))
+                            .MetadataNameFontSize,
+                        fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                            .MetadataNameFontWeight)),
+
+                //show traits button
                 nftMetadata.when(
                   loading: () => Container(),
                   data: (data) => data['traits'] != null &&
@@ -192,7 +180,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               onPressed: () => {
                 launchUrl(
                     generateBlockchainExplorerTokenDetailsUrl(
-                        bytesToUnsignedInt(navArgs.tokenId).toString()),
+                        navArgs.tokenId.toString()),
                     mode: LaunchMode.externalApplication)
               },
             ),
@@ -201,8 +189,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               text: context.loc.showOnOpenSea,
               onPressed: () => {
                 launchUrl(
-                    generateOpenSeaTokenDetailsUrl(
-                        bytesToUnsignedInt(navArgs.tokenId).toString()),
+                    generateOpenSeaTokenDetailsUrl(navArgs.tokenId.toString()),
                     mode: LaunchMode.externalApplication)
               },
             ),

@@ -1,0 +1,34 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager/platform_tags.dart';
+
+Uint8List SELECT_APP = Uint8List.fromList([
+  0x00,
+  0xA4,
+  0x04,
+  0x00,
+  0x0D,
+  0xD2,
+  0x76,
+  0x00,
+  0x00,
+  0x04,
+  0x15,
+  0x02,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x12
+]);
+
+Uint8List GENERATE_KEY = Uint8List.fromList([
+  0x00,
+  0x02,
+  0x00,
+  0x00,
+  0x01,
+]);

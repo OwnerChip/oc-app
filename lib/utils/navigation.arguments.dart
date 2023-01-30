@@ -10,7 +10,7 @@ class ScanningScreenArguments {
 class UserScanResultsScreenArguments {
   final String nftOwner;
   final bool chipIsInitialized;
-  final Uint8List tokenId;
+  final BigInt tokenId;
   final String chipWalletAddress;
 
   UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
@@ -18,27 +18,27 @@ class UserScanResultsScreenArguments {
 }
 
 class ChipAlreadyInitializedScreenArguments {
-  final Uint8List tokenId;
-  final String chipWalletAddress;
+  final BigInt tokenId;
+  final String chipEthereumAddress;
   final Uint8List hashedMsg;
   final MsgSignature signature;
 
   ChipAlreadyInitializedScreenArguments(
-      this.tokenId, this.chipWalletAddress, this.hashedMsg, this.signature);
+      this.tokenId, this.chipEthereumAddress, this.hashedMsg, this.signature);
 }
 
-class ChipInitializedArguments {
-  final Uint8List tokenId;
+class MetadataScreenArguments {
+  final BigInt tokenId;
   final String chipWalletAddress;
   final Uint8List hashedMsg;
   final MsgSignature signature;
 
-  ChipInitializedArguments(
+  MetadataScreenArguments(
       this.tokenId, this.chipWalletAddress, this.hashedMsg, this.signature);
 }
 
 class NFTDetailsScreenArguments {
-  final Uint8List tokenId;
+  final BigInt tokenId;
   final String chipWalletAddress;
   final String? localImagePath;
 

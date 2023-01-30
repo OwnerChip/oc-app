@@ -92,7 +92,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
 
     final navArgs =
-        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
+        ModalRoute.of(context)!.settings.arguments as MetadataScreenArguments;
 
     //if wc bridge is not connected, then reconnect
     if (!wc.bridgeConnected) {
@@ -109,7 +109,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
 
       if (image != null) {
-        imageCid = await uploadFileToIPFS(image!, mimeType);
+        imageCid = await uploadFileToIPFS(image, mimeType);
         metadata['image'] = 'ipfs://$imageCid';
       }
 
@@ -202,7 +202,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs =
-        ModalRoute.of(context)!.settings.arguments as ChipInitializedArguments;
+        ModalRoute.of(context)!.settings.arguments as MetadataScreenArguments;
 
     return CustomOverlay(
         show: showTraitsForm,
@@ -280,6 +280,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                 child: CustomImage(
                                   loading: false,
                                   imagePath: imagePath,
+                                  imageFile: image,
                                 ),
                               )
                             : CustomCard(

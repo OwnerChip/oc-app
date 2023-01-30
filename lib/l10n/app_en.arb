@@ -11,6 +11,7 @@
     "logout": "Logout",
     "scanning": "Tap an item",
     "nfcError": "Error tapping NFC tag.",
+    "noNfc": "Please turn on NFC.",
     "isoDepError": "IsoDep is not supported.",
     "ownerError": "Error fetching owner",
     "burning": "Burning token",
