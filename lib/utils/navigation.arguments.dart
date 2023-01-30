@@ -40,8 +40,6 @@ class MetadataScreenArguments {
 class NFTDetailsScreenArguments {
   final BigInt tokenId;
   final String chipWalletAddress;
-  final String? localImagePath;
 
-  NFTDetailsScreenArguments(
-      this.tokenId, this.chipWalletAddress, this.localImagePath);
+  NFTDetailsScreenArguments(this.tokenId, this.chipWalletAddress);
 }

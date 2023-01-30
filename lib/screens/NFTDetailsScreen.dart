@@ -35,7 +35,6 @@ class NFTDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
-  bool loadingImage = true;
   bool showDescription = true;
 
   void toggleDescription() {
@@ -65,15 +64,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
           children: [
             nftImageUri.when(
               loading: () => CustomImage(
-                loading: loadingImage,
+                loading: true,
                 tokenId: navArgs.tokenId,
               ),
               error: (e, s) => CustomImage(
-                loading: loadingImage,
+                loading: false,
                 tokenId: navArgs.tokenId,
               ),
               data: (data) => CustomImage(
-                loading: loadingImage,
+                loading: false,
                 imagePath: data,
                 tokenId: navArgs.tokenId,
               ),

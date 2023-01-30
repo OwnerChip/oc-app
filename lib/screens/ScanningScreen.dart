@@ -18,7 +18,6 @@ import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation.arguments.dart';
 import '../utils/utils.dart';
-import '../utils/nfc_commands.dart';
 import '../services/web3.services.dart';
 import '../services/signature.service.dart';
 import '../widgets/ui/CustomAppBar.dart';
@@ -51,27 +50,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
     String nftOwner;
     bool chipIsInitialized = false;
     int randomNumber = makeRandomInt();
-
-    try {
-      //check if there is internet connections
-      if (!await checkInternetConnection()) {
-        throw Exception("No internet connection");
-      }
-    } catch (e) {
-      //error reading chip
-      print(context.loc.isoDepError + ": $e");
-      NfcManager.instance.stopSession();
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorNoInternetConnection, 'error'),
-      );
-      //delay for 1 second
-      await Future.delayed(Duration(seconds: 1));
-      //navigate back to previous screen
-      Navigator.pop(context);
-    }
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
+
+    // await checkInternetAndHandleUI(context);
 
     //start NFC scan
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {

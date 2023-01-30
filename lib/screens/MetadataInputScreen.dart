@@ -147,11 +147,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       var txnReceipt = await getTxnReceipt(txnHash);
 
       if (txnReceipt?.status == true) {
+        //delay for 1 second
+        await Future.delayed(Duration(seconds: 2));
         // if (true) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName,
             arguments: NFTDetailsScreenArguments(
-                navArgs.tokenId, navArgs.chipWalletAddress, image.path));
+                navArgs.tokenId, navArgs.chipWalletAddress));
 
         setState(() {
           isLoading = false;

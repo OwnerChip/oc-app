@@ -199,8 +199,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                             arguments:
                                                 NFTDetailsScreenArguments(
                                                     navArgs.tokenId,
-                                                    navArgs.chipWalletAddress,
-                                                    ""));
+                                                    navArgs.chipWalletAddress));
                                       }),
                         ]),
                     //spacing
