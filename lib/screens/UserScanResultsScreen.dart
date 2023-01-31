@@ -3,9 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../utils/localization.helper.dart';
-import 'package:web3dart/crypto.dart';
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,9 +17,6 @@ import '../widgets/ui/CustomCard.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import '../widgets/ui/CustomImage.dart';
 import '../widgets/ui/CustomRoundedButton.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
-import '../services/ipfs.services.dart';
-import '../services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {

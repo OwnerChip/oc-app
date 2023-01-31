@@ -49,20 +49,6 @@ class _ChipAlreadyInitializedState
     WalletConnect wc = ref.watch(walletConnectProvider);
 
     try {
-      // to burn the related IPFS files here, we first need to fetch metadata.json read it and return image file CID
-      // String tokenUri = await getTokenUri(tokenId);
-      // String metadataFileCid = getCidFromIpfsLink(tokenUri);
-      // String imageCid = "";
-      // final Directory directory = Directory.systemTemp;
-      // File jsonFile = File("${directory.path}/$metadataFileCid.metadata.json");
-      // await DEPRECATED_downloadMetadataFileFromIPFS(metadataFileCid, jsonFile.path, false);
-      // final String res = await jsonFile.readAsString();
-      // Map<String, dynamic> metadata =
-      //     Map<String, dynamic>.from(json.decode(res));
-      // if (metadata.containsKey("image") && metadata['image']!.isNotEmpty) {
-      //   imageCid = getCidFromIpfsLink(metadata['image']!);
-      // }
-
       var burnParams = await makeSignedBurnParams(
           wc.session.accounts[0], tokenIdHash, signature);
 
