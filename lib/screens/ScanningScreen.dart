@@ -4,13 +4,17 @@ import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 //web3 imports
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import '../services/web3.services.dart';
 
 //nfc imports
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/services/nfc.service.dart';
+import '../services/signature.service.dart';
 
 //local imports
 import 'UserScanResultsScreen.dart';
@@ -18,16 +22,12 @@ import 'MetadataInputScreen.dart';
 import 'ChipAlreadyInitializedScreen.dart';
 import '../utils/navigation.arguments.dart';
 import '../utils/utils.dart';
-import '../services/web3.services.dart';
-import '../services/signature.service.dart';
 import '../widgets/ui/CustomAppBar.dart';
 import '../widgets/ui/ScanningIndicator.dart';
 import '../widgets/ui/returnSnackBarWidget.dart';
 import '../widgets/ui/CustomRoundedButton.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
-import 'package:ownerchip_whitelabel/services/nfc.service.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
   const ScanningScreen({super.key});
@@ -53,60 +53,32 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
-    // await checkInternetAndHandleUI(context);
-
     //start NFC scan
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       try {
         var nfc = NFCPlatform(tag);
 
+        //check if iso7816 or isodep is available and exit if not
         await nfcPlatformCheck(context, nfc);
 
+        //initialize chip
         List result = await initializeChip(nfc);
         String chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
 
-        // get SIGNATURE from NFC chip
-        final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
-        final Uint8List getSigCmd = make_signature_command(0x01, hashedMsg);
-        final List responseGetSignature = await nfc.sendCommand(getSigCmd);
-        final Uint8List chipSignatureData = responseGetSignature[0];
-        final int chipSignatureSw1 = responseGetSignature[1];
-        final int chipSignatureSw2 = responseGetSignature[2];
-
         //vibrate phone
-        HapticFeedback.vibrate();
-        await Future.delayed(Duration(milliseconds: 50));
-        HapticFeedback.vibrate();
-        await Future.delayed(Duration(milliseconds: 50));
-        HapticFeedback.vibrate();
+        await vibrateNTimes(3);
 
-        // TEST: extract and implicitly verify signature
-        final MsgSignature signature =
-            extractSignature(chipTokenId, hashedMsg, chipSignatureData);
-
-        // only if true, is the tokenId corresponding to the chip!
-        bool verificationResult =
-            verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
-        if (!verificationResult) {
-          throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
-        }
-
-        // verify chip authenticity via SMART CONTRACT
-        try {
-          bool result = await verifyTokenSigner(
-              chipEthereumAddress, hashedMsg, signature);
-        } catch (e) {
-          print("ERROR: $e");
-          throw ("NFC Chip not valid, signature verification failed");
-        }
+        //verify signature
+        List verifyResult = await verifySignatureAuthenticity(
+            nfc, randomNumber, chipEthereumAddress, chipTokenId);
+        Uint8List hashedMsg = verifyResult[0];
+        MsgSignature signature = verifyResult[1];
 
         // get owner of nft with cardId == tokenId
         try {
           EthereumAddress ownerAddress = await getOwner(chipTokenId);
           nftOwner = ownerAddress.toString();
-
-          //chip is initialized if this didnt catch!
           chipIsInitialized = true;
         } catch (e) {
           //NFT with this token ID does not have an owner/does not exist
@@ -115,24 +87,20 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         }
 
         NfcManager.instance.stopSession();
-        //navigate to UserScanResultsScreen
+
+        //navigate to next screen
         if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
-          // ignore: use_build_context_synchronously
           Navigator.pushReplacementNamed(
               context, UserScanResultsScreen.routeName,
               arguments: UserScanResultsScreenArguments(nftOwner,
                   chipIsInitialized, chipTokenId, chipEthereumAddress));
         } else {
-          //chip already initialized: navigate to ChipAlreadyInitializedScreen
           if (chipIsInitialized) {
-            // ignore: use_build_context_synchronously
             Navigator.pushReplacementNamed(
                 context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
                     chipTokenId, chipEthereumAddress, hashedMsg, signature));
           } else {
-            //chip not initialized: navigate to MetadataScreen
-            // ignore: use_build_context_synchronously
             Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
                 arguments: MetadataScreenArguments(
                     chipTokenId, chipEthereumAddress, hashedMsg, signature));

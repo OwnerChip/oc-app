@@ -125,7 +125,6 @@ Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
   return [chipEthereumAddressHex, chipTokenId];
 }
 
-//check if iso7816 or isodep is available and exit if not
 Future<void> nfcPlatformCheck(BuildContext context, NFCPlatform nfc) async {
   if (nfc == null) {
     NfcManager.instance.stopSession();

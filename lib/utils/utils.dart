@@ -1,10 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:convert/convert.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'dart:math';
@@ -13,7 +10,7 @@ import 'dart:io';
 Future<void> vibrateNTimes(int times) async {
   for (int i = 0; i < times; i++) {
     HapticFeedback.vibrate();
-    await Future.delayed(Duration(milliseconds: 50));
+    await Future.delayed(const Duration(milliseconds: 50));
   }
 }
 
