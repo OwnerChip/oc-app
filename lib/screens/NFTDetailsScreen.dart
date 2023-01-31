@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:web3dart/crypto.dart';
-import 'dart:io';
 import '../utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,10 +12,7 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 //local imports
 import '../widgets/ui/CustomAppBar.dart';
 import '../utils/navigation.arguments.dart';
-import '../services/ipfs.services.dart';
-import '../services/web3.services.dart';
 import '../services/url_generator.service.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
 import '../widgets/ui/CustomCard.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import '../widgets/ui/CustomImage.dart';

@@ -4,6 +4,40 @@ import 'package:flutter/foundation.dart';
 import 'package:web3dart/crypto.dart';
 import 'dart:io';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.service.dart';
+
+Future<List> verifySignatureAuthenticity(
+    NFCPlatform nfc, randomNumber, chipEthereumAddress, chipTokenId) async {
+  // get SIGNATURE from NFC chip
+  final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
+  final Uint8List getSigCmd = make_signature_command(0x01, hashedMsg);
+  final List responseGetSignature = await nfc.sendCommand(getSigCmd);
+  final Uint8List chipSignatureData = responseGetSignature[0];
+  final int chipSignatureSw1 = responseGetSignature[1];
+  final int chipSignatureSw2 = responseGetSignature[2];
+
+  final MsgSignature signature =
+      extractSignature(chipTokenId, hashedMsg, chipSignatureData);
+
+  // only if true, is the tokenId corresponding to the chip!
+  bool verificationResult =
+      verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
+  if (!verificationResult) {
+    throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
+  }
+
+  // verify chip authenticity via SMART CONTRACT
+  try {
+    bool result =
+        await verifyTokenSigner(chipEthereumAddress, hashedMsg, signature);
+
+    return [hashedMsg, signature];
+  } catch (e) {
+    print("ERROR: $e");
+    throw ("NFC Chip not valid, signature verification failed");
+  }
+}
 
 // calculate msg digest (with addded prefix for compliance with personal_sign)
 Uint8List prepareMsgForSignature(String hexString) {
