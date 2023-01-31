@@ -1,4 +1,4 @@
-const collections = {
+final Map<int, dynamic> collections = {
   1: [],
   137: [
     {
