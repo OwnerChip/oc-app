@@ -1,14 +1,4 @@
-class BlockchainConfig {
-  final String networkName;
-  final String rpcUrl;
-  final String registryContract;
-  final String openseaUrl;
-  final String raribleUrl;
-  final String blockchainExplorerUrl;
-
-  BlockchainConfig(this.networkName, this.rpcUrl, this.registryContract,
-      this.openseaUrl, this.raribleUrl, this.blockchainExplorerUrl);
-}
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 final polygonMumbaiTestnet = BlockchainConfig(
     "Polygon Mumbai Testnet",

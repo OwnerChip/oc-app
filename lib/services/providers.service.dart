@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -36,17 +37,36 @@ final chainIdProvider = StateProvider.autoDispose<int>((ref) => 0);
 //collection ID provider from dropdown (admin app)
 final collectionIdProvider = StateProvider.autoDispose<String>((ref) => "");
 
+// provider that returns chainId + collection if tokenId exists
+final findTokenProvider = FutureProvider.autoDispose
+    .family<List<dynamic>, BigInt>((ref, tokenId) async {
+  List<dynamic> res = [0, 0];
+  // loop over keys of map of chain configs
+  for (var chainId in chainConfig.keys) {
+    // query registry
+    var result = await getCollectionId(chainConfig[chainId]!.rpcUrl,
+        chainConfig[chainId]!.registryContract, tokenId);
+    if (result != null) {
+      // if tokenId exists, return collectionID + chainId
+      res = [chainId.toString(), result];
+      break;
+    }
+  }
+  return res;
+});
+
 final nftMetadataProvider = FutureProvider.autoDispose
-    .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
-  String tokenUri = await getTokenUri(tokenId);
+    .family<Map<String, dynamic>, TokenInfoObject>((ref, tokenInfo) async {
+  String tokenUri = await getTokenUri(
+      tokenInfo.rpcUrl, tokenInfo.collectionId, tokenInfo.tokenId);
   String cid = getCidFromIpfsLink(tokenUri);
   var result = await downloadMetadataFromIPFS(cid);
   return result;
 });
 
-final nftImageProvider =
-    FutureProvider.autoDispose.family<String, BigInt>((ref, tokenId) async {
-  final nftMetadata = await ref.watch(nftMetadataProvider(tokenId).future);
+final nftImageProvider = FutureProvider.autoDispose
+    .family<String, TokenInfoObject>((ref, tokenInfo) async {
+  final nftMetadata = await ref.watch(nftMetadataProvider(tokenInfo).future);
   String cid = getCidFromIpfsLink(nftMetadata['image']);
   String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
   return imageUri;
