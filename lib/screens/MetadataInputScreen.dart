@@ -81,7 +81,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
   }
 
-  void initializeChip(Map<String, dynamic> metadata, {XFile? image}) async {
+  void initializeChip(WidgetRef ref, Map<String, dynamic> metadata,
+      {XFile? image}) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
     setState(() {
       isLoading = true;
@@ -122,9 +123,18 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String fullUri = "ipfs://$cid";
 
+      //watch chipInfoProvider
+      final chipInfo = await ref.watch(chipInfoProvider);
+      final config =
+          await ref.watch(findTokenProvider(chipInfo.tokenId).future);
       // generate mint parameters
       var mintParams = await makeSignedMintParams(
-          walletAddress, navArgs.hashedMsg, "ipfs://$cid", navArgs.signature);
+          getRPCUrlFromChainId(config[0]),
+          config[1],
+          walletAddress,
+          navArgs.hashedMsg,
+          "ipfs://$cid",
+          navArgs.signature);
 
       setState(() {
         isLoading = false;
@@ -142,15 +152,15 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      var txnReceipt = await getTxnReceipt(txnHash);
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
 
       if (txnReceipt?.status == true) {
         //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
         // if (true) {
         // ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(navArgs.chipWalletAddress));
+        Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName);
 
         setState(() {
           isLoading = false;
@@ -440,9 +450,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
                                 if (image != null) {
-                                  initializeChip(metadata, image: image);
+                                  initializeChip(ref, metadata, image: image);
                                 } else {
-                                  initializeChip(metadata);
+                                  initializeChip(ref, metadata);
                                 }
                               }
                             },

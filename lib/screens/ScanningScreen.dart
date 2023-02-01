@@ -28,6 +28,7 @@ import '../widgets/ui/returnSnackBarWidget.dart';
 import '../widgets/ui/CustomRoundedButton.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
   const ScanningScreen({super.key});
@@ -47,8 +48,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
   }
 
   void initScanning(WidgetRef ref) async {
-    String nftOwner;
-    bool chipIsInitialized = false;
+    Uint8List hashedMsg;
+    MsgSignature signature;
     int randomNumber = makeRandomInt();
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
@@ -63,52 +64,54 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
         //initialize chip
         List result = await initializeChip(nfc);
-        String chipEthereumAddress = result[0];
+        EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
+
         ref
             .read(chipInfoProvider.notifier)
             .setChipEthereumAddress(chipEthereumAddress);
         ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
 
-        //vibrate phone
-        await vibrateNTimes(3);
-
-        //verify signature
-        List verifyResult = await verifySignatureAuthenticity(
-            nfc, randomNumber, chipEthereumAddress, chipTokenId);
-        Uint8List hashedMsg = verifyResult[0];
-        MsgSignature signature = verifyResult[1];
-
-        // get owner of nft with cardId == tokenId
         try {
-          EthereumAddress ownerAddress = await getOwner(chipTokenId);
-          nftOwner = ownerAddress.toString();
-          chipIsInitialized = true;
-        } catch (e) {
-          //NFT with this token ID does not have an owner/does not exist
-          chipIsInitialized = false;
-          nftOwner = context.loc.ownerError;
-        }
+          List config = await ref.watch(findTokenProvider(chipTokenId).future);
 
-        NfcManager.instance.stopSession();
+          //vibrate phone
+          await vibrateNTimes(3);
 
-        //navigate to next screen
-        if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
-          Navigator.pushReplacementNamed(
-              context, UserScanResultsScreen.routeName,
-              arguments: UserScanResultsScreenArguments(
-                  nftOwner, chipIsInitialized, chipEthereumAddress));
-        } else {
-          if (chipIsInitialized) {
+          //verify signature
+          List verifyResult = await verifySignatureAuthenticity(
+              getRPCUrlFromChainId(config[0]),
+              config[1],
+              nfc,
+              randomNumber,
+              chipEthereumAddress,
+              chipTokenId);
+          hashedMsg = verifyResult[0];
+          signature = verifyResult[1];
+
+          NfcManager.instance.stopSession();
+
+          // get owner of nft with cardId == tokenId
+          AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
+          if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
-                context, ChipAlreadyInitializedScreen.routeName,
-                arguments: ChipAlreadyInitializedScreenArguments(
-                    chipEthereumAddress, hashedMsg, signature));
+              context,
+              UserScanResultsScreen.routeName,
+            );
           } else {
-            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
-                arguments: MetadataScreenArguments(
-                    chipEthereumAddress, hashedMsg, signature));
+            if (!nftOwner.hasError) {
+              ref.read(chipInfoProvider.notifier).setChipToInitialized();
+              Navigator.pushReplacementNamed(
+                  context, ChipAlreadyInitializedScreen.routeName);
+            } else {
+              Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
+                  arguments: MetadataScreenArguments(hashedMsg, signature));
+            }
           }
+        } catch (e) {
+          //error reading chip
+          print(e);
+          //TODO: trigger navigating back to homescreen with error popur
         }
       } catch (e) {
         //error reading chip

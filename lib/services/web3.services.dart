@@ -77,7 +77,7 @@ Future<BigInt> estimateGasPrice(String chainRpcUrl) async {
 Future<bool> verifyTokenSigner(
     String chainRpcUrl,
     String collectionId,
-    String chipWalletAddressHex,
+    EthereumAddress chipWalletAddressHex,
     Uint8List tokenIdHash,
     MsgSignature signature) async {
   Uint8List r = bytesFromBigInt(signature.r);
@@ -85,7 +85,8 @@ Future<bool> verifyTokenSigner(
   try {
     var result = await queryCollectionContract(chainRpcUrl, collectionId,
         "getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
-    bool res = (chipWalletAddressHex == result[0].toString().toLowerCase());
+    bool res = (chipWalletAddressHex ==
+        EthereumAddress.fromHex(result[0].toString().toLowerCase()));
     return res;
   } catch (e) {
     return false;
@@ -222,7 +223,8 @@ Future<dynamic> getCollectionId(
     return owner[0];
   } catch (e) {
     print('Error while fetching registry entry of tokenId $tokenId: $e');
-    return e;
+    throw Exception(
+        'Error while fetching registry entry of tokenId $tokenId: $e');
   }
 }
 

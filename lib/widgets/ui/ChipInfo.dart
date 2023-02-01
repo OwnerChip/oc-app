@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:web3dart/web3dart.dart';
 
 class ChipInfo extends StatelessWidget {
   const ChipInfo({super.key, this.tokenId, this.chipName, this.walletAddress});
 
   final BigInt? tokenId;
   final String? chipName;
-  final String? walletAddress;
+  final EthereumAddress? walletAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,7 @@ class ChipInfo extends StatelessWidget {
                 children: [
                   Text('Wallet: ',
                       style: Theme.of(context).textTheme.headline5),
-                  Text('${walletAddress!.substring(0, 8)}...',
+                  Text('${walletAddress!.toString().substring(0, 8)}...',
                       style: Theme.of(context).textTheme.bodyText2),
                   //icon that copies navargs.nftowner to clipboard
                   IconButton(
@@ -60,7 +61,8 @@ class ChipInfo extends StatelessWidget {
                       constraints: BoxConstraints(),
                       iconSize: 25,
                       onPressed: () {
-                        Clipboard.setData(ClipboardData(text: walletAddress));
+                        Clipboard.setData(
+                            ClipboardData(text: walletAddress.toString()));
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content: Text(

@@ -6,6 +6,8 @@ import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 
 //****WALLETCONNECT****
 
@@ -29,107 +31,101 @@ class WalletConnector extends StateNotifier<WalletConnect> {
   }
 }
 
-//token ID provider
-final tokenIdProvider =
-    StateProvider.autoDispose<BigInt>((ref) => BigInt.from(0));
-
 //chain ID provider
 final chainIdProvider = StateProvider.autoDispose<int>((ref) => 0);
 
 //collection ID provider from dropdown (admin app)
 final collectionIdProvider = StateProvider.autoDispose<String>((ref) => "");
 
-// provider that returns chainId + collection if tokenId exists
-final findTokenProvider = FutureProvider.autoDispose
-    .family<List<dynamic>, BigInt>((ref, tokenId) async {
-  List<dynamic> res = [0, 0];
-  // loop over keys of map of chain configs
-  for (var chainId in chainConfig.keys) {
-    // query registry
-    var result = await getCollectionId(chainConfig[chainId]!.rpcUrl,
-        chainConfig[chainId]!.registryContract, tokenId);
-    if (result != null) {
-      // if tokenId exists, return collectionID + chainId
-      res = [chainId.toString(), result];
-      break;
-    }
-  }
-  return res;
-});
 //****CHIP INFO****
 
-class ChipInfo {
-  ChipInfo({this.chipEthereumAddress, this.tokenId});
-  String? chipEthereumAddress;
-  BigInt? tokenId;
-}
-
-class ChipInfoNotifier extends StateNotifier<ChipInfo> {
-  ChipInfoNotifier() : super(ChipInfo());
+class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
+  ChipInfoNotifier()
+      : super(ChipInfoModel(
+            chipEthereumAddress: EthereumAddress.fromHex(
+                '0x0000000000000000000000000000000000000000'),
+            tokenId: BigInt.from(0)));
 
   void setTokenId(BigInt tokenId) {
     state.tokenId = tokenId;
   }
 
-  void setChipEthereumAddress(String chipEthereumAddress) {
+  void setChipEthereumAddress(EthereumAddress chipEthereumAddress) {
     state.chipEthereumAddress = chipEthereumAddress;
+  }
+
+  void setChipToInitialized() {
+    state.chipIsInitialized = true;
   }
 }
 
 final chipInfoProvider =
-    StateNotifierProvider<ChipInfoNotifier, ChipInfo>((ref) {
+    StateNotifierProvider<ChipInfoNotifier, ChipInfoModel>((ref) {
   return ChipInfoNotifier();
 });
 
-//****OWNERCHIP OBJECT****
+// **** CHAIN ID + COLLECTION ID ****
 
-class OwnerChipObject {
-  OwnerChipObject(this.chipIsInitialized, this.nftOwner,
-      this.chipEthereumAddress, this.tokenId);
-  bool chipIsInitialized;
-  String nftOwner;
-  String? chipEthereumAddress;
-  BigInt? tokenId;
-}
-
-class OwnerChipObjectNotifier extends StateNotifier<OwnerChipObject> {
-  OwnerChipObjectNotifier(this.chipEthereumAddress, this.tokenId)
-      : super(OwnerChipObject(false, '', chipEthereumAddress, tokenId));
-  String? chipEthereumAddress;
-  BigInt? tokenId;
-
-  void setChipToInitialized(OwnerChipObject chip) {
-    state.chipIsInitialized = true;
+// provider that returns chainId + collection if tokenId exists
+final findTokenProvider = FutureProvider.autoDispose
+    .family<List<dynamic>, BigInt>((ref, tokenId) async {
+  List<dynamic> res = [0, 0];
+  try {
+    // loop over keys of map of chain configs
+    for (var chainId in chainConfig.keys) {
+      // query registry
+      var collectionId = await getCollectionId(chainConfig[chainId]!.rpcUrl,
+          chainConfig[chainId]!.registryContract, tokenId);
+      if (collectionId != null) {
+        // if tokenId exists, return collectionID + chainId
+        res = [chainId, collectionId];
+        break;
+      }
+    }
+    return res;
+  } catch (e) {
+    print(e);
+    throw e;
   }
 
-  void updateNftOwner(String nftOwner) {
-    state.nftOwner = nftOwner;
-  }
-}
-s
-final ownerChipObjectProvider = StateNotifierProvider.family<
-    OwnerChipObjectNotifier, OwnerChipObject, ChipInfo>((ref, chip) {
-  return OwnerChipObjectNotifier(chip.chipEthereumAddress, chip.tokenId);
+  //TODO: try catch for when no token is found!
+});
+
+//****NFT OWNER ****
+
+final nftOwnerProvider =
+    FutureProvider.autoDispose<EthereumAddress>((ref) async {
+  // watch chipInfoProvider
+  final chipInfo = ref.watch(chipInfoProvider);
+  final config = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  EthereumAddress nftOwner = await getOwner(
+      getRPCUrlFromChainId(config[0]), config[1], chipInfo.tokenId);
+  return nftOwner;
 });
 
 //****NFT METADATA****
 
 final nftMetadataProvider = FutureProvider.autoDispose
-    .family<Map<String, dynamic>, TokenInfoObject>((ref, tokenInfo) async {
-  String tokenUri = await getTokenUri(
-      tokenInfo.rpcUrl, tokenInfo.collectionId, tokenInfo.tokenId);
+    .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
+  final config = await ref.watch(findTokenProvider(tokenId).future);
+  String tokenUri =
+      await getTokenUri(getRPCUrlFromChainId(config[0]), config[1], tokenId);
   String cid = getCidFromIpfsLink(tokenUri);
   var result = await downloadMetadataFromIPFS(cid);
   return result;
 });
 
-final nftImageProvider = FutureProvider.autoDispose
-    .family<String, TokenInfoObject>((ref, tokenInfo) async {
-  final nftMetadata = await ref.watch(nftMetadataProvider(tokenInfo).future);
+final nftImageProvider =
+    FutureProvider.autoDispose.family<String, BigInt>((ref, tokenId) async {
+  final nftMetadata = await ref.watch(nftMetadataProvider(tokenId).future);
   String cid = getCidFromIpfsLink(nftMetadata['image']);
   String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
   return imageUri;
 });
+
+//token ID provider
+final tokenIdProvider =
+    StateProvider.autoDispose<BigInt>((ref) => BigInt.from(0));
 
 final blockchainExplorerUrlProvider = Provider.autoDispose<Uri>((ref) {
   final tokenId = ref.watch(tokenIdProvider);

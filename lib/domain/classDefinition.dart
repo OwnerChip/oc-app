@@ -1,3 +1,5 @@
+import 'package:web3dart/web3dart.dart';
+
 class BlockchainConfig {
   final String networkName;
   final String rpcUrl;
@@ -14,6 +16,17 @@ class TokenInfoObject {
   final String rpcUrl;
   final String collectionId;
   final BigInt tokenId;
+  EthereumAddress nftOwner;
 
-  TokenInfoObject(this.rpcUrl, this.collectionId, this.tokenId);
+  TokenInfoObject(this.rpcUrl, this.collectionId, this.tokenId, this.nftOwner);
+}
+
+class ChipInfoModel {
+  ChipInfoModel(
+      {required this.chipEthereumAddress,
+      required this.tokenId,
+      this.chipIsInitialized = false});
+  EthereumAddress chipEthereumAddress;
+  BigInt tokenId;
+  bool chipIsInitialized;
 }

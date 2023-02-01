@@ -2,13 +2,19 @@ import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 import 'dart:io';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
 
 Future<List> verifySignatureAuthenticity(
-    NFCPlatform nfc, randomNumber, chipEthereumAddress, chipTokenId) async {
+    String chainRpcUrl,
+    String collectionId,
+    NFCPlatform nfc,
+    int randomNumber,
+    EthereumAddress chipEthereumAddress,
+    chipTokenId) async {
   // get SIGNATURE from NFC chip
   final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
   final Uint8List getSigCmd = make_signature_command(0x01, hashedMsg);
@@ -29,8 +35,8 @@ Future<List> verifySignatureAuthenticity(
 
   // verify chip authenticity via SMART CONTRACT
   try {
-    bool result =
-        await verifyTokenSigner(chipEthereumAddress, hashedMsg, signature);
+    bool result = await verifyTokenSigner(
+        chainRpcUrl, collectionId, chipEthereumAddress, hashedMsg, signature);
 
     return [hashedMsg, signature];
   } catch (e) {

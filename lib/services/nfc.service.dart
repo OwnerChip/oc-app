@@ -8,6 +8,8 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nfc_manager/platform_tags.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:web3dart/crypto.dart';
 
 class NFCPlatform {
   var platform = defaultTargetPlatform;
@@ -118,8 +120,8 @@ Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
   //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
   Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
 
-  String chipEthereumAddressHex =
-      getEthereumAddressHexString(chipEthereumAddress);
+  EthereumAddress chipEthereumAddressHex =
+      EthereumAddress.fromHex(getEthereumAddressHexString(chipEthereumAddress));
   BigInt chipTokenId = bytesToUnsignedInt(chipEthereumAddress);
 
   return [chipEthereumAddressHex, chipTokenId];

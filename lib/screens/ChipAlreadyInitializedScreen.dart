@@ -46,10 +46,14 @@ class _ChipAlreadyInitializedState
   Future<void> burnToken(
       BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
-
+    List config = await ref.watch(findTokenProvider(tokenId).future);
     try {
       var burnParams = await makeSignedBurnParams(
-          wc.session.accounts[0], tokenIdHash, signature);
+          getRPCUrlFromChainId(config[0]),
+          config[1],
+          wc.session.accounts[0],
+          tokenIdHash,
+          signature);
 
       //if wc bridge is not connected, then reconnect
       if (!wc.bridgeConnected) {
@@ -67,7 +71,8 @@ class _ChipAlreadyInitializedState
         loadingText = context.loc.burning;
       });
 
-      var txnReceipt = await getTxnReceipt(txnHash);
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
 
