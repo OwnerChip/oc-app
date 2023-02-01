@@ -38,8 +38,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
   Widget build(BuildContext context) {
     final NFTDetailsScreenArguments navArgs =
         ModalRoute.of(context)!.settings.arguments as NFTDetailsScreenArguments;
-    final nftMetadata = ref.watch(nftMetadataProvider(navArgs.tokenId));
-    final nftImageUri = ref.watch(nftImageProvider(navArgs.tokenId));
+    final tokenId = ref.watch(tokenIdProvider);
+    final nftMetadata = ref.watch(nftMetadataProvider(tokenId));
+    final nftImageUri = ref.watch(nftImageProvider(tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
     final Uri raribleUrl = ref.watch(raribleUrlProvider);
     final Uri openseaUrl = ref.watch(openseaUrlProvider);
@@ -58,16 +59,16 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
             nftImageUri.when(
               loading: () => CustomImage(
                 loading: true,
-                tokenId: navArgs.tokenId,
+                tokenId: tokenId,
               ),
               error: (e, s) => CustomImage(
                 loading: false,
-                tokenId: navArgs.tokenId,
+                tokenId: tokenId,
               ),
               data: (data) => CustomImage(
                 loading: false,
                 imagePath: data,
-                tokenId: navArgs.tokenId,
+                tokenId: tokenId,
               ),
             ),
             //spacing
@@ -170,7 +171,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
             CustomRoundedButton(
               text: context.loc.showOnExplorer,
               onPressed: () => {
-                launchUrl(blockchainExplorerUrl,
+                launchUrl(
+                    generateBlockchainExplorerTokenDetailsUrl(
+                        tokenId.toString()),
                     mode: LaunchMode.externalApplication)
               },
             ),

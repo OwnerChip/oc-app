@@ -107,7 +107,7 @@ class _ChipAlreadyInitializedState
     final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final BigInt tokenId = navArgs.tokenId;
+    final BigInt tokenId = ref.watch(tokenIdProvider);
     final Uint8List tokenIdHash = keccakUtf8(tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
