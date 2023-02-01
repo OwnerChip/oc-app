@@ -105,7 +105,7 @@ class _ChipAlreadyInitializedState
     WalletConnect wc = ref.watch(walletConnectProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final BigInt tokenId = navArgs.tokenId;
+    final BigInt tokenId = ref.watch(tokenIdProvider);
     final Uint8List tokenIdHash = keccakUtf8(tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
