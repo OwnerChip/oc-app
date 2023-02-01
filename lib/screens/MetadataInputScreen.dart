@@ -150,8 +150,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         // if (true) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(
-                navArgs.tokenId, navArgs.chipWalletAddress));
+            arguments: NFTDetailsScreenArguments(navArgs.chipWalletAddress));
 
         setState(() {
           isLoading = false;

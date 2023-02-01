@@ -43,10 +43,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    initScanning();
+    initScanning(ref);
   }
 
-  void initScanning() async {
+  void initScanning(WidgetRef ref) async {
     String nftOwner;
     bool chipIsInitialized = false;
     int randomNumber = makeRandomInt();
@@ -65,6 +65,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         List result = await initializeChip(nfc);
         String chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
+        ref
+            .read(chipInfoProvider.notifier)
+            .setChipEthereumAddress(chipEthereumAddress);
+        ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
 
         //vibrate phone
         await vibrateNTimes(3);
@@ -92,18 +96,18 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
           Navigator.pushReplacementNamed(
               context, UserScanResultsScreen.routeName,
-              arguments: UserScanResultsScreenArguments(nftOwner,
-                  chipIsInitialized, chipTokenId, chipEthereumAddress));
+              arguments: UserScanResultsScreenArguments(
+                  nftOwner, chipIsInitialized, chipEthereumAddress));
         } else {
           if (chipIsInitialized) {
             Navigator.pushReplacementNamed(
                 context, ChipAlreadyInitializedScreen.routeName,
                 arguments: ChipAlreadyInitializedScreenArguments(
-                    chipTokenId, chipEthereumAddress, hashedMsg, signature));
+                    chipEthereumAddress, hashedMsg, signature));
           } else {
             Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
                 arguments: MetadataScreenArguments(
-                    chipTokenId, chipEthereumAddress, hashedMsg, signature));
+                    chipEthereumAddress, hashedMsg, signature));
           }
         }
       } catch (e) {

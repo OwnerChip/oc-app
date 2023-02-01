@@ -39,8 +39,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as UserScanResultsScreenArguments;
-    final nftMetadata = ref.watch(nftMetadataProvider(navArgs.tokenId));
-    final nftImageUri = ref.watch(nftImageProvider(navArgs.tokenId));
+    final tokenId = ref.watch(tokenIdProvider);
+    final nftMetadata = ref.watch(nftMetadataProvider(tokenId));
+    final nftImageUri = ref.watch(nftImageProvider(tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
 
     final connectedWallet = wc.session.accounts.length > 0
@@ -192,7 +193,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                             NFTDetailsScreen.routeName,
                                             arguments:
                                                 NFTDetailsScreenArguments(
-                                                    navArgs.tokenId,
                                                     navArgs.chipWalletAddress));
                                       }),
                         ]),
@@ -215,9 +215,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           //spacing
                           SizedBox(height: 15),
                           ChipInfo(
-                              tokenId: navArgs.chipIsInitialized
-                                  ? navArgs.tokenId
-                                  : null,
+                              tokenId:
+                                  navArgs.chipIsInitialized ? tokenId : null,
                               chipName: 'Infineon Secora',
                               walletAddress: navArgs.chipWalletAddress)
                         ])

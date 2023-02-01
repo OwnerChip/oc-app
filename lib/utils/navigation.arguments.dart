@@ -10,36 +10,32 @@ class ScanningScreenArguments {
 class UserScanResultsScreenArguments {
   final String nftOwner;
   final bool chipIsInitialized;
-  final BigInt tokenId;
   final String chipWalletAddress;
 
-  UserScanResultsScreenArguments(this.nftOwner, this.chipIsInitialized,
-      this.tokenId, this.chipWalletAddress);
+  UserScanResultsScreenArguments(
+      this.nftOwner, this.chipIsInitialized, this.chipWalletAddress);
 }
 
 class ChipAlreadyInitializedScreenArguments {
-  final BigInt tokenId;
   final String chipEthereumAddress;
   final Uint8List hashedMsg;
   final MsgSignature signature;
 
   ChipAlreadyInitializedScreenArguments(
-      this.tokenId, this.chipEthereumAddress, this.hashedMsg, this.signature);
+      this.chipEthereumAddress, this.hashedMsg, this.signature);
 }
 
 class MetadataScreenArguments {
-  final BigInt tokenId;
   final String chipWalletAddress;
   final Uint8List hashedMsg;
   final MsgSignature signature;
 
   MetadataScreenArguments(
-      this.tokenId, this.chipWalletAddress, this.hashedMsg, this.signature);
+      this.chipWalletAddress, this.hashedMsg, this.signature);
 }
 
 class NFTDetailsScreenArguments {
-  final BigInt tokenId;
   final String chipWalletAddress;
 
-  NFTDetailsScreenArguments(this.tokenId, this.chipWalletAddress);
+  NFTDetailsScreenArguments(this.chipWalletAddress);
 }
