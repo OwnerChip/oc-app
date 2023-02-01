@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
-
-//web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
 //local imports
+import '../utils/localization.helper.dart';
 import '../widgets/ui/CustomAppBar.dart';
 import '../utils/navigation.arguments.dart';
-import '../services/url_generator.service.dart';
 import '../widgets/ui/CustomCard.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import '../widgets/ui/CustomImage.dart';
@@ -44,7 +41,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final nftMetadata = ref.watch(nftMetadataProvider(navArgs.tokenId));
     final nftImageUri = ref.watch(nftImageProvider(navArgs.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
-
+    final Uri raribleUrl = ref.watch(raribleUrlProvider);
+    final Uri openseaUrl = ref.watch(openseaUrlProvider);
+    final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
@@ -171,20 +170,21 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
             CustomRoundedButton(
               text: context.loc.showOnExplorer,
               onPressed: () => {
-                launchUrl(
-                    generateBlockchainExplorerTokenDetailsUrl(
-                        navArgs.tokenId.toString()),
+                launchUrl(blockchainExplorerUrl,
                     mode: LaunchMode.externalApplication)
               },
             ),
             const SizedBox(height: 15),
             CustomRoundedButton(
               text: context.loc.showOnOpenSea,
-              onPressed: () => {
-                launchUrl(
-                    generateOpenSeaTokenDetailsUrl(navArgs.tokenId.toString()),
-                    mode: LaunchMode.externalApplication)
-              },
+              onPressed: () =>
+                  {launchUrl(openseaUrl, mode: LaunchMode.externalApplication)},
+            ),
+            const SizedBox(height: 15),
+            CustomRoundedButton(
+              text: context.loc.showOnRarible,
+              onPressed: () =>
+                  {launchUrl(raribleUrl, mode: LaunchMode.externalApplication)},
             ),
           ],
         )

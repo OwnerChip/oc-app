@@ -26,6 +26,7 @@
     "burnAndMint": "Löschen & neu erstellen",
     "showOnExplorer": "Auf Blockchain anzeigen",
     "showOnOpenSea": "Auf OpenSea ansehen",
+    "showOnRarible": "Auf Rarible ansehen",
     "itemName": "Name",
     "itemDescription": "Beschreibung",
     "nftDetails": "Token Details",

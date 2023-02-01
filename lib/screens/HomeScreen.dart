@@ -6,7 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../utils/localization.helper.dart';
 
 // local files
-import '../services/url_generator.service.dart';
 import '../utils/utils.dart';
 import '../widgets/ui/CustomAppBar.dart';
 import 'ScanningScreen.dart';
@@ -106,7 +105,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 250,
               text: context.loc.moreInfo,
               onPressed: () => {
-                launchUrl(generateLandingPageUrl(),
+                launchUrl(Uri.parse(dotenv.get('LANDING_PAGE_URL')),
                     mode: LaunchMode.externalApplication)
               },
             ),

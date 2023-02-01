@@ -26,6 +26,7 @@
     "burnAndMint": "burn and mint",
     "showOnExplorer": "Show on Blockchain",
     "showOnOpenSea": "Show on OpenSea",
+    "showOnRarible": "Show on Rarible",
     "itemName": "Item name",
     "itemDescription": "Item description",
     "nftDetails": "Token Details",

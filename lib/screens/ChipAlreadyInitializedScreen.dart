@@ -18,7 +18,6 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 // import local files
 import '../widgets/ui/CustomAppBar.dart';
 import '../utils/navigation.arguments.dart';
-import '../services/url_generator.service.dart';
 import 'HomeScreen.dart';
 import '../utils/utils.dart';
 import '../services/web3.services.dart';
@@ -103,6 +102,9 @@ class _ChipAlreadyInitializedState
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    final Uri raribleUrl = ref.watch(raribleUrlProvider);
+    final Uri openseaUrl = ref.watch(openseaUrlProvider);
+    final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
     final BigInt tokenId = navArgs.tokenId;
@@ -175,9 +177,8 @@ class _ChipAlreadyInitializedState
                         width: 250,
                         text: context.loc.showOnExplorer,
                         onPressed: () => {
-                              launchUrl(
-                                  generateBlockchainExplorerTokenDetailsUrl(
-                                      tokenId.toString()))
+                              launchUrl(blockchainExplorerUrl,
+                                  mode: LaunchMode.externalApplication)
                             }),
                     //spacing
                     const SizedBox(
@@ -187,8 +188,19 @@ class _ChipAlreadyInitializedState
                       width: 250,
                       text: context.loc.showOnOpenSea,
                       onPressed: () => {
-                        launchUrl(
-                            generateOpenSeaTokenDetailsUrl(tokenId.toString()),
+                        launchUrl(openseaUrl,
+                            mode: LaunchMode.externalApplication)
+                      },
+                    ),
+                    //spacing
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    CustomRoundedButton(
+                      width: 250,
+                      text: context.loc.showOnRarible,
+                      onPressed: () => {
+                        launchUrl(raribleUrl,
                             mode: LaunchMode.externalApplication)
                       },
                     ),

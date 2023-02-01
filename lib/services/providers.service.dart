@@ -4,6 +4,7 @@ import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 
 final walletConnectProvider =
     StateNotifierProvider<WalletConnector, WalletConnect>((ref) {
@@ -26,10 +27,14 @@ class WalletConnector extends StateNotifier<WalletConnect> {
 }
 
 //token ID provider
-final tokenIdProvider = FutureProvider.autoDispose<BigInt>((ref) async {
-  var result = await query("tokenId", []);
-  return result[0];
-});
+final tokenIdProvider =
+    StateProvider.autoDispose<BigInt>((ref) => BigInt.from(0));
+
+//chain ID provider
+final chainIdProvider = StateProvider.autoDispose<int>((ref) => 0);
+
+//collection ID provider from dropdown (admin app)
+final collectionIdProvider = StateProvider.autoDispose<String>((ref) => "");
 
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
@@ -45,4 +50,31 @@ final nftImageProvider =
   String cid = getCidFromIpfsLink(nftMetadata['image']);
   String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
   return imageUri;
+});
+
+final blockchainExplorerUrlProvider = Provider.autoDispose<Uri>((ref) {
+  final tokenId = ref.watch(tokenIdProvider);
+  final chainId = ref.watch(chainIdProvider);
+  final baseUrl = chainConfig[chainId]!.openseaUrl;
+  final contractAddress = ref.watch(collectionIdProvider);
+  String explorerUrl = "${baseUrl}token/$contractAddress?a=$tokenId";
+  return Uri.parse(explorerUrl);
+});
+
+final openseaUrlProvider = Provider.autoDispose<Uri>((ref) {
+  final tokenId = ref.watch(tokenIdProvider);
+  final chainId = ref.watch(chainIdProvider);
+  final baseUrl = chainConfig[chainId]!.openseaUrl;
+  final contractAddress = ref.watch(collectionIdProvider);
+  String openseaUrl = "$baseUrl/$contractAddress/$tokenId";
+  return Uri.parse(openseaUrl);
+});
+
+final raribleUrlProvider = Provider.autoDispose<Uri>((ref) {
+  final tokenId = ref.watch(tokenIdProvider);
+  final chainId = ref.watch(chainIdProvider);
+  final baseUrl = chainConfig[chainId]!.raribleUrl;
+  final contractAddress = ref.watch(collectionIdProvider);
+  String raribleUrl = "$baseUrl/$contractAddress:$tokenId";
+  return Uri.parse(raribleUrl);
 });
