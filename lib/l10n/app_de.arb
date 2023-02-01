@@ -73,6 +73,7 @@
     "loadingNFTDataError": "Daten konnten nicht geladen werden.",
     "errorConnectingWallet": "Fehler beim Verbinden der Wallet.",
     "errorNoInternetConnection": "Keine Internetverbindung.",
+    "errorNoNfcReader": "NFC ist deaktiviert!",
     "congrats": "Congrats!",
     "authenticityCheck": "Eigentums Check",
     "authenticityNftFound": "Echtheits Token auf Blockchain gefunden.",
