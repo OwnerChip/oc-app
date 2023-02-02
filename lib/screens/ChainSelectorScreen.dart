@@ -47,7 +47,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        text: 'Select a blockchain',
+        text: 'Select chain',
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
@@ -55,7 +55,8 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
         children: [
           const SizedBox(height: 20),
           Text(
-            'Select a blockchain',
+            textAlign: TextAlign.center,
+            'Choose \n chain + collection',
             style: Theme.of(context).textTheme.headline1,
           ),
           const SizedBox(height: 20),
@@ -63,10 +64,16 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
             'Select a blockchain to connect to',
             style: Theme.of(context).textTheme.bodyText1,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 5),
           const ChainDropdown(),
+          const SizedBox(height: 20),
+          Text(
+            'Select the collection you want to mint to',
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+          const SizedBox(height: 5),
           const CollectionDropdown(),
-          //Custombutton navigating to metadatainputscreen
+          const SizedBox(height: 20),
           CustomRoundedButton(
             text: 'Next',
             onPressed: () {
