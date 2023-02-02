@@ -107,13 +107,17 @@ class _ChipAlreadyInitializedState
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final Uri raribleUrl = ref.watch(raribleUrlProvider);
-    final Uri openseaUrl = ref.watch(openseaUrlProvider);
-    final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
+    // final Uri raribleUrl = ref.watch(raribleUrlProvider);
+    // final Uri openseaUrl = ref.watch(openseaUrlProvider);
+    // final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
+    //TODO: make URIs dynamic
+    final Uri raribleUrl = Uri.parse('https://rarible.com');
+    final Uri openseaUrl = Uri.parse('https://rarible.com');
+    final Uri blockchainExplorerUrl = Uri.parse('https://polygonscan.com');
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final BigInt tokenId = ref.watch(tokenIdProvider);
-    final Uint8List tokenIdHash = keccakUtf8(tokenId.toString());
+    final chipInfo = ref.watch(chipInfoProvider);
+    final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
     return LoadingOverlay(
@@ -171,8 +175,10 @@ class _ChipAlreadyInitializedState
                     CustomRoundedButton(
                       width: 250,
                       text: context.loc.burnToken,
-                      onPressed: () =>
-                          {burnToken(tokenId, navArgs.hashedMsg, signature)},
+                      onPressed: () => {
+                        burnToken(
+                            chipInfo.tokenId, navArgs.hashedMsg, signature)
+                      },
                     ),
 
                     const SizedBox(
@@ -201,14 +207,14 @@ class _ChipAlreadyInitializedState
                     const SizedBox(
                       height: 8,
                     ),
-                    CustomRoundedButton(
-                      width: 250,
-                      text: context.loc.showOnRarible,
-                      onPressed: () => {
-                        launchUrl(raribleUrl,
-                            mode: LaunchMode.externalApplication)
-                      },
-                    ),
+                    // CustomRoundedButton(
+                    //   width: 250,
+                    //   text: context.loc.showOnRarible,
+                    //   onPressed: () => {
+                    //     launchUrl(raribleUrl,
+                    //         mode: LaunchMode.externalApplication)
+                    //   },
+                    // ),
                     const SizedBox(
                       height: 40,
                     ),

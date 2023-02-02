@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
@@ -29,6 +31,7 @@ import '../widgets/ui/CustomRoundedButton.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/utils/constants.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
   const ScanningScreen({super.key});
@@ -41,6 +44,12 @@ class ScanningScreen extends ConsumerStatefulWidget {
 
 //flutter stateless widget
 class _ScanningScreen extends ConsumerState<ScanningScreen> {
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   initScanning(ref);
+  // }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -72,46 +81,55 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             .setChipEthereumAddress(chipEthereumAddress);
         ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
 
-        try {
-          List config = await ref.watch(findTokenProvider(chipTokenId).future);
+        List config = await ref.watch(findTokenProvider(chipTokenId).future);
 
-          //vibrate phone
-          await vibrateNTimes(3);
+        //vibrate phone
+        await vibrateNTimes(3);
 
-          //verify signature
-          List verifyResult = await verifySignatureAuthenticity(
-              getRPCUrlFromChainId(config[0]),
-              config[1],
-              nfc,
-              randomNumber,
-              chipEthereumAddress,
-              chipTokenId);
-          hashedMsg = verifyResult[0];
-          signature = verifyResult[1];
+        //verify signature
+        List verifyResult = await verifySignatureAuthenticity(
+            nfc, randomNumber, chipEthereumAddress, chipTokenId);
+        hashedMsg = verifyResult[0];
+        signature = verifyResult[1];
 
+        if (config[1] == '0x0000000000000000000000000000000000000000') {
+          //TOKEN DOES NOT EXIST
           NfcManager.instance.stopSession();
 
-          // get owner of nft with cardId == tokenId
-          AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
               UserScanResultsScreen.routeName,
             );
           } else {
-            if (!nftOwner.hasError) {
-              ref.read(chipInfoProvider.notifier).setChipToInitialized();
-              Navigator.pushReplacementNamed(
-                  context, ChipAlreadyInitializedScreen.routeName);
-            } else {
-              Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
-                  arguments: MetadataScreenArguments(hashedMsg, signature));
-            }
+            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
+                arguments: MetadataScreenArguments(hashedMsg, signature));
           }
-        } catch (e) {
-          //error reading chip
-          print(e);
-          //TODO: trigger navigating back to homescreen with error popur
+        } else {
+          //TOKEN EXISTS
+          try {
+            //verify token authenticity via smart contract
+            bool tokenIsAuthentic = await verifyTokenAuthenticity(
+                getRPCUrlFromChainId(config[0]),
+                config[1],
+                chipEthereumAddress,
+                hashedMsg,
+                signature);
+
+            NfcManager.instance.stopSession();
+            if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
+              Navigator.pushReplacementNamed(
+                  context, UserScanResultsScreen.routeName);
+            } else {
+              Navigator.pushReplacementNamed(
+                  context, ChipAlreadyInitializedScreen.routeName,
+                  arguments: ChipAlreadyInitializedScreenArguments(
+                      hashedMsg, signature));
+            }
+          } catch (e) {
+            //TOKEN IS NOT AUTHENTIC
+            rethrow;
+          }
         }
       } catch (e) {
         //error reading chip

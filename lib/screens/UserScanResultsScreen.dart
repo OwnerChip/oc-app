@@ -40,10 +40,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
   @override
   Widget build(BuildContext context) {
     final chipInfo = ref.watch(chipInfoProvider);
-
     final nftImageUri = ref.watch(nftImageProvider(chipInfo.tokenId));
     final nftOwner = ref.watch(nftOwnerProvider);
-    // final ownerchipObject = ref.watch(ownerChipObjectProvider);
     WalletConnect wc = ref.watch(walletConnectProvider);
 
     final connectedWallet = wc.session.accounts.length > 0
@@ -71,44 +69,58 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         //Header Title
-                        wc.connected && connectedWallet == nftOwner.toString()
-                            ?
-                            //connected wallet is owner
-                            Text(context.loc.congrats,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline1)
-                            : chipInfo.chipIsInitialized
-                                ? Text(context.loc.authentic,
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        Theme.of(context).textTheme.headline1)
-                                :
-                                //connected wallet is not owner
-                                Text(context.loc.whoops,
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        Theme.of(context).textTheme.headline1),
 
+                        nftOwner.when(
+                          error: (e, s) => Text(context.loc.ownerError,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headline1),
+                          loading: () => Text(context.loc.loading,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headline1),
+                          data: (data) => wc.connected &&
+                                  connectedWallet == nftOwner.toString()
+                              ?
+                              //connected wallet is owner
+                              Text(context.loc.congrats,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.headline1)
+                              : chipInfo.chipIsInitialized
+                                  ? Text(context.loc.authentic,
+                                      textAlign: TextAlign.center,
+                                      style:
+                                          Theme.of(context).textTheme.headline1)
+                                  :
+                                  //connected wallet is not owner
+                                  Text(context.loc.whoops,
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline1),
+                        ),
                         SizedBox(height: 15),
-
                         //Header Body Text
-                        !chipInfo.chipIsInitialized
-                            ?
-                            //chip is not initialized aka NFT does not exist
-                            Text(context.loc.nftNotFound,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline5)
-                            : wc.connected &&
-                                    connectedWallet == nftOwner.toString()
+                        nftOwner.when(
+                            error: (e, s) => Container(),
+                            loading: () => Container(),
+                            data: (data) => !chipInfo.chipIsInitialized
                                 ?
-                                //chip is initialized and wallet is connected
-                                Text(context.loc.authenticityNftFound,
+                                //chip is not initialized aka NFT does not exist
+                                Text(context.loc.nftNotFound,
                                     textAlign: TextAlign.center,
                                     style:
                                         Theme.of(context).textTheme.headline5)
-                                :
-                                //chip is initialized and wallet is NOT connected
-                                Container()
+                                : wc.connected &&
+                                        connectedWallet == nftOwner.toString()
+                                    ?
+                                    //chip is initialized and wallet is connected
+                                    Text(context.loc.authenticityNftFound,
+                                        textAlign: TextAlign.center,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline5)
+                                    :
+                                    //chip is initialized and wallet is NOT connected
+                                    Container())
                       ],
                     ),
                     SizedBox(height: 15),

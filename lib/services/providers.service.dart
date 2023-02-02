@@ -69,24 +69,27 @@ final chipInfoProvider =
 // provider that returns chainId + collection if tokenId exists
 final findTokenProvider = FutureProvider.autoDispose
     .family<List<dynamic>, BigInt>((ref, tokenId) async {
-  List<dynamic> res = [0, 0];
-  try {
-    // loop over keys of map of chain configs
-    for (var chainId in chainConfig.keys) {
-      // query registry
-      var collectionId = await getCollectionId(chainConfig[chainId]!.rpcUrl,
-          chainConfig[chainId]!.registryContract, tokenId);
-      if (collectionId != null) {
-        // if tokenId exists, return collectionID + chainId
-        res = [chainId, collectionId];
-        break;
-      }
+  List<dynamic> res = [
+    0,
+    EthereumAddress.fromHex('0x0000000000000000000000000000000000000000')
+  ];
+  // loop over keys of map of chain configs
+  for (var chainId in chainConfig.keys) {
+    // query registry
+    EthereumAddress collectionId = await getCollectionId(
+        chainConfig[chainId]!.rpcUrl,
+        chainConfig[chainId]!.registryContract,
+        tokenId);
+    if (collectionId !=
+        EthereumAddress.fromHex('0x0000000000000000000000000000000000000000')) {
+      // if tokenId exists, return collectionID + chainId
+      res = [chainId, collectionId.toString()];
+      break;
     }
-    return res;
-  } catch (e) {
-    print(e);
-    throw e;
   }
+
+  // return [137, '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'];
+  return res;
 
   //TODO: try catch for when no token is found!
 });
@@ -107,7 +110,9 @@ final nftOwnerProvider =
 
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
-  final config = await ref.watch(findTokenProvider(tokenId).future);
+  //TODO: get chain ID and collection ID from dropdown menu UI!
+  final chipInfo = ref.watch(chipInfoProvider);
+  final config = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   String tokenUri =
       await getTokenUri(getRPCUrlFromChainId(config[0]), config[1], tokenId);
   String cid = getCidFromIpfsLink(tokenUri);

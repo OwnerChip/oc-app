@@ -215,12 +215,12 @@ Future<dynamic> getTokenUri(
   }
 }
 
-Future<dynamic> getCollectionId(
+Future<EthereumAddress> getCollectionId(
     String chainRpcUrl, String registryAddress, BigInt tokenId) async {
   try {
-    var owner = await queryRegistryContract(
-        chainRpcUrl, registryAddress, "registry", [tokenId]);
-    return owner[0];
+    List collectionId = await queryRegistryContract(
+        chainRpcUrl, registryAddress, "tokenRegistry", [tokenId]);
+    return collectionId[0];
   } catch (e) {
     print('Error while fetching registry entry of tokenId $tokenId: $e');
     throw Exception(

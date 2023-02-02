@@ -60,7 +60,8 @@ flutter:
   assets:
     - assets/images/ownerchip/
     - assets/images/stebo/
-    - assets/contracts/contract.abi.json
+    - assets/contracts/collection.abi.json
+    - assets/contracts/registry.abi.json
     - .env
   generate: true
   uses-material-design: true

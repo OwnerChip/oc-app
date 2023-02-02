@@ -125,8 +125,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //watch chipInfoProvider
       final chipInfo = await ref.watch(chipInfoProvider);
-      final config =
-          await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+
+      //TODO: get chain ID and collection ID from dropdown menu UI!
+      final List config = [80001, '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'];
       // generate mint parameters
       var mintParams = await makeSignedMintParams(
           getRPCUrlFromChainId(config[0]),
