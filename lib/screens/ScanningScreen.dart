@@ -81,7 +81,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             .setChipEthereumAddress(chipEthereumAddress);
         ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
 
-        List config = await ref.watch(findTokenProvider(chipTokenId).future);
+        TokenInfoObject config =
+            await ref.watch(findTokenProvider(chipTokenId).future);
 
         //vibrate phone
         await vibrateNTimes(3);
@@ -92,7 +93,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         hashedMsg = verifyResult[0];
         signature = verifyResult[1];
 
-        if (config[1] == zeroAddress) {
+        if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
           NfcManager.instance.stopSession();
 
@@ -110,8 +111,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
           try {
             //verify token authenticity via smart contract
             bool tokenIsAuthentic = await verifyTokenAuthenticity(
-                getRPCUrlFromChainId(config[0]),
-                config[1],
+                getRPCUrlFromChainId(config.chainId),
+                config.collectionId,
                 chipEthereumAddress,
                 hashedMsg,
                 signature);
