@@ -1,3 +1,4 @@
+import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -35,10 +36,20 @@ void onScanButtonPress(BuildContext context, mounted) async {
       throw Exception("No internet connection");
     }
 
+    //check if NFC is deactivated
+    if (!await checkNfcReader()) {
+      throw CustomException("NFC Reader is not activated");
+    }
+
     if (mounted) {
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
     }
+  } on CustomException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+          context.loc.errorNoNfcReader, 'error'),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,

@@ -49,6 +49,20 @@ Future<bool> checkInternetConnection() async {
   }
 }
 
+//check if NFC is activated
+Future<bool> checkNfcReader() async {
+  try {
+    final nfcManager = NfcManager.instance;
+    final isAvailable = await nfcManager.isAvailable();
+    if (isAvailable) {
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
 //generates random integer between 0 and 2^32
 int makeRandomInt() {
   return Random().nextInt(4294967296);
