@@ -13,12 +13,11 @@ class BlockchainConfig {
 }
 
 class TokenInfoObject {
-  final String rpcUrl;
+  final int chainId;
   final String collectionId;
   final BigInt tokenId;
-  EthereumAddress nftOwner;
 
-  TokenInfoObject(this.rpcUrl, this.collectionId, this.tokenId, this.nftOwner);
+  TokenInfoObject(this.chainId, this.collectionId, this.tokenId);
 }
 
 class ChipInfoModel {

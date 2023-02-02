@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
@@ -36,8 +37,7 @@ class WalletConnector extends StateNotifier<WalletConnect> {
 class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
   ChipInfoNotifier()
       : super(ChipInfoModel(
-            chipEthereumAddress: EthereumAddress.fromHex(
-                '0x0000000000000000000000000000000000000000'),
+            chipEthereumAddress: EthereumAddress.fromHex(zeroAddress),
             tokenId: BigInt.from(0)));
 
   void setTokenId(BigInt tokenId) {
@@ -69,11 +69,8 @@ final collectionIdProvider = StateProvider.autoDispose<String>((ref) {
 
 // provider that returns chainId + collection if tokenId exists
 final findTokenProvider = FutureProvider.autoDispose
-    .family<List<dynamic>, BigInt>((ref, tokenId) async {
-  List<dynamic> res = [
-    0,
-    EthereumAddress.fromHex('0x0000000000000000000000000000000000000000')
-  ];
+    .family<TokenInfoObject, BigInt>((ref, tokenId) async {
+  TokenInfoObject res = TokenInfoObject(0, zeroAddress, tokenId);
   // loop over keys of map of chain configs
   for (var chainId in chainConfig.keys) {
     // query registry
@@ -81,15 +78,12 @@ final findTokenProvider = FutureProvider.autoDispose
         chainConfig[chainId]!.rpcUrl,
         chainConfig[chainId]!.registryContract,
         tokenId);
-    if (collectionId !=
-        EthereumAddress.fromHex('0x0000000000000000000000000000000000000000')) {
+    if (collectionId != EthereumAddress.fromHex(zeroAddress)) {
       // if tokenId exists, return collectionID + chainId
-      res = [chainId, collectionId.toString()];
+      res = TokenInfoObject(chainId, collectionId.toString(), tokenId);
       break;
     }
   }
-
-  // return [137, '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'];
   return res;
 });
 
@@ -101,7 +95,9 @@ final nftOwnerProvider =
   final chipInfo = ref.watch(chipInfoProvider);
   final config = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   EthereumAddress nftOwner = await getOwner(
-      getRPCUrlFromChainId(config[0]), config[1], chipInfo.tokenId);
+      getRPCUrlFromChainId(config.chainId),
+      config.collectionId,
+      chipInfo.tokenId);
   return nftOwner;
 });
 
@@ -112,8 +108,8 @@ final nftMetadataProvider = FutureProvider.autoDispose
   //TODO: get chain ID and collection ID from dropdown menu UI!
   final chipInfo = ref.watch(chipInfoProvider);
   final config = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
-  String tokenUri =
-      await getTokenUri(getRPCUrlFromChainId(config[0]), config[1], tokenId);
+  String tokenUri = await getTokenUri(
+      getRPCUrlFromChainId(config.chainId), config.collectionId, tokenId);
   String cid = getCidFromIpfsLink(tokenUri);
   var result = await downloadMetadataFromIPFS(cid);
   return result;

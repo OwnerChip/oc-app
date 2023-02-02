@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -46,11 +47,11 @@ class _ChipAlreadyInitializedState
   Future<void> burnToken(
       BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    List config = await ref.watch(findTokenProvider(tokenId).future);
+    TokenInfoObject config = await ref.watch(findTokenProvider(tokenId).future);
     try {
       var burnParams = await makeSignedBurnParams(
-          getRPCUrlFromChainId(config[0]),
-          config[1],
+          getRPCUrlFromChainId(config.chainId),
+          config.collectionId,
           wc.session.accounts[0],
           tokenIdHash,
           signature);
@@ -72,7 +73,7 @@ class _ChipAlreadyInitializedState
       });
 
       var txnReceipt =
-          await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
 
@@ -107,6 +108,9 @@ class _ChipAlreadyInitializedState
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as ChipAlreadyInitializedScreenArguments;
+    final chipInfo = ref.watch(chipInfoProvider);
     // final Uri raribleUrl = ref.watch(raribleUrlProvider);
     // final Uri openseaUrl = ref.watch(openseaUrlProvider);
     // final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
@@ -114,9 +118,6 @@ class _ChipAlreadyInitializedState
     final Uri raribleUrl = Uri.parse('https://rarible.com');
     final Uri openseaUrl = Uri.parse('https://rarible.com');
     final Uri blockchainExplorerUrl = Uri.parse('https://polygonscan.com');
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as ChipAlreadyInitializedScreenArguments;
-    final chipInfo = ref.watch(chipInfoProvider);
     final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
