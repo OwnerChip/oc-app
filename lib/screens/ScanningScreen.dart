@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -31,7 +32,6 @@ import '../widgets/ui/CustomRoundedButton.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/utils/constants.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
   const ScanningScreen({super.key});
@@ -92,7 +92,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         hashedMsg = verifyResult[0];
         signature = verifyResult[1];
 
-        if (config[1] == '0x0000000000000000000000000000000000000000') {
+        if (config[1] == zeroAddress) {
           //TOKEN DOES NOT EXIST
           NfcManager.instance.stopSession();
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
@@ -42,8 +43,7 @@ final collectionIdProvider = StateProvider.autoDispose<String>((ref) => "");
 class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
   ChipInfoNotifier()
       : super(ChipInfoModel(
-            chipEthereumAddress: EthereumAddress.fromHex(
-                '0x0000000000000000000000000000000000000000'),
+            chipEthereumAddress: EthereumAddress.fromHex(zeroAddress),
             tokenId: BigInt.from(0)));
 
   void setTokenId(BigInt tokenId) {
@@ -69,10 +69,7 @@ final chipInfoProvider =
 // provider that returns chainId + collection if tokenId exists
 final findTokenProvider = FutureProvider.autoDispose
     .family<List<dynamic>, BigInt>((ref, tokenId) async {
-  List<dynamic> res = [
-    0,
-    EthereumAddress.fromHex('0x0000000000000000000000000000000000000000')
-  ];
+  List<dynamic> res = [0, EthereumAddress.fromHex(zeroAddress)];
   // loop over keys of map of chain configs
   for (var chainId in chainConfig.keys) {
     // query registry
@@ -80,8 +77,7 @@ final findTokenProvider = FutureProvider.autoDispose
         chainConfig[chainId]!.rpcUrl,
         chainConfig[chainId]!.registryContract,
         tokenId);
-    if (collectionId !=
-        EthereumAddress.fromHex('0x0000000000000000000000000000000000000000')) {
+    if (collectionId != EthereumAddress.fromHex(zeroAddress)) {
       // if tokenId exists, return collectionID + chainId
       res = [chainId, collectionId.toString()];
       break;

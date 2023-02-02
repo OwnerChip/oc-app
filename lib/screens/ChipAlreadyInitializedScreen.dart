@@ -107,6 +107,9 @@ class _ChipAlreadyInitializedState
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as ChipAlreadyInitializedScreenArguments;
+    final chipInfo = ref.watch(chipInfoProvider);
     // final Uri raribleUrl = ref.watch(raribleUrlProvider);
     // final Uri openseaUrl = ref.watch(openseaUrlProvider);
     // final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
@@ -114,9 +117,6 @@ class _ChipAlreadyInitializedState
     final Uri raribleUrl = Uri.parse('https://rarible.com');
     final Uri openseaUrl = Uri.parse('https://rarible.com');
     final Uri blockchainExplorerUrl = Uri.parse('https://polygonscan.com');
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as ChipAlreadyInitializedScreenArguments;
-    final chipInfo = ref.watch(chipInfoProvider);
     final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
