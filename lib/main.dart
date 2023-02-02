@@ -14,6 +14,7 @@ import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
+import 'screens/ChainSelectorScreen.dart';
 import 'widgets/logic/RestartWidget.dart';
 
 // setup logger
@@ -36,7 +37,7 @@ void main(List<String> args) async {
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   //set initialRoute accordingly
-  String initialRoute = HomeScreen.routeName;
+  String initialRoute = ChainSelectorScreen.routeName;
 
   runApp(RestartWidget(
       child: ProviderScope(
@@ -95,13 +96,15 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
       routes: {
-        HomeScreen.routeName: (context) => HomeScreen(),
-        ScanningScreen.routeName: (context) => ScanningScreen(),
+        HomeScreen.routeName: (context) => const HomeScreen(),
+        ScanningScreen.routeName: (context) => const ScanningScreen(),
         ChipAlreadyInitializedScreen.routeName: (context) =>
-            ChipAlreadyInitializedScreen(),
-        MetadataScreen.routeName: (context) => MetadataScreen(),
-        UserScanResultsScreen.routeName: (context) => UserScanResultsScreen(),
-        NFTDetailsScreen.routeName: (context) => NFTDetailsScreen(),
+            const ChipAlreadyInitializedScreen(),
+        MetadataScreen.routeName: (context) => const MetadataScreen(),
+        UserScanResultsScreen.routeName: (context) =>
+            const UserScanResultsScreen(),
+        NFTDetailsScreen.routeName: (context) => const NFTDetailsScreen(),
+        ChainSelectorScreen.routeName: (context) => const ChainSelectorScreen(),
       },
     );
   }
