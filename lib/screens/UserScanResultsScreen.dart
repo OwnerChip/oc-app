@@ -71,7 +71,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         //Header Title
 
                         nftOwner.when(
-                          error: (e, s) => Text(context.loc.ownerError,
+                          error: (e, s) => Text(context.loc.whoops,
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headline1),
                           loading: () => Text(context.loc.loading,
@@ -100,7 +100,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         SizedBox(height: 15),
                         //Header Body Text
                         nftOwner.when(
-                            error: (e, s) => Container(),
+                            error: (e, s) => Text(context.loc.nftNotFound),
                             loading: () => Container(),
                             data: (data) => !chipInfo.chipIsInitialized
                                 ?

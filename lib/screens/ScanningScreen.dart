@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -92,6 +93,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             nfc, randomNumber, chipEthereumAddress, chipTokenId);
         hashedMsg = verifyResult[0];
         signature = verifyResult[1];
+        ref.read(signatureDataProvider.notifier).state =
+            SignatureData(hashedMsg: hashedMsg, signature: signature);
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
@@ -103,8 +106,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
               UserScanResultsScreen.routeName,
             );
           } else {
-            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
-                arguments: MetadataScreenArguments(hashedMsg, signature));
+            Navigator.pushReplacementNamed(
+              context,
+              ChainSelectorScreen.routeName,
+            );
           }
         } else {
           //TOKEN EXISTS

@@ -40,9 +40,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final nftMetadata = ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final nftImageUri = ref.watch(nftImageProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final Uri raribleUrl = ref.watch(raribleUrlProvider);
-    final Uri openseaUrl = ref.watch(openseaUrlProvider);
-    final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
+    // final Uri raribleUrl = ref.watch(raribleUrlProvider);
+    // final Uri openseaUrl = ref.watch(openseaUrlProvider);
+    // final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
+    final Uri raribleUrl = Uri.parse('https://rarible.com');
+    final Uri openseaUrl = Uri.parse('https://rarible.com');
+    final Uri blockchainExplorerUrl = Uri.parse('https://polygonscan.com');
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(

@@ -66,10 +66,6 @@ void onInitializeButtonPress(
       throw Exception("No internet connection");
     }
 
-    if (!wc.connected) {
-      await startWalletConnection(context, wc);
-    }
-
     if (mounted) {
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(MetadataScreen.routeName));

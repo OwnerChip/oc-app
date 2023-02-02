@@ -84,14 +84,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   void initializeChip(WidgetRef ref, Map<String, dynamic> metadata,
       {XFile? image}) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    final signatureData = ref.watch(signatureDataProvider);
     setState(() {
       isLoading = true;
       success = false;
       loadingText = context.loc.uploadingMetadata;
     });
-
-    final navArgs =
-        ModalRoute.of(context)!.settings.arguments as MetadataScreenArguments;
 
     //if wc bridge is not connected, then reconnect
     if (!wc.bridgeConnected) {
@@ -133,9 +131,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           getRPCUrlFromChainId(config[0]),
           config[1],
           walletAddress,
-          navArgs.hashedMsg,
+          signatureData.hashedMsg,
           "ipfs://$cid",
-          navArgs.signature);
+          signatureData.signature);
 
       setState(() {
         isLoading = false;
@@ -211,8 +209,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final navArgs =
-        ModalRoute.of(context)!.settings.arguments as MetadataScreenArguments;
 
     return CustomOverlay(
         show: showTraitsForm,

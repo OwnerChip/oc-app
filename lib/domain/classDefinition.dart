@@ -1,4 +1,6 @@
 import 'package:web3dart/web3dart.dart';
+import 'package:flutter/services.dart';
+import 'package:web3dart/crypto.dart';
 
 class BlockchainConfig {
   final String networkName;
@@ -28,4 +30,11 @@ class ChipInfoModel {
   EthereumAddress chipEthereumAddress;
   BigInt tokenId;
   bool chipIsInitialized;
+}
+
+class SignatureData {
+  final Uint8List hashedMsg;
+  final MsgSignature signature;
+
+  SignatureData({required this.hashedMsg, required this.signature});
 }

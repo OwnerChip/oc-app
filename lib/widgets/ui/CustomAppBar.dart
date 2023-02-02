@@ -17,7 +17,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
   const CustomAppBar(
       {Key? key,
       this.text,
-      required this.connectedWalletAddress,
+      this.connectedWalletAddress,
       this.showBackButton = true})
       : super(key: key);
   final String? text;

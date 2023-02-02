@@ -7,8 +7,11 @@ import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:flutter/services.dart';
+import 'package:web3dart/crypto.dart';
 
 //****WALLETCONNECT****
 
@@ -31,6 +34,14 @@ class WalletConnector extends StateNotifier<WalletConnect> {
     state = await createWalletConnector();
   }
 }
+
+//**** SIGNATIURE DATA */
+
+final signatureDataProvider = StateProvider.autoDispose<SignatureData>((ref) {
+  return SignatureData(
+      hashedMsg: Uint8List(0),
+      signature: MsgSignature(BigInt.from(0), BigInt.from(0), 0));
+});
 
 //****CHIP INFO****
 
@@ -60,11 +71,13 @@ final chipInfoProvider =
 
 // **** CHAIN ID + COLLECTION ID ****
 
-final chainIdProvider = StateProvider.autoDispose<int>((ref) => 1);
+final chainIdProvider = StateProvider.autoDispose<int>(
+    (ref) => Collections(dotenv.get('APP_ID')).collections.keys.first);
+// final chainIdProvider = StateProvider.autoDispose<int>((ref) => 1);
 
 final collectionIdProvider = StateProvider.autoDispose<String>((ref) {
   final chainId = ref.watch(chainIdProvider);
-  return chainConfig[chainId]!.registryContract;
+  return Collections(dotenv.get('APP_ID')).collections[chainId]![0]['id']!;
 });
 
 // provider that returns chainId + collection if tokenId exists
@@ -84,7 +97,8 @@ final findTokenProvider = FutureProvider.autoDispose
       break;
     }
   }
-  return res;
+  return TokenInfoObject(0, zeroAddress.toString(), tokenId);
+  // return res;
 });
 
 //****NFT OWNER ****

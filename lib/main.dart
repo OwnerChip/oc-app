@@ -37,7 +37,7 @@ void main(List<String> args) async {
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   //set initialRoute accordingly
-  String initialRoute = ChainSelectorScreen.routeName;
+  String initialRoute = HomeScreen.routeName;
 
   runApp(RestartWidget(
       child: ProviderScope(

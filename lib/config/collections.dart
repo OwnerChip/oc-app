@@ -1,7 +1,7 @@
 class Collections {
-  late Map<int, dynamic> collections;
+  late Map<int, List<Map<String, String>>> collections;
 
-  Collections(app_environment) {
+  Collections(String app_environment) {
     switch (app_environment) {
       case 'ownerchip':
         // ownerchip collections
@@ -10,7 +10,7 @@ class Collections {
             {
               "id": '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679',
               "name": "Ownerchip Demo"
-            }
+            },
           ],
           80001: [
             {
