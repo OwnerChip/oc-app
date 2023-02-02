@@ -81,6 +81,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             .read(chipInfoProvider.notifier)
             .setChipEthereumAddress(chipEthereumAddress);
         ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
+        ref.read(chipInfoProvider.notifier).setChipToInitialized();
 
         TokenInfoObject config =
             await ref.watch(findTokenProvider(chipTokenId).future);

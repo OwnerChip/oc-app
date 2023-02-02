@@ -111,13 +111,9 @@ class _ChipAlreadyInitializedState
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
     final chipInfo = ref.watch(chipInfoProvider);
-    // final Uri raribleUrl = ref.watch(raribleUrlProvider);
-    // final Uri openseaUrl = ref.watch(openseaUrlProvider);
-    // final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
-    //TODO: make URIs dynamic
-    final Uri raribleUrl = Uri.parse('https://rarible.com');
-    final Uri openseaUrl = Uri.parse('https://rarible.com');
-    final Uri blockchainExplorerUrl = Uri.parse('https://polygonscan.com');
+    final Uri raribleUrl = ref.watch(raribleUrlProvider);
+    final Uri openseaUrl = ref.watch(openseaUrlProvider);
+    final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
     final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 

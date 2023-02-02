@@ -92,13 +92,15 @@ final findTokenProvider = FutureProvider.autoDispose
         chainConfig[chainId]!.registryContract,
         tokenId);
     if (collectionId != EthereumAddress.fromHex(zeroAddress)) {
+      print(
+          'found token with ID $tokenId on ${chainConfig[chainId]!.networkName} in collection $collectionId');
       // if tokenId exists, return collectionID + chainId
       res = TokenInfoObject(chainId, collectionId.toString(), tokenId);
       break;
     }
   }
-  return TokenInfoObject(0, zeroAddress.toString(), tokenId);
-  // return res;
+
+  return res;
 });
 
 //****NFT OWNER ****
@@ -137,33 +139,29 @@ final nftImageProvider =
   return imageUri;
 });
 
-//token ID provider
-final tokenIdProvider =
-    StateProvider.autoDispose<BigInt>((ref) => BigInt.from(0));
-
 final blockchainExplorerUrlProvider = Provider.autoDispose<Uri>((ref) {
-  final tokenId = ref.watch(tokenIdProvider);
+  final chipInfo = ref.watch(chipInfoProvider);
   final chainId = ref.watch(chainIdProvider);
-  final baseUrl = chainConfig[chainId]!.openseaUrl;
+  final baseUrl = chainConfig[chainId]!.blockchainExplorerUrl;
   final contractAddress = ref.watch(collectionIdProvider);
-  String explorerUrl = "${baseUrl}token/$contractAddress?a=$tokenId";
+  String explorerUrl = "$baseUrl/$contractAddress?a=${chipInfo.tokenId}";
   return Uri.parse(explorerUrl);
 });
 
 final openseaUrlProvider = Provider.autoDispose<Uri>((ref) {
-  final tokenId = ref.watch(tokenIdProvider);
+  final chipInfo = ref.watch(chipInfoProvider);
   final chainId = ref.watch(chainIdProvider);
   final baseUrl = chainConfig[chainId]!.openseaUrl;
   final contractAddress = ref.watch(collectionIdProvider);
-  String openseaUrl = "$baseUrl/$contractAddress/$tokenId";
+  String openseaUrl = "$baseUrl/$contractAddress/${chipInfo.tokenId}";
   return Uri.parse(openseaUrl);
 });
 
 final raribleUrlProvider = Provider.autoDispose<Uri>((ref) {
-  final tokenId = ref.watch(tokenIdProvider);
+  final chipInfo = ref.watch(chipInfoProvider);
   final chainId = ref.watch(chainIdProvider);
   final baseUrl = chainConfig[chainId]!.raribleUrl;
   final contractAddress = ref.watch(collectionIdProvider);
-  String raribleUrl = "$baseUrl/$contractAddress:$tokenId";
+  String raribleUrl = "$baseUrl/$contractAddress:${chipInfo.tokenId}";
   return Uri.parse(raribleUrl);
 });

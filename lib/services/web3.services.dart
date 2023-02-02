@@ -193,9 +193,11 @@ Future<List<dynamic>> makeSignedBurnParams(
 
 Future<dynamic> getOwner(
     String chainRpcUrl, String collectionId, BigInt tokenId) async {
+  print('checking owner of tokenId $tokenId on chain $chainRpcUrl');
   try {
     var owner = await queryCollectionContract(
         chainRpcUrl, collectionId, "ownerOf", [tokenId]);
+    print('result: ${owner[0]}');
     return owner[0];
   } catch (e) {
     print('Error while fetching owner of tokenId $tokenId: $e');
