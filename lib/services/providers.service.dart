@@ -31,12 +31,6 @@ class WalletConnector extends StateNotifier<WalletConnect> {
   }
 }
 
-//chain ID provider
-final chainIdProvider = StateProvider.autoDispose<int>((ref) => 0);
-
-//collection ID provider from dropdown (admin app)
-final collectionIdProvider = StateProvider.autoDispose<String>((ref) => "");
-
 //****CHIP INFO****
 
 class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
@@ -66,6 +60,13 @@ final chipInfoProvider =
 
 // **** CHAIN ID + COLLECTION ID ****
 
+final chainIdProvider = StateProvider.autoDispose<int>((ref) => 1);
+
+final collectionIdProvider = StateProvider.autoDispose<String>((ref) {
+  final chainId = ref.watch(chainIdProvider);
+  return chainConfig[chainId]!.registryContract;
+});
+
 // provider that returns chainId + collection if tokenId exists
 final findTokenProvider = FutureProvider.autoDispose
     .family<List<dynamic>, BigInt>((ref, tokenId) async {
@@ -90,8 +91,6 @@ final findTokenProvider = FutureProvider.autoDispose
 
   // return [137, '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'];
   return res;
-
-  //TODO: try catch for when no token is found!
 });
 
 //****NFT OWNER ****

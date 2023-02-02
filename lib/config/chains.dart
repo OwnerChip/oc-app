@@ -1,4 +1,5 @@
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 
 final polygonMumbaiTestnet = BlockchainConfig(
     "Polygon Mumbai Testnet",
@@ -24,7 +25,7 @@ final ethereumMainnet = BlockchainConfig(
     "https://etherscan.com/");
 
 final Map<int, BlockchainConfig> chainConfig = {
-  80001: polygonMumbaiTestnet,
+  1: ethereumMainnet,
   137: polygonMainnet,
-  1: ethereumMainnet
+  80001: polygonMumbaiTestnet,
 };
