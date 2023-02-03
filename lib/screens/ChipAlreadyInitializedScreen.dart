@@ -108,9 +108,13 @@ class _ChipAlreadyInitializedState
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    final connectedWallet = wc.session.accounts.length > 0
+        ? wc.session.accounts[0].toLowerCase()
+        : '';
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
     final chipInfo = ref.watch(chipInfoProvider);
+    final nftOwner = ref.watch(nftOwnerProvider);
     final Uri raribleUrl = ref.watch(raribleUrlProvider);
     final Uri openseaUrl = ref.watch(openseaUrlProvider);
     final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
@@ -164,20 +168,26 @@ class _ChipAlreadyInitializedState
                       style: Theme.of(context).textTheme.headline5!,
                     ),
 
-                    //spacing
-                    const SizedBox(
-                      height: 50,
-                    ),
-
-                    CustomRoundedButton(
-                      width: 250,
-                      text: context.loc.burnToken,
-                      onPressed: () => {
-                        burnToken(
-                            chipInfo.tokenId, navArgs.hashedMsg, signature)
-                      },
-                    ),
-
+                    nftOwner.when(
+                        error: (e, s) => Text(context.loc.whoops,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline1),
+                        loading: () => Text(context.loc.loading,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline1),
+                        data: (data) => wc.connected &&
+                                connectedWallet == nftOwner.toString()
+                            ? CustomRoundedButton(
+                                width: 250,
+                                text: context.loc.burnToken,
+                                onPressed: () => {
+                                  burnToken(chipInfo.tokenId, navArgs.hashedMsg,
+                                      signature)
+                                },
+                              ) // TODO: display info that admin user is not token owner?
+                            : const SizedBox(
+                                height: 40,
+                              )),
                     const SizedBox(
                       height: 40,
                     ),
@@ -204,14 +214,14 @@ class _ChipAlreadyInitializedState
                     const SizedBox(
                       height: 8,
                     ),
-                    // CustomRoundedButton(
-                    //   width: 250,
-                    //   text: context.loc.showOnRarible,
-                    //   onPressed: () => {
-                    //     launchUrl(raribleUrl,
-                    //         mode: LaunchMode.externalApplication)
-                    //   },
-                    // ),
+                    CustomRoundedButton(
+                      width: 250,
+                      text: context.loc.showOnRarible,
+                      onPressed: () => {
+                        launchUrl(raribleUrl,
+                            mode: LaunchMode.externalApplication)
+                      },
+                    ),
                     const SizedBox(
                       height: 40,
                     ),
