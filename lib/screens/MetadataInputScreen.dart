@@ -5,6 +5,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -81,10 +82,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
   }
 
-  void initializeChip(WidgetRef ref, Map<String, dynamic> metadata,
+  void initializeChip(
+      SignatureData signatureData, Map<String, dynamic> metadata,
       {XFile? image}) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final signatureData = ref.watch(signatureDataProvider);
+    // final signatureData = ref.watch(signatureDataProvider);
     setState(() {
       isLoading = true;
       success = false;
@@ -121,11 +123,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String fullUri = "ipfs://$cid";
 
-      //watch chipInfoProvider
-      final chipInfo = await ref.watch(chipInfoProvider);
+      final int chainId = ref.watch(chainIdProvider);
+      final String collectionId = ref.watch(collectionIdProvider);
 
-      //TODO: get chain ID and collection ID from dropdown menu UI!
-      final List config = [80001, '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'];
+      final List config = [chainId, collectionId];
       // generate mint parameters
       var mintParams = await makeSignedMintParams(
           getRPCUrlFromChainId(config[0]),
@@ -208,7 +209,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
-
+    final signatureData = ref.watch(signatureDataProvider);
     return CustomOverlay(
         show: showTraitsForm,
         content: CustomCard(
@@ -453,9 +454,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
                                 if (image != null) {
-                                  initializeChip(ref, metadata, image: image);
+                                  initializeChip(signatureData, metadata,
+                                      image: image);
                                 } else {
-                                  initializeChip(ref, metadata);
+                                  initializeChip(signatureData, metadata);
                                 }
                               }
                             },

@@ -181,7 +181,7 @@ class _ChipAlreadyInitializedState
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.headline1),
                         data: (data) => wc.connected &&
-                                connectedWallet == nftOwner.toString()
+                                connectedWallet == data.toString()
                             ? CustomRoundedButton(
                                 width: 250,
                                 text: context.loc.burnToken,

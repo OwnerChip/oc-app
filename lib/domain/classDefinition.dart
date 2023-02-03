@@ -33,8 +33,8 @@ class ChipInfoModel {
 }
 
 class SignatureData {
-  final Uint8List hashedMsg;
-  final MsgSignature signature;
+  Uint8List hashedMsg;
+  MsgSignature signature;
 
   SignatureData({required this.hashedMsg, required this.signature});
 }

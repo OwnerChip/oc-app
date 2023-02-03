@@ -37,10 +37,26 @@ class WalletConnector extends StateNotifier<WalletConnect> {
 
 //**** SIGNATIURE DATA */
 
-final signatureDataProvider = StateProvider.autoDispose<SignatureData>((ref) {
-  return SignatureData(
-      hashedMsg: Uint8List(0),
-      signature: MsgSignature(BigInt.from(0), BigInt.from(0), 0));
+// final chipInfoProvider =
+//     StateNotifierProvider<ChipInfoNotifier, ChipInfoModel>((ref) {
+//   return ChipInfoNotifier();
+// });
+
+class SignatureDataNotifier extends StateNotifier<SignatureData> {
+  SignatureDataNotifier()
+      : super(SignatureData(
+            hashedMsg: Uint8List(0),
+            signature: MsgSignature(BigInt.from(0), BigInt.from(0), 0)));
+
+  void setSignatureData(SignatureData signatureData) {
+    state.hashedMsg = signatureData.hashedMsg;
+    state.signature = signatureData.signature;
+  }
+}
+
+final signatureDataProvider =
+    StateNotifierProvider<SignatureDataNotifier, SignatureData>((ref) {
+  return SignatureDataNotifier();
 });
 
 //****CHIP INFO****
@@ -99,7 +115,6 @@ final findTokenProvider = FutureProvider.autoDispose
       break;
     }
   }
-
   return res;
 });
 

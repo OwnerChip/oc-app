@@ -94,8 +94,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             nfc, randomNumber, chipEthereumAddress, chipTokenId);
         hashedMsg = verifyResult[0];
         signature = verifyResult[1];
-        ref.read(signatureDataProvider.notifier).state =
-            SignatureData(hashedMsg: hashedMsg, signature: signature);
+        ref.read(signatureDataProvider.notifier).setSignatureData(
+            SignatureData(hashedMsg: hashedMsg, signature: signature));
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
