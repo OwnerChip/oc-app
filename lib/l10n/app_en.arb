@@ -91,5 +91,6 @@
     "type": "Type",
     "value": "Value",
     "showTraits": "Show traits",
-    "showDescription": "Show description"
+    "showDescription": "Show description",
+    "continueInBackground": "Continue in background"
 }

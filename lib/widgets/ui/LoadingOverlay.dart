@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'CustomCard.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'PopupLoader.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 class LoadingOverlay extends StatelessWidget {
   const LoadingOverlay({
     Key? key,
+    this.onPressed,
     required this.isLoading,
     this.loadingText = 'Loading...',
     required this.svgPath,
@@ -24,6 +27,7 @@ class LoadingOverlay extends StatelessWidget {
   final Color color;
   final bool rotateIcon;
   final bool dismissible;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +55,16 @@ class LoadingOverlay extends StatelessWidget {
                         Text(
                           loadingText,
                           style: Theme.of(context).textTheme.headline4,
-                        )
+                        ),
+                        onPressed != null
+                            ? Column(children: [
+                                const SizedBox(height: 20),
+                                CustomRoundedButton(
+                                  text: context.loc.continueInBackground,
+                                  onPressed: onPressed,
+                                )
+                              ])
+                            : Container()
                       ]),
                 ),
               ),

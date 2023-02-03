@@ -91,5 +91,6 @@
     "type": "Typ",
     "value": "Wert",
     "showTraits": "Merkmale anzeigen",
-    "showDescription": "Beschreibung anzeigen"
+    "showDescription": "Beschreibung anzeigen",
+    "continueInBackground": "Im Hintergrund laden"
 }

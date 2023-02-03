@@ -122,6 +122,11 @@ class _ChipAlreadyInitializedState
     final MsgSignature signature = navArgs.signature;
 
     return LoadingOverlay(
+      onPressed: () {
+        setState(() {
+          isLoading = false;
+        });
+      },
       isLoading: isLoading,
       loadingText: loadingText,
       rotateIcon: isRotating,

@@ -157,7 +157,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       if (txnReceipt?.status == true) {
         //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
-        // if (true) {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName);
 
@@ -231,6 +230,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               ))
             ]),
         child: LoadingOverlay(
+          onPressed: loadingText == context.loc.mintingToken
+              ? () {
+                  setState(() {
+                    isLoading = false;
+                  });
+                }
+              : null,
           isLoading: isLoading,
           loadingText: loadingText,
           svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
