@@ -37,11 +37,6 @@ class WalletConnector extends StateNotifier<WalletConnect> {
 
 //**** SIGNATIURE DATA */
 
-// final chipInfoProvider =
-//     StateNotifierProvider<ChipInfoNotifier, ChipInfoModel>((ref) {
-//   return ChipInfoNotifier();
-// });
-
 class SignatureDataNotifier extends StateNotifier<SignatureData> {
   SignatureDataNotifier()
       : super(SignatureData(
@@ -89,18 +84,14 @@ final chipInfoProvider =
 
 final chainIdProvider = StateProvider.autoDispose<int>(
     (ref) => Collections(dotenv.get('APP_ID')).collections.keys.first);
-// final chainIdProvider = StateProvider.autoDispose<int>((ref) => 1);
 
 final collectionIdProvider = StateProvider.autoDispose<String>((ref) {
   final chainId = ref.watch(chainIdProvider);
   return Collections(dotenv.get('APP_ID')).collections[chainId]![0]['id']!;
 });
 
-// provider that returns chainId + collection if tokenId exists
 final findTokenProvider = FutureProvider.autoDispose
     .family<TokenInfoObject, BigInt>((ref, tokenId) async {
-  // TokenInfoObject res = TokenInfoObject(0, zeroAddress, tokenId); //default
-
   var result =
       await Future.wait<TokenInfoObject>(chainConfig.keys.map((chainId) async {
     var collectionId = await getCollectionId(chainConfig[chainId]!.rpcUrl,

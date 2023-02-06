@@ -1,4 +1,6 @@
 //flutter imports
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:mime/mime.dart';
@@ -49,10 +51,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   late Map<String, dynamic> metadata;
   XFile? image;
   String imagePath = '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
-  bool success = false;
   bool showImageOptions = false;
   bool showTraitsForm = false;
   bool isLoading = false;
+  bool continueInBackground = false;
   String loadingText = '';
 
   void initState() {
@@ -88,8 +90,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     WalletConnect wc = ref.watch(walletConnectProvider);
     // final signatureData = ref.watch(signatureDataProvider);
     setState(() {
+      continueInBackground = false;
       isLoading = true;
-      success = false;
       loadingText = context.loc.uploadingMetadata;
     });
 
@@ -158,12 +160,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       if (txnReceipt?.status == true) {
         //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
-        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName);
 
         setState(() {
           isLoading = false;
-          success = true;
         });
       } else {
         throw Exception('Transaction failed');
@@ -174,7 +174,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
       );
       setState(() {
-        success = false;
         isLoading = false;
       });
     }
@@ -234,6 +233,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           onPressed: loadingText == context.loc.mintingToken
               ? () {
                   setState(() {
+                    continueInBackground = true;
                     isLoading = false;
                   });
                 }
