@@ -99,23 +99,18 @@ final collectionIdProvider = StateProvider.autoDispose<String>((ref) {
 // provider that returns chainId + collection if tokenId exists
 final findTokenProvider = FutureProvider.autoDispose
     .family<TokenInfoObject, BigInt>((ref, tokenId) async {
-  TokenInfoObject res = TokenInfoObject(0, zeroAddress, tokenId);
-  // loop over keys of map of chain configs
-  for (var chainId in chainConfig.keys) {
-    // query registry
-    EthereumAddress collectionId = await getCollectionId(
-        chainConfig[chainId]!.rpcUrl,
-        chainConfig[chainId]!.registryContract,
-        tokenId);
-    if (collectionId != EthereumAddress.fromHex(zeroAddress)) {
-      print(
-          'found token with ID $tokenId on ${chainConfig[chainId]!.networkName} in collection $collectionId');
-      // if tokenId exists, return collectionID + chainId
-      res = TokenInfoObject(chainId, collectionId.toString(), tokenId);
-      break;
-    }
-  }
-  return res;
+  // TokenInfoObject res = TokenInfoObject(0, zeroAddress, tokenId); //default
+
+  var result =
+      await Future.wait<TokenInfoObject>(chainConfig.keys.map((chainId) async {
+    var collectionId = await getCollectionId(chainConfig[chainId]!.rpcUrl,
+        chainConfig[chainId]!.registryContract, tokenId);
+
+    return TokenInfoObject(chainId, collectionId.toString(), tokenId);
+  }));
+
+  return result.firstWhere((element) => element.collectionId != zeroAddress,
+      orElse: () => TokenInfoObject(0, zeroAddress, tokenId));
 });
 
 //****NFT OWNER ****
