@@ -123,8 +123,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       // upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
-      final int chainId = ref.watch(chainIdProvider);
-      final String collectionId = ref.watch(collectionIdProvider);
+      String fullUri = "ipfs://$cid";
+
+      final int chainId = ref.watch(selectedChainIdProvider);
+      final String collectionId = ref.watch(selectedCollectionIdProvider);
 
       final List config = [chainId, collectionId];
       // generate mint parameters

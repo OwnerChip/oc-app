@@ -11,12 +11,12 @@ class CollectionDropdown extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final collectionId = ref.watch(collectionIdProvider);
-    final chainId = ref.watch(chainIdProvider);
+    final collectionId = ref.watch(selectedCollectionIdProvider);
+    final chainId = ref.watch(selectedChainIdProvider);
     return DropdownButton<String>(
         value: collectionId,
         onChanged: (value) {
-          ref.read(collectionIdProvider.notifier).state = value!;
+          ref.read(selectedCollectionIdProvider.notifier).state = value!;
         },
         items: Collections(dotenv.env['APP_ID']!)
             .collections[chainId]!
