@@ -23,6 +23,12 @@ class Collections {
       case 'stebo':
         // stebo collections
         collections = {
+          1: [
+            {
+              "id": "0xE587fb76509550a72Eb120b941F9235488aB6AEe",
+              "name": "Stebo Art"
+            },
+          ],
           137: [
             {
               "id": "0xE95232cdA853989B86fF8beC94EaEfA78cF35668",
