@@ -160,7 +160,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       if (txnReceipt?.status == true) {
         //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
-        Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName);
+        Navigator.pushNamedAndRemoveUntil(
+            context, NFTDetailsScreen.routeName, (route) => false);
         setState(() {
           isLoading = false;
         });

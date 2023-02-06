@@ -67,10 +67,12 @@ class CustomImage extends StatelessWidget {
                       //make container touchable
                       const SmallTextContainer(
                         text: 'Token ID',
+                        copyValue: '',
                       ),
                       const SizedBox(width: 10),
                       SmallTextContainer(
-                        text: tokenId.toString(),
+                        text: '${tokenId.toString().substring(0, 8)}...',
+                        copyValue: tokenId.toString(),
                       ),
                     ]),
                   ))
