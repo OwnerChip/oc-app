@@ -58,6 +58,33 @@ class CustomColors {
         customRoundedButtonColor = scaffoldBackgroundColor;
         customHomeScreenButtonShadowColor = shadowColor;
         break;
+      case 'ownerchip_infineon':
+        // ownerchip colors
+        primaryColor = Color.fromARGB(255, 25, 35, 90);
+        primaryColorLight = Color.fromARGB(255, 77, 122, 255);
+        shadowColor = Color.fromARGB(70, 0, 0, 77);
+        cardColor = Colors.white;
+        scaffoldBackgroundColor = Color.fromARGB(255, 240, 241, 246);
+        warningColor = Colors.orange;
+        headline1Color = primaryColorLight;
+        headline2Color = primaryColor;
+        headline3Color = primaryColor;
+        headline4Color = primaryColor;
+        headline5Color = primaryColor;
+        headline6Color = primaryColorLight;
+        bodyText1Color = primaryColorLight;
+        bodyText2Color = primaryColor;
+        borderColor = Color.fromARGB(255, 249, 247, 247);
+        successColor = Colors.green;
+        errorColor = Color(0xFFC72C41);
+        progressBarColor = primaryColor;
+        secondaryShadowColor = Color.fromARGB(50, 0, 0, 21);
+        boxDecorationColor = Color.fromARGB(210, 160, 160, 160);
+        black = Colors.black;
+        metadataImagePickerIconsColor = Colors.white;
+        customRoundedButtonColor = scaffoldBackgroundColor;
+        customHomeScreenButtonShadowColor = shadowColor;
+        break;
       case 'stebo':
         primaryColor = Color(0xFF00FE93);
         primaryColorLight = Color(0xFF0d8c57);

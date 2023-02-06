@@ -97,6 +97,50 @@ class CustomFonts {
         MetadataDescriptionFontWeight = FontWeight.normal;
         MetadataDescriptionFontSize = 14.0;
         break;
+      case 'ownerchip_infineon':
+        headline1FontWeight = FontWeight.bold;
+        headline1Font = headerFont;
+        headline1FontSize = 32.0;
+
+        headline2FontWeight = FontWeight.bold;
+        headline2Font = headerFont;
+        headline2FontSize = 32.0;
+
+        // CustomAppBar
+        headline3FontWeight = FontWeight.w500;
+        headline3Font = headerFont;
+        headline3FontSize = 20.0;
+
+        headline4FontWeight = FontWeight.w600;
+        headline4Font = headerFont;
+        headline4FontSize = 20.0;
+
+        headline5FontWeight = FontWeight.bold;
+        headline5Font = headerFont;
+        headline5FontSize = 16.0;
+
+        headline6FontWeight = FontWeight.bold;
+        headline6Font = headerFont;
+        headline6FontSize = 15.0;
+
+        bodyText1FontWeight = FontWeight.normal;
+        bodyText1Font = primaryFont;
+        bodyText1FontSize = 16.0;
+
+        bodyText2FontWeight = FontWeight.normal;
+        bodyText2Font = primaryFont;
+        bodyText2FontSize = 16.0;
+
+        AdminWarningHeadlineFontSize = 80.0;
+        AdminWarningSubtextFontWeight = FontWeight.bold;
+        AdminWarningSubtextFontSize = 28.0;
+
+        MetadataNameFontWeight = FontWeight.bold;
+        MetadataNameFontSize = 20.0;
+
+        MetadataDescriptionFontWeight = FontWeight.normal;
+        MetadataDescriptionFontSize = 14.0;
+        break;
       case 'stebo':
         headline1FontWeight = FontWeight.bold;
         headline1Font = headerFont;

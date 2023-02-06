@@ -20,6 +20,23 @@ class Collections {
           ]
         };
         break;
+      case 'ownerchip_infineon':
+        // ownerchip infineon demo collections
+        collections = {
+          137: [
+            {
+              "id": '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679',
+              "name": "Ownerchip Demo"
+            },
+          ],
+          80001: [
+            {
+              "id": '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32',
+              "name": "Demo Collection"
+            }
+          ]
+        };
+        break;
       case 'stebo':
         // stebo collections
         collections = {

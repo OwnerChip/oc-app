@@ -62,7 +62,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
-          ? 120
+          ? 130
           : null, //only change leading width if logo is shown
       leading: Padding(
           padding: EdgeInsets.only(left: 10),
@@ -81,8 +81,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                 )
               : Image.asset(
                   '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png',
-                  fit: BoxFit.contain,
-                )),
+                  fit: BoxFit.contain)),
       title: Text(text ?? '', style: Theme.of(context).textTheme.headline3),
       centerTitle: true,
       actions: [
