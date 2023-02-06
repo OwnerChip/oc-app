@@ -13,9 +13,9 @@ class ChainDropdown extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return DropdownButton<int>(
         // value: chainId,
-        value: ref.watch(chainIdProvider),
+        value: ref.watch(selectedChainIdProvider),
         onChanged: (value) {
-          ref.read(chainIdProvider.notifier).state = value!;
+          ref.read(selectedChainIdProvider.notifier).state = value!;
         },
         items: Collections(dotenv.env['APP_ID']!).collections.keys.map((key) {
           return DropdownMenuItem(

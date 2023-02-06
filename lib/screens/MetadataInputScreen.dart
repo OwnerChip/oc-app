@@ -125,8 +125,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String fullUri = "ipfs://$cid";
 
-      final int chainId = ref.watch(chainIdProvider);
-      final String collectionId = ref.watch(collectionIdProvider);
+      final int chainId = ref.watch(selectedChainIdProvider);
+      final String collectionId = ref.watch(selectedCollectionIdProvider);
 
       final List config = [chainId, collectionId];
       // generate mint parameters

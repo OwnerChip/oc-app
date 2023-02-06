@@ -82,11 +82,13 @@ final chipInfoProvider =
 
 // **** CHAIN ID + COLLECTION ID ****
 
-final chainIdProvider = StateProvider.autoDispose<int>(
+// only used in admin app for selecting the chain
+final selectedChainIdProvider = StateProvider.autoDispose<int>(
     (ref) => Collections(dotenv.get('APP_ID')).collections.keys.first);
 
-final collectionIdProvider = StateProvider.autoDispose<String>((ref) {
-  final chainId = ref.watch(chainIdProvider);
+// only used in admin app for selecting the collection
+final selectedCollectionIdProvider = StateProvider.autoDispose<String>((ref) {
+  final chainId = ref.watch(selectedChainIdProvider);
   return Collections(dotenv.get('APP_ID')).collections[chainId]![0]['id']!;
 });
 
@@ -140,29 +142,30 @@ final nftImageProvider =
   return imageUri;
 });
 
-final blockchainExplorerUrlProvider = Provider.autoDispose<Uri>((ref) {
+final blockchainExplorerUrlProvider =
+    FutureProvider.autoDispose<Uri>((ref) async {
   final chipInfo = ref.watch(chipInfoProvider);
-  final chainId = ref.watch(chainIdProvider);
-  final baseUrl = chainConfig[chainId]!.blockchainExplorerUrl;
-  final contractAddress = ref.watch(collectionIdProvider);
+  final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final baseUrl = chainConfig[tokenInfo.chainId]!.blockchainExplorerUrl;
+  final contractAddress = tokenInfo.collectionId;
   String explorerUrl = "$baseUrl/$contractAddress?a=${chipInfo.tokenId}";
   return Uri.parse(explorerUrl);
 });
 
-final openseaUrlProvider = Provider.autoDispose<Uri>((ref) {
+final openseaUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   final chipInfo = ref.watch(chipInfoProvider);
-  final chainId = ref.watch(chainIdProvider);
-  final baseUrl = chainConfig[chainId]!.openseaUrl;
-  final contractAddress = ref.watch(collectionIdProvider);
+  final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final baseUrl = chainConfig[tokenInfo.chainId]!.openseaUrl;
+  final contractAddress = tokenInfo.collectionId;
   String openseaUrl = "$baseUrl/$contractAddress/${chipInfo.tokenId}";
   return Uri.parse(openseaUrl);
 });
 
-final raribleUrlProvider = Provider.autoDispose<Uri>((ref) {
+final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   final chipInfo = ref.watch(chipInfoProvider);
-  final chainId = ref.watch(chainIdProvider);
-  final baseUrl = chainConfig[chainId]!.raribleUrl;
-  final contractAddress = ref.watch(collectionIdProvider);
+  final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final baseUrl = chainConfig[tokenInfo.chainId]!.raribleUrl;
+  final contractAddress = tokenInfo.collectionId;
   String raribleUrl = "$baseUrl/$contractAddress:${chipInfo.tokenId}";
   return Uri.parse(raribleUrl);
 });

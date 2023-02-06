@@ -40,9 +40,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final nftMetadata = ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final nftImageUri = ref.watch(nftImageProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final Uri raribleUrl = ref.watch(raribleUrlProvider);
-    final Uri openseaUrl = ref.watch(openseaUrlProvider);
-    final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
+    final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
+    final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
+    final AsyncValue<Uri> blockchainExplorerUrl =
+        ref.watch(blockchainExplorerUrlProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
@@ -169,21 +170,25 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
             CustomRoundedButton(
               text: context.loc.showOnExplorer,
               onPressed: () => {
-                launchUrl(blockchainExplorerUrl,
+                launchUrl(blockchainExplorerUrl.asData!.value,
                     mode: LaunchMode.externalApplication)
               },
             ),
             const SizedBox(height: 15),
             CustomRoundedButton(
               text: context.loc.showOnOpenSea,
-              onPressed: () =>
-                  {launchUrl(openseaUrl, mode: LaunchMode.externalApplication)},
+              onPressed: () => {
+                launchUrl(openseaUrl.asData!.value,
+                    mode: LaunchMode.externalApplication)
+              },
             ),
             const SizedBox(height: 15),
             CustomRoundedButton(
               text: context.loc.showOnRarible,
-              onPressed: () =>
-                  {launchUrl(raribleUrl, mode: LaunchMode.externalApplication)},
+              onPressed: () => {
+                launchUrl(raribleUrl.asData!.value,
+                    mode: LaunchMode.externalApplication)
+              },
             ),
           ],
         )

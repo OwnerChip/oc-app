@@ -115,9 +115,10 @@ class _ChipAlreadyInitializedState
         as ChipAlreadyInitializedScreenArguments;
     final chipInfo = ref.watch(chipInfoProvider);
     final nftOwner = ref.watch(nftOwnerProvider);
-    final Uri raribleUrl = ref.watch(raribleUrlProvider);
-    final Uri openseaUrl = ref.watch(openseaUrlProvider);
-    final Uri blockchainExplorerUrl = ref.watch(blockchainExplorerUrlProvider);
+    final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
+    final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
+    final AsyncValue<Uri> blockchainExplorerUrl =
+        ref.watch(blockchainExplorerUrlProvider);
     final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
@@ -200,7 +201,7 @@ class _ChipAlreadyInitializedState
                         width: 250,
                         text: context.loc.showOnExplorer,
                         onPressed: () => {
-                              launchUrl(blockchainExplorerUrl,
+                              launchUrl(blockchainExplorerUrl.asData!.value,
                                   mode: LaunchMode.externalApplication)
                             }),
                     //spacing
@@ -211,7 +212,7 @@ class _ChipAlreadyInitializedState
                       width: 250,
                       text: context.loc.showOnOpenSea,
                       onPressed: () => {
-                        launchUrl(openseaUrl,
+                        launchUrl(openseaUrl.asData!.value,
                             mode: LaunchMode.externalApplication)
                       },
                     ),
@@ -223,7 +224,7 @@ class _ChipAlreadyInitializedState
                       width: 250,
                       text: context.loc.showOnRarible,
                       onPressed: () => {
-                        launchUrl(raribleUrl,
+                        launchUrl(raribleUrl.asData!.value,
                             mode: LaunchMode.externalApplication)
                       },
                     ),
