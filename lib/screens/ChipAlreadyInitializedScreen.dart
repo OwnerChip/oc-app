@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
@@ -38,6 +39,8 @@ class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
 
 class _ChipAlreadyInitializedState
     extends ConsumerState<ChipAlreadyInitializedScreen> {
+  CancelableOperation? cancellableOperation;
+
   bool isLoading = false;
   bool isRotating = true;
   String loadingSvgPath =
@@ -103,7 +106,13 @@ class _ChipAlreadyInitializedState
     }
   }
 
-  Future<void> burnAndMintToken(Uint8List tokenId) async {}
+  Future<dynamic> fromCancelable(Future<dynamic> future) async {
+    cancellableOperation?.cancel();
+    cancellableOperation = CancelableOperation.fromFuture(future, onCancel: () {
+      print('Operation Cancelled');
+    });
+    return cancellableOperation;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,9 +132,12 @@ class _ChipAlreadyInitializedState
 
     return LoadingOverlay(
       onPressed: () {
+        cancellableOperation?.cancel();
         setState(() {
           isLoading = false;
         });
+        Navigator.pushNamedAndRemoveUntil(
+            context, HomeScreen.routeName, (route) => false);
       },
       isLoading: isLoading,
       loadingText: loadingText,
@@ -172,7 +184,9 @@ class _ChipAlreadyInitializedState
                       context.loc.alreadyLinked,
                       style: Theme.of(context).textTheme.headline5!,
                     ),
-
+                    const SizedBox(
+                      height: 40,
+                    ),
                     nftOwner.when(
                         error: (e, s) => Text(context.loc.whoops,
                             textAlign: TextAlign.center,
@@ -180,21 +194,22 @@ class _ChipAlreadyInitializedState
                         loading: () => Text(context.loc.loading,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.headline1),
-                        data: (data) => wc.connected &&
-                                connectedWallet == data.toString()
-                            ? CustomRoundedButton(
-                                width: 250,
-                                text: context.loc.burnToken,
-                                onPressed: () => {
-                                  burnToken(chipInfo.tokenId, navArgs.hashedMsg,
-                                      signature)
-                                },
-                              ) // TODO: display info that admin user is not token owner?
-                            : const SizedBox(
-                                height: 40,
-                              )),
+                        data: (data) =>
+                            wc.connected && connectedWallet == data.toString()
+                                ? CustomRoundedButton(
+                                    width: 250,
+                                    text: context.loc.burnToken,
+                                    onPressed: () => {
+                                      fromCancelable(burnToken(chipInfo.tokenId,
+                                          navArgs.hashedMsg, signature))
+                                    },
+                                  )
+                                : const SizedBox(
+                                    height: 40,
+                                  )),
+
                     const SizedBox(
-                      height: 40,
+                      height: 8,
                     ),
                     CustomRoundedButton(
                         width: 250,

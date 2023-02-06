@@ -1,13 +1,14 @@
-//flutter imports
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:async/async.dart';
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -24,7 +25,6 @@ import '../services/ipfs.services.dart';
 import '../utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/images.service.dart';
 import '../services/web3.services.dart';
-import '../utils/navigation.arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
 import '../widgets/ui/returnSnackBarWidget.dart';
 import '../widgets/ui/LoadingOverlay.dart';
@@ -54,9 +54,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   bool showImageOptions = false;
   bool showTraitsForm = false;
   bool isLoading = false;
-  bool continueInBackground = false;
   String loadingText = '';
+  CancelableOperation? cancellableOperation;
 
+  @override
   void initState() {
     super.initState();
     metadata = {
@@ -84,13 +85,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
   }
 
-  void initializeChip(
+  Future<void> initializeChip(
       SignatureData signatureData, Map<String, dynamic> metadata,
       {XFile? image}) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
     // final signatureData = ref.watch(signatureDataProvider);
     setState(() {
-      continueInBackground = false;
       isLoading = true;
       loadingText = context.loc.uploadingMetadata;
     });
@@ -122,8 +122,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       // upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
-
-      String fullUri = "ipfs://$cid";
 
       final int chainId = ref.watch(chainIdProvider);
       final String collectionId = ref.watch(collectionIdProvider);
@@ -161,10 +159,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
         Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName);
-
         setState(() {
           isLoading = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.mintSuccess, 'success'),
+        );
       } else {
         throw Exception('Transaction failed');
       }
@@ -205,6 +206,14 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     super.dispose();
   }
 
+  Future<dynamic> fromCancelable(Future<dynamic> future) async {
+    cancellableOperation?.cancel();
+    cancellableOperation = CancelableOperation.fromFuture(future, onCancel: () {
+      print('Operation Cancelled');
+    });
+    return cancellableOperation;
+  }
+
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
@@ -232,10 +241,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         child: LoadingOverlay(
           onPressed: loadingText == context.loc.mintingToken
               ? () {
+                  cancellableOperation?.cancel();
                   setState(() {
-                    continueInBackground = true;
                     isLoading = false;
                   });
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, HomeScreen.routeName, (route) => false);
                 }
               : null,
           isLoading: isLoading,
@@ -272,9 +283,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                     ),
                   ],
                 ),
-
-//spacing
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 CustomCard(
                     color: CustomColors(dotenv.get('APP_ID')).cardColor,
                     children: [
@@ -445,20 +454,17 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                               )
                             ],
                           )),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: CustomRoundedButton(
                             text: context.loc.mintNft,
-                            onPressed: () {
+                            onPressed: () async {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
-                                if (image != null) {
-                                  initializeChip(signatureData, metadata,
-                                      image: image);
-                                } else {
-                                  initializeChip(signatureData, metadata);
-                                }
+                                fromCancelable(initializeChip(
+                                    signatureData, metadata,
+                                    image: image));
                               }
                             },
                           )),
