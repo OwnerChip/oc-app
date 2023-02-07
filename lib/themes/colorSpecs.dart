@@ -28,6 +28,7 @@ class CustomColors {
   late Color metadataImagePickerIconsColor;
   late Color customRoundedButtonColor;
   late Color customHomeScreenButtonShadowColor;
+  late Color chainDropdownTextColor;
 
   CustomColors(app_environment) {
     switch (app_environment) {
@@ -57,6 +58,8 @@ class CustomColors {
         metadataImagePickerIconsColor = Colors.white;
         customRoundedButtonColor = scaffoldBackgroundColor;
         customHomeScreenButtonShadowColor = shadowColor;
+        chainDropdownTextColor = Colors.black;
+
         break;
       case 'ownerchip_infineon':
         // ownerchip colors
@@ -84,6 +87,7 @@ class CustomColors {
         metadataImagePickerIconsColor = Colors.white;
         customRoundedButtonColor = scaffoldBackgroundColor;
         customHomeScreenButtonShadowColor = shadowColor;
+        chainDropdownTextColor = Colors.black;
         break;
       case 'stebo':
         primaryColor = Color(0xFF00FE93);
@@ -110,6 +114,8 @@ class CustomColors {
         metadataImagePickerIconsColor = scaffoldBackgroundColor;
         customRoundedButtonColor = scaffoldBackgroundColor;
         customHomeScreenButtonShadowColor = shadowColor;
+        chainDropdownTextColor = Colors.white;
+
         break;
       default:
         primaryColor = Color.fromARGB(255, 25, 35, 90);
@@ -136,6 +142,8 @@ class CustomColors {
         metadataImagePickerIconsColor = Colors.white;
         customRoundedButtonColor = scaffoldBackgroundColor;
         customHomeScreenButtonShadowColor = shadowColor;
+        chainDropdownTextColor = Colors.black;
+
         break;
     }
   }

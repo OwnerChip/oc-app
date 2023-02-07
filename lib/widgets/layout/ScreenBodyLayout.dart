@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 
 class ScreenBodyLayout extends StatelessWidget {
-  const ScreenBodyLayout(
-      {super.key,
-      required this.children,
-      this.withScrollView = true,
-      this.mainAxisAlignment = MainAxisAlignment.start,
-      this.crossAxisAlignment = CrossAxisAlignment.center});
+  const ScreenBodyLayout({
+    super.key,
+    required this.children,
+    this.withScrollView = true,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.flexSides = 1,
+    this.padding = const EdgeInsets.only(top: 15, bottom: 15),
+  });
 
   final List<Widget> children;
   final bool withScrollView;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
+  final int flexSides;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +24,10 @@ class ScreenBodyLayout extends StatelessWidget {
       child: withScrollView
           ? SingleChildScrollView(
               child: Padding(
-                  padding: const EdgeInsets.only(top: 15, bottom: 15),
+                  padding: padding,
                   child: Row(
                     children: [
-                      Expanded(flex: 1, child: Container()),
+                      Expanded(flex: flexSides, child: Container()),
                       Expanded(
                         flex: 18,
                         child: Column(
@@ -31,7 +36,7 @@ class ScreenBodyLayout extends StatelessWidget {
                           children: children,
                         ),
                       ),
-                      Expanded(flex: 1, child: Container()),
+                      Expanded(flex: flexSides, child: Container()),
                     ],
                   )),
             )
