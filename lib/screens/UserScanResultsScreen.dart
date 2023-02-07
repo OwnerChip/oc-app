@@ -64,68 +64,27 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                   width: double.infinity,
                   children: [
                     SizedBox(height: 100),
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        //Header Title
-
+                        //HEADER BUTTON
                         nftOwner.when(
-                          error: (e, s) => Text(context.loc.whoops,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.headline1),
-                          loading: () => Text(context.loc.loading,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.headline1),
-                          data: (data) => wc.connected &&
-                                  connectedWallet == nftOwner.toString()
-                              ?
-                              //connected wallet is owner
-                              Text(context.loc.congrats,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.headline1)
-                              : chipInfo.chipIsInitialized
-                                  ? Text(context.loc.authentic,
-                                      textAlign: TextAlign.center,
-                                      style:
-                                          Theme.of(context).textTheme.headline1)
-                                  :
-                                  //connected wallet is not owner
-                                  Text(context.loc.whoops,
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headline1),
-                        ),
-                        SizedBox(height: 15),
-                        //Header Body Text
-                        nftOwner.when(
-                            error: (e, s) => Text(context.loc.nftNotFound,
+                            error: (e, s) => Container(),
+                            loading: () => Text(context.loc.loading,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline5),
-                            loading: () => Container(),
-                            data: (data) => !chipInfo.chipIsInitialized
-                                ?
-                                //chip is not initialized aka NFT does not exist
-                                Text(context.loc.nftNotFound,
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        Theme.of(context).textTheme.headline5)
-                                : wc.connected &&
-                                        connectedWallet == nftOwner.toString()
-                                    ?
-                                    //chip is initialized and wallet is connected
-                                    Text(context.loc.authenticityNftFound,
-                                        textAlign: TextAlign.center,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline5)
-                                    :
-                                    //chip is initialized and wallet is NOT connected
-                                    Container())
+                                style: Theme.of(context).textTheme.headline1),
+                            data: (data) => CustomRoundedButton(
+                                width: 250,
+                                text: context.loc.viewNftDetails,
+                                onPressed: () {
+                                  print(context);
+                                  Navigator.of(context)
+                                      .pushNamed(NFTDetailsScreen.routeName);
+                                })),
+                        const SizedBox(height: 15),
                       ],
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     CustomCard(
                         color: CustomColors(dotenv.get('APP_ID'))
                             .scaffoldBackgroundColor,
@@ -133,84 +92,72 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(context.loc.authenticityCheck,
+                              Text(context.loc.ownershipCheck,
                                   style: Theme.of(context).textTheme.headline4),
 
-                              //Ownerchip Check Icon
-                              !chipInfo.chipIsInitialized
-                                  ? //chip not initialized aka no NFT exists
-                                  SvgPicture.asset(
-                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
-                                  : !wc.connected
-                                      ?
-                                      //chip is initialized and wallet is NOT connected
-                                      SvgPicture.asset(
-                                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
-                                      : connectedWallet == nftOwner.toString()
-                                          ?
-                                          //chip is initialized and wallet is connected and wallet is owner
-                                          SvgPicture.asset(
-                                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
-                                          :
-                                          //chip is initialized and wallet is connected and wallet is NOT owner
-                                          SvgPicture.asset(
-                                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
+                              //OWNERSHIP CHECK ICON
+                              nftOwner.when(
+                                data: ((data) => !wc.connected
+                                    ?
+                                    //NFT owner exists and wallet is NOT connected
+                                    SvgPicture.asset(
+                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                    : connectedWallet == data.toString()
+                                        ?
+                                        //NFT owner exists and wallet is connected and wallet is owner
+                                        SvgPicture.asset(
+                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
+                                        :
+                                        //NFT owner exists and wallet is connected and wallet is NOT owner
+                                        SvgPicture.asset(
+                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")),
+                                error: (e, s) => SvgPicture.asset(
+                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+                                loading: () => CircularProgressIndicator(),
+                              )
                             ],
                           ),
-                          //spacing
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
 
-                          //Ownerchip Check Icon
-                          !chipInfo.chipIsInitialized
-                              ? //chip not initialized aka no NFT exists
-                              Text(context.loc.ownershipCouldNotBeVerified,
-                                  style: Theme.of(context).textTheme.headline5)
-                              : !wc.connected
+                          //OWNERSHIP CHECK BODY
+                          nftOwner.when(
+                              data: (data) => !wc.connected
                                   ?
-                                  //chip is initialized and wallet is NOT connected
-                                  Text(context.loc.noWalletConnected,
-                                      style:
-                                          Theme.of(context).textTheme.headline5)
-                                  : connectedWallet == nftOwner.toString()
+                                  //NFT owner exists and wallet is NOT connected
+                                  Column(
+                                      children: [
+                                        Text(context.loc.noWalletConnected,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline5),
+                                        const SizedBox(height: 10),
+                                        CustomRoundedButton(
+                                            text: context.loc.connectWallet,
+                                            onPressed: (() => {
+                                                  startWalletConnection(
+                                                      context, wc)
+                                                }))
+                                      ],
+                                    )
+                                  : connectedWallet == data.toString()
                                       ?
-                                      //chip is initialized and wallet is connected and wallet is owner
+                                      //NFT owner exists and wallet is connected and wallet is owner
                                       Text(context.loc.youAreNftOwner,
                                           style: Theme.of(context)
                                               .textTheme
                                               .headline5)
                                       :
-                                      //chip is initialized and wallet is connected and wallet is NOT owner
+                                      //NFT owner exists and wallet is connected and wallet is NOT owner
                                       Text(context.loc.youAreNotNftOwner,
                                           style: Theme.of(context)
                                               .textTheme
                                               .headline5),
-
-                          SizedBox(height: 15),
-
-                          //Ownerchip Check Button
-                          !chipInfo.chipIsInitialized
-                              ?
-                              //chip is NOT initialized
-                              Container()
-                              : !wc.connected
-                                  ?
-                                  //chip is initialized and wallet is NOT connected
-                                  CustomRoundedButton(
-                                      text: context.loc.connectWallet,
-                                      onPressed: (() =>
-                                          {startWalletConnection(context, wc)}))
-                                  :
-                                  //chip is initialized and wallet is connected
-                                  CustomRoundedButton(
-                                      text: context.loc.viewNftDetails,
-                                      onPressed: () {
-                                        print(context);
-                                        Navigator.of(context).pushNamed(
-                                            NFTDetailsScreen.routeName);
-                                      }),
+                              error: (e, s) => Text(
+                                  context.loc.youAreNotNftOwner,
+                                  style: Theme.of(context).textTheme.headline5),
+                              loading: () => const CircularProgressIndicator()),
                         ]),
-                    //spacing
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     CustomCard(
                         color: Theme.of(context).scaffoldBackgroundColor,
                         children: [
@@ -225,8 +172,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg"),
                             ],
                           ),
-                          //spacing
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
                           ChipInfo(
                               tokenId: chipInfo.chipIsInitialized
                                   ? chipInfo.tokenId

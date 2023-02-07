@@ -75,7 +75,7 @@
     "errorNoInternetConnection": "Keine Internetverbindung.",
     "errorNoNfcReader": "NFC ist deaktiviert!",
     "congrats": "Congrats!",
-    "authenticityCheck": "Eigentums Check",
+    "ownershipCheck": "Eigentums Check",
     "authenticityNftFound": "Echtheits Token auf Blockchain gefunden.",
     "nfcCheck": "NFC Check",
     "whoops": "Ups!",
