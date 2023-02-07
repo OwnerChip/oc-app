@@ -91,9 +91,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
-          withScrollView: false,
+          withScrollView: true,
           mainAxisAlignment: MainAxisAlignment.center,
+          flexSides: 0,
+          padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
+            dotenv.get('APP_ID') == 'ownerchip_infineon'
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                          padding: const EdgeInsets.only(left: 10, bottom: 15),
+                          child: Image.asset(
+                            'assets/images/ownerchip_infineon/infineon_logo.png',
+                            height: 40,
+                          ))
+                    ],
+                  )
+                : Container(),
             CustomHomeScreenButton(
                 text: context.loc.scanning,
                 svgPath:

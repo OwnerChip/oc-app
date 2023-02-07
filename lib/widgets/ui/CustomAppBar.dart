@@ -62,7 +62,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
-          ? 130
+          ? 120
           : null, //only change leading width if logo is shown
       leading: Padding(
           padding: EdgeInsets.only(left: 10),
