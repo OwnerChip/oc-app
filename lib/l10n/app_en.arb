@@ -93,5 +93,6 @@
     "value": "Value",
     "showTraits": "Show traits",
     "showDescription": "Show description",
-    "continueInBackground": "Continue in background"
+    "continueInBackground": "Continue in background",
+    "unknownCollection": "Unknown collection"
 }

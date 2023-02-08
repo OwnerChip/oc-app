@@ -15,6 +15,10 @@ import '../widgets/layout/ScreenBodyLayout.dart';
 import '../widgets/ui/CustomImage.dart';
 import '../widgets/ui/CustomRoundedButton.dart';
 import '../themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/collections.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -39,6 +43,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final chipInfo = ref.watch(chipInfoProvider);
     final nftMetadata = ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final nftImageUri = ref.watch(nftImageProvider(chipInfo.tokenId));
+    final AsyncValue<TokenInfoObject> tokenInfo =
+        ref.watch(findTokenProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
@@ -122,51 +128,83 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
             ),
 
             nftMetadata.when(
-                data: (data) => showDescription
-                    ? Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                            data['description'] ??
-                                '${context.loc.loadingData}...',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                // color: Theme.of(context).primaryColor,
-                                fontSize: CustomFonts(dotenv.get('APP_ID'))
-                                    .MetadataDescriptionFontSize,
-                                fontWeight: CustomFonts(dotenv.get('APP_ID'))
-                                    .MetadataDescriptionFontWeight)),
-                      )
-                    : Align(
-                        alignment: Alignment.centerLeft,
-                        child: Column(children: <Widget>[
-                          ...data['traits']
-                              .map((e) => Row(
-                                    children: [
-                                      Text(e['trait_type'] + ': ',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2!
-                                              .copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: CustomFonts(
-                                                        dotenv.get('APP_ID'))
-                                                    .MetadataDescriptionFontSize,
-                                              )),
-                                      Text(e['value'],
-                                          style: TextStyle(
-                                            fontSize: CustomFonts(
-                                                    dotenv.get('APP_ID'))
+                data: (data) => Column(
+                      children: [
+                        showDescription
+                            ? Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                    data['description'] ??
+                                        '${context.loc.loadingData}...',
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                        // color: Theme.of(context).primaryColor,
+                                        fontSize:
+                                            CustomFonts(dotenv.get('APP_ID'))
                                                 .MetadataDescriptionFontSize,
-                                          )),
-                                    ],
-                                  ))
-                              .toList()
-                        ])),
+                                        fontWeight: CustomFonts(
+                                                dotenv.get('APP_ID'))
+                                            .MetadataDescriptionFontWeight)),
+                              )
+                            : Align(
+                                alignment: Alignment.centerLeft,
+                                child: Column(children: <Widget>[
+                                  ...data['traits']
+                                      .map((e) => Row(
+                                            children: [
+                                              Text(e['trait_type'] + ': ',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: CustomFonts(
+                                                                dotenv.get(
+                                                                    'APP_ID'))
+                                                            .MetadataDescriptionFontSize,
+                                                      )),
+                                              Text(e['value'],
+                                                  style: TextStyle(
+                                                    fontSize: CustomFonts(dotenv
+                                                            .get('APP_ID'))
+                                                        .MetadataDescriptionFontSize,
+                                                  )),
+                                            ],
+                                          ))
+                                      .toList()
+                                ])),
+                        Divider(
+                          color: Theme.of(context).primaryColor,
+                          height: 20,
+                          thickness: 1,
+                          indent: 0,
+                          endIndent: 0,
+                        ),
+                        tokenInfo.when(
+                          data: (data) => InfoKeyValues(keys: const [
+                            "Collection",
+                            "Blockchain"
+                          ], values: [
+                            Collections(dotenv.get('APP_ID'))
+                                .collections[data.chainId]!
+                                .firstWhere((collection) {
+                              return collection['id'] == data.collectionId;
+                            },
+                                    orElse: () => {
+                                          'name': context.loc.unknownCollection
+                                        })['name']!,
+                            chainConfig[data.chainId]!.networkName,
+                          ]),
+                          loading: () => Container(),
+                          error: (e, s) => Container(),
+                        )
+                      ],
+                    ),
                 error: (e, s) => Container(),
                 loading: () => Container()),
 
-            //spacing
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             CustomRoundedButton(
               text: context.loc.showOnExplorer,
               onPressed: () => {

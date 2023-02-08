@@ -8,13 +8,13 @@ class Collections {
         collections = {
           137: [
             {
-              "id": '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679',
+              "id": '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'.toLowerCase(),
               "name": "Ownerchip Demo"
             },
           ],
           80001: [
             {
-              "id": '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32',
+              "id": '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'.toLowerCase(),
               "name": "Demo Collection"
             }
           ]
@@ -25,13 +25,13 @@ class Collections {
         collections = {
           137: [
             {
-              "id": '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679',
+              "id": '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'.toLowerCase(),
               "name": "Ownerchip Demo"
             },
           ],
           80001: [
             {
-              "id": '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32',
+              "id": '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'.toLowerCase(),
               "name": "Demo Collection"
             }
           ]
@@ -42,23 +42,23 @@ class Collections {
         collections = {
           1: [
             {
-              "id": "0xE587fb76509550a72Eb120b941F9235488aB6AEe",
+              "id": "0xE587fb76509550a72Eb120b941F9235488aB6AEe".toLowerCase(),
               "name": "Stebo Art"
             },
           ],
           137: [
             {
-              "id": "0xE95232cdA853989B86fF8beC94EaEfA78cF35668",
+              "id": "0xE95232cdA853989B86fF8beC94EaEfA78cF35668".toLowerCase(),
               "name": "Stebo Art Prints"
             },
             {
-              "id": "0x5326064FD9a82EC2a095104E7c37c25D36155034",
+              "id": "0x5326064FD9a82EC2a095104E7c37c25D36155034".toLowerCase(),
               "name": "Stebo Workshop 1"
             }
           ],
           80001: [
             {
-              "id": '0x163a80d5D7E2e1d256D7083E4b04Cd873e30f6d2',
+              "id": '0x163a80d5D7E2e1d256D7083E4b04Cd873e30f6d2'.toLowerCase(),
               "name": "Stebo Demo App"
             }
           ]

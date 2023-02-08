@@ -93,5 +93,6 @@
     "value": "Wert",
     "showTraits": "Merkmale anzeigen",
     "showDescription": "Beschreibung anzeigen",
-    "continueInBackground": "Im Hintergrund laden"
+    "continueInBackground": "Im Hintergrund laden",
+    "unknownCollection": "Unbekannte Collection"
 }
