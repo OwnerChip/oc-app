@@ -12,12 +12,13 @@ Web3Client getWeb3Client(String chainRpcUrl) {
   return client;
 }
 
-Future<DeployedContract> getCollectionContract(String collectionId) async {
+Future<DeployedContract> getCollectionContract(
+    EthereumAddress collectionId) async {
   String abi =
       await rootBundle.loadString("assets/contracts/collection.abi.json");
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, 'OwnerChipDemo'),
-    EthereumAddress.fromHex(collectionId),
+    collectionId,
   );
   return contract;
 }
@@ -47,8 +48,11 @@ Future<List<dynamic>> queryRegistryContract(
   return result;
 }
 
-Future<List<dynamic>> queryCollectionContract(String chainRpcUrl,
-    String collectionId, String functionName, List<dynamic> args) async {
+Future<List<dynamic>> queryCollectionContract(
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    String functionName,
+    List<dynamic> args) async {
   DeployedContract contract = await getCollectionContract(collectionId);
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client(chainRpcUrl);
@@ -57,12 +61,12 @@ Future<List<dynamic>> queryCollectionContract(String chainRpcUrl,
   return result;
 }
 
-Future<BigInt> estimateGas(String chainRpcUrl, String contractAddress,
+Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
     Uint8List txData, String fromAddress) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   BigInt result = await web3Client.estimateGas(
       sender: EthereumAddress.fromHex(fromAddress),
-      to: EthereumAddress.fromHex(contractAddress),
+      to: contractAddress,
       data: txData);
   return result;
 }
@@ -76,7 +80,7 @@ Future<BigInt> estimateGasPrice(String chainRpcUrl) async {
 // contract version 2
 Future<bool> verifyTokenSigner(
     String chainRpcUrl,
-    String collectionId,
+    EthereumAddress collectionId,
     EthereumAddress chipWalletAddressHex,
     Uint8List tokenIdHash,
     MsgSignature signature) async {
@@ -96,7 +100,7 @@ Future<bool> verifyTokenSigner(
 // contract version 2
 Future<List<dynamic>> makeSignedMintParams(
     String chainRpcUrl,
-    String collectionId,
+    EthereumAddress collectionId,
     String? from,
     Uint8List tokenIdHash,
     String tokenURI,
@@ -135,7 +139,7 @@ Future<List<dynamic>> makeSignedMintParams(
   final params = [
     {
       "from": from,
-      "to": collectionId,
+      "to": collectionId.toString(),
       "data": data,
       "gasPrice": gasPrice,
       "gas": gasAmount
@@ -147,7 +151,7 @@ Future<List<dynamic>> makeSignedMintParams(
 // contract version 2
 Future<List<dynamic>> makeSignedBurnParams(
     String chainRpcUrl,
-    String collectionId,
+    EthereumAddress collectionId,
     String? from,
     Uint8List tokenIdHash,
     MsgSignature signature,
@@ -182,7 +186,7 @@ Future<List<dynamic>> makeSignedBurnParams(
   final params = [
     {
       "from": from,
-      "to": collectionId,
+      "to": collectionId.toString(),
       "data": data,
       "gasPrice": gasPrice,
       "gas": gasAmount
@@ -192,7 +196,7 @@ Future<List<dynamic>> makeSignedBurnParams(
 }
 
 Future<dynamic> getOwner(
-    String chainRpcUrl, String collectionId, BigInt tokenId) async {
+    String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   print('checking owner of tokenId $tokenId on chain $chainRpcUrl');
   try {
     var owner = await queryCollectionContract(
@@ -206,7 +210,7 @@ Future<dynamic> getOwner(
 }
 
 Future<dynamic> getTokenUri(
-    String chainRpcUrl, String collectionId, BigInt tokenId) async {
+    String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   try {
     var uri = await queryCollectionContract(
         chainRpcUrl, collectionId, "tokenURI", [tokenId]);

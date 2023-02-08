@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:web3dart/web3dart.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -126,7 +127,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       String fullUri = "ipfs://$cid";
 
       final int chainId = ref.watch(selectedChainIdProvider);
-      final String collectionId = ref.watch(selectedCollectionIdProvider);
+      final EthereumAddress collectionId =
+          ref.watch(selectedCollectionIdProvider);
 
       final List config = [chainId, collectionId];
       // generate mint parameters

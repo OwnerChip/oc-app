@@ -59,8 +59,7 @@ final signatureDataProvider =
 class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
   ChipInfoNotifier()
       : super(ChipInfoModel(
-            chipEthereumAddress: EthereumAddress.fromHex(zeroAddress),
-            tokenId: BigInt.from(0)));
+            chipEthereumAddress: zeroAddress, tokenId: BigInt.from(0)));
 
   void setTokenId(BigInt tokenId) {
     state.tokenId = tokenId;
@@ -87,7 +86,8 @@ final selectedChainIdProvider = StateProvider.autoDispose<int>(
     (ref) => Collections(dotenv.get('APP_ID')).collections.keys.first);
 
 // only used in admin app for selecting the collection
-final selectedCollectionIdProvider = StateProvider.autoDispose<String>((ref) {
+final selectedCollectionIdProvider =
+    StateProvider.autoDispose<EthereumAddress>((ref) {
   final chainId = ref.watch(selectedChainIdProvider);
   return Collections(dotenv.get('APP_ID')).collections[chainId]![0]['id']!;
 });
@@ -96,10 +96,12 @@ final findTokenProvider = FutureProvider.autoDispose
     .family<TokenInfoObject, BigInt>((ref, tokenId) async {
   var result =
       await Future.wait<TokenInfoObject>(chainConfig.keys.map((chainId) async {
-    var collectionId = await getCollectionId(chainConfig[chainId]!.rpcUrl,
-        chainConfig[chainId]!.registryContract, tokenId);
+    EthereumAddress collectionId = await getCollectionId(
+        chainConfig[chainId]!.rpcUrl,
+        chainConfig[chainId]!.registryContract,
+        tokenId);
 
-    return TokenInfoObject(chainId, collectionId.toString(), tokenId);
+    return TokenInfoObject(chainId, collectionId, tokenId);
   }));
 
   return result.firstWhere((element) => element.collectionId != zeroAddress,
@@ -147,16 +149,17 @@ final blockchainExplorerUrlProvider =
   final chipInfo = ref.watch(chipInfoProvider);
   final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   final baseUrl = chainConfig[tokenInfo.chainId]!.blockchainExplorerUrl;
-  final contractAddress = tokenInfo.collectionId;
+  final String contractAddress = tokenInfo.collectionId.toString();
   String explorerUrl = "$baseUrl/$contractAddress?a=${chipInfo.tokenId}";
   return Uri.parse(explorerUrl);
 });
 
 final openseaUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
-  final chipInfo = ref.watch(chipInfoProvider);
-  final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
-  final baseUrl = chainConfig[tokenInfo.chainId]!.openseaUrl;
-  final contractAddress = tokenInfo.collectionId;
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject tokenInfo =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final String baseUrl = chainConfig[tokenInfo.chainId]!.openseaUrl;
+  final String contractAddress = tokenInfo.collectionId.toString();
   String openseaUrl = "$baseUrl/$contractAddress/${chipInfo.tokenId}";
   return Uri.parse(openseaUrl);
 });
@@ -165,7 +168,7 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   final chipInfo = ref.watch(chipInfoProvider);
   final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   final baseUrl = chainConfig[tokenInfo.chainId]!.raribleUrl;
-  final contractAddress = tokenInfo.collectionId;
+  final String contractAddress = tokenInfo.collectionId.toString();
   String raribleUrl = "$baseUrl/$contractAddress:${chipInfo.tokenId}";
   return Uri.parse(raribleUrl);
 });

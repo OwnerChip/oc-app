@@ -109,6 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   )
                 : Container(),
+            const SizedBox(height: 20),
             CustomHomeScreenButton(
                 text: context.loc.scanning,
                 svgPath:

@@ -34,7 +34,7 @@ Future<List> verifySignatureAuthenticity(NFCPlatform nfc, int randomNumber,
 
 Future<bool> verifyTokenAuthenticity(
     String chainRpcUrl,
-    String collectionId,
+    EthereumAddress collectionId,
     EthereumAddress chipEthereumAddress,
     Uint8List hashedMsg,
     MsgSignature signature) async {

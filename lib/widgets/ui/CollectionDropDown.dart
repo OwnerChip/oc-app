@@ -5,6 +5,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:web3dart/web3dart.dart';
 
 //stateless riverpod widget ConsumerWidget
 class CollectionDropdown extends ConsumerWidget {
@@ -14,7 +15,7 @@ class CollectionDropdown extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final collectionId = ref.watch(selectedCollectionIdProvider);
     final chainId = ref.watch(selectedChainIdProvider);
-    return DropdownButton<String>(
+    return DropdownButton<dynamic>(
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
@@ -29,14 +30,6 @@ class CollectionDropdown extends ConsumerWidget {
             value: collection['id'],
             child: Text(collection['name']!),
           );
-        }).toList()
-        // [
-        //   DropdownMenuItem(
-        //     value: '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679',
-        //     child: Text('0x6fe0Fd3f6430DcFF517Cd939...'),
-        //   )
-        // ]
-
-        );
+        }).toList());
   }
 }

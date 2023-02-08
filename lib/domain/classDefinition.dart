@@ -16,7 +16,7 @@ class BlockchainConfig {
 
 class TokenInfoObject {
   final int chainId;
-  final String collectionId;
+  final EthereumAddress collectionId;
   final BigInt tokenId;
 
   TokenInfoObject(this.chainId, this.collectionId, this.tokenId);
