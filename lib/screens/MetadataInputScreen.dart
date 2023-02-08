@@ -161,7 +161,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
-            context, NFTDetailsScreen.routeName, (route) => false);
+          context,
+          NFTDetailsScreen.routeName,
+          (Route route) => route.isFirst,
+        );
         setState(() {
           isLoading = false;
         });

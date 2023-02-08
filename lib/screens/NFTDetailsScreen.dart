@@ -126,7 +126,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               indent: 0,
               endIndent: 0,
             ),
-
             nftMetadata.when(
                 data: (data) => Column(
                       children: [
