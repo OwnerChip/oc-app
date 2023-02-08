@@ -20,6 +20,7 @@ import '../widgets/ui/CustomImage.dart';
 import '../widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
   const UserScanResultsScreen({super.key});
@@ -42,6 +43,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final chipInfo = ref.watch(chipInfoProvider);
     final nftImageUri = ref.watch(nftImageProvider(chipInfo.tokenId));
     final nftOwner = ref.watch(nftOwnerProvider);
+    final tokenInfo = ref.watch(findTokenProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
 
     final connectedWallet = wc.session.accounts.length > 0
@@ -85,6 +87,66 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                       ],
                     ),
                     const SizedBox(height: 15),
+
+                    //AUTHENTICITY CHECK
+
+                    CustomCard(
+                        color: CustomColors(dotenv.get('APP_ID'))
+                            .scaffoldBackgroundColor,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(context.loc.authenticityCheck,
+                                  style: Theme.of(context).textTheme.headline4),
+
+                              //AUTHENTICITY CHECK ICON
+                              tokenInfo.when(
+                                data: ((data) => data.collectionId ==
+                                        zeroAddress
+                                    ? SvgPicture.asset(
+                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
+                                    : SvgPicture.asset(
+                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")),
+                                error: (e, s) => SvgPicture.asset(
+                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+                                loading: () =>
+                                    const CircularProgressIndicator(),
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 15),
+
+                          //AUTHENTICITY CHECK BODY
+
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: tokenInfo.when(
+                                  data: (data) => data.collectionId ==
+                                          zeroAddress
+                                      ? Text(
+                                          context.loc.authenticityNftNotFound,
+                                          textAlign: TextAlign.left,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5)
+                                      : Text(context.loc.authenticityNftFound,
+                                          textAlign: TextAlign.left,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5),
+                                  error: (e, s) => Text(
+                                      context.loc.authenticityNftNotFound,
+                                      textAlign: TextAlign.left,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline5),
+                                  loading: () =>
+                                      const CircularProgressIndicator())),
+                        ]),
+                    const SizedBox(height: 15),
+
+                    //OWNERSHIP CHECK
                     CustomCard(
                         color: CustomColors(dotenv.get('APP_ID'))
                             .scaffoldBackgroundColor,
@@ -120,44 +182,55 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           const SizedBox(height: 15),
 
                           //OWNERSHIP CHECK BODY
-                          nftOwner.when(
-                              data: (data) => !wc.connected
-                                  ?
-                                  //NFT owner exists and wallet is NOT connected
-                                  Column(
-                                      children: [
-                                        Text(context.loc.noWalletConnected,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headline5),
-                                        const SizedBox(height: 10),
-                                        CustomRoundedButton(
-                                            text: context.loc.connectWallet,
-                                            onPressed: (() => {
-                                                  startWalletConnection(
-                                                      context, wc)
-                                                }))
-                                      ],
-                                    )
-                                  : connectedWallet == data.toString()
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: nftOwner.when(
+                                  data: (data) => !wc.connected
                                       ?
-                                      //NFT owner exists and wallet is connected and wallet is owner
-                                      Text(context.loc.youAreNftOwner,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline5)
-                                      :
-                                      //NFT owner exists and wallet is connected and wallet is NOT owner
-                                      Text(context.loc.youAreNotNftOwner,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline5),
-                              error: (e, s) => Text(
-                                  context.loc.youAreNotNftOwner,
-                                  style: Theme.of(context).textTheme.headline5),
-                              loading: () => const CircularProgressIndicator()),
+                                      //NFT owner exists and wallet is NOT connected
+                                      Column(
+                                          children: [
+                                            Text(context.loc.noWalletConnected,
+                                                textAlign: TextAlign.center,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .headline5),
+                                            const SizedBox(height: 10),
+                                            CustomRoundedButton(
+                                                text: context.loc.connectWallet,
+                                                onPressed: (() => {
+                                                      startWalletConnection(
+                                                          context, wc)
+                                                    }))
+                                          ],
+                                        )
+                                      : connectedWallet == data.toString()
+                                          ?
+                                          //NFT owner exists and wallet is connected and wallet is owner
+                                          Text(context.loc.youAreNftOwner,
+                                              textAlign: TextAlign.left,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headline5)
+                                          :
+                                          //NFT owner exists and wallet is connected and wallet is NOT owner
+                                          Text(context.loc.youAreNotNftOwner,
+                                              textAlign: TextAlign.left,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headline5),
+                                  error: (e, s) => Text(
+                                      context.loc.youAreNotNftOwner,
+                                      textAlign: TextAlign.left,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline5),
+                                  loading: () =>
+                                      const CircularProgressIndicator())),
                         ]),
                     const SizedBox(height: 20),
+
+                    //NFC CHECK
                     CustomCard(
                         color: Theme.of(context).scaffoldBackgroundColor,
                         children: [
@@ -174,11 +247,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           ),
                           const SizedBox(height: 15),
                           ChipInfo(
-                              tokenId: chipInfo.chipIsInitialized
-                                  ? chipInfo.tokenId
-                                  : null,
-                              chipName: 'Infineon Secora',
-                              walletAddress: chipInfo.chipEthereumAddress)
+                            tokenId: chipInfo.chipIsInitialized
+                                ? chipInfo.tokenId
+                                : null,
+                          )
                         ])
                   ]),
               nftImageUri.when(
