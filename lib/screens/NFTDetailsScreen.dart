@@ -185,7 +185,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             "Collection",
                             "Blockchain"
                           ], values: [
-                            Collections(dotenv.get('APP_ID'))
+                            Collections('all')
                                 .collections[data.chainId]!
                                 .firstWhere((collection) {
                               return collection['id'] == data.collectionId;
