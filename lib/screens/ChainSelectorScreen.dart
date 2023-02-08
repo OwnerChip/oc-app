@@ -56,7 +56,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
           const SizedBox(height: 20),
           Text(
             textAlign: TextAlign.center,
-            'Choose \n chain + collection',
+            context.loc.chooseChain,
             style: Theme.of(context).textTheme.headline1,
           ),
           const SizedBox(height: 20),

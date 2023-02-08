@@ -94,5 +94,6 @@
     "showTraits": "Show traits",
     "showDescription": "Show description",
     "continueInBackground": "Continue in background",
-    "unknownCollection": "Unknown collection"
+    "unknownCollection": "Unknown collection",
+    "chooseChain": "Choose \n chain + collection"
 }

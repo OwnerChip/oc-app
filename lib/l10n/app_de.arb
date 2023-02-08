@@ -94,5 +94,6 @@
     "showTraits": "Merkmale anzeigen",
     "showDescription": "Beschreibung anzeigen",
     "continueInBackground": "Im Hintergrund laden",
-    "unknownCollection": "Unbekannte Collection"
+    "unknownCollection": "Unbekannte Collection",
+    "chooseChain": "Wähle \n Chain + Collection"
 }
