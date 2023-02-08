@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:web3dart/web3dart.dart';
 import '../utils/localization.helper.dart';
 import 'dart:typed_data';
 
@@ -122,8 +123,8 @@ class _ChipAlreadyInitializedState
         : '';
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final chipInfo = ref.watch(chipInfoProvider);
-    final nftOwner = ref.watch(nftOwnerProvider);
+    final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+    final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =

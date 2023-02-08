@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:web3dart/web3dart.dart';
 
 //local imports
 import 'NFTDetailsScreen.dart';
@@ -40,10 +41,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chipInfo = ref.watch(chipInfoProvider);
-    final nftImageUri = ref.watch(nftImageProvider(chipInfo.tokenId));
-    final nftOwner = ref.watch(nftOwnerProvider);
-    final tokenInfo = ref.watch(findTokenProvider(chipInfo.tokenId));
+    final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+    final AsyncValue<String> nftImageUri =
+        ref.watch(nftImageProvider(chipInfo.tokenId));
+    final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
+    final AsyncValue<TokenInfoObject> tokenInfo =
+        ref.watch(findTokenProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
 
     final connectedWallet = wc.session.accounts.length > 0

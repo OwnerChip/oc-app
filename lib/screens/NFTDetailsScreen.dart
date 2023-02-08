@@ -40,9 +40,11 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chipInfo = ref.watch(chipInfoProvider);
-    final nftMetadata = ref.watch(nftMetadataProvider(chipInfo.tokenId));
-    final nftImageUri = ref.watch(nftImageProvider(chipInfo.tokenId));
+    final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+    final AsyncValue<Map<String, dynamic>> nftMetadata =
+        ref.watch(nftMetadataProvider(chipInfo.tokenId));
+    final AsyncValue<String> nftImageUri =
+        ref.watch(nftImageProvider(chipInfo.tokenId));
     final AsyncValue<TokenInfoObject> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);

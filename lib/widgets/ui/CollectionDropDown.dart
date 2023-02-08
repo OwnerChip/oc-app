@@ -13,8 +13,9 @@ class CollectionDropdown extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final collectionId = ref.watch(selectedCollectionIdProvider);
-    final chainId = ref.watch(selectedChainIdProvider);
+    final EthereumAddress collectionId =
+        ref.watch(selectedCollectionIdProvider);
+    final int chainId = ref.watch(selectedChainIdProvider);
     return DropdownButton<dynamic>(
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(

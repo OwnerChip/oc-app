@@ -82,7 +82,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    var wc = ref.watch(walletConnectProvider);
+    final wc = ref.watch(walletConnectProvider);
     wc.on(
         'disconnect',
         (payload) => {

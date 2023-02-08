@@ -225,7 +225,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final signatureData = ref.watch(signatureDataProvider);
+    final SignatureData signatureData = ref.watch(signatureDataProvider);
     return CustomOverlay(
         show: showTraitsForm,
         content: CustomCard(

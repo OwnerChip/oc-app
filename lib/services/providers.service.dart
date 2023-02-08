@@ -88,7 +88,7 @@ final selectedChainIdProvider = StateProvider.autoDispose<int>(
 // only used in admin app for selecting the collection
 final selectedCollectionIdProvider =
     StateProvider.autoDispose<EthereumAddress>((ref) {
-  final chainId = ref.watch(selectedChainIdProvider);
+  final int chainId = ref.watch(selectedChainIdProvider);
   return Collections(dotenv.get('APP_ID')).collections[chainId]![0]['id']!;
 });
 
@@ -113,8 +113,9 @@ final findTokenProvider = FutureProvider.autoDispose
 final nftOwnerProvider =
     FutureProvider.autoDispose<EthereumAddress>((ref) async {
   // watch chipInfoProvider
-  final chipInfo = ref.watch(chipInfoProvider);
-  final config = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject config =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   EthereumAddress nftOwner = await getOwner(
       getRPCUrlFromChainId(config.chainId),
       config.collectionId,
@@ -127,8 +128,9 @@ final nftOwnerProvider =
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
   //TODO: get chain ID and collection ID from dropdown menu UI!
-  final chipInfo = ref.watch(chipInfoProvider);
-  final config = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject config =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   String tokenUri = await getTokenUri(
       getRPCUrlFromChainId(config.chainId), config.collectionId, tokenId);
   String cid = getCidFromIpfsLink(tokenUri);
@@ -138,7 +140,8 @@ final nftMetadataProvider = FutureProvider.autoDispose
 
 final nftImageProvider =
     FutureProvider.autoDispose.family<String, BigInt>((ref, tokenId) async {
-  final nftMetadata = await ref.watch(nftMetadataProvider(tokenId).future);
+  final Map<String, dynamic> nftMetadata =
+      await ref.watch(nftMetadataProvider(tokenId).future);
   String cid = getCidFromIpfsLink(nftMetadata['image']);
   String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
   return imageUri;
@@ -146,9 +149,10 @@ final nftImageProvider =
 
 final blockchainExplorerUrlProvider =
     FutureProvider.autoDispose<Uri>((ref) async {
-  final chipInfo = ref.watch(chipInfoProvider);
-  final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
-  final baseUrl = chainConfig[tokenInfo.chainId]!.blockchainExplorerUrl;
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject tokenInfo =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final String baseUrl = chainConfig[tokenInfo.chainId]!.blockchainExplorerUrl;
   final String contractAddress = tokenInfo.collectionId.toString();
   String explorerUrl = "$baseUrl/$contractAddress?a=${chipInfo.tokenId}";
   return Uri.parse(explorerUrl);
@@ -165,9 +169,10 @@ final openseaUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
 });
 
 final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
-  final chipInfo = ref.watch(chipInfoProvider);
-  final tokenInfo = await ref.watch(findTokenProvider(chipInfo.tokenId).future);
-  final baseUrl = chainConfig[tokenInfo.chainId]!.raribleUrl;
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject tokenInfo =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final String baseUrl = chainConfig[tokenInfo.chainId]!.raribleUrl;
   final String contractAddress = tokenInfo.collectionId.toString();
   String raribleUrl = "$baseUrl/$contractAddress:${chipInfo.tokenId}";
   return Uri.parse(raribleUrl);
