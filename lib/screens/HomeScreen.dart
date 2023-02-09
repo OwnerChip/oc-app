@@ -97,19 +97,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
             dotenv.get('APP_ID') == 'ownerchip_infineon'
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                          padding: const EdgeInsets.only(left: 10, bottom: 15),
-                          child: Image.asset(
-                            'assets/images/ownerchip_infineon/infineon_logo.png',
-                            height: 40,
-                          ))
-                    ],
-                  )
-                : Container(),
-            const SizedBox(height: 20),
+                ? Column(children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                            padding:
+                                const EdgeInsets.only(left: 10, bottom: 15),
+                            child: Image.asset(
+                              'assets/images/ownerchip_infineon/infineon_logo.png',
+                              height: 40,
+                            ))
+                      ],
+                    ),
+                  ])
+                : const SizedBox(height: 20),
             CustomHomeScreenButton(
                 text: context.loc.scanning,
                 svgPath:
@@ -123,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
                     onTap: () => onInitializeButtonPress(context, wc, mounted))
                 : Container(),
-            const SizedBox(height: 70),
+            const SizedBox(height: 20),
             CustomRoundedButton(
               width: 250,
               text: context.loc.moreInfo,
@@ -132,6 +134,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     mode: LaunchMode.externalApplication)
               },
             ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Powered by ',
+                  style: TextStyle(
+                      color: Theme.of(context).primaryColor, fontSize: 12),
+                ),
+                GestureDetector(
+                  onTap: () => {
+                    launchUrl(Uri.parse('https://ownerchip.com'),
+                        mode: LaunchMode.externalApplication)
+                  },
+                  child: Text(
+                    'OwnerChip.com',
+                    style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () => {
+                launchUrl(Uri.parse(dotenv.get('LEGAL_PAGE_URL')),
+                    mode: LaunchMode.externalApplication)
+              },
+              child: Text(
+                context.loc.legal,
+                style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    color: Theme.of(context).primaryColor,
+                    fontSize: 12),
+              ),
+            )
           ]),
     );
   }
