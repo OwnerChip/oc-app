@@ -5,8 +5,8 @@ final polygonMumbaiTestnet = BlockchainConfig(
     "Polygon Mumbai Testnet",
     "https://polygon-mumbai.infura.io/v3/b5b3b9c6bd56483c9203c06f9b0eb0f4",
     "0xE587fb76509550a72Eb120b941F9235488aB6AEe",
-    "https://testnets.opensea.io/assets/mumbai/",
-    "https://testnet.rarible.com/token/polygon/",
+    "https://testnets.opensea.io/assets/mumbai",
+    "https://testnet.rarible.com/token/polygon",
     "https://mumbai.polygonscan.com/token");
 final polygonMainnet = BlockchainConfig(
     "Polygon Mainnet",
