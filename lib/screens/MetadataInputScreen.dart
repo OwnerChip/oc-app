@@ -211,6 +211,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    TraitsFormState.traitsArray.clear();
     super.dispose();
   }
 
