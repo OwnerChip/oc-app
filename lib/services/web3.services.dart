@@ -209,6 +209,19 @@ Future<dynamic> getOwner(
   }
 }
 
+Future<String> getContractName(
+    String chainRpcUrl, EthereumAddress collectionId) async {
+  try {
+    var name =
+        await queryCollectionContract(chainRpcUrl, collectionId, "name", []);
+    return name[0];
+  } catch (e) {
+    print('Error while fetching name of collection $collectionId: $e');
+    throw Exception(
+        'Error while fetching name of collection $collectionId: $e');
+  }
+}
+
 Future<dynamic> getTokenUri(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   try {

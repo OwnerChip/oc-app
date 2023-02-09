@@ -52,6 +52,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
         ref.watch(blockchainExplorerUrlProvider);
+    final AsyncValue<String> contractName = ref.watch(contractNameProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
@@ -193,8 +194,13 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                               return collection['id'] == data.collectionId;
                             },
                                     orElse: () => {
-                                          'name': context.loc.unknownCollection
-                                        })['name']!,
+                                          'name': contractName.when(
+                                            data: (data) => data,
+                                            error: (error, stackTrace) =>
+                                                context.loc.unknownCollection,
+                                            loading: () => context.loc.loading,
+                                          )
+                                        })['name'],
                             chainConfig[data.chainId]!.networkName,
                           ]),
                           loading: () => Container(),
