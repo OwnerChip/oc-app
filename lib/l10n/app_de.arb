@@ -96,5 +96,7 @@
     "continueInBackground": "Im Hintergrund laden",
     "unknownCollection": "Unbekannte Collection",
     "chooseChain": "Wähle \n Chain + Collection",
-    "legal": "Support & Legal Information"
+    "legal": "Support & Legal Information",
+    "selectBlockchain": "Blockchain auswählen",
+    "selectCollection": "Collection auswählen"
 }

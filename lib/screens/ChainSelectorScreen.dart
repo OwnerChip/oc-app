@@ -61,14 +61,14 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Select a blockchain to connect to',
+            context.loc.selectBlockchain,
             style: Theme.of(context).textTheme.bodyText1,
           ),
           const SizedBox(height: 5),
           const ChainDropdown(),
           const SizedBox(height: 20),
           Text(
-            'Select the collection you want to mint to',
+            context.loc.selectCollection,
             style: Theme.of(context).textTheme.bodyText1,
           ),
           const SizedBox(height: 5),

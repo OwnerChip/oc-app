@@ -96,5 +96,7 @@
     "continueInBackground": "Continue in background",
     "unknownCollection": "Unknown collection",
     "chooseChain": "Choose \n chain + collection",
-    "legal": "Support & Legal Information"
+    "legal": "Support & Legal Information",
+    "selectBlockchain": "Select a blockchain to connect to",
+    "selectCollection": "Select the collection you want to mint to"
 }
