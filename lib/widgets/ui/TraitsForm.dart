@@ -16,10 +16,10 @@ class TraitsForm extends StatefulWidget {
   List initialTraitsArray;
 
   @override
-  _TraitsForm createState() => _TraitsForm();
+  TraitsFormState createState() => TraitsFormState();
 }
 
-class _TraitsForm extends State<TraitsForm> {
+class TraitsFormState extends State<TraitsForm> {
   final _formKey = GlobalKey<FormState>();
   List<Widget> traitsTextFields = [];
   static List<Map> traitsArray = [];
@@ -105,12 +105,10 @@ class _TraitsForm extends State<TraitsForm> {
                       _formKey.currentState!.save();
 
                       //check if key or value of map in traitsArray is empty string
-                      for (int i = 0; i < traitsArray.length; i++) {
-                        if (traitsArray[i]["trait_type"] == "" ||
-                            traitsArray[i]["value"] == "") {
-                          traitsArray.removeAt(i);
-                        }
-                      }
+                      traitsArray.removeWhere((element) =>
+                          element["trait_type"] == "" ||
+                          element["value"] == "");
+
                       widget.submitFunction(traitsArray);
                     }
                   }),
@@ -118,8 +116,12 @@ class _TraitsForm extends State<TraitsForm> {
               CustomRoundedButton(
                   text: context.loc.cancel,
                   backgroundColor: Colors.grey,
-                  onPressed: () =>
-                      {traitsArray.removeLast(), widget.toggleTraitsForm()})
+                  onPressed: () => {
+                        traitsArray.removeWhere((element) =>
+                            element["trait_type"] == "" ||
+                            element["value"] == ""),
+                        widget.toggleTraitsForm()
+                      })
             ])));
   }
 }
@@ -179,7 +181,7 @@ class _TraitTextInput extends State<TraitTextInput> {
               return null;
             },
             onSaved: (value) {
-              _TraitsForm.traitsArray[widget.index]["trait_type"] =
+              TraitsFormState.traitsArray[widget.index]["trait_type"] =
                   _keyController.text;
             },
           ),
@@ -207,7 +209,7 @@ class _TraitTextInput extends State<TraitTextInput> {
                 return null;
               },
               onSaved: (value) {
-                _TraitsForm.traitsArray[widget.index]["value"] =
+                TraitsFormState.traitsArray[widget.index]["value"] =
                     _valueController.text;
               },
             ))

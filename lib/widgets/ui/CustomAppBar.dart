@@ -17,7 +17,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
   const CustomAppBar(
       {Key? key,
       this.text,
-      required this.connectedWalletAddress,
+      this.connectedWalletAddress,
       this.showBackButton = true})
       : super(key: key);
   final String? text;
@@ -81,8 +81,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                 )
               : Image.asset(
                   '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png',
-                  fit: BoxFit.contain,
-                )),
+                  fit: BoxFit.contain)),
       title: Text(text ?? '', style: Theme.of(context).textTheme.headline3),
       centerTitle: true,
       actions: [

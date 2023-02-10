@@ -41,23 +41,13 @@ Future<WalletConnect> createWalletConnector() async {
 
 Future<void> startWalletConnection(
     BuildContext context, WalletConnect connector) async {
-  await dotenv.load(fileName: ".env");
-  int chainId = int.parse(dotenv.get('CHAIN_ID'));
-  // if (!connector.connected) {
   try {
-    // var chainId = int.parse(dotenv.get('CHAIN_ID', fallback: 1));
     var sessionStatus = await connector.connect(
-        chainId: chainId,
+        chainId: 80001, //TODO !!!!
         onDisplayUri: (uri) async {
           await launchUrlString(uri, mode: LaunchMode.externalApplication);
         });
-
-    //save session
     connector.sessionStorage?.store(connector.session);
-
-    // if (!mounted) {
-    //   return;
-    // }
   } catch (e) {
     //returnSnackBar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(

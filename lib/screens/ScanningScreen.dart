@@ -1,4 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:web3dart/credentials.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,6 +32,7 @@ import '../widgets/ui/returnSnackBarWidget.dart';
 import '../widgets/ui/CustomRoundedButton.dart';
 import '../widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
   const ScanningScreen({super.key});
@@ -40,15 +45,21 @@ class ScanningScreen extends ConsumerStatefulWidget {
 
 //flutter stateless widget
 class _ScanningScreen extends ConsumerState<ScanningScreen> {
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   initScanning(ref);
+  // }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    initScanning();
+    initScanning(ref);
   }
 
-  void initScanning() async {
-    String nftOwner;
-    bool chipIsInitialized = false;
+  void initScanning(WidgetRef ref) async {
+    Uint8List hashedMsg;
+    MsgSignature signature;
     int randomNumber = makeRandomInt();
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
@@ -63,8 +74,17 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
         //initialize chip
         List result = await initializeChip(nfc);
-        String chipEthereumAddress = result[0];
+        EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
+
+        ref
+            .read(chipInfoProvider.notifier)
+            .setChipEthereumAddress(chipEthereumAddress);
+        ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
+        ref.read(chipInfoProvider.notifier).setChipToInitialized();
+
+        TokenInfoObject config =
+            await ref.watch(findTokenProvider(chipTokenId).future);
 
         //vibrate phone
         await vibrateNTimes(3);
@@ -72,38 +92,50 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         //verify signature
         List verifyResult = await verifySignatureAuthenticity(
             nfc, randomNumber, chipEthereumAddress, chipTokenId);
-        Uint8List hashedMsg = verifyResult[0];
-        MsgSignature signature = verifyResult[1];
+        hashedMsg = verifyResult[0];
+        signature = verifyResult[1];
+        ref.read(signatureDataProvider.notifier).setSignatureData(
+            SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-        // get owner of nft with cardId == tokenId
-        try {
-          EthereumAddress ownerAddress = await getOwner(chipTokenId);
-          nftOwner = ownerAddress.toString();
-          chipIsInitialized = true;
-        } catch (e) {
-          //NFT with this token ID does not have an owner/does not exist
-          chipIsInitialized = false;
-          nftOwner = context.loc.ownerError;
-        }
+        if (config.collectionId == zeroAddress) {
+          //TOKEN DOES NOT EXIST
+          NfcManager.instance.stopSession();
 
-        NfcManager.instance.stopSession();
-
-        //navigate to next screen
-        if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
-          Navigator.pushReplacementNamed(
-              context, UserScanResultsScreen.routeName,
-              arguments: UserScanResultsScreenArguments(nftOwner,
-                  chipIsInitialized, chipTokenId, chipEthereumAddress));
-        } else {
-          if (chipIsInitialized) {
+          if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
-                context, ChipAlreadyInitializedScreen.routeName,
-                arguments: ChipAlreadyInitializedScreenArguments(
-                    chipTokenId, chipEthereumAddress, hashedMsg, signature));
+              context,
+              UserScanResultsScreen.routeName,
+            );
           } else {
-            Navigator.pushReplacementNamed(context, MetadataScreen.routeName,
-                arguments: MetadataScreenArguments(
-                    chipTokenId, chipEthereumAddress, hashedMsg, signature));
+            Navigator.pushReplacementNamed(
+              context,
+              ChainSelectorScreen.routeName,
+            );
+          }
+        } else {
+          //TOKEN EXISTS
+          try {
+            //verify token authenticity via smart contract
+            bool tokenIsAuthentic = await verifyTokenAuthenticity(
+                getRPCUrlFromChainId(config.chainId),
+                config.collectionId,
+                chipEthereumAddress,
+                hashedMsg,
+                signature);
+
+            NfcManager.instance.stopSession();
+            if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
+              Navigator.pushReplacementNamed(
+                  context, UserScanResultsScreen.routeName);
+            } else {
+              Navigator.pushReplacementNamed(
+                  context, ChipAlreadyInitializedScreen.routeName,
+                  arguments: ChipAlreadyInitializedScreenArguments(
+                      hashedMsg, signature));
+            }
+          } catch (e) {
+            //TOKEN IS NOT AUTHENTIC
+            rethrow;
           }
         }
       } catch (e) {

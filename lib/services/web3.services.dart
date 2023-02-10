@@ -7,55 +7,90 @@ import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 
-Web3Client getWeb3Client() {
-  var rpcUrl = dotenv.get('CHAIN_RPC');
-  var client = Web3Client(rpcUrl, Client());
+Web3Client getWeb3Client(String chainRpcUrl) {
+  var client = Web3Client(chainRpcUrl, Client());
   return client;
 }
 
-Future<DeployedContract> getContract() async {
+Future<DeployedContract> getCollectionContract(
+    EthereumAddress collectionId) async {
   String abi =
-      await rootBundle.loadString("assets/contracts/contract.abi.json");
+      await rootBundle.loadString("assets/contracts/collection.abi.json");
   DeployedContract contract = DeployedContract(
-    ContractAbi.fromJson(abi, dotenv.get('CONTRACT_NAME')),
-    EthereumAddress.fromHex(dotenv.get('CONTRACT_ADDRESS')),
+    ContractAbi.fromJson(abi, 'OwnerChipDemo'),
+    collectionId,
   );
   return contract;
 }
 
-Future<List<dynamic>> query(String functionName, List<dynamic> args) async {
-  DeployedContract contract = await getContract();
+Future<DeployedContract> getRegistryContract(
+    String registryContractAddress) async {
+  String abi =
+      await rootBundle.loadString("assets/contracts/registry.abi.json");
+  DeployedContract contract = DeployedContract(
+    ContractAbi.fromJson(abi, 'OwnerChipRegistry'),
+    EthereumAddress.fromHex(registryContractAddress),
+  );
+  return contract;
+}
+
+Future<List<dynamic>> queryRegistryContract(
+    String chainRpcUrl,
+    String registryContractAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract =
+      await getRegistryContract(registryContractAddress);
   ContractFunction function = contract.function(functionName);
-  final web3Client = getWeb3Client();
+  final web3Client = getWeb3Client(chainRpcUrl);
   List<dynamic> result = await web3Client.call(
       contract: contract, function: function, params: args);
   return result;
 }
 
-Future<BigInt> estimateGas(Uint8List txData, String fromAddress) async {
-  final web3Client = getWeb3Client();
+Future<List<dynamic>> queryCollectionContract(
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract = await getCollectionContract(collectionId);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  List<dynamic> result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
+Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
+    Uint8List txData, String fromAddress) async {
+  final web3Client = getWeb3Client(chainRpcUrl);
   BigInt result = await web3Client.estimateGas(
       sender: EthereumAddress.fromHex(fromAddress),
-      to: EthereumAddress.fromHex(dotenv.env['CONTRACT_ADDRESS']!),
+      to: contractAddress,
       data: txData);
   return result;
 }
 
-Future<BigInt> estimateGasPrice() async {
-  final web3Client = getWeb3Client();
+Future<BigInt> estimateGasPrice(String chainRpcUrl) async {
+  final web3Client = getWeb3Client(chainRpcUrl);
   EtherAmount gasPrice = await web3Client.getGasPrice();
   return gasPrice.getInWei;
 }
 
 // contract version 2
-Future<bool> verifyTokenSigner(String chipWalletAddressHex,
-    Uint8List tokenIdHash, MsgSignature signature) async {
+Future<bool> verifyTokenSigner(
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    EthereumAddress chipWalletAddressHex,
+    Uint8List tokenIdHash,
+    MsgSignature signature) async {
   Uint8List r = bytesFromBigInt(signature.r);
   Uint8List s = bytesFromBigInt(signature.s);
   try {
-    var result =
-        await query("getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
-    bool res = (chipWalletAddressHex == result[0].toString().toLowerCase());
+    var result = await queryCollectionContract(chainRpcUrl, collectionId,
+        "getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
+    bool res = (chipWalletAddressHex ==
+        EthereumAddress.fromHex(result[0].toString().toLowerCase()));
     return res;
   } catch (e) {
     return false;
@@ -63,8 +98,13 @@ Future<bool> verifyTokenSigner(String chipWalletAddressHex,
 }
 
 // contract version 2
-Future<List<dynamic>> makeSignedMintParams(String? from, Uint8List tokenIdHash,
-    String tokenURI, MsgSignature signature,
+Future<List<dynamic>> makeSignedMintParams(
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    String? from,
+    Uint8List tokenIdHash,
+    String tokenURI,
+    MsgSignature signature,
     {String? gasPrice}) async {
   String data = "0xcb5a7173" +
       uint8ListTo32ByteHex(tokenIdHash) + //bytes32
@@ -77,7 +117,8 @@ Future<List<dynamic>> makeSignedMintParams(String? from, Uint8List tokenIdHash,
 
   String gasAmount = "0x249F0"; // fallback: 150000 gas
   try {
-    BigInt gasAmountEst = await estimateGas(hexToBytes(data), from!);
+    BigInt gasAmountEst =
+        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
     gasAmount = "0x${gasAmountEst.toRadixString(16)}";
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
@@ -86,7 +127,7 @@ Future<List<dynamic>> makeSignedMintParams(String? from, Uint8List tokenIdHash,
 
   if (gasPrice == null) {
     try {
-      BigInt estimatedGasPrice = await estimateGasPrice();
+      BigInt estimatedGasPrice = await estimateGasPrice(chainRpcUrl);
       gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
       print("ESTIMATED GAS PRICE: $gasPrice");
     } catch (e) {
@@ -98,7 +139,7 @@ Future<List<dynamic>> makeSignedMintParams(String? from, Uint8List tokenIdHash,
   final params = [
     {
       "from": from,
-      "to": dotenv.env['CONTRACT_ADDRESS'],
+      "to": collectionId.toString(),
       "data": data,
       "gasPrice": gasPrice,
       "gas": gasAmount
@@ -109,7 +150,11 @@ Future<List<dynamic>> makeSignedMintParams(String? from, Uint8List tokenIdHash,
 
 // contract version 2
 Future<List<dynamic>> makeSignedBurnParams(
-    String? from, Uint8List tokenIdHash, MsgSignature signature,
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    String? from,
+    Uint8List tokenIdHash,
+    MsgSignature signature,
     {String? gasPrice}) async {
   String data = "0x469fd767" +
       uint8ListTo32ByteHex(tokenIdHash) +
@@ -119,7 +164,8 @@ Future<List<dynamic>> makeSignedBurnParams(
 
   String gasAmount = "0xC350"; // fallback: 50000 gas
   try {
-    BigInt gasAmountEst = await estimateGas(hexToBytes(data), from!);
+    BigInt gasAmountEst =
+        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
     gasAmount = "0x${gasAmountEst.toRadixString(16)}";
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
@@ -128,7 +174,7 @@ Future<List<dynamic>> makeSignedBurnParams(
 
   if (gasPrice == null) {
     try {
-      BigInt estimatedGasPrice = await estimateGasPrice();
+      BigInt estimatedGasPrice = await estimateGasPrice(chainRpcUrl);
       gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
       print("ESTIMATED GAS PRICE: $gasPrice");
     } catch (e) {
@@ -140,7 +186,7 @@ Future<List<dynamic>> makeSignedBurnParams(
   final params = [
     {
       "from": from,
-      "to": dotenv.env['CONTRACT_ADDRESS'],
+      "to": collectionId.toString(),
       "data": data,
       "gasPrice": gasPrice,
       "gas": gasAmount
@@ -149,25 +195,13 @@ Future<List<dynamic>> makeSignedBurnParams(
   return params;
 }
 
-// wallet specific
-dynamic makeWatchAssetParams(String imageUri) {
-  final params = [
-    {
-      "type": "ERC721",
-      "options": {
-        "address": dotenv.get("CONTRACT_ADDRESS"),
-        "symbol": "OCDemo",
-        "decimals": 0,
-        "image": imageUri
-      }
-    }
-  ];
-  return params;
-}
-
-Future<dynamic> getOwner(BigInt tokenId) async {
+Future<dynamic> getOwner(
+    String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
+  print('checking owner of tokenId $tokenId on chain $chainRpcUrl');
   try {
-    var owner = await query("ownerOf", [tokenId]);
+    var owner = await queryCollectionContract(
+        chainRpcUrl, collectionId, "ownerOf", [tokenId]);
+    print('result: ${owner[0]}');
     return owner[0];
   } catch (e) {
     print('Error while fetching owner of tokenId $tokenId: $e');
@@ -175,9 +209,24 @@ Future<dynamic> getOwner(BigInt tokenId) async {
   }
 }
 
-Future<dynamic> getTokenUri(BigInt tokenId) async {
+Future<String> getContractName(
+    String chainRpcUrl, EthereumAddress collectionId) async {
   try {
-    var uri = await query("tokenURI", [tokenId]);
+    var name =
+        await queryCollectionContract(chainRpcUrl, collectionId, "name", []);
+    return name[0];
+  } catch (e) {
+    print('Error while fetching name of collection $collectionId: $e');
+    throw Exception(
+        'Error while fetching name of collection $collectionId: $e');
+  }
+}
+
+Future<dynamic> getTokenUri(
+    String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
+  try {
+    var uri = await queryCollectionContract(
+        chainRpcUrl, collectionId, "tokenURI", [tokenId]);
     return uri[0];
   } catch (e) {
     print('Error while fetching uri of tokenId $tokenId: $e');
@@ -185,8 +234,21 @@ Future<dynamic> getTokenUri(BigInt tokenId) async {
   }
 }
 
-Future<dynamic> getTxnReceipt(String txnHash) async {
-  final web3Client = getWeb3Client();
+Future<EthereumAddress> getCollectionId(
+    String chainRpcUrl, String registryAddress, BigInt tokenId) async {
+  try {
+    List collectionId = await queryRegistryContract(
+        chainRpcUrl, registryAddress, "tokenRegistry", [tokenId]);
+    return collectionId[0];
+  } catch (e) {
+    print('Error while fetching registry entry of tokenId $tokenId: $e');
+    throw Exception(
+        'Error while fetching registry entry of tokenId $tokenId: $e');
+  }
+}
+
+Future<dynamic> getTxnReceipt(String chainRpcUrl, String txnHash) async {
+  final web3Client = getWeb3Client(chainRpcUrl);
 
   try {
     var txnReceipt = await web3Client.getTransactionReceipt(txnHash);

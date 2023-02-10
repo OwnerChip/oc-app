@@ -1,3 +1,4 @@
+import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -6,7 +7,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../utils/localization.helper.dart';
 
 // local files
-import '../services/url_generator.service.dart';
 import '../utils/utils.dart';
 import '../widgets/ui/CustomAppBar.dart';
 import 'ScanningScreen.dart';
@@ -36,10 +36,20 @@ void onScanButtonPress(BuildContext context, mounted) async {
       throw Exception("No internet connection");
     }
 
+    //check if NFC is deactivated
+    if (!await checkNfcReader()) {
+      throw CustomException("NFC Reader is not activated");
+    }
+
     if (mounted) {
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
     }
+  } on CustomException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+          context.loc.errorNoNfcReader, 'error'),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
@@ -54,10 +64,6 @@ void onInitializeButtonPress(
     //check if there is internet connections
     if (!await checkInternetConnection()) {
       throw Exception("No internet connection");
-    }
-
-    if (!wc.connected) {
-      await startWalletConnection(context, wc);
     }
 
     if (mounted) {
@@ -85,9 +91,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
-          withScrollView: false,
+          withScrollView: true,
           mainAxisAlignment: MainAxisAlignment.center,
+          flexSides: 0,
+          padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
+            dotenv.get('APP_ID') == 'ownerchip_infineon'
+                ? Column(children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                            padding:
+                                const EdgeInsets.only(left: 10, bottom: 15),
+                            child: Image.asset(
+                              'assets/images/ownerchip_infineon/infineon_logo.png',
+                              height: 40,
+                            ))
+                      ],
+                    ),
+                  ])
+                : const SizedBox(height: 20),
             CustomHomeScreenButton(
                 text: context.loc.scanning,
                 svgPath:
@@ -101,15 +125,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
                     onTap: () => onInitializeButtonPress(context, wc, mounted))
                 : Container(),
-            const SizedBox(height: 70),
+            const SizedBox(height: 20),
             CustomRoundedButton(
               width: 250,
               text: context.loc.moreInfo,
               onPressed: () => {
-                launchUrl(generateLandingPageUrl(),
+                launchUrl(Uri.parse(dotenv.get('LANDING_PAGE_URL')),
                     mode: LaunchMode.externalApplication)
               },
             ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Powered by ',
+                  style: TextStyle(
+                      color: Theme.of(context).primaryColor, fontSize: 12),
+                ),
+                GestureDetector(
+                  onTap: () => {
+                    launchUrl(Uri.parse('https://ownerchip.com'),
+                        mode: LaunchMode.externalApplication)
+                  },
+                  child: Text(
+                    'OwnerChip.com',
+                    style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () => {
+                launchUrl(Uri.parse(dotenv.get('LEGAL_PAGE_URL')),
+                    mode: LaunchMode.externalApplication)
+              },
+              child: Text(
+                context.loc.legal,
+                style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    color: Theme.of(context).primaryColor,
+                    fontSize: 12),
+              ),
+            )
           ]),
     );
   }

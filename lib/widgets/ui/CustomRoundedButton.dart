@@ -21,7 +21,7 @@ class CustomRoundedButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Icon? icon; //TODO: Make this SVG to use custom marta icons
   final double height;
-  final double width;
+  final double? width;
   final Color? backgroundColor;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;

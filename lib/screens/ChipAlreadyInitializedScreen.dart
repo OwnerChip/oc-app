@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:async/async.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:web3dart/web3dart.dart';
 import '../utils/localization.helper.dart';
 import 'dart:typed_data';
 
@@ -18,7 +21,6 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 // import local files
 import '../widgets/ui/CustomAppBar.dart';
 import '../utils/navigation.arguments.dart';
-import '../services/url_generator.service.dart';
 import 'HomeScreen.dart';
 import '../utils/utils.dart';
 import '../services/web3.services.dart';
@@ -38,6 +40,8 @@ class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
 
 class _ChipAlreadyInitializedState
     extends ConsumerState<ChipAlreadyInitializedScreen> {
+  CancelableOperation? cancellableOperation;
+
   bool isLoading = false;
   bool isRotating = true;
   String loadingSvgPath =
@@ -47,10 +51,14 @@ class _ChipAlreadyInitializedState
   Future<void> burnToken(
       BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
-
+    TokenInfoObject config = await ref.watch(findTokenProvider(tokenId).future);
     try {
       var burnParams = await makeSignedBurnParams(
-          wc.session.accounts[0], tokenIdHash, signature);
+          getRPCUrlFromChainId(config.chainId),
+          config.collectionId,
+          wc.session.accounts[0],
+          tokenIdHash,
+          signature);
 
       //if wc bridge is not connected, then reconnect
       if (!wc.bridgeConnected) {
@@ -68,7 +76,8 @@ class _ChipAlreadyInitializedState
         loadingText = context.loc.burning;
       });
 
-      var txnReceipt = await getTxnReceipt(txnHash);
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
 
@@ -98,18 +107,40 @@ class _ChipAlreadyInitializedState
     }
   }
 
-  Future<void> burnAndMintToken(Uint8List tokenId) async {}
+  Future<dynamic> fromCancelable(Future<dynamic> future) async {
+    cancellableOperation?.cancel();
+    cancellableOperation = CancelableOperation.fromFuture(future, onCancel: () {
+      print('Operation Cancelled');
+    });
+    return cancellableOperation;
+  }
 
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    final connectedWallet = wc.session.accounts.length > 0
+        ? wc.session.accounts[0].toLowerCase()
+        : '';
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
-    final BigInt tokenId = navArgs.tokenId;
-    final Uint8List tokenIdHash = keccakUtf8(tokenId.toString());
+    final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+    final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
+    final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
+    final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
+    final AsyncValue<Uri> blockchainExplorerUrl =
+        ref.watch(blockchainExplorerUrlProvider);
+    final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
     final MsgSignature signature = navArgs.signature;
 
     return LoadingOverlay(
+      onPressed: () {
+        cancellableOperation?.cancel();
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pushNamedAndRemoveUntil(
+            context, HomeScreen.routeName, (route) => false);
+      },
       isLoading: isLoading,
       loadingText: loadingText,
       rotateIcon: isRotating,
@@ -155,29 +186,39 @@ class _ChipAlreadyInitializedState
                       context.loc.alreadyLinked,
                       style: Theme.of(context).textTheme.headline5!,
                     ),
-
-                    //spacing
-                    const SizedBox(
-                      height: 50,
-                    ),
-
-                    CustomRoundedButton(
-                      width: 250,
-                      text: context.loc.burnToken,
-                      onPressed: () =>
-                          {burnToken(tokenId, navArgs.hashedMsg, signature)},
-                    ),
-
                     const SizedBox(
                       height: 40,
+                    ),
+                    nftOwner.when(
+                        error: (e, s) => Text(context.loc.whoops,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline1),
+                        loading: () => Text(context.loc.loading,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline1),
+                        data: (data) =>
+                            wc.connected && connectedWallet == data.toString()
+                                ? CustomRoundedButton(
+                                    width: 250,
+                                    text: context.loc.burnToken,
+                                    onPressed: () => {
+                                      fromCancelable(burnToken(chipInfo.tokenId,
+                                          navArgs.hashedMsg, signature))
+                                    },
+                                  )
+                                : const SizedBox(
+                                    height: 40,
+                                  )),
+
+                    const SizedBox(
+                      height: 8,
                     ),
                     CustomRoundedButton(
                         width: 250,
                         text: context.loc.showOnExplorer,
                         onPressed: () => {
-                              launchUrl(
-                                  generateBlockchainExplorerTokenDetailsUrl(
-                                      tokenId.toString()))
+                              launchUrl(blockchainExplorerUrl.asData!.value,
+                                  mode: LaunchMode.externalApplication)
                             }),
                     //spacing
                     const SizedBox(
@@ -187,8 +228,19 @@ class _ChipAlreadyInitializedState
                       width: 250,
                       text: context.loc.showOnOpenSea,
                       onPressed: () => {
-                        launchUrl(
-                            generateOpenSeaTokenDetailsUrl(tokenId.toString()),
+                        launchUrl(openseaUrl.asData!.value,
+                            mode: LaunchMode.externalApplication)
+                      },
+                    ),
+                    //spacing
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    CustomRoundedButton(
+                      width: 250,
+                      text: context.loc.showOnRarible,
+                      onPressed: () => {
+                        launchUrl(raribleUrl.asData!.value,
                             mode: LaunchMode.externalApplication)
                       },
                     ),

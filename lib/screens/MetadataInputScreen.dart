@@ -1,19 +1,22 @@
-//flutter imports
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
+import 'package:async/async.dart';
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:web3dart/web3dart.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
-
-//web3 imports
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -23,7 +26,6 @@ import '../services/ipfs.services.dart';
 import '../utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/images.service.dart';
 import '../services/web3.services.dart';
-import '../utils/navigation.arguments.dart';
 import '../screens/NFTDetailsScreen.dart';
 import '../widgets/ui/returnSnackBarWidget.dart';
 import '../widgets/ui/LoadingOverlay.dart';
@@ -50,12 +52,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   late Map<String, dynamic> metadata;
   XFile? image;
   String imagePath = '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
-  bool success = false;
   bool showImageOptions = false;
   bool showTraitsForm = false;
   bool isLoading = false;
   String loadingText = '';
+  CancelableOperation? cancellableOperation;
 
+  @override
   void initState() {
     super.initState();
     metadata = {
@@ -83,16 +86,15 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
   }
 
-  void initializeChip(Map<String, dynamic> metadata, {XFile? image}) async {
+  Future<void> initializeChip(
+      SignatureData signatureData, Map<String, dynamic> metadata,
+      {XFile? image}) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    // final signatureData = ref.watch(signatureDataProvider);
     setState(() {
       isLoading = true;
-      success = false;
       loadingText = context.loc.uploadingMetadata;
     });
-
-    final navArgs =
-        ModalRoute.of(context)!.settings.arguments as MetadataScreenArguments;
 
     //if wc bridge is not connected, then reconnect
     if (!wc.bridgeConnected) {
@@ -124,9 +126,19 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String fullUri = "ipfs://$cid";
 
+      final int chainId = ref.watch(selectedChainIdProvider);
+      final EthereumAddress collectionId =
+          ref.watch(selectedCollectionIdProvider);
+
+      final List config = [chainId, collectionId];
       // generate mint parameters
       var mintParams = await makeSignedMintParams(
-          walletAddress, navArgs.hashedMsg, "ipfs://$cid", navArgs.signature);
+          getRPCUrlFromChainId(config[0]),
+          config[1],
+          walletAddress,
+          signatureData.hashedMsg,
+          "ipfs://$cid",
+          signatureData.signature);
 
       setState(() {
         isLoading = false;
@@ -144,21 +156,24 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      var txnReceipt = await getTxnReceipt(txnHash);
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
 
       if (txnReceipt?.status == true) {
         //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
-        // if (true) {
-        // ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, NFTDetailsScreen.routeName,
-            arguments: NFTDetailsScreenArguments(
-                navArgs.tokenId, navArgs.chipWalletAddress));
-
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          NFTDetailsScreen.routeName,
+          (Route route) => route.isFirst,
+        );
         setState(() {
           isLoading = false;
-          success = true;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.mintSuccess, 'success'),
+        );
       } else {
         throw Exception('Transaction failed');
       }
@@ -168,7 +183,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
       );
       setState(() {
-        success = false;
         isLoading = false;
       });
     }
@@ -197,15 +211,22 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    TraitsFormState.traitsArray.clear();
     super.dispose();
+  }
+
+  Future<dynamic> fromCancelable(Future<dynamic> future) async {
+    cancellableOperation?.cancel();
+    cancellableOperation = CancelableOperation.fromFuture(future, onCancel: () {
+      print('Operation Cancelled');
+    });
+    return cancellableOperation;
   }
 
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final navArgs =
-        ModalRoute.of(context)!.settings.arguments as MetadataScreenArguments;
-
+    final SignatureData signatureData = ref.watch(signatureDataProvider);
     return CustomOverlay(
         show: showTraitsForm,
         content: CustomCard(
@@ -227,6 +248,16 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               ))
             ]),
         child: LoadingOverlay(
+          onPressed: loadingText == context.loc.mintingToken
+              ? () {
+                  cancellableOperation?.cancel();
+                  setState(() {
+                    isLoading = false;
+                  });
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, HomeScreen.routeName, (route) => false);
+                }
+              : null,
           isLoading: isLoading,
           loadingText: loadingText,
           svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
@@ -261,9 +292,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                     ),
                   ],
                 ),
-
-//spacing
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 CustomCard(
                     color: CustomColors(dotenv.get('APP_ID')).cardColor,
                     children: [
@@ -434,19 +463,17 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                               )
                             ],
                           )),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: CustomRoundedButton(
                             text: context.loc.mintNft,
-                            onPressed: () {
+                            onPressed: () async {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
-                                if (image != null) {
-                                  initializeChip(metadata, image: image);
-                                } else {
-                                  initializeChip(metadata);
-                                }
+                                fromCancelable(initializeChip(
+                                    signatureData, metadata,
+                                    image: image));
                               }
                             },
                           )),

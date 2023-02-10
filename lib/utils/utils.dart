@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'dart:math';
 import 'dart:io';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 
 Future<void> vibrateNTimes(int times) async {
   for (int i = 0; i < times; i++) {
@@ -44,6 +45,20 @@ Future<bool> checkInternetConnection() async {
     }
     return false;
   } on SocketException catch (_) {
+    return false;
+  }
+}
+
+//check if NFC is activated
+Future<bool> checkNfcReader() async {
+  try {
+    final nfcManager = NfcManager.instance;
+    final isAvailable = await nfcManager.isAvailable();
+    if (isAvailable) {
+      return true;
+    }
+    return false;
+  } catch (e) {
     return false;
   }
 }
@@ -121,4 +136,9 @@ String convertTokenIdToEthereumAddress(BigInt intToConvert) {
 // specific to secora chip response
 Uint8List getPublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
   return responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
+}
+
+//get RPC Url from chain ID from chains.dart
+String getRPCUrlFromChainId(int chainId) {
+  return chainConfig[chainId]!.rpcUrl;
 }
