@@ -79,21 +79,21 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 tokenId: chipInfo.tokenId,
               ),
             ),
-            //spacing
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                    nftMetadata.when(
-                        loading: () => context.loc.loading,
-                        data: (data) => data['name'],
-                        error: (e, s) => context.loc.loading),
-                    style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                        fontSize: CustomFonts(dotenv.get('APP_ID'))
-                            .MetadataNameFontSize,
-                        fontWeight: CustomFonts(dotenv.get('APP_ID'))
-                            .MetadataNameFontWeight)),
+                Flexible(
+                    child: Text(
+                        nftMetadata.when(
+                            loading: () => context.loc.loading,
+                            data: (data) => data['name'],
+                            error: (e, s) => context.loc.loading),
+                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                            fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                .MetadataNameFontSize,
+                            fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                                .MetadataNameFontWeight))),
 
                 //show traits button
                 nftMetadata.when(
@@ -102,7 +102,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                           data['traits']!.isNotEmpty
                       ? CustomRoundedButton(
                           height: 30,
-                          width: 170,
+                          width: null,
                           textStyle: Theme.of(context)
                               .textTheme
                               .bodyText1!
@@ -210,7 +210,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                     ),
                 error: (e, s) => Container(),
                 loading: () => Container()),
-
             const SizedBox(height: 20),
             CustomRoundedButton(
               text: context.loc.showOnExplorer,
