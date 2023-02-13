@@ -161,7 +161,6 @@ class _ChipAlreadyInitializedState
                   color: CustomColors(dotenv.get('APP_ID')).cardColor,
                   width: 300,
                   children: [
-                    //orange round ember warning icon
                     Icon(Icons.warning_amber_rounded,
                         color: CustomColors(dotenv.get('APP_ID')).warningColor,
                         size: CustomFonts(dotenv.get('APP_ID'))
@@ -179,7 +178,6 @@ class _ChipAlreadyInitializedState
                           fontWeight: CustomFonts(dotenv.get('APP_ID'))
                               .AdminWarningSubtextFontWeight),
                     ),
-                    //spacing
                     const SizedBox(height: 10),
                     Text(
                       textAlign: TextAlign.center,
@@ -190,12 +188,10 @@ class _ChipAlreadyInitializedState
                       height: 40,
                     ),
                     nftOwner.when(
-                        error: (e, s) => Text(context.loc.whoops,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headline1),
+                        error: (e, s) => Container(),
                         loading: () => Text(context.loc.loading,
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headline1),
+                            style: Theme.of(context).textTheme.headlineMedium),
                         data: (data) =>
                             wc.connected && connectedWallet == data.toString()
                                 ? CustomRoundedButton(
@@ -220,7 +216,6 @@ class _ChipAlreadyInitializedState
                               launchUrl(blockchainExplorerUrl.asData!.value,
                                   mode: LaunchMode.externalApplication)
                             }),
-                    //spacing
                     const SizedBox(
                       height: 8,
                     ),
@@ -232,23 +227,23 @@ class _ChipAlreadyInitializedState
                             mode: LaunchMode.externalApplication)
                       },
                     ),
-                    //spacing
                     const SizedBox(
                       height: 8,
                     ),
-                    CustomRoundedButton(
-                      width: 250,
-                      text: context.loc.showOnRarible,
-                      onPressed: () => {
-                        launchUrl(raribleUrl.asData!.value,
-                            mode: LaunchMode.externalApplication)
-                      },
-                    ),
+                    dotenv.get('APP_ID') == 'ownerchip_infineon'
+                        ? Container()
+                        : CustomRoundedButton(
+                            width: 250,
+                            text: context.loc.showOnRarible,
+                            onPressed: () => {
+                              launchUrl(raribleUrl.asData!.value,
+                                  mode: LaunchMode.externalApplication)
+                            },
+                          ),
                     const SizedBox(
                       height: 40,
                     ),
                   ]),
-              //spacing
               const SizedBox(
                 height: 20,
               ),

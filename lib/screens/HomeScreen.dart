@@ -66,6 +66,11 @@ void onInitializeButtonPress(
       throw Exception("No internet connection");
     }
 
+    //check if NFC is deactivated
+    if (!await checkNfcReader()) {
+      throw CustomException("NFC Reader is not activated");
+    }
+
     if (mounted) {
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(MetadataScreen.routeName));

@@ -272,7 +272,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               body: ScreenBodyLayout(children: [
                 Row(
                   children: [
-                    //spacing
                     SizedBox(width: 22),
                     RichText(
                       text: TextSpan(

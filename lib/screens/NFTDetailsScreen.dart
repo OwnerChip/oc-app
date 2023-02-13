@@ -19,6 +19,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -69,10 +70,16 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 loading: true,
                 tokenId: chipInfo.tokenId,
               ),
-              error: (e, s) => CustomImage(
-                loading: false,
-                tokenId: chipInfo.tokenId,
-              ),
+              error: (e, s) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                      context.loc.loadingNFTDataError, 'error'),
+                );
+                return CustomImage(
+                  loading: true,
+                  tokenId: chipInfo.tokenId,
+                );
+              },
               data: (data) => CustomImage(
                 loading: false,
                 imagePath: data,
@@ -227,13 +234,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               },
             ),
             const SizedBox(height: 15),
-            CustomRoundedButton(
-              text: context.loc.showOnRarible,
-              onPressed: () => {
-                launchUrl(raribleUrl.asData!.value,
-                    mode: LaunchMode.externalApplication)
-              },
-            ),
+            dotenv.get('APP_ID') == 'ownerchip_infineon'
+                ? Container()
+                : CustomRoundedButton(
+                    text: context.loc.showOnRarible,
+                    onPressed: () => {
+                      launchUrl(raribleUrl.asData!.value,
+                          mode: LaunchMode.externalApplication)
+                    },
+                  ),
           ],
         )
       ]),

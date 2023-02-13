@@ -59,12 +59,8 @@ class CustomImage extends StatelessWidget {
                   aspectRatio: 0.75,
                   child: Align(
                     alignment: const Alignment(-1.0, 0.95),
-                    child:
-                        //container with rounded corners and text inside
-                        Row(children: [
-                      //spacing
+                    child: Row(children: [
                       const SizedBox(width: 5),
-                      //make container touchable
                       const SmallTextContainer(
                         text: 'Token ID',
                         copyValue: '',
