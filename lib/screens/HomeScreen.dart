@@ -96,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
-          withScrollView: true,
+          withScrollView: dotenv.get('IS_ADMIN') == 'true' ? true : false,
           mainAxisAlignment: MainAxisAlignment.center,
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
