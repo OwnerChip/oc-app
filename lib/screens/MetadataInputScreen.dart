@@ -147,15 +147,16 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String txnHash;
       if (canUseGasStation) {
-        final Map<String, dynamic> gaslessMintParams =
-            await makeGaslessMintParams(
-                getRPCUrlFromChainId(config[0]),
-                chainId,
-                signatureData.hashedMsg,
-                signatureData.signature,
-                "ipfs://$cid",
-                EthereumAddress.fromHex(walletAddress),
-                collectionId);
+        final Map<String, dynamic> gaslessMintParams = await makeGaslessParams(
+          functionSignatureHash: '0x7a7f274d',
+          chainRpcUrl: getRPCUrlFromChainId(config[0]),
+          chainId: chainId,
+          tokenIdHash: signatureData.hashedMsg,
+          signature: signatureData.signature,
+          from: EthereumAddress.fromHex(walletAddress),
+          to: collectionId,
+          tokenURI: "ipfs://$cid",
+        );
         //json stringify gaslessMintParams
         String signature = await wc.sendCustomRequest(
             method: 'eth_signTypedData_v4',

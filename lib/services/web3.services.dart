@@ -153,6 +153,15 @@ Future<List<dynamic>> makeMintParams(
   return params;
 }
 
+String makeBurnData(Uint8List tokenIdHash, MsgSignature signature) {
+  String data = "0x469fd767" +
+      uint8ListTo32ByteHex(tokenIdHash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
 Future<List<dynamic>> makeBurnParams(
     String chainRpcUrl,
     EthereumAddress collectionId,
@@ -160,11 +169,7 @@ Future<List<dynamic>> makeBurnParams(
     Uint8List tokenIdHash,
     MsgSignature signature,
     {String? gasPrice}) async {
-  String data = "0x469fd767" +
-      uint8ListTo32ByteHex(tokenIdHash) +
-      signature.r.toRadixString(16).padLeft(64, '0') +
-      signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0');
+  String data = makeBurnData(tokenIdHash, signature);
 
   String gasAmount = "0xC350"; // fallback: 50000 gas
   try {

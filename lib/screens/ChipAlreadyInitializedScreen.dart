@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
@@ -11,14 +12,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:web3dart/web3dart.dart';
 import '../utils/localization.helper.dart';
 import 'dart:typed_data';
-
-//web3 imports
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-
-// import local files
 import '../widgets/ui/CustomAppBar.dart';
 import '../utils/navigation.arguments.dart';
 import 'HomeScreen.dart';
@@ -28,6 +25,8 @@ import '../widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 
 class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
   const ChipAlreadyInitializedScreen({super.key});
@@ -53,23 +52,47 @@ class _ChipAlreadyInitializedState
     WalletConnect wc = ref.watch(walletConnectProvider);
     TokenInfoObject config = await ref.watch(findTokenProvider(tokenId).future);
     try {
-      var burnParams = await makeBurnParams(
-          getRPCUrlFromChainId(config.chainId),
-          config.collectionId,
-          wc.session.accounts[0],
-          tokenIdHash,
-          signature);
-
-      //if wc bridge is not connected, then reconnect
       if (!wc.bridgeConnected) {
         wc.reconnect();
       }
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-      var txnHash = await wc.sendCustomRequest(
-          method: 'eth_sendTransaction',
-          params: burnParams,
-          id: makeRandomInt());
+
+      final List response =
+          await checkMetaTx(config.collectionId, '0xd6fc7cef');
+      final bool canUseGasStation = response[0];
+      final String metaTxAgreementId = response[1];
+
+      String txnHash;
+      if (canUseGasStation) {
+        final Map<String, dynamic> gaslessBurnParams = await makeGaslessParams(
+            functionSignatureHash: '0xd6fc7cef',
+            chainRpcUrl: getRPCUrlFromChainId(config.chainId),
+            chainId: config.chainId,
+            tokenIdHash: tokenIdHash,
+            signature: signature,
+            from: EthereumAddress.fromHex(wc.session.accounts[0]),
+            to: config.collectionId);
+        //json stringify gaslessMintParams
+        String metamaskSignature = await wc.sendCustomRequest(
+            method: 'eth_signTypedData_v4',
+            params: [wc.session.accounts[0], json.encode(gaslessBurnParams)],
+            id: makeRandomInt());
+        txnHash = await sendGaslessRequest(config.collectionId,
+            metamaskSignature, '0xd6fc7cef', metaTxAgreementId);
+        print(txnHash);
+      } else {
+        var burnParams = await makeBurnParams(
+            getRPCUrlFromChainId(config.chainId),
+            config.collectionId,
+            wc.session.accounts[0],
+            tokenIdHash,
+            signature);
+        txnHash = await wc.sendCustomRequest(
+            method: 'eth_sendTransaction',
+            params: burnParams,
+            id: makeRandomInt());
+      }
 
       setState(() {
         isLoading = true;
@@ -80,7 +103,6 @@ class _ChipAlreadyInitializedState
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
-
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";

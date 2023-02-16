@@ -34,7 +34,7 @@ Future<String> sendGaslessRequest(
     String metaTxAgreementId) async {
   final Dio dio = getBackendClient();
   // final String url = '/collection/$collectionId/metatx';
-  final String url =
+  const String url =
       '/collection/0xe587fb76509550a72eb120b941f9235488ab6aee/metatx';
   //make post request with dio
   final response = await dio.post(url, data: {
@@ -42,5 +42,5 @@ Future<String> sendGaslessRequest(
     "functionSignatureHash": functionSignature,
     "metaTxAgreementId": metaTxAgreementId
   });
-  return response.data['txHash'];
+  return response.data; //txId
 }
