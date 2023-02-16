@@ -31,7 +31,7 @@ class CustomHomeScreenButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(13),
               boxShadow: [
                 BoxShadow(
-                  color: CustomColors(dotenv.get('APP_ID'))
+                  color: CustomColors(dotenv.get('STYLE_ID'))
                       .customHomeScreenButtonShadowColor,
                   blurRadius: 5,
                   offset: const Offset(3, 4),

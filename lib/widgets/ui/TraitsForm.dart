@@ -57,7 +57,7 @@ class TraitsFormState extends State<TraitsForm> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: CustomColors(dotenv.get('APP_ID')).cardColor,
+        color: CustomColors(dotenv.get('STYLE_ID')).cardColor,
         child: Form(
             key: _formKey,
             child: Column(children: <Widget>[
@@ -73,9 +73,9 @@ class TraitsFormState extends State<TraitsForm> {
                           .textTheme
                           .bodyText1!
                           .copyWith(
-                              color: CustomColors(dotenv.get('APP_ID'))
+                              color: CustomColors(dotenv.get('STYLE_ID'))
                                   .customRoundedButtonColor,
-                              fontSize: CustomFonts(dotenv.get('APP_ID'))
+                              fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                       .bodyText2FontSize /
                                   1.3),
                       onPressed: () => removeTraitInput()),
@@ -88,9 +88,9 @@ class TraitsFormState extends State<TraitsForm> {
                           .textTheme
                           .bodyText1!
                           .copyWith(
-                              color: CustomColors(dotenv.get('APP_ID'))
+                              color: CustomColors(dotenv.get('STYLE_ID'))
                                   .customRoundedButtonColor,
-                              fontSize: CustomFonts(dotenv.get('APP_ID'))
+                              fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                       .bodyText2FontSize /
                                   1.3),
                       onPressed: () => addTraitInput()),

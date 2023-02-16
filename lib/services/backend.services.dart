@@ -9,7 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 Dio getBackendClient() {
   return Dio(BaseOptions(
       baseUrl: dotenv.get('OC_BACKEND_URL'),
-      headers: {"app_id": dotenv.get('BUNDLE_ID'), "lang": "en"}));
+      headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
 }
 
 Future<List<dynamic>> checkMetaTx(

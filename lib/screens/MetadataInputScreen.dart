@@ -322,7 +322,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                 ),
                 const SizedBox(height: 20),
                 CustomCard(
-                    color: CustomColors(dotenv.get('APP_ID')).cardColor,
+                    color: CustomColors(dotenv.get('STYLE_ID')).cardColor,
                     children: [
                       AspectRatio(
                         aspectRatio: 0.75,
@@ -357,7 +357,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                                   icon: Icon(
                                                       Icons.camera_alt_outlined,
                                                       color: CustomColors(dotenv
-                                                              .get('APP_ID'))
+                                                              .get('STYLE_ID'))
                                                           .metadataImagePickerIconsColor),
                                                   width: 180,
                                                   text: context.loc.takePicture,
@@ -370,7 +370,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                                   icon: Icon(
                                                       Icons.image_outlined,
                                                       color: CustomColors(dotenv
-                                                              .get('APP_ID'))
+                                                              .get('STYLE_ID'))
                                                           .metadataImagePickerIconsColor),
                                                   width: 180,
                                                   text: context.loc.selectImage,
@@ -440,10 +440,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                           .bodyText1!
                                           .copyWith(
                                               color: CustomColors(
-                                                      dotenv.get('APP_ID'))
+                                                      dotenv.get('STYLE_ID'))
                                                   .customRoundedButtonColor,
-                                              fontSize: CustomFonts(
-                                                          dotenv.get('APP_ID'))
+                                              fontSize: CustomFonts(dotenv
+                                                          .get('STYLE_ID'))
                                                       .bodyText2FontSize /
                                                   1.3),
                                       // TODO: reduze size / change layout?
@@ -459,7 +459,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                     boxShadow: [
                                       BoxShadow(
                                         color:
-                                            CustomColors(dotenv.get('APP_ID'))
+                                            CustomColors(dotenv.get('STYLE_ID'))
                                                 .secondaryShadowColor!,
                                         offset: Offset(1, 3),
                                         blurRadius: 13,

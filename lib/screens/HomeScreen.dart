@@ -101,7 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
+            dotenv.get('STYLE_ID') == 'ownerchip_infineon'
                 ? Column(children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,

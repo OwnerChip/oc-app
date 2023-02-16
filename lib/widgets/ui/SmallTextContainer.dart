@@ -21,15 +21,15 @@ class SmallTextContainer extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: CustomColors(dotenv.get('APP_ID')).boxDecorationColor!,
+            color: CustomColors(dotenv.get('STYLE_ID')).boxDecorationColor!,
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           child: Text(
             '${text.toString()}',
             style: Theme.of(context).textTheme.bodyText1!.copyWith(
                 fontSize: 12.0,
-                color:
-                    CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor),
+                color: CustomColors(dotenv.get('STYLE_ID'))
+                    .scaffoldBackgroundColor),
             textAlign: TextAlign.left,
           ),
         ));

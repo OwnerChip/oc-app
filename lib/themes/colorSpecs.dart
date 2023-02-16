@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-//the environment variable APP_ID as to be passed to the constructor of this class
+//the environment variable STYLE_ID as to be passed to the constructor of this class
 class CustomColors {
   late Color primaryColor;
   late Color primaryColorLight;

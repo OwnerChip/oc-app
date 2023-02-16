@@ -97,9 +97,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             data: (data) => data['name'],
                             error: (e, s) => context.loc.loading),
                         style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                            fontSize: CustomFonts(dotenv.get('APP_ID'))
+                            fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                 .MetadataNameFontSize,
-                            fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                            fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
                                 .MetadataNameFontWeight))),
 
                 //show traits button
@@ -114,9 +114,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                               .textTheme
                               .bodyText1!
                               .copyWith(
-                                  color: CustomColors(dotenv.get('APP_ID'))
+                                  color: CustomColors(dotenv.get('STYLE_ID'))
                                       .customRoundedButtonColor,
-                                  fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                  fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                           .bodyText2FontSize /
                                       1.3),
                           // TODO: reduze size / change layout?
@@ -149,10 +149,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     style: TextStyle(
                                         // color: Theme.of(context).primaryColor,
                                         fontSize:
-                                            CustomFonts(dotenv.get('APP_ID'))
+                                            CustomFonts(dotenv.get('STYLE_ID'))
                                                 .MetadataDescriptionFontSize,
                                         fontWeight: CustomFonts(
-                                                dotenv.get('APP_ID'))
+                                                dotenv.get('STYLE_ID'))
                                             .MetadataDescriptionFontWeight)),
                               )
                             : Align(
@@ -170,13 +170,13 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                                             FontWeight.bold,
                                                         fontSize: CustomFonts(
                                                                 dotenv.get(
-                                                                    'APP_ID'))
+                                                                    'STYLE_ID'))
                                                             .MetadataDescriptionFontSize,
                                                       )),
                                               Text(e['value'],
                                                   style: TextStyle(
                                                     fontSize: CustomFonts(dotenv
-                                                            .get('APP_ID'))
+                                                            .get('STYLE_ID'))
                                                         .MetadataDescriptionFontSize,
                                                   )),
                                             ],
@@ -234,7 +234,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               },
             ),
             const SizedBox(height: 15),
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
+            dotenv.get('STYLE_ID') == 'ownerchip_infineon'
                 ? Container()
                 : CustomRoundedButton(
                     text: context.loc.showOnRarible,
