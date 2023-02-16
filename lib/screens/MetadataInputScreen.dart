@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:web3dart/crypto.dart';
 import '../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -33,6 +34,8 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import '../widgets/layout/CustomOverlay.dart';
 import '../themes/fontSpecs.dart';
 import '../widgets/ui/TraitsForm.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends ConsumerStatefulWidget {
@@ -131,14 +134,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           ref.watch(selectedCollectionIdProvider);
 
       final List config = [chainId, collectionId];
-      // generate mint parameters
-      var mintParams = await makeSignedMintParams(
-          getRPCUrlFromChainId(config[0]),
-          config[1],
-          walletAddress,
-          signatureData.hashedMsg,
-          "ipfs://$cid",
-          signatureData.signature);
 
       setState(() {
         isLoading = false;
@@ -146,10 +141,45 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //metamask interaction
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
-      var txnHash = await wc.sendCustomRequest(
-          method: 'eth_sendTransaction',
-          params: mintParams,
-          id: makeRandomInt());
+      final List response = await checkMetaTx(collectionId, '0x7a7f274d');
+      final bool canUseGasStation = response[0];
+      final String metaTxAgreementId = response[1];
+
+      String txnHash;
+      if (canUseGasStation) {
+        final Map<String, dynamic> gaslessMintParams =
+            await makeGaslessMintParams(
+                getRPCUrlFromChainId(config[0]),
+                chainId,
+                signatureData.hashedMsg,
+                signatureData.signature,
+                "ipfs://$cid",
+                EthereumAddress.fromHex(walletAddress),
+                collectionId);
+        //json stringify gaslessMintParams
+        String signature = await wc.sendCustomRequest(
+            method: 'eth_signTypedData_v4',
+            params: [walletAddress, json.encode(gaslessMintParams)],
+            id: makeRandomInt());
+        txnHash = await sendGaslessRequest(
+            collectionId, signature, '0x7a7f274d', metaTxAgreementId);
+        print(txnHash);
+      } else {
+        // generate mint parameters
+        var mintParams = await makeMintParams(
+            getRPCUrlFromChainId(config[0]),
+            config[1],
+            walletAddress,
+            signatureData.hashedMsg,
+            "ipfs://$cid",
+            signatureData.signature);
+
+        //send mint transaction to metamask
+        txnHash = await wc.sendCustomRequest(
+            method: 'eth_sendTransaction',
+            params: mintParams,
+            id: makeRandomInt());
+      }
 
       setState(() {
         isLoading = true;
@@ -160,7 +190,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
 
       if (txnReceipt?.status == true) {
-        //delay for 1 second
         await Future.delayed(Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
           context,

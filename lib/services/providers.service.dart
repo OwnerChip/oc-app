@@ -12,6 +12,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 
 //****WALLETCONNECT****
 
@@ -185,3 +186,12 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   String raribleUrl = "$baseUrl/$contractAddress:${chipInfo.tokenId}";
   return Uri.parse(raribleUrl);
 });
+
+//****OC BACKEND PROVIDERS****
+
+// final checkMintMetaTxProvider = FutureProvider.autoDispose<bool>((ref) async {
+//   final EthereumAddress collectionId =
+//       await ref.watch(selectedCollectionIdProvider);
+//   final bool result = await checkMetaTx(collectionId, '0x7a7f274d');
+//   return result;
+// });

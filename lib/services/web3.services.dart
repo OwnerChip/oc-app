@@ -97,15 +97,8 @@ Future<bool> verifyTokenSigner(
   }
 }
 
-// contract version 2
-Future<List<dynamic>> makeSignedMintParams(
-    String chainRpcUrl,
-    EthereumAddress collectionId,
-    String? from,
-    Uint8List tokenIdHash,
-    String tokenURI,
-    MsgSignature signature,
-    {String? gasPrice}) async {
+String makeMintData(
+    Uint8List tokenIdHash, MsgSignature signature, String tokenURI) {
   String data = "0xcb5a7173" +
       uint8ListTo32ByteHex(tokenIdHash) + //bytes32
       "a0".padLeft(64, '0') + //string prefix
@@ -114,6 +107,18 @@ Future<List<dynamic>> makeSignedMintParams(
       signature.v.toRadixString(16).padLeft(64, '0') + //uint8
       (tokenURI.length).toRadixString(16).padLeft(64, '0') +
       stringToHex(tokenURI); //string;
+  return data;
+}
+
+Future<List<dynamic>> makeMintParams(
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    String? from,
+    Uint8List tokenIdHash,
+    String tokenURI,
+    MsgSignature signature,
+    {String? gasPrice}) async {
+  String data = makeMintData(tokenIdHash, signature, tokenURI); //string;
 
   String gasAmount = "0x249F0"; // fallback: 150000 gas
   try {
@@ -148,8 +153,7 @@ Future<List<dynamic>> makeSignedMintParams(
   return params;
 }
 
-// contract version 2
-Future<List<dynamic>> makeSignedBurnParams(
+Future<List<dynamic>> makeBurnParams(
     String chainRpcUrl,
     EthereumAddress collectionId,
     String? from,

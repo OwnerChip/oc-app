@@ -9,9 +9,16 @@ class BlockchainConfig {
   final String openseaUrl;
   final String raribleUrl;
   final String blockchainExplorerUrl;
+  final String? forwarderContract;
 
-  BlockchainConfig(this.networkName, this.rpcUrl, this.registryContract,
-      this.openseaUrl, this.raribleUrl, this.blockchainExplorerUrl);
+  BlockchainConfig(
+      {required this.networkName,
+      required this.rpcUrl,
+      required this.registryContract,
+      required this.openseaUrl,
+      required this.raribleUrl,
+      required this.blockchainExplorerUrl,
+      this.forwarderContract});
 }
 
 class TokenInfoObject {

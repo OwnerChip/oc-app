@@ -53,7 +53,7 @@ class _ChipAlreadyInitializedState
     WalletConnect wc = ref.watch(walletConnectProvider);
     TokenInfoObject config = await ref.watch(findTokenProvider(tokenId).future);
     try {
-      var burnParams = await makeSignedBurnParams(
+      var burnParams = await makeBurnParams(
           getRPCUrlFromChainId(config.chainId),
           config.collectionId,
           wc.session.accounts[0],
