@@ -147,7 +147,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String txnHash;
       if (canUseGasStation) {
-        final Map<String, dynamic> gaslessMintParams = await makeGaslessParams(
+        final List<Map<String, dynamic>> gaslessMintParams =
+            await makeGaslessParams(
           functionSignatureHash: '0x7a7f274d',
           chainRpcUrl: getRPCUrlFromChainId(config[0]),
           chainId: chainId,
@@ -157,13 +158,15 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           to: collectionId,
           tokenURI: "ipfs://$cid",
         );
+        final Map<String, dynamic> typedData = gaslessMintParams[0];
+        final Map<String, dynamic> request = gaslessMintParams[1];
         //json stringify gaslessMintParams
         String signature = await wc.sendCustomRequest(
             method: 'eth_signTypedData_v4',
-            params: [walletAddress, json.encode(gaslessMintParams)],
+            params: [walletAddress, json.encode(typedData)],
             id: makeRandomInt());
         txnHash = await sendGaslessRequest(
-            collectionId, signature, '0x7a7f274d', metaTxAgreementId);
+            collectionId, signature, '0x7a7f274d', metaTxAgreementId, request);
         print(txnHash);
       } else {
         // generate mint parameters

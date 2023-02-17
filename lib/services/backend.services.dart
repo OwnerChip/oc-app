@@ -17,13 +17,13 @@ Future<List<dynamic>> checkMetaTx(
   final Dio dio = getBackendClient();
   // final String url = '/collection/$collectionId/metaTx/$functionSignatureHash';
   final String url =
-      '/collection/0xe587fb76509550a72eb120b941f9235488ab6aee/metaTx/$functionSignatureHash';
-  final response = await dio.get(url);
-  final String metaTxAgreementId = response.data;
-  if (response.statusCode == 200) {
+      '/collection/0x0398B9b7Edb259E838a197Dd84752D9471522C54/metaTx/$functionSignatureHash';
+  try {
+    final response = await dio.get(url);
+    final String metaTxAgreementId = response.data;
     return [true, metaTxAgreementId];
-  } else {
-    return [false, ''];
+  } catch (e) {
+    return [false, e];
   }
 }
 
@@ -31,16 +31,18 @@ Future<String> sendGaslessRequest(
     EthereumAddress collectionId,
     String txSignature,
     String functionSignature,
-    String metaTxAgreementId) async {
+    String metaTxAgreementId,
+    Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
   // final String url = '/collection/$collectionId/metatx';
   const String url =
-      '/collection/0xe587fb76509550a72eb120b941f9235488ab6aee/metatx';
+      '/collection/0x0398B9b7Edb259E838a197Dd84752D9471522C54/metatx';
   //make post request with dio
   final response = await dio.post(url, data: {
     "txSignature": txSignature,
     "functionSignatureHash": functionSignature,
-    "metaTxAgreementId": metaTxAgreementId
+    "metaTxAgreementId": metaTxAgreementId,
+    "txRequest": txRequest
   });
   return response.data; //txId
 }

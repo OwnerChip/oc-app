@@ -65,21 +65,25 @@ class _ChipAlreadyInitializedState
 
       String txnHash;
       if (canUseGasStation) {
-        final Map<String, dynamic> gaslessBurnParams = await makeGaslessParams(
-            functionSignatureHash: '0xd6fc7cef',
-            chainRpcUrl: getRPCUrlFromChainId(config.chainId),
-            chainId: config.chainId,
-            tokenIdHash: tokenIdHash,
-            signature: signature,
-            from: EthereumAddress.fromHex(wc.session.accounts[0]),
-            to: config.collectionId);
+        final List<Map<String, dynamic>> gaslessBurnParams =
+            await makeGaslessParams(
+                functionSignatureHash: '0xd6fc7cef',
+                chainRpcUrl: getRPCUrlFromChainId(config.chainId),
+                chainId: config.chainId,
+                tokenIdHash: tokenIdHash,
+                signature: signature,
+                from: EthereumAddress.fromHex(wc.session.accounts[0]),
+                to: config.collectionId);
+        final Map<String, dynamic> typedData = gaslessBurnParams[0];
+        final Map<String, dynamic> request = gaslessBurnParams[1];
         //json stringify gaslessMintParams
         String metamaskSignature = await wc.sendCustomRequest(
             method: 'eth_signTypedData_v4',
-            params: [wc.session.accounts[0], json.encode(gaslessBurnParams)],
+            params: [wc.session.accounts[0], json.encode(typedData)],
             id: makeRandomInt());
+
         txnHash = await sendGaslessRequest(config.collectionId,
-            metamaskSignature, '0xd6fc7cef', metaTxAgreementId);
+            metamaskSignature, '0xd6fc7cef', metaTxAgreementId, request);
         print(txnHash);
       } else {
         var burnParams = await makeBurnParams(

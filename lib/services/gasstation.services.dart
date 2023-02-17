@@ -56,7 +56,6 @@ Future<Map<String, dynamic>> buildRequest(
   }
   final nonce = await web3client.getTransactionCount(from);
   return {
-    // 'contents': 'Hello, Bob yo!', //TODO: replace wither externalized string
     'value': 0,
     'gas': 1000000, //TODO: replace default value by something else??
     'nonce': nonce,
@@ -71,7 +70,7 @@ Future<Map<String, dynamic>> buildTypedData(int chainId, request) async {
   return {...typeData, 'message': request};
 }
 
-Future<Map<String, dynamic>> makeGaslessParams({
+Future<List<Map<String, dynamic>>> makeGaslessParams({
   required String functionSignatureHash,
   required String chainRpcUrl,
   required int chainId,
@@ -84,5 +83,5 @@ Future<Map<String, dynamic>> makeGaslessParams({
   final request = await buildRequest(functionSignatureHash, chainRpcUrl,
       tokenIdHash, signature, tokenURI, from, to);
   final typedData = await buildTypedData(chainId, request);
-  return typedData;
+  return [typedData, request];
 }
