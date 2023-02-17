@@ -77,6 +77,7 @@ class _ChipAlreadyInitializedState
         final Map<String, dynamic> typedData = gaslessBurnParams[0];
         final Map<String, dynamic> request = gaslessBurnParams[1];
         //json stringify gaslessMintParams
+        print(json.encode(typedData));
         String metamaskSignature = await wc.sendCustomRequest(
             method: 'eth_signTypedData_v4',
             params: [wc.session.accounts[0], json.encode(typedData)],

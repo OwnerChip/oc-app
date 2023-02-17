@@ -9,8 +9,7 @@ final polygonMumbaiTestnet = BlockchainConfig(
     openseaUrl: "https://testnets.opensea.io/assets/mumbai",
     raribleUrl: "https://testnet.rarible.com/token/polygon",
     blockchainExplorerUrl: "https://mumbai.polygonscan.com/token",
-    forwarderContract:
-        "0x2dB308BbECc75649a37e166680986044DBaB483d".toLowerCase());
+    forwarderContract: "0x2dB308BbECc75649a37e166680986044DBaB483d");
 final polygonMainnet = BlockchainConfig(
     networkName: "Polygon Mainnet",
     rpcUrl:
