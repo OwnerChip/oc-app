@@ -97,9 +97,9 @@ Future<bool> verifyTokenSigner(
   }
 }
 
-String makeMintData(
-    Uint8List tokenIdHash, MsgSignature signature, String tokenURI) {
-  String data = "0xcb5a7173" +
+String makeMintData(String functionSignatureHash, Uint8List tokenIdHash,
+    MsgSignature signature, String tokenURI) {
+  String data = functionSignatureHash +
       uint8ListTo32ByteHex(tokenIdHash) + //bytes32
       "a0".padLeft(64, '0') + //string prefix
       signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
@@ -114,11 +114,13 @@ Future<List<dynamic>> makeMintParams(
     String chainRpcUrl,
     EthereumAddress collectionId,
     String? from,
+    String functionSignatureHash,
     Uint8List tokenIdHash,
     String tokenURI,
     MsgSignature signature,
     {String? gasPrice}) async {
-  String data = makeMintData(tokenIdHash, signature, tokenURI); //string;
+  String data = makeMintData(
+      functionSignatureHash, tokenIdHash, signature, tokenURI); //string;
 
   String gasAmount = "0x249F0"; // fallback: 150000 gas
   try {
@@ -153,8 +155,9 @@ Future<List<dynamic>> makeMintParams(
   return params;
 }
 
-String makeBurnData(Uint8List tokenIdHash, MsgSignature signature) {
-  String data = "0x469fd767" +
+String makeBurnData(String functionSignatureHash, Uint8List tokenIdHash,
+    MsgSignature signature) {
+  String data = functionSignatureHash +
       uint8ListTo32ByteHex(tokenIdHash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
@@ -166,10 +169,11 @@ Future<List<dynamic>> makeBurnParams(
     String chainRpcUrl,
     EthereumAddress collectionId,
     String? from,
+    String functionSignatureHash,
     Uint8List tokenIdHash,
     MsgSignature signature,
     {String? gasPrice}) async {
-  String data = makeBurnData(tokenIdHash, signature);
+  String data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
 
   String gasAmount = "0xC350"; // fallback: 50000 gas
   try {

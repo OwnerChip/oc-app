@@ -163,7 +163,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         //json stringify gaslessMintParams
         String signature = await wc.sendCustomRequest(
             method: 'eth_signTypedData_v4',
-            params: [walletAddress, json.encode(typedData)],
+            params: [walletAddress.toLowerCase(), json.encode(typedData)],
             id: makeRandomInt());
         txnHash = await sendGaslessRequest(
             collectionId, signature, '0x7a7f274d', metaTxAgreementId, request);
@@ -174,6 +174,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             getRPCUrlFromChainId(config[0]),
             config[1],
             walletAddress,
+            '0xcb5a7173',
             signatureData.hashedMsg,
             "ipfs://$cid",
             signatureData.signature);

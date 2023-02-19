@@ -47,20 +47,23 @@ Future<Map<String, dynamic>> buildRequest(
     EthereumAddress to) async {
   final web3client = getWeb3Client(chainRpcUrl);
   String data;
-  if (functionSignatureHash == '0x7a7f274d') {
-    data = makeMintData(tokenIdHash, signature, tokenURI!);
-  } else if (functionSignatureHash == '0xd6fc7cef') {
-    data = makeBurnData(tokenIdHash, signature);
+  if (functionSignatureHash == '0x7a7f274d' ||
+      functionSignatureHash == '0xcb5a7173') {
+    data =
+        makeMintData(functionSignatureHash, tokenIdHash, signature, tokenURI!);
+  } else if (functionSignatureHash == '0xd6fc7cef' ||
+      functionSignatureHash == '0x469fd767') {
+    data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
   }
   final nonce = await web3client.getTransactionCount(from);
   return {
     'value': 0,
-    'gas': 1000000, //TODO: replace default value by something else??
+    'gas': 300000, //TODO: replace default value by something else??
     'nonce': nonce,
-    'from': from.hex,
-    'to': to.hex,
+    'from': from.hex.toLowerCase(),
+    'to': to.hex.toLowerCase(),
     'data': data,
   };
 }

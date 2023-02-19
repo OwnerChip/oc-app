@@ -91,6 +91,7 @@ class _ChipAlreadyInitializedState
             getRPCUrlFromChainId(config.chainId),
             config.collectionId,
             wc.session.accounts[0],
+            '0x469fd767',
             tokenIdHash,
             signature);
         txnHash = await wc.sendCustomRequest(
