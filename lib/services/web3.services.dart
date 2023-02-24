@@ -34,6 +34,17 @@ Future<DeployedContract> getRegistryContract(
   return contract;
 }
 
+Future<DeployedContract> getForwarderContract(
+    String registryForwarderAddress) async {
+  String abi =
+      await rootBundle.loadString("assets/contracts/forwarder.abi.json");
+  DeployedContract contract = DeployedContract(
+    ContractAbi.fromJson(abi, 'MinimalForwarder'),
+    EthereumAddress.fromHex(registryForwarderAddress),
+  );
+  return contract;
+}
+
 Future<List<dynamic>> queryRegistryContract(
     String chainRpcUrl,
     String registryContractAddress,
@@ -61,6 +72,20 @@ Future<List<dynamic>> queryCollectionContract(
   return result;
 }
 
+Future<List<dynamic>> queryForwarderContract(
+    String chainRpcUrl,
+    String registryForwarderAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract =
+      await getForwarderContract(registryForwarderAddress);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  List<dynamic> result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
 Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
     Uint8List txData, String fromAddress) async {
   final web3Client = getWeb3Client(chainRpcUrl);
@@ -75,6 +100,18 @@ Future<BigInt> estimateGasPrice(String chainRpcUrl) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   EtherAmount gasPrice = await web3Client.getGasPrice();
   return gasPrice.getInWei;
+}
+
+Future<String> getNonce(String chainRpcUrl, String registryContractAddress,
+    String fromAddress) async {
+  try {
+    var nonce = await queryForwarderContract(
+        chainRpcUrl, registryContractAddress, "getNonce", [fromAddress]);
+    return nonce[0];
+  } catch (e) {
+    print('Error while fetching nonce: $e');
+    throw Exception('Error while fetching nonce: $e');
+  }
 }
 
 // contract version 2

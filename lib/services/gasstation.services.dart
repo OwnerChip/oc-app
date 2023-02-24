@@ -40,12 +40,14 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
 Future<Map<String, dynamic>> buildRequest(
     String functionSignatureHash,
     String chainRpcUrl,
+    int chainId,
     Uint8List tokenIdHash,
     MsgSignature signature,
     String? tokenURI,
     EthereumAddress from,
     EthereumAddress to) async {
   final web3client = getWeb3Client(chainRpcUrl);
+  final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   String data;
   if (functionSignatureHash == '0x7a7f274d' ||
       functionSignatureHash == '0xcb5a7173') {
@@ -57,13 +59,13 @@ Future<Map<String, dynamic>> buildRequest(
   } else {
     throw Exception('Invalid function signature hash');
   }
-  final nonce = await web3client.getTransactionCount(from);
+  final nonce = await getNonce(chainRpcUrl, verifyingContract, from.hex);
   return {
+    'from': from.hex,
+    'to': to.hex,
     'value': 0,
     'gas': 300000, //TODO: replace default value by something else??
     'nonce': nonce,
-    'from': from.hex.toLowerCase(),
-    'to': to.hex.toLowerCase(),
     'data': data,
   };
 }
@@ -84,7 +86,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams({
   String? tokenURI,
 }) async {
   final request = await buildRequest(functionSignatureHash, chainRpcUrl,
-      tokenIdHash, signature, tokenURI, from, to);
+      chainId, tokenIdHash, signature, tokenURI, from, to);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }
