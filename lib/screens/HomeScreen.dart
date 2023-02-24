@@ -75,6 +75,11 @@ void onInitializeButtonPress(
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(MetadataScreen.routeName));
     }
+  } on CustomException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+          context.loc.errorNoNfcReader, 'error'),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
