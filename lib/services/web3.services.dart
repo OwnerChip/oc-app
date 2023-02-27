@@ -102,11 +102,14 @@ Future<BigInt> estimateGasPrice(String chainRpcUrl) async {
   return gasPrice.getInWei;
 }
 
-Future<String> getNonce(String chainRpcUrl, String registryContractAddress,
+Future<BigInt> getNonce(String chainRpcUrl, String registryContractAddress,
     String fromAddress) async {
   try {
     var nonce = await queryForwarderContract(
-        chainRpcUrl, registryContractAddress, "getNonce", [fromAddress]);
+        chainRpcUrl,
+        registryContractAddress,
+        "getNonce",
+        [EthereumAddress.fromHex(fromAddress)]);
     return nonce[0];
   } catch (e) {
     print('Error while fetching nonce: $e');

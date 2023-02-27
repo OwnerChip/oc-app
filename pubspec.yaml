@@ -64,6 +64,7 @@ flutter:
     - assets/images/ownerchip_infineon/
     - assets/contracts/collection.abi.json
     - assets/contracts/registry.abi.json
+    - assets/contracts/forwarder.abi.json
     - .env
   generate: true
   uses-material-design: true

@@ -59,13 +59,13 @@ Future<Map<String, dynamic>> buildRequest(
   } else {
     throw Exception('Invalid function signature hash');
   }
-  final nonce = await getNonce(chainRpcUrl, verifyingContract, from.hex);
+  final BigInt nonce = await getNonce(chainRpcUrl, verifyingContract, from.hex);
   return {
     'from': from.hex,
     'to': to.hex,
     'value': 0,
     'gas': 300000, //TODO: replace default value by something else??
-    'nonce': nonce,
+    'nonce': nonce.toString(),
     'data': data,
   };
 }
