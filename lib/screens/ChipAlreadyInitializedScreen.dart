@@ -83,8 +83,8 @@ class _ChipAlreadyInitializedState
             params: [wc.session.accounts[0], json.encode(typedData)],
             id: makeRandomInt());
 
-        txnHash = await sendGaslessRequest(config.collectionId,
-            metamaskSignature, '0xd6fc7cef', metaTxAgreementId, request);
+        txnHash = await sendGaslessRequest(
+            config.collectionId, metamaskSignature, metaTxAgreementId, request);
         print(txnHash);
       } else {
         var burnParams = await makeBurnParams(

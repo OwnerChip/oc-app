@@ -166,7 +166,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             params: [walletAddress.toLowerCase(), json.encode(typedData)],
             id: makeRandomInt());
         txnHash = await sendGaslessRequest(
-            collectionId, signature, '0x7a7f274d', metaTxAgreementId, request);
+            collectionId, signature, metaTxAgreementId, request);
         print(txnHash);
       } else {
         // generate mint parameters

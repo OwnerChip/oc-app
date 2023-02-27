@@ -30,7 +30,6 @@ Future<List<dynamic>> checkMetaTx(
 Future<String> sendGaslessRequest(
     EthereumAddress collectionId,
     String txSignature,
-    String functionSignature,
     String metaTxAgreementId,
     Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
@@ -40,7 +39,6 @@ Future<String> sendGaslessRequest(
   //make post request with dio
   final response = await dio.post(url, data: {
     "txSignature": txSignature,
-    "functionSignatureHash": functionSignature,
     "metaTxAgreementId": metaTxAgreementId,
     "txRequest": txRequest
   });
