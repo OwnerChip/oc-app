@@ -7,7 +7,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 final EIP712Domain = [
   {'name': 'name', 'type': 'string'},
   {'name': 'version', 'type': 'string'},
-  {'name': 'chainId', 'type': 'uint256'},
+  //{'name': 'chainId', 'type': 'uint256'},
   {'name': 'verifyingContract', 'type': 'address'},
 ];
 
@@ -30,7 +30,7 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
     'domain': {
       'name': 'MinimalForwarder',
       'version': '0.0.1',
-      'chainId': chainId,
+      //'chainId': chainId,
       'verifyingContract': verifyingContract,
     },
     'primaryType': 'ForwardRequest',
@@ -65,7 +65,7 @@ Future<Map<String, dynamic>> buildRequest(
     'to': to.hex,
     'value': 0,
     'gas': 300000, //TODO: replace default value by something else??
-    'nonce': nonce.toString(),
+    'nonce': nonce.toInt(),
     'data': data,
   };
 }
