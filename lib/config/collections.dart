@@ -22,6 +22,11 @@ class Collections {
               "id": EthereumAddress.fromHex(
                   '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'),
               "name": "Demo Collection"
+            },
+            {
+              "id": EthereumAddress.fromHex(
+                  '0x0398b9b7edb259e838a197dd84752d9471522c54'),
+              "name": "Gasless Test Collection"
             }
           ]
         };
@@ -104,6 +109,11 @@ class Collections {
               "id": EthereumAddress.fromHex(
                   '0x163a80d5D7E2e1d256D7083E4b04Cd873e30f6d2'),
               "name": "Stebo Demo App"
+            },
+            {
+              "id": EthereumAddress.fromHex(
+                  '0x0398b9b7edb259e838a197dd84752d9471522c54'),
+              "name": "Gasless Test Collection"
             }
           ]
         };
