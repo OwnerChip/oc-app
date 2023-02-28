@@ -150,17 +150,25 @@ String makeMintData(String functionSignatureHash, Uint8List tokenIdHash,
   return data;
 }
 
-Future<List<dynamic>> makeMintParams(
-    String chainRpcUrl,
-    EthereumAddress collectionId,
-    String? from,
-    String functionSignatureHash,
-    Uint8List tokenIdHash,
-    String tokenURI,
-    MsgSignature signature,
-    {String? gasPrice}) async {
-  String data = makeMintData(
-      functionSignatureHash, tokenIdHash, signature, tokenURI); //string;
+Future<List<dynamic>> buildEthSendTransactionRequest(
+  String chainRpcUrl,
+  EthereumAddress collectionId,
+  String? from,
+  String functionSignatureHash,
+  Uint8List tokenIdHash,
+  MsgSignature signature, {
+  String? tokenURI,
+  String? gasPrice,
+}) async {
+  String data;
+  if (functionSignatureHash == '0xcb5a7173') {
+    data =
+        makeMintData(functionSignatureHash, tokenIdHash, signature, tokenURI!);
+  } else if (functionSignatureHash == '0x469fd767') {
+    data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
+  } else {
+    throw Exception('Invalid function signature hash');
+  }
 
   String gasAmount = "0x249F0"; // fallback: 150000 gas
   try {
@@ -203,49 +211,6 @@ String makeBurnData(String functionSignatureHash, Uint8List tokenIdHash,
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0');
   return data;
-}
-
-Future<List<dynamic>> makeBurnParams(
-    String chainRpcUrl,
-    EthereumAddress collectionId,
-    String? from,
-    String functionSignatureHash,
-    Uint8List tokenIdHash,
-    MsgSignature signature,
-    {String? gasPrice}) async {
-  String data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
-
-  String gasAmount = "0xC350"; // fallback: 50000 gas
-  try {
-    BigInt gasAmountEst =
-        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
-    gasAmount = "0x${gasAmountEst.toRadixString(16)}";
-    print("ESTIMATED GAS AMOUNT: $gasAmount");
-  } catch (e) {
-    print("ERROR estimating gas amount: $e");
-  }
-
-  if (gasPrice == null) {
-    try {
-      BigInt estimatedGasPrice = await estimateGasPrice(chainRpcUrl);
-      gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
-      print("ESTIMATED GAS PRICE: $gasPrice");
-    } catch (e) {
-      print("ERROR estimating gas price: $e");
-      gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
-    }
-  }
-
-  final params = [
-    {
-      "from": from,
-      "to": collectionId.toString(),
-      "data": data,
-      "gasPrice": gasPrice,
-      "gas": gasAmount
-    },
-  ];
-  return params;
 }
 
 Future<dynamic> getOwner(

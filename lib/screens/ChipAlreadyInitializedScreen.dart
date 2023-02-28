@@ -83,11 +83,16 @@ class _ChipAlreadyInitializedState
             params: [wc.session.accounts[0], json.encode(typedData)],
             id: makeRandomInt());
 
+        setState(() {
+          isLoading = true;
+          loadingText = context.loc.burning;
+        });
+
         txnHash = await sendGaslessRequest(
             config.collectionId, metamaskSignature, metaTxAgreementId, request);
         print(txnHash);
       } else {
-        var burnParams = await makeBurnParams(
+        var burnParams = await buildEthSendTransactionRequest(
             getRPCUrlFromChainId(config.chainId),
             config.collectionId,
             wc.session.accounts[0],
@@ -98,12 +103,12 @@ class _ChipAlreadyInitializedState
             method: 'eth_sendTransaction',
             params: burnParams,
             id: makeRandomInt());
-      }
 
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.burning;
-      });
+        setState(() {
+          isLoading = true;
+          loadingText = context.loc.burning;
+        });
+      }
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);

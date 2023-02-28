@@ -37,7 +37,7 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
   };
 }
 
-Future<Map<String, dynamic>> buildRequest(
+Future<Map<String, dynamic>> buildTypedV4Request(
     String functionSignatureHash,
     String chainRpcUrl,
     int chainId,
@@ -86,7 +86,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams({
   required EthereumAddress to,
   String? tokenURI,
 }) async {
-  final request = await buildRequest(functionSignatureHash, chainRpcUrl,
+  final request = await buildTypedV4Request(functionSignatureHash, chainRpcUrl,
       chainId, tokenIdHash, signature, tokenURI, from, to);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];

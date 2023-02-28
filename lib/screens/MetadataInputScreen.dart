@@ -165,31 +165,36 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             method: 'eth_signTypedData_v4',
             params: [walletAddress.toLowerCase(), json.encode(typedData)],
             id: makeRandomInt());
+
+        setState(() {
+          isLoading = true;
+          loadingText = context.loc.mintingToken;
+        });
         txnHash = await sendGaslessRequest(
             collectionId, signature, metaTxAgreementId, request);
         print(txnHash);
       } else {
         // generate mint parameters
-        var mintParams = await makeMintParams(
+        var mintParams = await buildEthSendTransactionRequest(
             getRPCUrlFromChainId(config[0]),
             config[1],
             walletAddress,
             '0xcb5a7173',
             signatureData.hashedMsg,
-            "ipfs://$cid",
-            signatureData.signature);
+            signatureData.signature,
+            tokenURI: "ipfs://$cid");
 
         //send mint transaction to metamask
         txnHash = await wc.sendCustomRequest(
             method: 'eth_sendTransaction',
             params: mintParams,
             id: makeRandomInt());
-      }
 
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.mintingToken;
-      });
+        setState(() {
+          isLoading = true;
+          loadingText = context.loc.mintingToken;
+        });
+      }
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
