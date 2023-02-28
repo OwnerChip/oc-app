@@ -18,7 +18,7 @@ final polygonMainnet = BlockchainConfig(
     openseaUrl: "https://opensea.io/assets/matic",
     raribleUrl: "https://rarible.com/token/polygon",
     blockchainExplorerUrl: "https://polygonscan.com/token",
-    forwarderContract: "0xebB85079fAFfa39e966aAFfDf57c94d42D4c81bB");
+    forwarderContract: "0x56e4aFdAA78379C63932B95fcfBd275A12CE94C0");
 
 final ethereumMainnet = BlockchainConfig(
     networkName: "Ethereum Mainnet",
