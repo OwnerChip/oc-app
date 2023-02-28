@@ -15,9 +15,7 @@ Dio getBackendClient() {
 Future<List<dynamic>> checkMetaTx(
     EthereumAddress collectionId, String functionSignatureHash) async {
   final Dio dio = getBackendClient();
-  // final String url = '/collection/$collectionId/metaTx/$functionSignatureHash';
-  final String url =
-      '/collection/0x0398B9b7Edb259E838a197Dd84752D9471522C54/metaTx/$functionSignatureHash';
+  final String url = '/collection/$collectionId/metaTx/$functionSignatureHash';
   try {
     final response = await dio.get(url);
     final String metaTxAgreementId = response.data;
@@ -33,9 +31,7 @@ Future<String> sendGaslessRequest(
     String metaTxAgreementId,
     Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
-  // final String url = '/collection/$collectionId/metatx';
-  const String url =
-      '/collection/0x0398B9b7Edb259E838a197Dd84752D9471522C54/metatx';
+  final String url = '/collection/$collectionId/metatx';
   //make post request with dio
   final response = await dio.post(url, data: {
     "txSignature": txSignature,

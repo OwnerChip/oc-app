@@ -212,6 +212,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         throw Exception('Transaction failed');
       }
     } catch (e) {
+      //TODO: Send message mint error to analytics/ownerchip
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),

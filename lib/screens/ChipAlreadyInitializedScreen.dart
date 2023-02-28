@@ -61,7 +61,7 @@ class _ChipAlreadyInitializedState
       final List response =
           await checkMetaTx(config.collectionId, '0xd6fc7cef');
       final bool canUseGasStation = response[0];
-      final String metaTxAgreementId = response[1];
+      final metaTxAgreementId = response[1];
 
       String txnHash;
       if (canUseGasStation) {
