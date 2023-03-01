@@ -11,7 +11,6 @@ import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
@@ -54,7 +53,7 @@ Future<WalletConnect> createWalletConnector() async {
 Future<void> startWalletConnection(
     BuildContext context, WalletConnect connector) async {
   try {
-    var sessionStatus = await connector.connect(
+    await connector.connect(
         chainId:
             80001, //TODO: Unsure what the difference is between passing different chain IDs
         onDisplayUri: (uri) async {
@@ -72,26 +71,32 @@ Future<void> startWalletConnection(
   // }
 }
 
-Future<String> sendGaslessTx(
+// This code creates a gasless transaction.
+// It calls the makeGaslessParams function to get the typedData and request parameters,
+// and then sends a custom request to the WalletConnect client to get the signature.
+// It then sends the gasless transaction request to the backend and returns the txnHash.
+
+Future<String> makeAndSendGaslessTx(
+    String functionSignatureHash,
     int chainId,
+    EthereumAddress collectionId,
     SignatureData signatureData,
     EthereumAddress walletAddress,
-    EthereumAddress collectionId,
-    String cid,
     WalletConnect wc,
-    metaTxAgreementId) async {
-  final List<Map<String, dynamic>> gaslessMintParams = await makeGaslessParams(
-    functionSignatureHash: gaslessMintFunctionSignature,
+    String metaTxAgreementId,
+    {String? cid}) async {
+  final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
+    functionSignatureHash: functionSignatureHash,
     chainRpcUrl: getRPCUrlFromChainId(chainId),
     chainId: chainId,
     tokenIdHash: signatureData.hashedMsg,
     signature: signatureData.signature,
     from: walletAddress,
     to: collectionId,
-    tokenURI: "ipfs://$cid",
+    tokenURI: cid != null ? "ipfs://$cid" : null,
   );
-  final Map<String, dynamic> typedData = gaslessMintParams[0];
-  final Map<String, dynamic> request = gaslessMintParams[1];
+  final Map<String, dynamic> typedData = gaslessTxParams[0];
+  final Map<String, dynamic> request = gaslessTxParams[1];
 
   String signature = await wc.sendCustomRequest(
       method: 'eth_signTypedData_v4',
@@ -103,25 +108,30 @@ Future<String> sendGaslessTx(
   return txnHash;
 }
 
-Future<String> sendNormalTx(
-    int chainId,
-    EthereumAddress collectionId,
-    EthereumAddress walletAddress,
-    SignatureData signatureData,
-    String cid,
-    WalletConnect wc) async {
-  // generate mint parameters
-  var mintParams = await buildEthSendTransactionRequest(
+// This code creates a normal transaction.
+//It calls the buildEthSendTransactionRequest function to get the transaction parameters,
+//and then sends a custom request to the WalletConnect client to send the transaction.
+//It then returns the txnHash.
+
+Future<String> makeAndSendNormalTx(
+  String functionSignatureHash,
+  int chainId,
+  EthereumAddress collectionId,
+  SignatureData signatureData,
+  EthereumAddress walletAddress,
+  WalletConnect wc, {
+  String? cid,
+}) async {
+  var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
       collectionId,
       walletAddress,
-      mintFunctionSignature,
+      functionSignatureHash,
       signatureData.hashedMsg,
       signatureData.signature,
-      tokenURI: "ipfs://$cid");
+      tokenURI: cid != null ? "ipfs://$cid" : null);
 
-  //send mint transaction to metamask
   String txnHash = await wc.sendCustomRequest(
-      method: 'eth_sendTransaction', params: mintParams, id: makeRandomInt());
+      method: 'eth_sendTransaction', params: txParams, id: makeRandomInt());
   return txnHash;
 }

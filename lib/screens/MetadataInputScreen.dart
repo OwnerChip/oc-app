@@ -1,8 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 //package imports
-import 'dart:convert';
-import 'dart:io';
 import 'package:async/async.dart';
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +37,6 @@ import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/images.service.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
@@ -100,7 +97,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
   }
 
-  Future<void> initializeChip(WalletConnect wc, SignatureData signatureData,
+  Future<void> createToken(WalletConnect wc, SignatureData signatureData,
       Map<String, dynamic> metadata, int chainId, EthereumAddress collectionId,
       {XFile? image}) async {
     setState(() {
@@ -112,6 +109,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     if (!wc.bridgeConnected) {
       wc.reconnect();
     }
+
+    //get wallet address
     EthereumAddress walletAddress =
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
@@ -149,12 +148,20 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String txnHash;
       if (canUseGasStation) {
-        txnHash = await sendGaslessTx(chainId, signatureData, walletAddress,
-            collectionId, cid, wc, metaTxAgreementId);
+        txnHash = await makeAndSendGaslessTx(
+            gaslessMintFunctionSignature,
+            chainId,
+            collectionId,
+            signatureData,
+            walletAddress,
+            wc,
+            metaTxAgreementId,
+            cid: cid);
       } else {
         // generate mint parameters
-        txnHash = await sendNormalTx(
-            chainId, collectionId, walletAddress, signatureData, cid, wc);
+        txnHash = await makeAndSendNormalTx(mintFunctionSignature, chainId,
+            collectionId, signatureData, walletAddress, wc,
+            cid: cid);
       }
 
       //get transaction receipt
@@ -189,14 +196,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         isLoading = false;
       });
     }
-  }
-
-  Future<XFile> saveMetadataAsJSONFile(Map<String, dynamic> metadata) async {
-    final Directory directory = Directory.systemTemp;
-    final File file = File('${directory.path}/metadata.json');
-    await file.writeAsString(json.encode(metadata));
-    XFile jsonFile = XFile(file.path);
-    return jsonFile;
   }
 
   void toggleTraitsForm() {
@@ -277,7 +276,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           child: Scaffold(
               extendBodyBehindAppBar: true,
               appBar: CustomAppBar(
-                text: '${context.loc.initializeChip}',
+                text: context.loc.initializeChip,
                 connectedWalletAddress: wc.session.accounts.isEmpty == true
                     ? null
                     : wc.session.accounts[0].toLowerCase(),
@@ -285,7 +284,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               body: ScreenBodyLayout(children: [
                 Row(
                   children: [
-                    SizedBox(width: 22),
+                    const SizedBox(width: 22),
                     RichText(
                       text: TextSpan(
                           text: 'Step 2/',
@@ -347,7 +346,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                                   text: context.loc.takePicture,
                                                   onPressed: () =>
                                                       setCameraImage()),
-                                              SizedBox(height: 10),
+                                              const SizedBox(height: 10),
                                               CustomRoundedButton(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
@@ -364,8 +363,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                           )
                                         : IconButton(
                                             iconSize: 50,
-                                            icon:
-                                                Icon(Icons.camera_alt_outlined),
+                                            icon: const Icon(
+                                                Icons.camera_alt_outlined),
                                             color: Theme.of(context)
                                                 .primaryColorLight,
                                             onPressed: () =>
@@ -373,7 +372,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                           ),
                                   ]),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Form(
                           key: _formKey,
                           child: Column(
@@ -398,7 +397,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                                   .primaryColor),
                                         ),
                                         contentPadding:
-                                            EdgeInsets.only(left: 12),
+                                            const EdgeInsets.only(left: 12),
                                         hintText: context.loc.title,
                                         hintStyle: Theme.of(context)
                                             .textTheme
@@ -443,8 +442,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                       BoxShadow(
                                         color:
                                             CustomColors(dotenv.get('STYLE_ID'))
-                                                .secondaryShadowColor!,
-                                        offset: Offset(1, 3),
+                                                .secondaryShadowColor,
+                                        offset: const Offset(1, 3),
                                         blurRadius: 13,
                                       )
                                     ]),
@@ -482,7 +481,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                             onPressed: () async {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
-                                fromCancelable(initializeChip(wc, signatureData,
+                                fromCancelable(createToken(wc, signatureData,
                                     metadata, chainId, collectionId,
                                     image: image));
                               }

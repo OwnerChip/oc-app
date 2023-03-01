@@ -1,5 +1,6 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
 //import packages
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
@@ -15,8 +16,8 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -60,14 +61,13 @@ class _ChipAlreadyInitializedState
   String loadingText = '';
 
   Future<void> burnToken(
-      BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
-    WalletConnect wc = ref.watch(walletConnectProvider);
-    TokenInfoObject config = await ref.watch(findTokenProvider(tokenId).future);
+      WalletConnect wc, BigInt tokenId, SignatureData signatureData) async {
+    final TokenInfoObject config =
+        await ref.watch(findTokenProvider(tokenId).future);
     try {
       if (!wc.bridgeConnected) {
         wc.reconnect();
       }
-
       EthereumAddress walletAddress =
           EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
@@ -78,56 +78,33 @@ class _ChipAlreadyInitializedState
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.burning;
+      });
       String txnHash;
       if (canUseGasStation) {
-        final List<Map<String, dynamic>> gaslessBurnParams =
-            await makeGaslessParams(
-                functionSignatureHash: gaslessBurnFunctionSignature,
-                chainRpcUrl: getRPCUrlFromChainId(config.chainId),
-                chainId: config.chainId,
-                tokenIdHash: tokenIdHash,
-                signature: signature,
-                from: walletAddress,
-                to: config.collectionId);
-        final Map<String, dynamic> typedData = gaslessBurnParams[0];
-        final Map<String, dynamic> request = gaslessBurnParams[1];
-        //json stringify gaslessMintParams
-        print(json.encode(typedData));
-        String metamaskSignature = await wc.sendCustomRequest(
-            method: 'eth_signTypedData_v4',
-            params: [walletAddress.toString(), json.encode(typedData)],
-            id: makeRandomInt());
-
-        setState(() {
-          isLoading = true;
-          loadingText = context.loc.burning;
-        });
-
-        txnHash = await sendGaslessRequest(
-            config.collectionId, metamaskSignature, metaTxAgreementId, request);
-        print(txnHash);
-      } else {
-        var burnParams = await buildEthSendTransactionRequest(
-            getRPCUrlFromChainId(config.chainId),
+        txnHash = await makeAndSendGaslessTx(
+            gaslessBurnFunctionSignature,
+            config.chainId,
             config.collectionId,
+            signatureData,
             walletAddress,
+            wc,
+            metaTxAgreementId);
+      } else {
+        txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
-            tokenIdHash,
-            signature);
-        txnHash = await wc.sendCustomRequest(
-            method: 'eth_sendTransaction',
-            params: burnParams,
-            id: makeRandomInt());
-
-        setState(() {
-          isLoading = true;
-          loadingText = context.loc.burning;
-        });
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            walletAddress,
+            wc);
       }
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status == true) {
+      if (txnReceipt?.status) {
         //this means burn succeeded
         setState(() {
           isRotating = false;
@@ -136,9 +113,8 @@ class _ChipAlreadyInitializedState
         });
 
         //delay 2 second
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
-        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, HomeScreen.routeName);
       } else {
         throw Exception(context.loc.burnedError);
@@ -157,28 +133,30 @@ class _ChipAlreadyInitializedState
 
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
     cancellableOperation?.cancel();
-    cancellableOperation = CancelableOperation.fromFuture(future, onCancel: () {
-      print('Operation Cancelled');
-    });
+    cancellableOperation =
+        CancelableOperation.fromFuture(future, onCancel: () {});
     return cancellableOperation;
   }
 
   @override
   Widget build(BuildContext context) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
-    final EthereumAddress connectedWallet =
-        EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
-
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
+
+    WalletConnect wc = ref.watch(walletConnectProvider);
+
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
         ref.watch(blockchainExplorerUrlProvider);
-    final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
+    final EthereumAddress connectedWallet =
+        EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
     final MsgSignature signature = navArgs.signature;
+    final Uint8List hashedMsg = navArgs.hashedMsg;
+    final SignatureData signatureData =
+        SignatureData(hashedMsg: hashedMsg, signature: signature);
 
     return LoadingOverlay(
       onPressed: () {
@@ -213,7 +191,7 @@ class _ChipAlreadyInitializedState
                         color:
                             CustomColors(dotenv.get('STYLE_ID')).warningColor,
                         size: CustomFonts(dotenv.get('STYLE_ID'))
-                            .AdminWarningHeadlineFontSize), //spacing
+                            .adminWarningHeadlineFontSize), //spacing
                     const SizedBox(
                       height: 20,
                     ),
@@ -223,9 +201,9 @@ class _ChipAlreadyInitializedState
                           color:
                               CustomColors(dotenv.get('STYLE_ID')).warningColor,
                           fontSize: CustomFonts(dotenv.get('STYLE_ID'))
-                              .AdminWarningSubtextFontSize,
+                              .adminWarningSubtextFontSize,
                           fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
-                              .AdminWarningSubtextFontWeight),
+                              .adminWarningSubtextFontWeight),
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -246,8 +224,8 @@ class _ChipAlreadyInitializedState
                                 width: 250,
                                 text: context.loc.burnToken,
                                 onPressed: () => {
-                                  fromCancelable(burnToken(chipInfo.tokenId,
-                                      navArgs.hashedMsg, signature))
+                                  fromCancelable(burnToken(
+                                      wc, chipInfo.tokenId, signatureData))
                                 },
                               )
                             : const SizedBox(
