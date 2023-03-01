@@ -43,7 +43,8 @@ Future<void> startWalletConnection(
     BuildContext context, WalletConnect connector) async {
   try {
     var sessionStatus = await connector.connect(
-        chainId: 80001, //TODO !!!!
+        chainId:
+            80001, //TODO: Unsure what the difference is between passing different chain IDs
         onDisplayUri: (uri) async {
           await launchUrlString(uri, mode: LaunchMode.externalApplication);
         });

@@ -119,7 +119,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                           .bodyText2FontSize /
                                       1.3),
-                          // TODO: reduze size / change layout?
                           text: showDescription
                               ? context.loc.showTraits
                               : context.loc.showDescription,

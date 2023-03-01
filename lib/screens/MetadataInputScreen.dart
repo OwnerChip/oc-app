@@ -37,6 +37,7 @@ import '../widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends ConsumerStatefulWidget {
@@ -90,10 +91,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
   }
 
-  Future<void> initializeChip(
-      SignatureData signatureData, Map<String, dynamic> metadata,
+  Future<void> initializeChip(WalletConnect wc, SignatureData signatureData,
+      Map<String, dynamic> metadata, int chainId, EthereumAddress collectionId,
       {XFile? image}) async {
-    WalletConnect wc = ref.watch(walletConnectProvider);
     setState(() {
       isLoading = true;
       loadingText = context.loc.uploadingMetadata;
@@ -103,36 +103,27 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     if (!wc.bridgeConnected) {
       wc.reconnect();
     }
-
     EthereumAddress walletAddress =
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
     //upload image to ipfs
     String imageCid;
     String cid = '';
-
     try {
       String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
-
       if (image != null) {
         imageCid = await uploadFileToIPFS(image, mimeType);
         metadata['image'] = 'ipfs://$imageCid';
       }
 
-      // generate JSON file
+      //generate metadata JSON file
       final Directory directory = Directory.systemTemp;
       final File file = File('${directory.path}/metadata.json');
       await file.writeAsString(json.encode(metadata));
       XFile jsonFile = XFile(file.path);
 
-      // upload metadata json to ipfs
+      //upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
-
-      String fullUri = "ipfs://$cid";
-
-      final int chainId = ref.watch(selectedChainIdProvider);
-      final EthereumAddress collectionId =
-          ref.watch(selectedCollectionIdProvider);
 
       final List config = [chainId, collectionId];
 
@@ -149,61 +140,26 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       final metaTxAgreementId = response[1];
 
       String txnHash;
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.mintingToken;
+      });
       if (canUseGasStation) {
-        final List<Map<String, dynamic>> gaslessMintParams =
-            await makeGaslessParams(
-          functionSignatureHash: gaslessMintFunctionSignature,
-          chainRpcUrl: getRPCUrlFromChainId(config[0]),
-          chainId: chainId,
-          tokenIdHash: signatureData.hashedMsg,
-          signature: signatureData.signature,
-          from: walletAddress,
-          to: collectionId,
-          tokenURI: "ipfs://$cid",
-        );
-        final Map<String, dynamic> typedData = gaslessMintParams[0];
-        final Map<String, dynamic> request = gaslessMintParams[1];
-
-        String signature = await wc.sendCustomRequest(
-            method: 'eth_signTypedData_v4',
-            params: [walletAddress.toString(), json.encode(typedData)],
-            id: makeRandomInt());
-
-        setState(() {
-          isLoading = true;
-          loadingText = context.loc.mintingToken;
-        });
-        txnHash = await sendGaslessRequest(
-            collectionId, signature, metaTxAgreementId, request);
-        print(txnHash);
+        txnHash = await sendGaslessTx(config, chainId, signatureData,
+            walletAddress, collectionId, cid, wc, metaTxAgreementId);
       } else {
         // generate mint parameters
-        var mintParams = await buildEthSendTransactionRequest(
-            getRPCUrlFromChainId(config[0]),
-            config[1],
-            walletAddress,
-            mintFunctionSignature,
-            signatureData.hashedMsg,
-            signatureData.signature,
-            tokenURI: "ipfs://$cid");
-
-        //send mint transaction to metamask
-        txnHash = await wc.sendCustomRequest(
-            method: 'eth_sendTransaction',
-            params: mintParams,
-            id: makeRandomInt());
-
-        setState(() {
-          isLoading = true;
-          loadingText = context.loc.mintingToken;
-        });
+        txnHash =
+            await sendNormalTx(config, walletAddress, signatureData, cid, wc);
       }
 
+      //get transaction receipt
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
 
-      if (txnReceipt?.status == true) {
-        await Future.delayed(Duration(seconds: 2));
+      //if transaction is mined, then navigate to NFTDetailsScreen
+      if (txnReceipt?.status) {
+        await Future.delayed(const Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
           context,
           NFTDetailsScreen.routeName,
@@ -229,6 +185,70 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         isLoading = false;
       });
     }
+  }
+
+  Future<String> sendGaslessTx(
+      List<dynamic> config,
+      int chainId,
+      SignatureData signatureData,
+      EthereumAddress walletAddress,
+      EthereumAddress collectionId,
+      String cid,
+      WalletConnect wc,
+      metaTxAgreementId) async {
+    final List<Map<String, dynamic>> gaslessMintParams =
+        await makeGaslessParams(
+      functionSignatureHash: gaslessMintFunctionSignature,
+      chainRpcUrl: getRPCUrlFromChainId(config[0]),
+      chainId: chainId,
+      tokenIdHash: signatureData.hashedMsg,
+      signature: signatureData.signature,
+      from: walletAddress,
+      to: collectionId,
+      tokenURI: "ipfs://$cid",
+    );
+    final Map<String, dynamic> typedData = gaslessMintParams[0];
+    final Map<String, dynamic> request = gaslessMintParams[1];
+
+    String signature = await wc.sendCustomRequest(
+        method: 'eth_signTypedData_v4',
+        params: [walletAddress.toString(), json.encode(typedData)],
+        id: makeRandomInt());
+
+    // setState(() {
+    //   isLoading = true;
+    //   loadingText = context.loc.mintingToken;
+    // });
+    String txnHash = await sendGaslessRequest(
+        collectionId, signature, metaTxAgreementId, request);
+    return txnHash;
+  }
+
+  Future<String> sendNormalTx(
+      List<dynamic> config,
+      EthereumAddress walletAddress,
+      SignatureData signatureData,
+      String cid,
+      WalletConnect wc) async {
+    // generate mint parameters
+    var mintParams = await buildEthSendTransactionRequest(
+        getRPCUrlFromChainId(config[0]),
+        config[1],
+        walletAddress,
+        mintFunctionSignature,
+        signatureData.hashedMsg,
+        signatureData.signature,
+        tokenURI: "ipfs://$cid");
+
+    //send mint transaction to metamask
+    String txnHash = await wc.sendCustomRequest(
+        method: 'eth_sendTransaction', params: mintParams, id: makeRandomInt());
+
+    // setState(() {
+    //   isLoading = true;
+    //   loadingText = context.loc.mintingToken;
+    // });
+    return txnHash;
   }
 
   void toggleTraitsForm() {
@@ -260,15 +280,17 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
     cancellableOperation?.cancel();
-    cancellableOperation = CancelableOperation.fromFuture(future, onCancel: () {
-      print('Operation Cancelled');
-    });
+    cancellableOperation =
+        CancelableOperation.fromFuture(future, onCancel: () {});
     return cancellableOperation;
   }
 
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
+    final int chainId = ref.watch(selectedChainIdProvider);
+    final EthereumAddress collectionId =
+        ref.watch(selectedCollectionIdProvider);
     final SignatureData signatureData = ref.watch(signatureDataProvider);
     return CustomOverlay(
         show: showTraitsForm,
@@ -460,7 +482,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                                           .get('STYLE_ID'))
                                                       .bodyText2FontSize /
                                                   1.3),
-                                      // TODO: reduze size / change layout?
                                       text: context.loc.traits,
                                       onPressed: () => toggleTraitsForm()),
                                 )
@@ -513,8 +534,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                             onPressed: () async {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
-                                fromCancelable(initializeChip(
-                                    signatureData, metadata,
+                                fromCancelable(initializeChip(wc, signatureData,
+                                    metadata, chainId, collectionId,
                                     image: image));
                               }
                             },

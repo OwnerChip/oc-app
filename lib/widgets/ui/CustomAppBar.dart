@@ -43,11 +43,8 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
     } catch (e) {
       //show error snackbar
       ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-          "Error",
-          "No internet connection",
-          //TODO: localize strings
-          // context.loc.errorHeadingSnackBar,
-          // context.loc.errorNoInternetConnection,
+          context.loc.errorHeadingSnackBar,
+          context.loc.errorNoInternetConnection,
           'error'));
     }
   }

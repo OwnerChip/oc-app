@@ -16,7 +16,6 @@ import '../widgets/layout/ScreenBodyLayout.dart';
 import '../widgets/ui/CustomHomeScreenButton.dart';
 import '../widgets/ui/CustomRoundedButton.dart';
 import '../widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 

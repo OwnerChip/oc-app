@@ -136,7 +136,6 @@ final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {
 
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
-  //TODO: get chain ID and collection ID from dropdown menu UI!
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   final TokenInfoObject config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);

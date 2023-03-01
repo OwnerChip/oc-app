@@ -39,7 +39,7 @@ Future<String> uploadFileToIPFS(XFile xfile, String fileMimeType) async {
   var ipfs = getIpfsGatewayClient(true);
   Response response = await ipfs.post(dotenv.get('IPFS_PIN_COMMAND'),
       data: formData, onSendProgress: (int sent, int total) {
-    print('$sent / $total'); // TODO: pass to progress bar
+    print('$sent / $total');
   });
   print(response.data);
   return response.data[dotenv.get('IPFS_CID_RESPONSE_PATH')];

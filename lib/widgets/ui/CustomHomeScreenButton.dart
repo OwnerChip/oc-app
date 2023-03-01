@@ -15,7 +15,7 @@ class CustomHomeScreenButton extends StatelessWidget {
 
   final String text;
   final VoidCallback? onTap;
-  final String svgPath; //TODO: Make this SVG to use custom marta icons
+  final String svgPath;
   final double? size;
 
   @override
