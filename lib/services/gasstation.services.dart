@@ -12,6 +12,7 @@ final EIP712Domain = [
 ];
 
 final ForwardRequest = [
+  {'name': 'message', 'type': 'string'},
   {'name': 'from', 'type': 'address'},
   {'name': 'to', 'type': 'address'},
   {'name': 'value', 'type': 'uint256'},
@@ -57,6 +58,8 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   }
   final BigInt nonce = await getNonce(chainRpcUrl, verifyingContract, from.hex);
   return {
+    'message':
+        'Please sign this message, so OwnerChip can send this transaction on your behalf.',
     'from': from.hex,
     'to': to.hex,
     'value': 0,

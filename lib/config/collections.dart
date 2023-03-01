@@ -16,22 +16,22 @@ class Collections {
                   '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'),
               "name": "Ownerchip Demo"
             },
+            {
+              "id": EthereumAddress.fromHex(
+                  '0x2dB308BbECc75649a37e166680986044DBaB483d'),
+              "name": "Ownerchip TEST Collection"
+            }
           ],
           80001: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'),
-              "name": "Demo Collection"
+                  '0xa481a040a57534fb983Ce42316530f039e7A3efd'),
+              "name": "Ownerchip TEST Collection"
             },
             {
               "id": EthereumAddress.fromHex(
-                  '0x9c61BDF9D7ddad20706F830770DDd386A433685F'),
-              "name": "Unrestricted Demo Collection"
-            },
-            {
-              "id": EthereumAddress.fromHex(
-                  '0xA73e21cB6Eb5793b4aE76358951AeC9DD55A0430'),
-              "name": "Restricted TEST Collection"
+                  '0x663e865ddCBc526bB10b47EC3Dcd40118995c9d4'),
+              "name": "INFINEON Demo Collection"
             }
           ]
         };
@@ -42,7 +42,7 @@ class Collections {
           80001: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x9c61BDF9D7ddad20706F830770DDd386A433685F'),
+                  '0x663e865ddCBc526bB10b47EC3Dcd40118995c9d4'),
               "name": "Demo Collection"
             }
           ]
@@ -91,7 +91,7 @@ class Collections {
           137: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'),
+                  '0x2dB308BbECc75649a37e166680986044DBaB483d'),
               "name": "Ownerchip Demo"
             },
             {
@@ -107,8 +107,8 @@ class Collections {
           80001: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'),
-              "name": "Demo Collection"
+                  '0x663e865ddCBc526bB10b47EC3Dcd40118995c9d4'),
+              "name": "INFINEON Demo Collection"
             },
             {
               "id": EthereumAddress.fromHex(
@@ -117,13 +117,8 @@ class Collections {
             },
             {
               "id": EthereumAddress.fromHex(
-                  '0x9c61BDF9D7ddad20706F830770DDd386A433685F'),
-              "name": "Gasless Demo Collection"
-            },
-            {
-              "id": EthereumAddress.fromHex(
-                  '0xA73e21cB6Eb5793b4aE76358951AeC9DD55A0430'),
-              "name": "Restricted TEST Collection"
+                  '0xa481a040a57534fb983Ce42316530f039e7A3efd'),
+              "name": "Ownerchip TEST Collection"
             }
           ]
         };
