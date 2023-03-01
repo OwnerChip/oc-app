@@ -12,7 +12,7 @@ final EIP712Domain = [
 ];
 
 final ForwardRequest = [
-  {'name': 'message', 'type': 'string'},
+  {'name': 'info', 'type': 'string'},
   {'name': 'from', 'type': 'address'},
   {'name': 'to', 'type': 'address'},
   {'name': 'value', 'type': 'uint256'},
@@ -30,7 +30,8 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
     },
     'domain': {
       'name': 'MinimalForwarder',
-      'version': '0.0.1',
+      'version': '0.0.2',
+      //'chainId': chainId,
       'verifyingContract': verifyingContract,
     },
     'primaryType': 'ForwardRequest',
@@ -58,7 +59,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   }
   final BigInt nonce = await getNonce(chainRpcUrl, verifyingContract, from.hex);
   return {
-    'message':
+    'info':
         'Please sign this message, so OwnerChip can send this transaction on your behalf.',
     'from': from.hex,
     'to': to.hex,
