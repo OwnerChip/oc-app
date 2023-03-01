@@ -17,7 +17,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 
 //import misc
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
@@ -101,9 +100,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             error: (e, s) => context.loc.loading),
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             fontSize: CustomFonts(dotenv.get('STYLE_ID'))
-                                .MetadataNameFontSize,
+                                .metadataNameFontSize,
                             fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
-                                .MetadataNameFontWeight))),
+                                .metadataNameFontWeight))),
 
                 //show traits button
                 nftMetadata.when(
@@ -152,10 +151,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                         // color: Theme.of(context).primaryColor,
                                         fontSize:
                                             CustomFonts(dotenv.get('STYLE_ID'))
-                                                .MetadataDescriptionFontSize,
+                                                .metadataDescriptionFontSize,
                                         fontWeight: CustomFonts(
                                                 dotenv.get('STYLE_ID'))
-                                            .MetadataDescriptionFontWeight)),
+                                            .metadataDescriptionFontWeight)),
                               )
                             : Align(
                                 alignment: Alignment.centerLeft,
@@ -173,13 +172,13 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                                         fontSize: CustomFonts(
                                                                 dotenv.get(
                                                                     'STYLE_ID'))
-                                                            .MetadataDescriptionFontSize,
+                                                            .metadataDescriptionFontSize,
                                                       )),
                                               Text(e['value'],
                                                   style: TextStyle(
                                                     fontSize: CustomFonts(dotenv
                                                             .get('STYLE_ID'))
-                                                        .MetadataDescriptionFontSize,
+                                                        .metadataDescriptionFontSize,
                                                   )),
                                             ],
                                           ))

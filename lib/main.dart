@@ -29,8 +29,7 @@ void main(List<String> args) async {
   _setupLogging();
   await dotenv.load(fileName: ".env");
 
-  WidgetsBinding widgetsBinding =
-      WidgetsFlutterBinding.ensureInitialized(); //app lifecycle events listener
+  WidgetsFlutterBinding.ensureInitialized(); //app lifecycle events listener
 
   //prevent landscape mode
   SystemChrome.setPreferredOrientations(

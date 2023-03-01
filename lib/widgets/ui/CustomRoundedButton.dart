@@ -31,7 +31,7 @@ class CustomRoundedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isActive = true;
 
-    return Container(
+    return SizedBox(
       width: width,
       height: height,
       child: ElevatedButton(

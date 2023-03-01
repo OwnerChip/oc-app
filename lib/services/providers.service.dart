@@ -12,7 +12,6 @@ import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
 
 //****WALLETCONNECT****
 

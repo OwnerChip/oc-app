@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 class CustomIconButton extends StatelessWidget {
-  CustomIconButton({super.key, required this.icon, required this.onPressed});
+  const CustomIconButton(
+      {super.key, required this.icon, required this.onPressed});
 
   final Image icon; //TODO: change to SVG for custom icons
   final Function onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 40,
       height: 40,
       child: ElevatedButton(

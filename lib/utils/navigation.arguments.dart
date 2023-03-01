@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:web3dart/crypto.dart';
 
 class ScanningScreenArguments {

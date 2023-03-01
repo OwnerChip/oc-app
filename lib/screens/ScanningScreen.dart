@@ -72,6 +72,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
 
+        //set chip info data in provider
         ref
             .read(chipInfoProvider.notifier)
             .setChipEthereumAddress(chipEthereumAddress);
@@ -85,17 +86,17 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         // await vibrateNTimes(3);
 
         //verify signature
-        List verifyResult = await verifySignatureAuthenticity(
+        List verificationResult = await verifySignatureAuthenticity(
             nfc, randomNumber, chipEthereumAddress, chipTokenId);
-        hashedMsg = verifyResult[0];
-        signature = verifyResult[1];
+        hashedMsg = verificationResult[0];
+        signature = verificationResult[1];
         ref.read(signatureDataProvider.notifier).setSignatureData(
             SignatureData(hashedMsg: hashedMsg, signature: signature));
 
+        NfcManager.instance.stopSession();
+
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
-          NfcManager.instance.stopSession();
-
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
@@ -118,7 +119,6 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 hashedMsg,
                 signature);
 
-            NfcManager.instance.stopSession();
             if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
               Navigator.pushReplacementNamed(
                   context, UserScanResultsScreen.routeName);
@@ -141,7 +141,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
               context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
         );
         //delay for 1 second
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
         Navigator.pop(context);
       }
     });

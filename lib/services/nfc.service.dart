@@ -9,7 +9,6 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nfc_manager/platform_tags.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:web3dart/crypto.dart';
 
 class NFCPlatform {
   var platform = defaultTargetPlatform;
@@ -41,27 +40,27 @@ class NFCPlatform {
 
 //****COMMANDS****
 
-Uint8List make_get_key_info_command(hex_key_number) {
+Uint8List makeGetKeyInfoCommand(hexKeyNumber) {
   return Uint8List.fromList([
     0x00,
     0x16,
-    hex_key_number,
+    hexKeyNumber,
     0x00,
     0x00,
   ]);
 }
 
-Uint8List make_signature_command(int hex_key_number, Uint8List data_to_sign) {
+Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
   var bytes = BytesBuilder();
   Uint8List a = Uint8List.fromList([
     0x00,
     0x18,
-    hex_key_number,
+    hexKeyNumber,
     0x00,
     0x20,
   ]);
   bytes.add(a);
-  bytes.add(data_to_sign);
+  bytes.add(dataToSign);
   bytes.add(Uint8List.fromList([0x00]));
   Uint8List res = bytes.toBytes();
   return res;
@@ -70,8 +69,8 @@ Uint8List make_signature_command(int hex_key_number, Uint8List data_to_sign) {
 //****NFC HELPERS****
 
 Future<Uint8List> getFirstKey(NFCPlatform nfc) async {
-  Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
-  var responseGetKeyInfo = await nfc.sendCommand(GET_KEY_INFO);
+  Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
+  var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
 
   Uint8List getKeyInfoData = responseGetKeyInfo[0];
   int getKeyInfoResponseCode1 = responseGetKeyInfo[1];
@@ -93,8 +92,8 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
   //create new key
   var responseGenerateKey = await nfc.sendCommand(GENERATE_KEY);
   //get first key info after generating new key
-  Uint8List GET_KEY_INFO = make_get_key_info_command(0x01);
-  var responseGetKeyInfo = await nfc.sendCommand(GET_KEY_INFO);
+  Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
+  var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
   Uint8List getKeyInfoData = responseGetKeyInfo[0];
   int getKeyInfoResponseCode1 = responseGetKeyInfo[1];
   int getKeyInfoResponseCode2 = responseGetKeyInfo[2];
@@ -128,6 +127,7 @@ Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
 }
 
 Future<void> nfcPlatformCheck(BuildContext context, NFCPlatform nfc) async {
+  // ignore: unnecessary_null_comparison
   if (nfc == null) {
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(

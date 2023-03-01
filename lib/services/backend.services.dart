@@ -1,8 +1,5 @@
-import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// get OC backend client

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';

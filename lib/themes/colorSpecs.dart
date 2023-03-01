@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //the environment variable STYLE_ID as to be passed to the constructor of this class
 class CustomColors {
@@ -30,15 +28,15 @@ class CustomColors {
   late Color customHomeScreenButtonShadowColor;
   late Color chainDropdownTextColor;
 
-  CustomColors(app_environment) {
-    switch (app_environment) {
+  CustomColors(appEnvironment) {
+    switch (appEnvironment) {
       case 'ownerchip':
         // ownerchip colors
-        primaryColor = Color.fromARGB(255, 25, 35, 90);
-        primaryColorLight = Color.fromARGB(255, 77, 122, 255);
-        shadowColor = Color.fromARGB(70, 0, 0, 77);
+        primaryColor = const Color.fromARGB(255, 25, 35, 90);
+        primaryColorLight = const Color.fromARGB(255, 77, 122, 255);
+        shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
-        scaffoldBackgroundColor = Color.fromARGB(255, 240, 241, 246);
+        scaffoldBackgroundColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
         headline1Color = primaryColorLight;
         headline2Color = primaryColor;
@@ -48,12 +46,12 @@ class CustomColors {
         headline6Color = primaryColorLight;
         bodyText1Color = primaryColorLight;
         bodyText2Color = primaryColor;
-        borderColor = Color.fromARGB(255, 249, 247, 247);
+        borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
-        errorColor = Color(0xFFC72C41);
+        errorColor = const Color(0xFFC72C41);
         progressBarColor = primaryColor;
-        secondaryShadowColor = Color.fromARGB(50, 0, 0, 21);
-        boxDecorationColor = Color.fromARGB(210, 160, 160, 160);
+        secondaryShadowColor = const Color.fromARGB(50, 0, 0, 21);
+        boxDecorationColor = const Color.fromARGB(210, 160, 160, 160);
         black = Colors.black;
         metadataImagePickerIconsColor = Colors.white;
         customRoundedButtonColor = scaffoldBackgroundColor;
@@ -63,11 +61,11 @@ class CustomColors {
         break;
       case 'ownerchip_infineon':
         // ownerchip colors
-        primaryColor = Color.fromARGB(255, 25, 35, 90);
-        primaryColorLight = Color.fromARGB(255, 77, 122, 255);
-        shadowColor = Color.fromARGB(70, 0, 0, 77);
+        primaryColor = const Color.fromARGB(255, 25, 35, 90);
+        primaryColorLight = const Color.fromARGB(255, 77, 122, 255);
+        shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
-        scaffoldBackgroundColor = Color.fromARGB(255, 240, 241, 246);
+        scaffoldBackgroundColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
         headline1Color = primaryColorLight;
         headline2Color = primaryColor;
@@ -77,12 +75,12 @@ class CustomColors {
         headline6Color = primaryColorLight;
         bodyText1Color = primaryColorLight;
         bodyText2Color = primaryColor;
-        borderColor = Color.fromARGB(255, 249, 247, 247);
+        borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
-        errorColor = Color(0xFFC72C41);
+        errorColor = const Color(0xFFC72C41);
         progressBarColor = primaryColor;
-        secondaryShadowColor = Color.fromARGB(50, 0, 0, 21);
-        boxDecorationColor = Color.fromARGB(210, 160, 160, 160);
+        secondaryShadowColor = const Color.fromARGB(50, 0, 0, 21);
+        boxDecorationColor = const Color.fromARGB(210, 160, 160, 160);
         black = Colors.black;
         metadataImagePickerIconsColor = Colors.white;
         customRoundedButtonColor = scaffoldBackgroundColor;
@@ -90,26 +88,26 @@ class CustomColors {
         chainDropdownTextColor = Colors.black;
         break;
       case 'stebo':
-        primaryColor = Color(0xFF00FE93);
-        primaryColorLight = Color(0xFF0d8c57);
-        shadowColor = Color(0xFF2E2E2E);
-        cardColor = Color(0xFF2E2E2E);
-        scaffoldBackgroundColor = Color(0xFF1B1B1B);
+        primaryColor = const Color(0xFF00FE93);
+        primaryColorLight = const Color(0xFF0d8c57);
+        shadowColor = const Color(0xFF2E2E2E);
+        cardColor = const Color(0xFF2E2E2E);
+        scaffoldBackgroundColor = const Color(0xFF1B1B1B);
         warningColor = Colors.orange;
         headline1Color = primaryColor;
         headline2Color = primaryColor;
         headline3Color = primaryColor;
-        headline4Color = Color(0xFFFFFFFF);
-        headline5Color = Color(0xFFFFFFFF);
-        headline6Color = Color(0xFFFFFFFF);
-        bodyText1Color = Color(0xFFFFFFFF);
-        bodyText2Color = Color(0xFFFFFFFF);
-        borderColor = Color(0xFF2E2E2E);
+        headline4Color = const Color(0xFFFFFFFF);
+        headline5Color = const Color(0xFFFFFFFF);
+        headline6Color = const Color(0xFFFFFFFF);
+        bodyText1Color = const Color(0xFFFFFFFF);
+        bodyText2Color = const Color(0xFFFFFFFF);
+        borderColor = const Color(0xFF2E2E2E);
         successColor = Colors.green;
-        errorColor = Color(0xFFC72C41);
+        errorColor = const Color(0xFFC72C41);
         progressBarColor = primaryColor;
-        secondaryShadowColor = Color(0xFF2E2E2E);
-        boxDecorationColor = Color(0xFFFFFFFF);
+        secondaryShadowColor = const Color(0xFF2E2E2E);
+        boxDecorationColor = const Color(0xFFFFFFFF);
         black = Colors.black;
         metadataImagePickerIconsColor = scaffoldBackgroundColor;
         customRoundedButtonColor = scaffoldBackgroundColor;
@@ -118,11 +116,11 @@ class CustomColors {
 
         break;
       default:
-        primaryColor = Color.fromARGB(255, 25, 35, 90);
-        primaryColorLight = Color.fromARGB(255, 77, 122, 255);
-        shadowColor = Color.fromARGB(70, 0, 0, 77);
+        primaryColor = const Color.fromARGB(255, 25, 35, 90);
+        primaryColorLight = const Color.fromARGB(255, 77, 122, 255);
+        shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
-        scaffoldBackgroundColor = Color.fromARGB(255, 240, 241, 246);
+        scaffoldBackgroundColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
         headline1Color = primaryColorLight;
         headline2Color = primaryColor;
@@ -132,12 +130,12 @@ class CustomColors {
         headline6Color = primaryColorLight;
         bodyText1Color = primaryColorLight;
         bodyText2Color = primaryColor;
-        borderColor = Color.fromARGB(255, 249, 247, 247);
+        borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
-        errorColor = Color(0xFFC72C41);
+        errorColor = const Color(0xFFC72C41);
         progressBarColor = primaryColor;
-        secondaryShadowColor = Color.fromARGB(50, 0, 0, 21);
-        boxDecorationColor = Color.fromARGB(210, 160, 160, 160);
+        secondaryShadowColor = const Color.fromARGB(50, 0, 0, 21);
+        boxDecorationColor = const Color.fromARGB(210, 160, 160, 160);
         black = Colors.black;
         metadataImagePickerIconsColor = Colors.white;
         customRoundedButtonColor = scaffoldBackgroundColor;

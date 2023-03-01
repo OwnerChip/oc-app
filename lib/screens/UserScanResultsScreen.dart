@@ -54,7 +54,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(findTokenProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
 
-    final connectedWallet = wc.session.accounts.length > 0
+    final connectedWallet = wc.session.accounts.isNotEmpty
         ? wc.session.accounts[0].toLowerCase()
         : '';
 
@@ -70,10 +70,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             alignment: Alignment.topCenter,
             children: [
               CustomCard(
-                  margin: EdgeInsets.only(top: 70),
+                  margin: const EdgeInsets.only(top: 70),
                   width: double.infinity,
                   children: [
-                    SizedBox(height: 100),
+                    const SizedBox(height: 100),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -88,7 +88,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                 width: 250,
                                 text: context.loc.viewNftDetails,
                                 onPressed: () {
-                                  print(context);
                                   Navigator.of(context)
                                       .pushNamed(NFTDetailsScreen.routeName);
                                 })),
@@ -166,7 +165,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(context.loc.ownershipCheck,
-                                  style: Theme.of(context).textTheme.headline4),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium),
 
                               //OWNERSHIP CHECK ICON
                               nftOwner.when(
@@ -186,7 +187,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")),
                                 error: (e, s) => SvgPicture.asset(
                                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
-                                loading: () => CircularProgressIndicator(),
+                                loading: () =>
+                                    const CircularProgressIndicator(),
                               )
                             ],
                           ),
@@ -267,11 +269,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         ])
                   ]),
               nftImageUri.when(
-                loading: () => CustomImage(
+                loading: () => const CustomImage(
                   width: 130,
                   loading: true,
                 ),
-                error: (e, s) => CustomImage(
+                error: (e, s) => const CustomImage(
                   width: 130,
                   loading: false,
                 ),

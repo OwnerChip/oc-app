@@ -1,12 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:io';
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
-import 'dart:math';
-import 'dart:io';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:cross_file/cross_file.dart';
 
 Future<void> vibrateNTimes(int times) async {
   for (int i = 0; i < times; i++) {
@@ -23,14 +27,13 @@ Future<void> checkInternetAndHandleUI(BuildContext context) async {
     }
   } catch (e) {
     //error reading chip
-    print(context.loc.isoDepError + ": $e");
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoInternetConnection, 'error'),
     );
     //delay for 1 second
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     //navigate back to previous screen
     Navigator.pop(context);
   }
@@ -72,9 +75,9 @@ int makeRandomInt() {
 String getEthereumAddressFromUint8List(Iterable list) {
   var concatenate = StringBuffer();
   concatenate.write("0x");
-  list.forEach((element) {
+  for (var element in list) {
     concatenate.write(element.toRadixString(16).padLeft(2, "0"));
-  });
+  }
   return concatenate.toString();
 }
 
@@ -141,4 +144,12 @@ Uint8List getPublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
 //get RPC Url from chain ID from chains.dart
 String getRPCUrlFromChainId(int chainId) {
   return chainConfig[chainId]!.rpcUrl;
+}
+
+Future<XFile> saveMetadataAsJSONFile(Map<String, dynamic> metadata) async {
+  final Directory directory = Directory.systemTemp;
+  final File file = File('${directory.path}/metadata.json');
+  await file.writeAsString(json.encode(metadata));
+  XFile jsonFile = XFile(file.path);
+  return jsonFile;
 }
