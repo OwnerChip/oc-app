@@ -17,9 +17,9 @@ class InfoKeyValues extends StatelessWidget {
 
         return Row(
           children: [
-            Text('$val: ', style: Theme.of(context).textTheme.bodyText2),
+            Text('$val: ', style: Theme.of(context).textTheme.bodyMedium),
             Text(values[idx].toString(),
-                style: Theme.of(context).textTheme.headline5)
+                style: Theme.of(context).textTheme.headlineSmall)
           ],
         );
       }).toList()

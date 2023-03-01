@@ -46,7 +46,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
     final wc = ref.watch(walletConnectProvider);
 
     return Scaffold(
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         text: 'Select chain',
         showBackButton: true,
       ),
@@ -57,19 +57,19 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
           Text(
             textAlign: TextAlign.center,
             context.loc.chooseChain,
-            style: Theme.of(context).textTheme.headline1,
+            style: Theme.of(context).textTheme.displayLarge,
           ),
           const SizedBox(height: 20),
           Text(
             context.loc.selectBlockchain,
-            style: Theme.of(context).textTheme.bodyText1,
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 5),
           const ChainDropdown(),
           const SizedBox(height: 20),
           Text(
             context.loc.selectCollection,
-            style: Theme.of(context).textTheme.bodyText1,
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 5),
           const CollectionDropdown(),

@@ -6,6 +6,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 
 Web3Client getWeb3Client(String chainRpcUrl) {
   var client = Web3Client(chainRpcUrl, Client());
@@ -87,12 +88,10 @@ Future<List<dynamic>> queryForwarderContract(
 }
 
 Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
-    Uint8List txData, String fromAddress) async {
+    Uint8List txData, EthereumAddress fromAddress) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   BigInt result = await web3Client.estimateGas(
-      sender: EthereumAddress.fromHex(fromAddress),
-      to: contractAddress,
-      data: txData);
+      sender: fromAddress, to: contractAddress, data: txData);
   return result;
 }
 
@@ -153,7 +152,7 @@ String makeMintData(String functionSignatureHash, Uint8List tokenIdHash,
 Future<List<dynamic>> buildEthSendTransactionRequest(
   String chainRpcUrl,
   EthereumAddress collectionId,
-  String? from,
+  EthereumAddress? from,
   String functionSignatureHash,
   Uint8List tokenIdHash,
   MsgSignature signature, {
@@ -161,10 +160,10 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   String? gasPrice,
 }) async {
   String data;
-  if (functionSignatureHash == '0xcb5a7173') {
+  if (functionSignatureHash == mintFunctionSignature) {
     data =
         makeMintData(functionSignatureHash, tokenIdHash, signature, tokenURI!);
-  } else if (functionSignatureHash == '0x469fd767') {
+  } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
@@ -193,7 +192,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
 
   final params = [
     {
-      "from": from,
+      "from": from.toString(),
       "to": collectionId.toString(),
       "data": data,
       "gasPrice": gasPrice,

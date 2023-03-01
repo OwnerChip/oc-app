@@ -77,7 +77,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                             error: (e, s) => Container(),
                             loading: () => Text(context.loc.loading,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline1),
+                                style:
+                                    Theme.of(context).textTheme.displayLarge),
                             data: (data) => CustomRoundedButton(
                                 width: 250,
                                 text: context.loc.viewNftDetails,
@@ -101,7 +102,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(context.loc.authenticityCheck,
-                                  style: Theme.of(context).textTheme.headline4),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium),
 
                               //AUTHENTICITY CHECK ICON
                               tokenInfo.when(
@@ -132,18 +135,18 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                           textAlign: TextAlign.left,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline5)
+                                              .headlineSmall)
                                       : Text(context.loc.authenticityNftFound,
                                           textAlign: TextAlign.left,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline5),
+                                              .headlineSmall),
                                   error: (e, s) => Text(
                                       context.loc.authenticityNftNotFound,
                                       textAlign: TextAlign.left,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5),
+                                          .headlineSmall),
                                   loading: () =>
                                       const CircularProgressIndicator())),
                         ]),
@@ -197,7 +200,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                 textAlign: TextAlign.center,
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .headline5),
+                                                    .headlineSmall),
                                             const SizedBox(height: 10),
                                             CustomRoundedButton(
                                                 text: context.loc.connectWallet,
@@ -214,20 +217,20 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline5)
+                                                  .headlineSmall)
                                           :
                                           //NFT owner exists and wallet is connected and wallet is NOT owner
                                           Text(context.loc.youAreNotNftOwner,
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline5),
+                                                  .headlineSmall),
                                   error: (e, s) => Text(
                                       context.loc.youAreNotNftOwner,
                                       textAlign: TextAlign.left,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5),
+                                          .headlineSmall),
                                   loading: () =>
                                       const CircularProgressIndicator())),
                         ]),
@@ -242,7 +245,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(context.loc.nfcCheck,
-                                  style: Theme.of(context).textTheme.headline4),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium),
                               //checkmark icon
                               SvgPicture.asset(
                                   "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg"),

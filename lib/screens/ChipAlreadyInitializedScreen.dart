@@ -27,6 +27,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 
 class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
   const ChipAlreadyInitializedScreen({super.key});
@@ -56,10 +57,13 @@ class _ChipAlreadyInitializedState
         wc.reconnect();
       }
 
+      EthereumAddress walletAddress =
+          EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
+
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       final List response =
-          await checkMetaTx(config.collectionId, '0xd6fc7cef');
+          await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -67,12 +71,12 @@ class _ChipAlreadyInitializedState
       if (canUseGasStation) {
         final List<Map<String, dynamic>> gaslessBurnParams =
             await makeGaslessParams(
-                functionSignatureHash: '0xd6fc7cef',
+                functionSignatureHash: gaslessBurnFunctionSignature,
                 chainRpcUrl: getRPCUrlFromChainId(config.chainId),
                 chainId: config.chainId,
                 tokenIdHash: tokenIdHash,
                 signature: signature,
-                from: EthereumAddress.fromHex(wc.session.accounts[0]),
+                from: walletAddress,
                 to: config.collectionId);
         final Map<String, dynamic> typedData = gaslessBurnParams[0];
         final Map<String, dynamic> request = gaslessBurnParams[1];
@@ -80,7 +84,7 @@ class _ChipAlreadyInitializedState
         print(json.encode(typedData));
         String metamaskSignature = await wc.sendCustomRequest(
             method: 'eth_signTypedData_v4',
-            params: [wc.session.accounts[0], json.encode(typedData)],
+            params: [walletAddress.toString(), json.encode(typedData)],
             id: makeRandomInt());
 
         setState(() {
@@ -95,8 +99,8 @@ class _ChipAlreadyInitializedState
         var burnParams = await buildEthSendTransactionRequest(
             getRPCUrlFromChainId(config.chainId),
             config.collectionId,
-            wc.session.accounts[0],
-            '0x469fd767',
+            walletAddress,
+            burnFunctionSignature,
             tokenIdHash,
             signature);
         txnHash = await wc.sendCustomRequest(
@@ -151,9 +155,9 @@ class _ChipAlreadyInitializedState
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    final connectedWallet = wc.session.accounts.length > 0
-        ? wc.session.accounts[0].toLowerCase()
-        : '';
+    final EthereumAddress connectedWallet =
+        EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
+
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
@@ -216,7 +220,7 @@ class _ChipAlreadyInitializedState
                     Text(
                       textAlign: TextAlign.center,
                       context.loc.alreadyLinked,
-                      style: Theme.of(context).textTheme.headline5!,
+                      style: Theme.of(context).textTheme.headlineSmall!,
                     ),
                     const SizedBox(
                       height: 40,
@@ -226,19 +230,18 @@ class _ChipAlreadyInitializedState
                         loading: () => Text(context.loc.loading,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.headlineMedium),
-                        data: (data) =>
-                            wc.connected && connectedWallet == data.toString()
-                                ? CustomRoundedButton(
-                                    width: 250,
-                                    text: context.loc.burnToken,
-                                    onPressed: () => {
-                                      fromCancelable(burnToken(chipInfo.tokenId,
-                                          navArgs.hashedMsg, signature))
-                                    },
-                                  )
-                                : const SizedBox(
-                                    height: 40,
-                                  )),
+                        data: (data) => wc.connected && connectedWallet == data
+                            ? CustomRoundedButton(
+                                width: 250,
+                                text: context.loc.burnToken,
+                                onPressed: () => {
+                                  fromCancelable(burnToken(chipInfo.tokenId,
+                                      navArgs.hashedMsg, signature))
+                                },
+                              )
+                            : const SizedBox(
+                                height: 40,
+                              )),
 
                     const SizedBox(
                       height: 8,

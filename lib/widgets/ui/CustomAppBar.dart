@@ -82,7 +82,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
               : Image.asset(
                   '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png',
                   fit: BoxFit.contain)),
-      title: Text(text ?? '', style: Theme.of(context).textTheme.headline3),
+      title: Text(text ?? '', style: Theme.of(context).textTheme.displaySmall),
       centerTitle: true,
       actions: [
         Padding(
@@ -104,7 +104,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                           context.loc.disconnect,
                           style: Theme.of(context)
                               .textTheme
-                              .bodyText2!
+                              .bodyMedium!
                               .copyWith(fontSize: 12),
                         ),
                       ),
@@ -126,14 +126,14 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                           context.loc.connect,
                           style: Theme.of(context)
                               .textTheme
-                              .bodyText2!
+                              .bodyMedium!
                               .copyWith(fontSize: 10),
                         ),
                       ),
                     ],
                   ))
       ],
-      titleTextStyle: Theme.of(context).textTheme.headline3,
+      titleTextStyle: Theme.of(context).textTheme.displaySmall,
       backgroundColor: Colors.transparent,
       elevation: 0,
     );

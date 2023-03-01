@@ -71,7 +71,7 @@ class TraitsFormState extends State<TraitsForm> {
                       text: context.loc.remove,
                       textStyle: Theme.of(context)
                           .textTheme
-                          .bodyText1!
+                          .bodyLarge!
                           .copyWith(
                               color: CustomColors(dotenv.get('STYLE_ID'))
                                   .customRoundedButtonColor,
@@ -86,7 +86,7 @@ class TraitsFormState extends State<TraitsForm> {
                       text: context.loc.add,
                       textStyle: Theme.of(context)
                           .textTheme
-                          .bodyText1!
+                          .bodyLarge!
                           .copyWith(
                               color: CustomColors(dotenv.get('STYLE_ID'))
                                   .customRoundedButtonColor,
@@ -162,7 +162,7 @@ class _TraitTextInput extends State<TraitTextInput> {
         Expanded(
           flex: 4,
           child: TextFormField(
-            style: Theme.of(context).textTheme.bodyText2,
+            style: Theme.of(context).textTheme.bodyMedium,
             controller: _keyController,
             decoration: InputDecoration(
               enabledBorder: UnderlineInputBorder(
@@ -171,7 +171,7 @@ class _TraitTextInput extends State<TraitTextInput> {
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
-              hintStyle: Theme.of(context).textTheme.bodyText2,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
               hintText: context.loc.type,
             ),
             validator: (value) {
@@ -190,7 +190,7 @@ class _TraitTextInput extends State<TraitTextInput> {
         Expanded(
             flex: 4,
             child: TextFormField(
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               controller: _valueController,
               decoration: InputDecoration(
                 enabledBorder: UnderlineInputBorder(
@@ -199,7 +199,7 @@ class _TraitTextInput extends State<TraitTextInput> {
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
-                hintStyle: Theme.of(context).textTheme.bodyText2,
+                hintStyle: Theme.of(context).textTheme.bodyMedium,
                 hintText: context.loc.value,
               ),
               validator: (value) {

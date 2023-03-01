@@ -26,7 +26,7 @@ class SmallTextContainer extends StatelessWidget {
           ),
           child: Text(
             '${text.toString()}',
-            style: Theme.of(context).textTheme.bodyText1!.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                 fontSize: 12.0,
                 color: CustomColors(dotenv.get('STYLE_ID'))
                     .scaffoldBackgroundColor),

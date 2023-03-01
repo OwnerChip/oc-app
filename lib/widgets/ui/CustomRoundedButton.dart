@@ -52,7 +52,7 @@ class CustomRoundedButton extends StatelessWidget {
               icon != null ? const SizedBox(width: 10) : Container(),
               Text(text,
                   style: textStyle ??
-                      Theme.of(context).textTheme.bodyText1!.copyWith(
+                      Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: CustomColors(dotenv.get('STYLE_ID'))
                               .customRoundedButtonColor)),
             ],

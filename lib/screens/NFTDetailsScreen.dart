@@ -96,7 +96,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             loading: () => context.loc.loading,
                             data: (data) => data['name'],
                             error: (e, s) => context.loc.loading),
-                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                 .MetadataNameFontSize,
                             fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
@@ -112,7 +112,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                           width: null,
                           textStyle: Theme.of(context)
                               .textTheme
-                              .bodyText1!
+                              .bodyLarge!
                               .copyWith(
                                   color: CustomColors(dotenv.get('STYLE_ID'))
                                       .customRoundedButtonColor,
@@ -164,7 +164,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                               Text(e['trait_type'] + ': ',
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText2!
+                                                      .bodyMedium!
                                                       .copyWith(
                                                         fontWeight:
                                                             FontWeight.bold,

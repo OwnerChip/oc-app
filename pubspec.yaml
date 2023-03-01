@@ -14,10 +14,10 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.17.0
-  # nfc_manager: ^3.2.0
-  nfc_manager:
-    git:
-      url: https://github.com/kinggongzilla/flutter-nfc-manager
+  nfc_manager: ^3.2.0
+  # nfc_manager:
+  #   git:
+  #     url: https://github.com/kinggongzilla/flutter-nfc-manager
   web3dart: ^2.4.1
   http: ^0.13.5
   walletconnect_dart: ^0.0.11

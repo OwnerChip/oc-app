@@ -54,7 +54,7 @@ class LoadingOverlay extends StatelessWidget {
                         const SizedBox(height: 20),
                         Text(
                           loadingText,
-                          style: Theme.of(context).textTheme.headline4,
+                          style: Theme.of(context).textTheme.headlineMedium,
                         ),
                         onPressed != null
                             ? Column(children: [

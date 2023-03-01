@@ -43,14 +43,7 @@ class ScanningScreen extends ConsumerStatefulWidget {
   _ScanningScreen createState() => _ScanningScreen();
 }
 
-//flutter stateless widget
 class _ScanningScreen extends ConsumerState<ScanningScreen> {
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   initScanning(ref);
-  // }
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -87,7 +80,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             await ref.watch(findTokenProvider(chipTokenId).future);
 
         //vibrate phone
-        await vibrateNTimes(3);
+        // await vibrateNTimes(3);
 
         //verify signature
         List verifyResult = await verifySignatureAuthenticity(
@@ -179,20 +172,20 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(context.loc.initializeChip,
-                          style: Theme.of(context).textTheme.headline2),
+                          style: Theme.of(context).textTheme.displayMedium),
                       RichText(
                         text: TextSpan(
                             text: 'Step 1/',
                             style: Theme.of(context)
                                 .textTheme
-                                .headline6!
+                                .titleLarge!
                                 .copyWith(fontSize: 18),
                             children: [
                               TextSpan(
                                   text: '2',
                                   style: Theme.of(context)
                                       .textTheme
-                                      .headline5!
+                                      .headlineSmall!
                                       .copyWith(fontSize: 18))
                             ]),
                       )
@@ -200,7 +193,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                   )
                 : Text(context.loc.scanning,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headline2),
+                    style: Theme.of(context).textTheme.displayMedium),
             Column(
               children: [
                 SvgPicture.asset(
@@ -218,7 +211,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 Text(context.loc.scanHint,
                     overflow: TextOverflow.fade,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyText1!
+                    style: Theme.of(context).textTheme.bodyLarge!
                     // .copyWith(fontWeight: FontWeight.w400),
                     ),
               ],

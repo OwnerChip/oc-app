@@ -36,6 +36,7 @@ import '../themes/fontSpecs.dart';
 import '../widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends ConsumerStatefulWidget {
@@ -93,7 +94,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       SignatureData signatureData, Map<String, dynamic> metadata,
       {XFile? image}) async {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    // final signatureData = ref.watch(signatureDataProvider);
     setState(() {
       isLoading = true;
       loadingText = context.loc.uploadingMetadata;
@@ -104,9 +104,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       wc.reconnect();
     }
 
-    String walletAddress = wc.session.accounts[0].toLowerCase();
+    EthereumAddress walletAddress =
+        EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
-    // upload image to ipfs
+    //upload image to ipfs
     String imageCid;
     String cid = '';
 
@@ -138,32 +139,34 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       setState(() {
         isLoading = false;
       });
-      //metamask interaction
+      //open metamask application
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
-      final List response = await checkMetaTx(collectionId, '0x7a7f274d');
+      //check if user is allowed to use gas station
+      final List response =
+          await checkMetaTx(collectionId, gaslessMintFunctionSignature);
       final bool canUseGasStation = response[0];
-      final String metaTxAgreementId = response[1];
+      final metaTxAgreementId = response[1];
 
       String txnHash;
       if (canUseGasStation) {
         final List<Map<String, dynamic>> gaslessMintParams =
             await makeGaslessParams(
-          functionSignatureHash: '0x7a7f274d',
+          functionSignatureHash: gaslessMintFunctionSignature,
           chainRpcUrl: getRPCUrlFromChainId(config[0]),
           chainId: chainId,
           tokenIdHash: signatureData.hashedMsg,
           signature: signatureData.signature,
-          from: EthereumAddress.fromHex(walletAddress),
+          from: walletAddress,
           to: collectionId,
           tokenURI: "ipfs://$cid",
         );
         final Map<String, dynamic> typedData = gaslessMintParams[0];
         final Map<String, dynamic> request = gaslessMintParams[1];
-        //json stringify gaslessMintParams
+
         String signature = await wc.sendCustomRequest(
             method: 'eth_signTypedData_v4',
-            params: [walletAddress.toLowerCase(), json.encode(typedData)],
+            params: [walletAddress.toString(), json.encode(typedData)],
             id: makeRandomInt());
 
         setState(() {
@@ -179,7 +182,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             getRPCUrlFromChainId(config[0]),
             config[1],
             walletAddress,
-            '0xcb5a7173',
+            mintFunctionSignature,
             signatureData.hashedMsg,
             signatureData.signature,
             tokenURI: "ipfs://$cid");
@@ -277,9 +280,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             children: [
               Text(
                 context.loc.addTraits,
-                style: Theme.of(context).textTheme.headline2,
+                style: Theme.of(context).textTheme.displayMedium,
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Material(
                   child: TraitsForm(
                 submitFunction: setTraits,
@@ -318,14 +321,14 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                           text: 'Step 2/',
                           style: Theme.of(context)
                               .textTheme
-                              .headline6!
+                              .titleLarge!
                               .copyWith(fontSize: 18),
                           children: [
                             TextSpan(
                                 text: '2',
                                 style: Theme.of(context)
                                     .textTheme
-                                    .headline5!
+                                    .headlineSmall!
                                     .copyWith(fontSize: 18))
                           ]),
                     ),
@@ -410,7 +413,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                   flex: 5,
                                   child: TextFormField(
                                     style:
-                                        Theme.of(context).textTheme.bodyText2,
+                                        Theme.of(context).textTheme.bodyMedium,
                                     controller: _titleController,
                                     decoration: InputDecoration(
                                         enabledBorder: UnderlineInputBorder(
@@ -429,7 +432,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                         hintText: context.loc.title,
                                         hintStyle: Theme.of(context)
                                             .textTheme
-                                            .bodyText2),
+                                            .bodyMedium),
                                     onChanged: (text) {
                                       metadata['name'] = text;
                                     },
@@ -448,7 +451,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                       // width: 100,
                                       textStyle: Theme.of(context)
                                           .textTheme
-                                          .bodyText1!
+                                          .bodyLarge!
                                           .copyWith(
                                               color: CustomColors(
                                                       dotenv.get('STYLE_ID'))
@@ -477,7 +480,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                       )
                                     ]),
                                 child: TextField(
-                                  style: Theme.of(context).textTheme.bodyText2,
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                   maxLines: 3,
                                   keyboardType: TextInputType.multiline,
                                   controller: _descriptionController,
@@ -486,7 +489,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                         Theme.of(context).primaryColorDark,
                                     hintText: context.loc.description,
                                     hintStyle:
-                                        Theme.of(context).textTheme.bodyText2,
+                                        Theme.of(context).textTheme.bodyMedium,
                                     filled: true,
                                     fillColor: Theme.of(context)
                                         .scaffoldBackgroundColor,

@@ -3,6 +3,7 @@ import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 
 final EIP712Domain = [
   {'name': 'name', 'type': 'string'},
@@ -46,15 +47,12 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     String? tokenURI,
     EthereumAddress from,
     EthereumAddress to) async {
-  final web3client = getWeb3Client(chainRpcUrl);
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   String data;
-  if (functionSignatureHash == '0x7a7f274d' ||
-      functionSignatureHash == '0xcb5a7173') {
+  if (functionSignatureHash == gaslessMintFunctionSignature) {
     data =
         makeMintData(functionSignatureHash, tokenIdHash, signature, tokenURI!);
-  } else if (functionSignatureHash == '0xd6fc7cef' ||
-      functionSignatureHash == '0x469fd767') {
+  } else if (functionSignatureHash == gaslessBurnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
