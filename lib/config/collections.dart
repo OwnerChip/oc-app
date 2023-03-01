@@ -16,6 +16,11 @@ class Collections {
                   '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'),
               "name": "Ownerchip Demo"
             },
+            {
+              "id": EthereumAddress.fromHex(
+                  '0x2dB308BbECc75649a37e166680986044DBaB483d'),
+              "name": "Ownerchip TEST Collection"
+            }
           ],
           80001: [
             {
@@ -124,6 +129,11 @@ class Collections {
               "id": EthereumAddress.fromHex(
                   '0xA73e21cB6Eb5793b4aE76358951AeC9DD55A0430'),
               "name": "Restricted TEST Collection"
+            },
+            {
+              "id": EthereumAddress.fromHex(
+                  '0x2dB308BbECc75649a37e166680986044DBaB483d'),
+              "name": "Ownerchip TEST Collection"
             }
           ]
         };
