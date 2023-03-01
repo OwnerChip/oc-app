@@ -1,33 +1,44 @@
+//import packages
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:web3dart/web3dart.dart';
-import '../utils/localization.helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../utils/navigation.arguments.dart';
-import 'HomeScreen.dart';
-import '../utils/utils.dart';
-import '../services/web3.services.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+//import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+
+//import utils
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+
+//import misc
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
   const ChipAlreadyInitializedScreen({super.key});

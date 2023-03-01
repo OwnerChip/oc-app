@@ -1,16 +1,25 @@
+//import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
+
+//import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChainDropdown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'MetadataInputScreen.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+
+//import services
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {
   const ChainSelectorScreen({Key? key}) : super(key: key);

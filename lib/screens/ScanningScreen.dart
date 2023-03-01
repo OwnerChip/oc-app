@@ -1,37 +1,39 @@
 // ignore_for_file: use_build_context_synchronously
 
+//import packages
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:web3dart/credentials.dart';
-import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-//web3 imports
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import '../services/web3.services.dart';
 
-//nfc imports
-import 'package:nfc_manager/nfc_manager.dart';
+//import services
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
-import '../services/signature.service.dart';
-
-//local imports
-import 'UserScanResultsScreen.dart';
-import 'MetadataInputScreen.dart';
-import 'ChipAlreadyInitializedScreen.dart';
-import '../utils/navigation.arguments.dart';
-import '../utils/utils.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../widgets/ui/ScanningIndicator.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/services/signature.service.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ChipAlreadyInitializedScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/ScanningIndicator.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {

@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+//package imports
 import 'dart:convert';
 import 'dart:io';
 import 'package:async/async.dart';
@@ -7,37 +8,44 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+
+//misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+
+//screen imports
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
+
+//widget imports
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:web3dart/crypto.dart';
-import '../utils/localization.helper.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 
-//local imports
-import '../widgets/ui/CustomAppBar.dart';
-import '../services/ipfs.services.dart';
-import '../utils/utils.dart';
+//service imports
+import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/images.service.dart';
-import '../services/web3.services.dart';
-import '../screens/NFTDetailsScreen.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
-import '../widgets/ui/LoadingOverlay.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import '../widgets/layout/CustomOverlay.dart';
-import '../themes/fontSpecs.dart';
-import '../widgets/ui/TraitsForm.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+
+//theme imports
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
 //stateful widget with name MetadataScreen
 class MetadataScreen extends ConsumerStatefulWidget {
@@ -50,6 +58,7 @@ class MetadataScreen extends ConsumerStatefulWidget {
 }
 
 class _MetadataScreen extends ConsumerState<MetadataScreen> {
+  //form state
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -106,30 +115,24 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     EthereumAddress walletAddress =
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
-    //upload image to ipfs
-    String imageCid;
-    String cid = '';
     try {
+      //upload image to ipfs
+      String imageCid;
+      String cid = '';
       String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
-      if (image != null) {
-        imageCid = await uploadFileToIPFS(image, mimeType);
-        metadata['image'] = 'ipfs://$imageCid';
-      }
+      imageCid = await uploadFileToIPFS(image, mimeType);
+      metadata['image'] = 'ipfs://$imageCid';
 
       //generate metadata JSON file
-      final Directory directory = Directory.systemTemp;
-      final File file = File('${directory.path}/metadata.json');
-      await file.writeAsString(json.encode(metadata));
-      XFile jsonFile = XFile(file.path);
+      XFile jsonFile = await saveMetadataAsJSONFile(metadata);
 
       //upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
-      final List config = [chainId, collectionId];
-
       setState(() {
         isLoading = false;
       });
+
       //open metamask application
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
@@ -139,23 +142,24 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
       setState(() {
         isLoading = true;
         loadingText = context.loc.mintingToken;
       });
+
+      String txnHash;
       if (canUseGasStation) {
-        txnHash = await sendGaslessTx(config, chainId, signatureData,
-            walletAddress, collectionId, cid, wc, metaTxAgreementId);
+        txnHash = await sendGaslessTx(chainId, signatureData, walletAddress,
+            collectionId, cid, wc, metaTxAgreementId);
       } else {
         // generate mint parameters
-        txnHash =
-            await sendNormalTx(config, walletAddress, signatureData, cid, wc);
+        txnHash = await sendNormalTx(
+            chainId, collectionId, walletAddress, signatureData, cid, wc);
       }
 
       //get transaction receipt
       var txnReceipt =
-          await getTxnReceipt(getRPCUrlFromChainId(config[0]), txnHash);
+          await getTxnReceipt(getRPCUrlFromChainId(chainId), txnHash);
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
@@ -187,68 +191,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     }
   }
 
-  Future<String> sendGaslessTx(
-      List<dynamic> config,
-      int chainId,
-      SignatureData signatureData,
-      EthereumAddress walletAddress,
-      EthereumAddress collectionId,
-      String cid,
-      WalletConnect wc,
-      metaTxAgreementId) async {
-    final List<Map<String, dynamic>> gaslessMintParams =
-        await makeGaslessParams(
-      functionSignatureHash: gaslessMintFunctionSignature,
-      chainRpcUrl: getRPCUrlFromChainId(config[0]),
-      chainId: chainId,
-      tokenIdHash: signatureData.hashedMsg,
-      signature: signatureData.signature,
-      from: walletAddress,
-      to: collectionId,
-      tokenURI: "ipfs://$cid",
-    );
-    final Map<String, dynamic> typedData = gaslessMintParams[0];
-    final Map<String, dynamic> request = gaslessMintParams[1];
-
-    String signature = await wc.sendCustomRequest(
-        method: 'eth_signTypedData_v4',
-        params: [walletAddress.toString(), json.encode(typedData)],
-        id: makeRandomInt());
-
-    // setState(() {
-    //   isLoading = true;
-    //   loadingText = context.loc.mintingToken;
-    // });
-    String txnHash = await sendGaslessRequest(
-        collectionId, signature, metaTxAgreementId, request);
-    return txnHash;
-  }
-
-  Future<String> sendNormalTx(
-      List<dynamic> config,
-      EthereumAddress walletAddress,
-      SignatureData signatureData,
-      String cid,
-      WalletConnect wc) async {
-    // generate mint parameters
-    var mintParams = await buildEthSendTransactionRequest(
-        getRPCUrlFromChainId(config[0]),
-        config[1],
-        walletAddress,
-        mintFunctionSignature,
-        signatureData.hashedMsg,
-        signatureData.signature,
-        tokenURI: "ipfs://$cid");
-
-    //send mint transaction to metamask
-    String txnHash = await wc.sendCustomRequest(
-        method: 'eth_sendTransaction', params: mintParams, id: makeRandomInt());
-
-    // setState(() {
-    //   isLoading = true;
-    //   loadingText = context.loc.mintingToken;
-    // });
-    return txnHash;
+  Future<XFile> saveMetadataAsJSONFile(Map<String, dynamic> metadata) async {
+    final Directory directory = Directory.systemTemp;
+    final File file = File('${directory.path}/metadata.json');
+    await file.writeAsString(json.encode(metadata));
+    XFile jsonFile = XFile(file.path);
+    return jsonFile;
   }
 
   void toggleTraitsForm() {

@@ -1,3 +1,4 @@
+//import packages
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,20 +7,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
-//local imports
-import '../utils/localization.helper.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../utils/navigation.arguments.dart';
-import '../widgets/ui/CustomCard.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
-import '../widgets/ui/CustomImage.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
-import '../themes/colorSpecs.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});

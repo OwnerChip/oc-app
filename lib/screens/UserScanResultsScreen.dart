@@ -1,26 +1,31 @@
+//import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:web3dart/web3dart.dart';
 
-//local imports
-import 'NFTDetailsScreen.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../utils/navigation.arguments.dart';
-import '../widgets/ui/ChipInfo.dart';
-import '../widgets/ui/CustomCard.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
-import '../widgets/ui/CustomImage.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
+//import services
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
