@@ -25,7 +25,7 @@ class Collections {
             },
             {
               "id": EthereumAddress.fromHex(
-                  '0x08f5D6d64503532d8902bb8DC5AF3952686c974a'),
+                  '0x9c61BDF9D7ddad20706F830770DDd386A433685F'),
               "name": "Unrestricted Demo Collection"
             }
           ]
@@ -37,7 +37,7 @@ class Collections {
           80001: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x08f5D6d64503532d8902bb8DC5AF3952686c974a'),
+                  '0x9c61BDF9D7ddad20706F830770DDd386A433685F'),
               "name": "Demo Collection"
             }
           ]
@@ -112,7 +112,7 @@ class Collections {
             },
             {
               "id": EthereumAddress.fromHex(
-                  '0x08f5D6d64503532d8902bb8DC5AF3952686c974a'),
+                  '0x9c61BDF9D7ddad20706F830770DDd386A433685F'),
               "name": "Gasless Demo Collection"
             }
           ]
