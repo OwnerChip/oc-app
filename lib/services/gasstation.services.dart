@@ -60,7 +60,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   }
   final BigInt nonce = await getNonce(chainRpcUrl, verifyingContract, from.hex);
   return {
-    'message':
+    'info':
         'Please sign this message, so OwnerChip can send this transaction on your behalf.',
     'from': from.hex,
     'to': to.hex,
