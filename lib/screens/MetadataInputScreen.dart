@@ -23,7 +23,6 @@ import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 
 //widget imports
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';

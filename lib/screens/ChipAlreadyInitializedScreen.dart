@@ -111,7 +111,6 @@ class _ChipAlreadyInitializedState
           loadingText = context.loc.burnedSuccess;
         });
 
-        //delay 2 second
         await Future.delayed(const Duration(seconds: 2));
 
         Navigator.pushNamedAndRemoveUntil(

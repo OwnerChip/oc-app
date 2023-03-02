@@ -71,20 +71,6 @@ int makeRandomInt() {
   return Random().nextInt(4294967296);
 }
 
-// outputs a Hex string that is always prepended with "0x"
-String getEthereumAddressFromUint8List(Iterable list) {
-  var concatenate = StringBuffer();
-  concatenate.write("0x");
-  for (var element in list) {
-    concatenate.write(element.toRadixString(16).padLeft(2, "0"));
-  }
-  return concatenate.toString();
-}
-
-BigInt concatenateUint8List(Uint8List uintList) {
-  return BigInt.from(int.parse(uintList.join()));
-}
-
 // hex to BigInt - used to calculate tokenId based on EthAddress
 BigInt hexToBigInt(Uint8List ethereumAddress) {
   BigInt decimalValue = BigInt.from(0);
@@ -118,11 +104,6 @@ String stringToHex(String string) {
     hex += '0';
   }
   return hex;
-}
-
-// wrapper
-String getEthereumAddressHexString(Uint8List ethereumAddress) {
-  return getEthereumAddressFromUint8List(ethereumAddress);
 }
 
 //function to convert Uint8List to hex left padded to 32 bytes

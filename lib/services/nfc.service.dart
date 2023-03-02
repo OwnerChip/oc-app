@@ -120,13 +120,14 @@ Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
   Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
 
   EthereumAddress chipEthereumAddressHex =
-      EthereumAddress.fromHex(getEthereumAddressHexString(chipEthereumAddress));
+      EthereumAddress.fromHex("0x${bytesToHex(chipEthereumAddress)}");
   BigInt chipTokenId = bytesToUnsignedInt(chipEthereumAddress);
 
   return [chipEthereumAddressHex, chipTokenId];
 }
 
 Future<void> nfcPlatformCheck(BuildContext context, NFCPlatform nfc) async {
+  // null comparison below is NOT unnecessary!
   // ignore: unnecessary_null_comparison
   if (nfc == null) {
     NfcManager.instance.stopSession();
@@ -136,7 +137,6 @@ Future<void> nfcPlatformCheck(BuildContext context, NFCPlatform nfc) async {
     );
     //delay for 1 second
     await Future.delayed(Duration(seconds: 1));
-    //navigate back to previous screen
     Navigator.pop(context);
     throw Exception('Tag is not ISO-DEP.');
   }
