@@ -24,8 +24,9 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
@@ -113,7 +114,8 @@ class _ChipAlreadyInitializedState
         //delay 2 second
         await Future.delayed(const Duration(seconds: 2));
 
-        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+        Navigator.pushNamedAndRemoveUntil(
+            context, HomeScreen.routeName, (route) => false);
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -157,19 +159,20 @@ class _ChipAlreadyInitializedState
     final SignatureData signatureData =
         SignatureData(hashedMsg: hashedMsg, signature: signature);
 
-    return LoadingOverlay(
-      onPressed: () {
-        cancellableOperation?.cancel();
-        setState(() {
-          isLoading = false;
-        });
-        Navigator.pushNamedAndRemoveUntil(
-            context, HomeScreen.routeName, (route) => false);
-      },
-      isLoading: isLoading,
-      loadingText: loadingText,
-      rotateIcon: isRotating,
-      svgPath: loadingSvgPath,
+    return CustomOverlay(
+      show: isLoading,
+      content: SpinningLoadingSvg(
+          onPressed: () {
+            cancellableOperation?.cancel();
+            setState(() {
+              isLoading = false;
+            });
+            Navigator.pushNamedAndRemoveUntil(
+                context, HomeScreen.routeName, (route) => false);
+          },
+          loadingText: loadingText,
+          rotateIcon: isRotating,
+          svgPath: loadingSvgPath),
       child: Scaffold(
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(

@@ -28,9 +28,10 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -44,7 +45,6 @@ import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
-//stateful widget with name MetadataScreen
 class MetadataScreen extends ConsumerStatefulWidget {
   const MetadataScreen({super.key});
 
@@ -62,10 +62,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
   late Map<String, dynamic> metadata;
   XFile? image;
-  String imagePath = '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
   bool showImageOptions = false;
-  bool showTraitsForm = false;
-  bool isLoading = false;
+  bool showOverlay = false;
+  String overlayContentType = 'loading'; //can be "traits" or "loading"
   String loadingText = '';
   CancelableOperation? cancellableOperation;
 
@@ -77,31 +76,34 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     };
   }
 
-  void setCameraImage() async {
-    XFile? imageFile = await getImageFromCamera();
+  void resetImage() {
     setState(() {
-      image = imageFile;
-      imagePath = (imageFile != null)
-          ? imageFile.path
-          : '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
+      image = null;
     });
   }
 
-  void setGalleryImage() async {
+  Future<XFile> setCameraImage() async {
+    XFile? imageFile = await getImageFromCamera();
+    setState(() {
+      image = imageFile;
+    });
+    return imageFile!;
+  }
+
+  Future<XFile> setGalleryImage() async {
     XFile? imageFile = await getImageFromGallery();
     setState(() {
       image = imageFile;
-      imagePath = (imageFile != null)
-          ? imageFile.path
-          : '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
     });
+    return imageFile!;
   }
 
   Future<void> createToken(WalletConnect wc, SignatureData signatureData,
       Map<String, dynamic> metadata, int chainId, EthereumAddress collectionId,
       {XFile? image}) async {
     setState(() {
-      isLoading = true;
+      showOverlay = true;
+      overlayContentType = 'loading';
       loadingText = context.loc.uploadingMetadata;
     });
 
@@ -110,7 +112,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       wc.reconnect();
     }
 
-    //get wallet address
     EthereumAddress connectedWallet =
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
@@ -129,7 +130,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
       setState(() {
-        isLoading = false;
+        showOverlay = false;
       });
 
       //open metamask application
@@ -142,7 +143,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       final metaTxAgreementId = response[1];
 
       setState(() {
-        isLoading = true;
+        showOverlay = true;
+        overlayContentType = 'loading';
         loadingText = context.loc.mintingToken;
       });
 
@@ -177,7 +179,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           (Route route) => route.isFirst,
         );
         setState(() {
-          isLoading = false;
+          showOverlay = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
@@ -193,14 +195,15 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
       );
       setState(() {
-        isLoading = false;
+        showOverlay = false;
       });
     }
   }
 
   void toggleTraitsForm() {
     setState(() {
-      showTraitsForm = !showTraitsForm;
+      showOverlay = !showOverlay;
+      overlayContentType = 'traits';
     });
   }
 
@@ -209,12 +212,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       metadata["traits"] = traits;
     });
     toggleTraitsForm();
-  }
-
-  void onCameraButtonPressed() {
-    setState(() {
-      showImageOptions = true;
-    });
   }
 
   @override
@@ -240,251 +237,189 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         ref.watch(selectedCollectionIdProvider);
     final SignatureData signatureData = ref.watch(signatureDataProvider);
     return CustomOverlay(
-        show: showTraitsForm,
-        content: CustomCard(
-            mainAxisSize: MainAxisSize.min,
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
-            withScrollView: true,
-            children: [
-              Text(
-                context.loc.addTraits,
-                style: Theme.of(context).textTheme.displayMedium,
-              ),
-              const SizedBox(height: 10),
-              Material(
-                  child: TraitsForm(
-                submitFunction: setTraits,
-                toggleTraitsForm: toggleTraitsForm,
-                initialTraitsArray: metadata['traits'],
-              ))
-            ]),
-        child: LoadingOverlay(
-          onPressed: loadingText == context.loc.mintingToken
-              ? () {
-                  cancellableOperation?.cancel();
-                  setState(() {
-                    isLoading = false;
-                  });
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, HomeScreen.routeName, (route) => false);
-                }
-              : null,
-          isLoading: isLoading,
-          loadingText: loadingText,
-          svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
-          child: Scaffold(
-              extendBodyBehindAppBar: true,
-              appBar: CustomAppBar(
-                text: context.loc.initializeChip,
-              ),
-              body: ScreenBodyLayout(children: [
-                Row(
-                  children: [
-                    const SizedBox(width: 22),
-                    RichText(
-                      text: TextSpan(
-                          text: 'Step 2/',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge!
-                              .copyWith(fontSize: 18),
-                          children: [
-                            TextSpan(
-                                text: '2',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall!
-                                    .copyWith(fontSize: 18))
-                          ]),
-                    ),
-                  ],
+      show: showOverlay,
+      content: overlayContentType == 'loading'
+          ? SpinningLoadingSvg(
+              onPressed: loadingText == context.loc.mintingToken
+                  ? () {
+                      cancellableOperation?.cancel();
+                      setState(() {
+                        showOverlay = false;
+                      });
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, HomeScreen.routeName, (route) => false);
+                    }
+                  : null,
+              loadingText: loadingText,
+              svgPath:
+                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg')
+          : CustomCard(
+              mainAxisSize: MainAxisSize.min,
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+              maxWidth: MediaQuery.of(context).size.width * 0.9,
+              withScrollView: true,
+              children: [
+                  Text(
+                    context.loc.addTraits,
+                    style: Theme.of(context).textTheme.displayMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  Material(
+                      child: TraitsForm(
+                    submitFunction: setTraits,
+                    toggleTraitsForm: toggleTraitsForm,
+                    initialTraitsArray: metadata['traits'],
+                  ))
+                ]),
+      child: Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: CustomAppBar(
+            text: context.loc.initializeChip,
+          ),
+          body: ScreenBodyLayout(children: [
+            Row(
+              children: [
+                const SizedBox(width: 22),
+                RichText(
+                  text: TextSpan(
+                      text: 'Step 2/',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge!
+                          .copyWith(fontSize: 18),
+                      children: [
+                        TextSpan(
+                            text: '2',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall!
+                                .copyWith(fontSize: 18))
+                      ]),
                 ),
-                const SizedBox(height: 20),
-                CustomCard(
-                    color: CustomColors(dotenv.get('STYLE_ID')).cardColor,
-                    children: [
-                      AspectRatio(
-                        aspectRatio: 0.75,
-                        child: image != null
-                            ? GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    showImageOptions = true;
-                                    imagePath =
-                                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg';
-                                    image = null;
-                                  });
-                                },
-                                child: CustomImage(
-                                  loading: false,
-                                  imagePath: imagePath,
-                                  imageFile: image,
-                                ),
-                              )
-                            : CustomCard(
-                                color:
-                                    Theme.of(context).scaffoldBackgroundColor,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                width: double.infinity,
-                                children: [
-                                    showImageOptions
-                                        ? Column(
-                                            children: [
-                                              CustomRoundedButton(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  icon: Icon(
-                                                      Icons.camera_alt_outlined,
-                                                      color: CustomColors(dotenv
-                                                              .get('STYLE_ID'))
-                                                          .metadataImagePickerIconsColor),
-                                                  width: 180,
-                                                  text: context.loc.takePicture,
-                                                  onPressed: () =>
-                                                      setCameraImage()),
-                                              const SizedBox(height: 10),
-                                              CustomRoundedButton(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  icon: Icon(
-                                                      Icons.image_outlined,
-                                                      color: CustomColors(dotenv
-                                                              .get('STYLE_ID'))
-                                                          .metadataImagePickerIconsColor),
-                                                  width: 180,
-                                                  text: context.loc.selectImage,
-                                                  onPressed: () =>
-                                                      setGalleryImage()),
-                                            ],
-                                          )
-                                        : IconButton(
-                                            iconSize: 50,
-                                            icon: const Icon(
-                                                Icons.camera_alt_outlined),
-                                            color: Theme.of(context)
-                                                .primaryColorLight,
-                                            onPressed: () =>
-                                                onCameraButtonPressed(),
-                                          ),
-                                  ]),
-                      ),
-                      const SizedBox(height: 20),
-                      Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              Row(children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: TextFormField(
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium,
-                                    controller: _titleController,
-                                    decoration: InputDecoration(
-                                        enabledBorder: UnderlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Theme.of(context)
-                                                  .primaryColor),
-                                        ),
-                                        focusedBorder: UnderlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Theme.of(context)
-                                                  .primaryColor),
-                                        ),
-                                        contentPadding:
-                                            const EdgeInsets.only(left: 12),
-                                        hintText: context.loc.title,
-                                        hintStyle: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium),
-                                    onChanged: (text) {
-                                      metadata['name'] = text;
-                                    },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return context.loc.pleaseEnterText;
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 3,
-                                  child: CustomRoundedButton(
-                                      height: 25,
-                                      // width: 100,
-                                      textStyle: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .copyWith(
-                                              color: CustomColors(
-                                                      dotenv.get('STYLE_ID'))
-                                                  .customRoundedButtonColor,
-                                              fontSize: CustomFonts(dotenv
-                                                          .get('STYLE_ID'))
-                                                      .bodyText2FontSize /
-                                                  1.3),
-                                      text: context.loc.traits,
-                                      onPressed: () => toggleTraitsForm()),
-                                )
-                              ]),
-                              const SizedBox(height: 15),
-                              Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(13)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            CustomColors(dotenv.get('STYLE_ID'))
-                                                .secondaryShadowColor,
-                                        offset: const Offset(1, 3),
-                                        blurRadius: 13,
-                                      )
-                                    ]),
-                                child: TextField(
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  maxLines: 3,
-                                  keyboardType: TextInputType.multiline,
-                                  controller: _descriptionController,
-                                  decoration: InputDecoration(
-                                    focusColor:
-                                        Theme.of(context).primaryColorDark,
-                                    hintText: context.loc.description,
-                                    hintStyle:
-                                        Theme.of(context).textTheme.bodyMedium,
-                                    filled: true,
-                                    fillColor: Theme.of(context)
-                                        .scaffoldBackgroundColor,
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.circular(13),
+              ],
+            ),
+            const SizedBox(height: 20),
+            CustomCard(
+                color: CustomColors(dotenv.get('STYLE_ID')).cardColor,
+                children: [
+                  SetImageWidget(
+                    imageFile: image,
+                    setCameraImage: setCameraImage,
+                    setGalleryImage: setGalleryImage,
+                    resetImage: resetImage,
+                  ),
+                  const SizedBox(height: 20),
+                  Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Row(children: [
+                            Expanded(
+                              flex: 5,
+                              child: TextFormField(
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                controller: _titleController,
+                                decoration: InputDecoration(
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color:
+                                              Theme.of(context).primaryColor),
                                     ),
-                                  ),
-                                  onChanged: (text) {
-                                    metadata['description'] = text;
-                                  },
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                    ),
+                                    contentPadding:
+                                        const EdgeInsets.only(left: 12),
+                                    hintText: context.loc.title,
+                                    hintStyle:
+                                        Theme.of(context).textTheme.bodyMedium),
+                                onChanged: (text) {
+                                  metadata['name'] = text;
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return context.loc.pleaseEnterText;
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: CustomRoundedButton(
+                                  height: 25,
+                                  // width: 100,
+                                  textStyle: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          color: CustomColors(
+                                                  dotenv.get('STYLE_ID'))
+                                              .customRoundedButtonColor,
+                                          fontSize: CustomFonts(
+                                                      dotenv.get('STYLE_ID'))
+                                                  .bodyText2FontSize /
+                                              1.3),
+                                  text: context.loc.traits,
+                                  onPressed: () => toggleTraitsForm()),
+                            )
+                          ]),
+                          const SizedBox(height: 15),
+                          Container(
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(13)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CustomColors(dotenv.get('STYLE_ID'))
+                                        .secondaryShadowColor,
+                                    offset: const Offset(1, 3),
+                                    blurRadius: 13,
+                                  )
+                                ]),
+                            child: TextField(
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              maxLines: 3,
+                              keyboardType: TextInputType.multiline,
+                              controller: _descriptionController,
+                              decoration: InputDecoration(
+                                focusColor: Theme.of(context).primaryColorDark,
+                                hintText: context.loc.description,
+                                hintStyle:
+                                    Theme.of(context).textTheme.bodyMedium,
+                                filled: true,
+                                fillColor:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide.none,
+                                  borderRadius: BorderRadius.circular(13),
                                 ),
-                              )
-                            ],
-                          )),
-                      const SizedBox(height: 20),
-                      Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          child: CustomRoundedButton(
-                            text: context.loc.mintNft,
-                            onPressed: () async {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              if (_formKey.currentState!.validate()) {
-                                fromCancelable(createToken(wc, signatureData,
-                                    metadata, chainId, collectionId,
-                                    image: image));
-                              }
-                            },
-                          )),
-                    ])
-              ])),
-        ));
+                              ),
+                              onChanged: (text) {
+                                metadata['description'] = text;
+                              },
+                            ),
+                          )
+                        ],
+                      )),
+                  const SizedBox(height: 20),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: CustomRoundedButton(
+                        text: context.loc.mintNft,
+                        onPressed: () async {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          if (_formKey.currentState!.validate()) {
+                            fromCancelable(createToken(wc, signatureData,
+                                metadata, chainId, collectionId,
+                                image: image));
+                          }
+                        },
+                      )),
+                ])
+          ])),
+    );
   }
 }

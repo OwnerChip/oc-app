@@ -20,7 +20,6 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 
-//create wallet connector function
 Future<WalletConnect> createWalletConnector() async {
   WalletConnectSecureStorage sessionStorage = WalletConnectSecureStorage();
   WalletConnectSession? session = await sessionStorage.getSession();
@@ -50,6 +49,7 @@ Future<WalletConnect> createWalletConnector() async {
       ));
 }
 
+// This function starts a wallet connection with the WalletConnect connector.
 Future<void> startWalletConnection(
     BuildContext context, WalletConnect connector) async {
   try {
@@ -61,14 +61,12 @@ Future<void> startWalletConnection(
         });
     connector.sessionStorage?.store(connector.session);
   } catch (e) {
-    //returnSnackBar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
         context.loc.errorConnectingWallet,
         'success'));
     print(e);
   }
-  // }
 }
 
 // This code creates a gasless transaction.

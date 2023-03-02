@@ -14,7 +14,7 @@
     "noNfc": "Please turn on NFC.",
     "isoDepError": "IsoDep is not supported.",
     "ownerError": "Error fetching owner",
-    "burning": "Delete token",
+    "burning": "Deleting token",
     "burnedSuccess": "Token deleted.",
     "burnedError": "Error when deleting token.",
     "mintSuccess": "Token created successfully",

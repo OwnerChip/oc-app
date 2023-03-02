@@ -70,10 +70,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 tokenId: chipInfo.tokenId,
               ),
               error: (e, s) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                      context.loc.loadingNFTDataError, 'error'),
-                );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                //       context.loc.loadingNFTDataError, 'error'),
+                // );
                 return CustomImage(
                   loading: true,
                   tokenId: chipInfo.tokenId,
@@ -94,7 +94,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                         nftMetadata.when(
                             loading: () => context.loc.loading,
                             data: (data) => data['name'],
-                            error: (e, s) => context.loc.loading),
+                            error: (e, s) => context.loc.loadingNFTDataError),
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                 .metadataNameFontSize,
