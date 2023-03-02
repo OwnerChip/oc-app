@@ -13,7 +13,7 @@ class Collections {
           137: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x39C051cCc9095B265206485aCABed9284bBF9e0b'),
+                  '0x1787f9469238E2113CdF83e15F169FBA15F884f5'),
               "name": "OC Demo Collection"
             }
           ],
@@ -81,7 +81,7 @@ class Collections {
           137: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x39C051cCc9095B265206485aCABed9284bBF9e0b'),
+                  '0x1787f9469238E2113CdF83e15F169FBA15F884f5'),
               "name": "OC Demo Collection"
             },
             {
