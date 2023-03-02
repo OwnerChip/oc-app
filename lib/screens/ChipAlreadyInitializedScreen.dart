@@ -70,6 +70,7 @@ class _ChipAlreadyInitializedState
         wc.reconnect();
       }
 
+      //launch metamask
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       final List response =

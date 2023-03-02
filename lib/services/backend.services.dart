@@ -9,6 +9,11 @@ Dio getBackendClient() {
       headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
 }
 
+// Checks if a gasless transaction is supported by a collection.
+// Returns a tuple of [bool, String].
+// bool: true if a meta transaction is supported, false otherwise.
+// String: the id of the meta transaction agreement if it is supported.
+//         the error message if it is not supported.
 Future<List<dynamic>> checkMetaTx(
     EthereumAddress collectionId, String functionSignatureHash) async {
   final Dio dio = getBackendClient();
@@ -22,6 +27,8 @@ Future<List<dynamic>> checkMetaTx(
   }
 }
 
+// This function will send a gasless request to the backend. The backend will then
+// send a meta transaction to the network.
 Future<String> sendGaslessRequest(
     EthereumAddress collectionId,
     String txSignature,

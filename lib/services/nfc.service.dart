@@ -13,6 +13,8 @@ import 'package:web3dart/web3dart.dart';
 class NFCPlatform {
   var platform = defaultTargetPlatform;
   final NfcTag tag;
+  // cannot assign type to nfc because type depends on platform
+  // ignore: prefer_typing_uninitialized_variables
   late final nfc;
   NFCPlatform(this.tag) {
     if (Platform.isIOS) {

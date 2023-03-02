@@ -159,13 +159,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             metaTxAgreementId,
             cid: cid);
       } else {
-        // generate mint parameters
         txnHash = await makeAndSendNormalTx(mintFunctionSignature, chainId,
             collectionId, signatureData, connectedWallet, wc,
             cid: cid);
       }
 
-      //get transaction receipt
+      //wait until TX is succeeded or failed
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(chainId), txnHash);
 
