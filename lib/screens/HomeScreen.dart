@@ -1,23 +1,30 @@
-import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
-import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+//import packages
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../utils/localization.helper.dart';
-
-// local files
-import '../utils/utils.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import 'ScanningScreen.dart';
-import 'UserScanResultsScreen.dart';
-import '../utils/navigation.arguments.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
-import '../widgets/ui/CustomHomeScreenButton.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+//import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
+import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -94,9 +101,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        connectedWalletAddress: wc.session.accounts.isEmpty == true
-            ? null
-            : wc.session.accounts[0].toLowerCase(),
         showBackButton: false,
       ),
       body: ScreenBodyLayout(

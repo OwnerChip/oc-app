@@ -1,4 +1,5 @@
-//boilerplate for stateless widget
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -9,19 +10,13 @@ import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
-  const CustomAppBar(
-      {Key? key,
-      this.text,
-      this.connectedWalletAddress,
-      this.showBackButton = true})
+  const CustomAppBar({Key? key, this.text, this.showBackButton = true})
       : super(key: key);
   final String? text;
-  final String? connectedWalletAddress;
   final bool showBackButton; //valid values: 'back', 'logo'
 
   void onButtonPress(BuildContext context, WalletConnect wc) async {
@@ -51,7 +46,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
 
   //necessary to use because flutter?!
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,13 +57,13 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
           ? 120
           : null, //only change leading width if logo is shown
       leading: Padding(
-          padding: EdgeInsets.only(left: 10),
+          padding: const EdgeInsets.only(left: 10),
           child: showBackButton
               ? Stack(
                   alignment: Alignment.topCenter,
                   children: [
                     IconButton(
-                      padding: new EdgeInsets.all(0.0),
+                      padding: const EdgeInsets.all(0.0),
                       icon: SvgPicture.asset(
                           "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/back.svg"),
                       color: CustomColors(dotenv.get('STYLE_ID')).black,
@@ -83,13 +78,13 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
       centerTitle: true,
       actions: [
         Padding(
-            padding: EdgeInsets.only(right: 5),
+            padding: const EdgeInsets.only(right: 5),
             child: wc.connected
                 ? Stack(
                     alignment: Alignment.topCenter,
                     children: [
                       IconButton(
-                        padding: new EdgeInsets.all(0.0),
+                        padding: const EdgeInsets.all(0.0),
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/disconnect.svg"),
                         color: CustomColors(dotenv.get('STYLE_ID')).black,
@@ -111,7 +106,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                     alignment: Alignment.topCenter,
                     children: [
                       IconButton(
-                        padding: new EdgeInsets.all(0.0),
+                        padding: const EdgeInsets.all(0.0),
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/connect.svg"),
                         color: CustomColors(dotenv.get('STYLE_ID')).black,

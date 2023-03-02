@@ -32,7 +32,7 @@ class ChipInfo extends StatelessWidget {
                 IconButton(
                     color: Theme.of(context).primaryColor,
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                     iconSize: 25,
                     onPressed: () {
                       Clipboard.setData(
@@ -56,7 +56,7 @@ class ChipInfo extends StatelessWidget {
                 IconButton(
                     color: Theme.of(context).primaryColor,
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                     iconSize: 25,
                     onPressed: () {
                       Clipboard.setData(

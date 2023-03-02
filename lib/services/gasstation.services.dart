@@ -5,13 +5,14 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 
+// EIP712Domain is the domain definition used by the EIP712 standard. It is used to define the domain of the signature.
 final EIP712Domain = [
   {'name': 'name', 'type': 'string'},
   {'name': 'version', 'type': 'string'},
-  //{'name': 'chainId', 'type': 'uint256'},
   {'name': 'verifyingContract', 'type': 'address'},
 ];
 
+// ForwardRequest is the structure of the data that is being signed. It is used to define the data to be signed.
 final ForwardRequest = [
   {'name': 'info', 'type': 'string'},
   {'name': 'from', 'type': 'address'},
@@ -22,6 +23,8 @@ final ForwardRequest = [
   {'name': 'data', 'type': 'bytes'},
 ];
 
+// This function returns the EIP712 domain used for signing a meta-transaction.
+// It takes the chain ID as input and returns a map of the domain data.
 Map<String, dynamic> getMetaTxTypeData(int chainId) {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   return {
@@ -39,6 +42,7 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
   };
 }
 
+// This function returns the request to be signed for a meta-transaction.
 Future<Map<String, dynamic>> buildTypedV4Request(
     String functionSignatureHash,
     String chainRpcUrl,
@@ -72,10 +76,17 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   };
 }
 
+// This method creates a typedData object with the specified chainId and
+// request data. The result is used as the data for a MetaTransaction.
+
 Future<Map<String, dynamic>> buildTypedData(int chainId, request) async {
   final typeData = getMetaTxTypeData(chainId);
   return {...typeData, 'message': request};
 }
+
+// Builds a typed V4 request, which is used to build a typed data object
+// which is then signed by the user's wallet to create a signature.
+// This request is then passed to the smart contract as a gasless transaction.
 
 Future<List<Map<String, dynamic>>> makeGaslessParams({
   required String functionSignatureHash,

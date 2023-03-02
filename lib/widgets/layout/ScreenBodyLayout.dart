@@ -40,24 +40,22 @@ class ScreenBodyLayout extends StatelessWidget {
                     ],
                   )),
             )
-          : Container(
-              child: Padding(
-                  padding: const EdgeInsets.only(top: 15, bottom: 15),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 1, child: Container()),
-                      Expanded(
-                        flex: 18,
-                        child: Column(
-                          mainAxisAlignment: mainAxisAlignment,
-                          crossAxisAlignment: crossAxisAlignment,
-                          children: children,
-                        ),
-                      ),
-                      Expanded(flex: 1, child: Container()),
-                    ],
-                  )),
-            ),
+          : Padding(
+              padding: const EdgeInsets.only(top: 15, bottom: 15),
+              child: Row(
+                children: [
+                  Expanded(flex: 1, child: Container()),
+                  Expanded(
+                    flex: 18,
+                    child: Column(
+                      mainAxisAlignment: mainAxisAlignment,
+                      crossAxisAlignment: crossAxisAlignment,
+                      children: children,
+                    ),
+                  ),
+                  Expanded(flex: 1, child: Container()),
+                ],
+              )),
     );
   }
 }

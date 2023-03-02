@@ -1,13 +1,12 @@
+//import packages
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ownerchip_whitelabel/themes/themeData.dart';
 
-//screens and widgets
+//import screens
 import 'screens/HomeScreen.dart';
 import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
@@ -15,6 +14,10 @@ import 'screens/MetadataInputScreen.dart';
 import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/themes/themeData.dart';
 import 'widgets/logic/RestartWidget.dart';
 
 // setup logger
@@ -29,8 +32,8 @@ void main(List<String> args) async {
   _setupLogging();
   await dotenv.load(fileName: ".env");
 
-  WidgetsBinding widgetsBinding =
-      WidgetsFlutterBinding.ensureInitialized(); //app lifecycle events listener
+  //necessary for app lifecycle events listener
+  WidgetsFlutterBinding.ensureInitialized();
 
   //prevent landscape mode
   SystemChrome.setPreferredOrientations(
@@ -71,7 +74,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  //do stuff on resume
+  //do stuff on app resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     //make new wallet connect connector when app is resumed(brought to foreground); necessary to prevent errors with metamask/walletconnect
@@ -95,6 +98,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
+      //register all routes
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
         ScanningScreen.routeName: (context) => const ScanningScreen(),

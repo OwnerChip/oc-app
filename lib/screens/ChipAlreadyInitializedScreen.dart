@@ -1,33 +1,46 @@
-import 'dart:convert';
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
+//import packages
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/LoadingOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:web3dart/web3dart.dart';
-import '../utils/localization.helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../utils/navigation.arguments.dart';
-import 'HomeScreen.dart';
-import '../utils/utils.dart';
-import '../services/web3.services.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+//import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+
+//import utils
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+
+//import misc
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class ChipAlreadyInitializedScreen extends ConsumerStatefulWidget {
   const ChipAlreadyInitializedScreen({super.key});
@@ -48,18 +61,16 @@ class _ChipAlreadyInitializedState
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
-  Future<void> burnToken(
-      BigInt tokenId, Uint8List tokenIdHash, MsgSignature signature) async {
-    WalletConnect wc = ref.watch(walletConnectProvider);
-    TokenInfoObject config = await ref.watch(findTokenProvider(tokenId).future);
+  Future<void> burnToken(WalletConnect wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final TokenInfoObject config =
+        await ref.watch(findTokenProvider(tokenId).future);
     try {
       if (!wc.bridgeConnected) {
         wc.reconnect();
       }
 
-      EthereumAddress walletAddress =
-          EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
-
+      //launch metamask
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       final List response =
@@ -67,56 +78,33 @@ class _ChipAlreadyInitializedState
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.burning;
+      });
       String txnHash;
       if (canUseGasStation) {
-        final List<Map<String, dynamic>> gaslessBurnParams =
-            await makeGaslessParams(
-                functionSignatureHash: gaslessBurnFunctionSignature,
-                chainRpcUrl: getRPCUrlFromChainId(config.chainId),
-                chainId: config.chainId,
-                tokenIdHash: tokenIdHash,
-                signature: signature,
-                from: walletAddress,
-                to: config.collectionId);
-        final Map<String, dynamic> typedData = gaslessBurnParams[0];
-        final Map<String, dynamic> request = gaslessBurnParams[1];
-        //json stringify gaslessMintParams
-        print(json.encode(typedData));
-        String metamaskSignature = await wc.sendCustomRequest(
-            method: 'eth_signTypedData_v4',
-            params: [walletAddress.toString(), json.encode(typedData)],
-            id: makeRandomInt());
-
-        setState(() {
-          isLoading = true;
-          loadingText = context.loc.burning;
-        });
-
-        txnHash = await sendGaslessRequest(
-            config.collectionId, metamaskSignature, metaTxAgreementId, request);
-        print(txnHash);
-      } else {
-        var burnParams = await buildEthSendTransactionRequest(
-            getRPCUrlFromChainId(config.chainId),
+        txnHash = await makeAndSendGaslessTx(
+            gaslessBurnFunctionSignature,
+            config.chainId,
             config.collectionId,
-            walletAddress,
+            signatureData,
+            connectedWallet,
+            wc,
+            metaTxAgreementId);
+      } else {
+        txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
-            tokenIdHash,
-            signature);
-        txnHash = await wc.sendCustomRequest(
-            method: 'eth_sendTransaction',
-            params: burnParams,
-            id: makeRandomInt());
-
-        setState(() {
-          isLoading = true;
-          loadingText = context.loc.burning;
-        });
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc);
       }
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status == true) {
+      if (txnReceipt?.status) {
         //this means burn succeeded
         setState(() {
           isRotating = false;
@@ -124,11 +112,10 @@ class _ChipAlreadyInitializedState
           loadingText = context.loc.burnedSuccess;
         });
 
-        //delay 2 second
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
-        // ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+        Navigator.pushNamedAndRemoveUntil(
+            context, HomeScreen.routeName, (route) => false);
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -146,49 +133,50 @@ class _ChipAlreadyInitializedState
 
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
     cancellableOperation?.cancel();
-    cancellableOperation = CancelableOperation.fromFuture(future, onCancel: () {
-      print('Operation Cancelled');
-    });
+    cancellableOperation =
+        CancelableOperation.fromFuture(future, onCancel: () {});
     return cancellableOperation;
   }
 
   @override
   Widget build(BuildContext context) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
-    final EthereumAddress connectedWallet =
-        EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
-
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as ChipAlreadyInitializedScreenArguments;
+
+    WalletConnect wc = ref.watch(walletConnectProvider);
+
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
         ref.watch(blockchainExplorerUrlProvider);
-    final Uint8List tokenIdHash = keccakUtf8(chipInfo.tokenId.toString());
+    final EthereumAddress connectedWallet = wc.session.accounts.isNotEmpty
+        ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
+        : zeroAddress;
     final MsgSignature signature = navArgs.signature;
+    final Uint8List hashedMsg = navArgs.hashedMsg;
+    final SignatureData signatureData =
+        SignatureData(hashedMsg: hashedMsg, signature: signature);
 
-    return LoadingOverlay(
-      onPressed: () {
-        cancellableOperation?.cancel();
-        setState(() {
-          isLoading = false;
-        });
-        Navigator.pushNamedAndRemoveUntil(
-            context, HomeScreen.routeName, (route) => false);
-      },
-      isLoading: isLoading,
-      loadingText: loadingText,
-      rotateIcon: isRotating,
-      svgPath: loadingSvgPath,
+    return CustomOverlay(
+      show: isLoading,
+      content: SpinningLoadingSvg(
+          onPressed: () {
+            cancellableOperation?.cancel();
+            setState(() {
+              isLoading = false;
+            });
+            Navigator.pushNamedAndRemoveUntil(
+                context, HomeScreen.routeName, (route) => false);
+          },
+          loadingText: loadingText,
+          rotateIcon: isRotating,
+          svgPath: loadingSvgPath),
       child: Scaffold(
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
             text: context.loc.initializeChip,
-            connectedWalletAddress: wc.session.accounts.isEmpty == true
-                ? null
-                : wc.session.accounts[0].toLowerCase(),
           ),
           body: ScreenBodyLayout(
             withScrollView: false,
@@ -202,7 +190,7 @@ class _ChipAlreadyInitializedState
                         color:
                             CustomColors(dotenv.get('STYLE_ID')).warningColor,
                         size: CustomFonts(dotenv.get('STYLE_ID'))
-                            .AdminWarningHeadlineFontSize), //spacing
+                            .adminWarningHeadlineFontSize), //spacing
                     const SizedBox(
                       height: 20,
                     ),
@@ -212,9 +200,9 @@ class _ChipAlreadyInitializedState
                           color:
                               CustomColors(dotenv.get('STYLE_ID')).warningColor,
                           fontSize: CustomFonts(dotenv.get('STYLE_ID'))
-                              .AdminWarningSubtextFontSize,
+                              .adminWarningSubtextFontSize,
                           fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
-                              .AdminWarningSubtextFontWeight),
+                              .adminWarningSubtextFontWeight),
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -235,8 +223,8 @@ class _ChipAlreadyInitializedState
                                 width: 250,
                                 text: context.loc.burnToken,
                                 onPressed: () => {
-                                  fromCancelable(burnToken(chipInfo.tokenId,
-                                      navArgs.hashedMsg, signature))
+                                  fromCancelable(burnToken(wc, chipInfo.tokenId,
+                                      signatureData, connectedWallet))
                                 },
                               )
                             : const SizedBox(

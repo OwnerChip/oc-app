@@ -41,18 +41,18 @@ class CustomFonts {
   late String bodyText2Font = primaryFont;
   late double bodyText2FontSize;
 
-  late double AdminWarningHeadlineFontSize;
-  late FontWeight AdminWarningSubtextFontWeight;
-  late double AdminWarningSubtextFontSize;
+  late double adminWarningHeadlineFontSize;
+  late FontWeight adminWarningSubtextFontWeight;
+  late double adminWarningSubtextFontSize;
 
-  late FontWeight MetadataNameFontWeight;
-  late double MetadataNameFontSize;
+  late FontWeight metadataNameFontWeight;
+  late double metadataNameFontSize;
 
-  late FontWeight MetadataDescriptionFontWeight;
-  late double MetadataDescriptionFontSize;
+  late FontWeight metadataDescriptionFontWeight;
+  late double metadataDescriptionFontSize;
 
-  CustomFonts(app_environment) {
-    switch (app_environment) {
+  CustomFonts(appEnvironment) {
+    switch (appEnvironment) {
       case 'ownerchip':
         headline1FontWeight = FontWeight.bold;
         headline1Font = headerFont;
@@ -87,15 +87,15 @@ class CustomFonts {
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
 
-        AdminWarningHeadlineFontSize = 80.0;
-        AdminWarningSubtextFontWeight = FontWeight.bold;
-        AdminWarningSubtextFontSize = 28.0;
+        adminWarningHeadlineFontSize = 80.0;
+        adminWarningSubtextFontWeight = FontWeight.bold;
+        adminWarningSubtextFontSize = 28.0;
 
-        MetadataNameFontWeight = FontWeight.bold;
-        MetadataNameFontSize = 20.0;
+        metadataNameFontWeight = FontWeight.bold;
+        metadataNameFontSize = 20.0;
 
-        MetadataDescriptionFontWeight = FontWeight.normal;
-        MetadataDescriptionFontSize = 14.0;
+        metadataDescriptionFontWeight = FontWeight.normal;
+        metadataDescriptionFontSize = 14.0;
         break;
       case 'ownerchip_infineon':
         headline1FontWeight = FontWeight.bold;
@@ -131,15 +131,15 @@ class CustomFonts {
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
 
-        AdminWarningHeadlineFontSize = 80.0;
-        AdminWarningSubtextFontWeight = FontWeight.bold;
-        AdminWarningSubtextFontSize = 28.0;
+        adminWarningHeadlineFontSize = 80.0;
+        adminWarningSubtextFontWeight = FontWeight.bold;
+        adminWarningSubtextFontSize = 28.0;
 
-        MetadataNameFontWeight = FontWeight.bold;
-        MetadataNameFontSize = 20.0;
+        metadataNameFontWeight = FontWeight.bold;
+        metadataNameFontSize = 20.0;
 
-        MetadataDescriptionFontWeight = FontWeight.normal;
-        MetadataDescriptionFontSize = 14.0;
+        metadataDescriptionFontWeight = FontWeight.normal;
+        metadataDescriptionFontSize = 14.0;
         break;
       case 'stebo':
         headline1FontWeight = FontWeight.bold;
@@ -175,15 +175,15 @@ class CustomFonts {
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
 
-        AdminWarningHeadlineFontSize = 80.0;
-        AdminWarningSubtextFontWeight = FontWeight.bold;
-        AdminWarningSubtextFontSize = 28.0;
+        adminWarningHeadlineFontSize = 80.0;
+        adminWarningSubtextFontWeight = FontWeight.bold;
+        adminWarningSubtextFontSize = 28.0;
 
-        MetadataNameFontWeight = FontWeight.bold;
-        MetadataNameFontSize = 20.0;
+        metadataNameFontWeight = FontWeight.bold;
+        metadataNameFontSize = 20.0;
 
-        MetadataDescriptionFontWeight = FontWeight.normal;
-        MetadataDescriptionFontSize = 14.0;
+        metadataDescriptionFontWeight = FontWeight.normal;
+        metadataDescriptionFontSize = 14.0;
         break;
       default:
         headline1FontWeight = FontWeight.bold;
@@ -219,15 +219,15 @@ class CustomFonts {
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
 
-        AdminWarningHeadlineFontSize = 80.0;
-        AdminWarningSubtextFontWeight = FontWeight.bold;
-        AdminWarningSubtextFontSize = 28.0;
+        adminWarningHeadlineFontSize = 80.0;
+        adminWarningSubtextFontWeight = FontWeight.bold;
+        adminWarningSubtextFontSize = 28.0;
 
-        MetadataNameFontWeight = FontWeight.bold;
-        MetadataNameFontSize = 20.0;
+        metadataNameFontWeight = FontWeight.bold;
+        metadataNameFontSize = 20.0;
 
-        MetadataDescriptionFontWeight = FontWeight.normal;
-        MetadataDescriptionFontSize = 14.0;
+        metadataDescriptionFontWeight = FontWeight.normal;
+        metadataDescriptionFontSize = 14.0;
         break;
     }
   }

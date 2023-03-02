@@ -6,7 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class LoadingIndicator extends StatefulWidget {
   final String loadingText;
 
-  LoadingIndicator({required this.loadingText});
+  const LoadingIndicator({super.key, required this.loadingText});
 
   @override
   _LoadingIndicatorState createState() => _LoadingIndicatorState();
@@ -18,10 +18,10 @@ class _LoadingIndicatorState extends State<LoadingIndicator> {
     return Column(
       children: [
         CircularProgressIndicator(
-          color: CustomColors(dotenv.get('STYLE_ID')).progressBarColor!,
+          color: CustomColors(dotenv.get('STYLE_ID')).progressBarColor,
         ),
         Padding(
-          padding: EdgeInsets.all(5),
+          padding: const EdgeInsets.all(5),
           child: Text(widget.loadingText),
         )
       ],

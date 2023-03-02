@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:web3dart/web3dart.dart';
 
 class InfoKeyValues extends StatelessWidget {
   const InfoKeyValues({super.key, required this.keys, required this.values});

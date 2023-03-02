@@ -4,9 +4,9 @@ final EthereumAddress zeroAddress =
     EthereumAddress.fromHex('0x0000000000000000000000000000000000000000');
 
 //mint function signatures
-final String mintFunctionSignature = '0xcb5a7173';
-final String gaslessMintFunctionSignature = '0x7a7f274d';
+const String mintFunctionSignature = '0xcb5a7173';
+const String gaslessMintFunctionSignature = '0x7a7f274d';
 
 //burn function signatures
-final String burnFunctionSignature = '0x469fd767';
-final String gaslessBurnFunctionSignature = '0xd6fc7cef';
+const String burnFunctionSignature = '0x469fd767';
+const String gaslessBurnFunctionSignature = '0xd6fc7cef';

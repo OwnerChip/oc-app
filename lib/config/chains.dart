@@ -1,5 +1,4 @@
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
 
 final polygonMumbaiTestnet = BlockchainConfig(
     networkName: "Polygon Mumbai Testnet",
