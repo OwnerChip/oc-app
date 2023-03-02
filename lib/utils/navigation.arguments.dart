@@ -12,10 +12,3 @@ class ChipAlreadyInitializedScreenArguments {
 
   ChipAlreadyInitializedScreenArguments(this.hashedMsg, this.signature);
 }
-
-class MetadataScreenArguments {
-  final Uint8List hashedMsg;
-  final MsgSignature signature;
-
-  MetadataScreenArguments(this.hashedMsg, this.signature);
-}

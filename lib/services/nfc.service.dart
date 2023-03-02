@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/utils/nfc_commands.dart';
+import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
