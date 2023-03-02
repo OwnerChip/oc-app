@@ -53,12 +53,9 @@ Future<WalletConnect> createWalletConnector() async {
 Future<void> startWalletConnection(
     BuildContext context, WalletConnect connector) async {
   try {
-    await connector.connect(
-        chainId:
-            80001, //TODO: Unsure what the difference is between passing different chain IDs
-        onDisplayUri: (uri) async {
-          await launchUrlString(uri, mode: LaunchMode.externalApplication);
-        });
+    await connector.connect(onDisplayUri: (uri) async {
+      await launchUrlString(uri, mode: LaunchMode.externalApplication);
+    });
     connector.sessionStorage?.store(connector.session);
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
