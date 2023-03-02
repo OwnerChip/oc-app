@@ -60,9 +60,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
         text: context.loc.nftDetails,
-        connectedWalletAddress: wc.session.accounts.isEmpty == true
-            ? null
-            : wc.session.accounts[0].toLowerCase(),
       ),
       body: ScreenBodyLayout(children: [
         CustomCard(

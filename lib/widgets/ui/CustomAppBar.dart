@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:web3dart/web3dart.dart';
 import '../../utils/utils.dart';
 import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';
@@ -13,14 +14,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
-  const CustomAppBar(
-      {Key? key,
-      this.text,
-      this.connectedWalletAddress,
-      this.showBackButton = true})
+  const CustomAppBar({Key? key, this.text, this.showBackButton = true})
       : super(key: key);
   final String? text;
-  final String? connectedWalletAddress;
   final bool showBackButton; //valid values: 'back', 'logo'
 
   void onButtonPress(BuildContext context, WalletConnect wc) async {

@@ -101,9 +101,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        connectedWalletAddress: wc.session.accounts.isEmpty == true
-            ? null
-            : wc.session.accounts[0].toLowerCase(),
         showBackButton: false,
       ),
       body: ScreenBodyLayout(

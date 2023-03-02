@@ -62,8 +62,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         extendBodyBehindAppBar: true,
         appBar: CustomAppBar(
           text: context.loc.tapResults,
-          connectedWalletAddress:
-              wc.connected ? null : connectedWallet, //wallet adresse
         ),
         body: ScreenBodyLayout(children: [
           Stack(

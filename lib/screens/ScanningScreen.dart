@@ -159,10 +159,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: CustomAppBar(
-          connectedWalletAddress: wc.session.accounts.isEmpty == true
-              ? null
-              : wc.session.accounts[0].toLowerCase(),
+        appBar: const CustomAppBar(
           showBackButton: false,
         ),
         body: ScreenBodyLayout(

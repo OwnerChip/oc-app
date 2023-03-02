@@ -111,7 +111,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     }
 
     //get wallet address
-    EthereumAddress walletAddress =
+    EthereumAddress connectedWallet =
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
     try {
@@ -153,14 +153,14 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             chainId,
             collectionId,
             signatureData,
-            walletAddress,
+            connectedWallet,
             wc,
             metaTxAgreementId,
             cid: cid);
       } else {
         // generate mint parameters
         txnHash = await makeAndSendNormalTx(mintFunctionSignature, chainId,
-            collectionId, signatureData, walletAddress, wc,
+            collectionId, signatureData, connectedWallet, wc,
             cid: cid);
       }
 
@@ -277,9 +277,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               extendBodyBehindAppBar: true,
               appBar: CustomAppBar(
                 text: context.loc.initializeChip,
-                connectedWalletAddress: wc.session.accounts.isEmpty == true
-                    ? null
-                    : wc.session.accounts[0].toLowerCase(),
               ),
               body: ScreenBodyLayout(children: [
                 Row(
@@ -390,7 +387,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                               color: Theme.of(context)
                                                   .primaryColor),
                                         ),
-// and:
                                         focusedBorder: UnderlineInputBorder(
                                           borderSide: BorderSide(
                                               color: Theme.of(context)

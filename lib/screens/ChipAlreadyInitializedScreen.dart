@@ -60,16 +60,14 @@ class _ChipAlreadyInitializedState
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
-  Future<void> burnToken(
-      WalletConnect wc, BigInt tokenId, SignatureData signatureData) async {
+  Future<void> burnToken(WalletConnect wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     try {
       if (!wc.bridgeConnected) {
         wc.reconnect();
       }
-      EthereumAddress walletAddress =
-          EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
@@ -89,7 +87,7 @@ class _ChipAlreadyInitializedState
             config.chainId,
             config.collectionId,
             signatureData,
-            walletAddress,
+            connectedWallet,
             wc,
             metaTxAgreementId);
       } else {
@@ -98,7 +96,7 @@ class _ChipAlreadyInitializedState
             config.chainId,
             config.collectionId,
             signatureData,
-            walletAddress,
+            connectedWallet,
             wc);
       }
 
@@ -151,8 +149,9 @@ class _ChipAlreadyInitializedState
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
         ref.watch(blockchainExplorerUrlProvider);
-    final EthereumAddress connectedWallet =
-        EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
+    final EthereumAddress connectedWallet = wc.session.accounts.isNotEmpty
+        ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
+        : zeroAddress;
     final MsgSignature signature = navArgs.signature;
     final Uint8List hashedMsg = navArgs.hashedMsg;
     final SignatureData signatureData =
@@ -175,9 +174,6 @@ class _ChipAlreadyInitializedState
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
             text: context.loc.initializeChip,
-            connectedWalletAddress: wc.session.accounts.isEmpty == true
-                ? null
-                : wc.session.accounts[0].toLowerCase(),
           ),
           body: ScreenBodyLayout(
             withScrollView: false,
@@ -224,8 +220,8 @@ class _ChipAlreadyInitializedState
                                 width: 250,
                                 text: context.loc.burnToken,
                                 onPressed: () => {
-                                  fromCancelable(burnToken(
-                                      wc, chipInfo.tokenId, signatureData))
+                                  fromCancelable(burnToken(wc, chipInfo.tokenId,
+                                      signatureData, connectedWallet))
                                 },
                               )
                             : const SizedBox(
