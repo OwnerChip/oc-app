@@ -137,6 +137,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
           }
         }
       } catch (e) {
+        print(e);
         //error reading chip
         NfcManager.instance.stopSession();
         ScaffoldMessenger.of(context).showSnackBar(

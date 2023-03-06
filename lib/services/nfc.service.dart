@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
+import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -166,16 +167,21 @@ Future<void> initializeNdefTag(
     NFCPlatform nfc, EthereumAddress chipEthereumAddressHex) async {
   //select Applet
   var selectAppletRes = await nfc.sendCommand(SELECT_NDEF_APP);
-  Uint8List selectAppletResData = selectAppletRes[0];
   int selectAppletResCode1 = selectAppletRes[1];
   int selectAppletResCode2 = selectAppletRes[2];
   if (!(selectAppletResCode1 == 144 && selectAppletResCode2 == 00)) {
-    throw Exception("Error while selecting NDEF applet");
+    if (selectAppletResCode1 == 106 && selectAppletResCode2 == 130) {
+      throw Exception("No NDEF applet installed!");
+    } else {
+      throw Exception("Error while selecting NDEF applet. ERROR CODE: " +
+          selectAppletResCode1.toRadixString(16) +
+          " " +
+          selectAppletResCode2.toRadixString(16));
+    }
   }
 
   //select NDEF file
   var selectNdefFileRes = await nfc.sendCommand(SELECT_NDEF_FILE);
-  Uint8List selectNdefFileResData = selectNdefFileRes[0];
   int selectNdefFileResCode1 = selectNdefFileRes[1];
   int selectNdefFileResCode2 = selectNdefFileRes[2];
   if (!(selectNdefFileResCode1 == 144 && selectNdefFileResCode2 == 00)) {
@@ -185,7 +191,6 @@ Future<void> initializeNdefTag(
   //write NDEF message
   Uint8List ndefUrlMsg = makeWriteNdefUrl(chipEthereumAddressHex);
   var writeNdefMessageRes = await nfc.sendCommand(ndefUrlMsg);
-  Uint8List writeNdefMessageResData = writeNdefMessageRes[0];
   int writeNdefMessageResCode1 = writeNdefMessageRes[1];
   int writeNdefMessageResCode2 = writeNdefMessageRes[2];
   if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 00)) {
@@ -194,7 +199,6 @@ Future<void> initializeNdefTag(
 
   // lock NDEF file
   // var lockNdefFileRes = await nfc.sendCommand(LOCK_NDEF_FILE);
-  // Uint8List lockNdefFileResData = lockNdefFileRes[0];
   // int lockNdefFileResCode1 = lockNdefFileRes[1];
   // int lockNdefFileResCode2 = lockNdefFileRes[2];
   // if (!(lockNdefFileResCode1 == 144 && lockNdefFileResCode2 == 00)) {
