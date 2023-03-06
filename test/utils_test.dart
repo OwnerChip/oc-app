@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:test/test.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
-import 'dart:convert';
 
 void main() {
   group('bigInt helpers', () {

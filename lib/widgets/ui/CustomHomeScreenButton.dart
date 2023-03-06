@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,7 +14,7 @@ class CustomHomeScreenButton extends StatelessWidget {
 
   final String text;
   final VoidCallback? onTap;
-  final String svgPath; //TODO: Make this SVG to use custom marta icons
+  final String svgPath;
   final double? size;
 
   @override
@@ -31,7 +30,7 @@ class CustomHomeScreenButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(13),
               boxShadow: [
                 BoxShadow(
-                  color: CustomColors(dotenv.get('APP_ID'))
+                  color: CustomColors(dotenv.get('STYLE_ID'))
                       .customHomeScreenButtonShadowColor,
                   blurRadius: 5,
                   offset: const Offset(3, 4),
@@ -46,7 +45,7 @@ class CustomHomeScreenButton extends StatelessWidget {
       const SizedBox(height: 10),
       Text(
         text,
-        style: Theme.of(context).textTheme.headline3,
+        style: Theme.of(context).textTheme.displaySmall,
       )
     ]);
   }

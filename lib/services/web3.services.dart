@@ -1,11 +1,10 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 
 Web3Client getWeb3Client(String chainRpcUrl) {
   var client = Web3Client(chainRpcUrl, Client());
@@ -30,6 +29,17 @@ Future<DeployedContract> getRegistryContract(
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, 'OwnerChipRegistry'),
     EthereumAddress.fromHex(registryContractAddress),
+  );
+  return contract;
+}
+
+Future<DeployedContract> getForwarderContract(
+    String registryForwarderAddress) async {
+  String abi =
+      await rootBundle.loadString("assets/contracts/forwarder.abi.json");
+  DeployedContract contract = DeployedContract(
+    ContractAbi.fromJson(abi, 'MinimalForwarder'),
+    EthereumAddress.fromHex(registryForwarderAddress),
   );
   return contract;
 }
@@ -61,13 +71,25 @@ Future<List<dynamic>> queryCollectionContract(
   return result;
 }
 
+Future<List<dynamic>> queryForwarderContract(
+    String chainRpcUrl,
+    String registryForwarderAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract =
+      await getForwarderContract(registryForwarderAddress);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  List<dynamic> result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
 Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
-    Uint8List txData, String fromAddress) async {
+    Uint8List txData, EthereumAddress fromAddress) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   BigInt result = await web3Client.estimateGas(
-      sender: EthereumAddress.fromHex(fromAddress),
-      to: contractAddress,
-      data: txData);
+      sender: fromAddress, to: contractAddress, data: txData);
   return result;
 }
 
@@ -75,6 +97,21 @@ Future<BigInt> estimateGasPrice(String chainRpcUrl) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   EtherAmount gasPrice = await web3Client.getGasPrice();
   return gasPrice.getInWei;
+}
+
+Future<BigInt> getNonce(String chainRpcUrl, String registryContractAddress,
+    String fromAddress) async {
+  try {
+    var nonce = await queryForwarderContract(
+        chainRpcUrl,
+        registryContractAddress,
+        "getNonce",
+        [EthereumAddress.fromHex(fromAddress)]);
+    return nonce[0];
+  } catch (e) {
+    print('Error while fetching nonce: $e');
+    throw Exception('Error while fetching nonce: $e');
+  }
 }
 
 // contract version 2
@@ -97,16 +134,9 @@ Future<bool> verifyTokenSigner(
   }
 }
 
-// contract version 2
-Future<List<dynamic>> makeSignedMintParams(
-    String chainRpcUrl,
-    EthereumAddress collectionId,
-    String? from,
-    Uint8List tokenIdHash,
-    String tokenURI,
-    MsgSignature signature,
-    {String? gasPrice}) async {
-  String data = "0xcb5a7173" +
+String makeMintData(String functionSignatureHash, Uint8List tokenIdHash,
+    MsgSignature signature, String tokenURI) {
+  String data = functionSignatureHash +
       uint8ListTo32ByteHex(tokenIdHash) + //bytes32
       "a0".padLeft(64, '0') + //string prefix
       signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
@@ -114,6 +144,28 @@ Future<List<dynamic>> makeSignedMintParams(
       signature.v.toRadixString(16).padLeft(64, '0') + //uint8
       (tokenURI.length).toRadixString(16).padLeft(64, '0') +
       stringToHex(tokenURI); //string;
+  return data;
+}
+
+Future<List<dynamic>> buildEthSendTransactionRequest(
+  String chainRpcUrl,
+  EthereumAddress collectionId,
+  EthereumAddress? from,
+  String functionSignatureHash,
+  Uint8List tokenIdHash,
+  MsgSignature signature, {
+  String? tokenURI,
+  String? gasPrice,
+}) async {
+  String data;
+  if (functionSignatureHash == mintFunctionSignature) {
+    data =
+        makeMintData(functionSignatureHash, tokenIdHash, signature, tokenURI!);
+  } else if (functionSignatureHash == burnFunctionSignature) {
+    data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
+  } else {
+    throw Exception('Invalid function signature hash');
+  }
 
   String gasAmount = "0x249F0"; // fallback: 150000 gas
   try {
@@ -138,7 +190,7 @@ Future<List<dynamic>> makeSignedMintParams(
 
   final params = [
     {
-      "from": from,
+      "from": from.toString(),
       "to": collectionId.toString(),
       "data": data,
       "gasPrice": gasPrice,
@@ -148,51 +200,14 @@ Future<List<dynamic>> makeSignedMintParams(
   return params;
 }
 
-// contract version 2
-Future<List<dynamic>> makeSignedBurnParams(
-    String chainRpcUrl,
-    EthereumAddress collectionId,
-    String? from,
-    Uint8List tokenIdHash,
-    MsgSignature signature,
-    {String? gasPrice}) async {
-  String data = "0x469fd767" +
+String makeBurnData(String functionSignatureHash, Uint8List tokenIdHash,
+    MsgSignature signature) {
+  String data = functionSignatureHash +
       uint8ListTo32ByteHex(tokenIdHash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0');
-
-  String gasAmount = "0xC350"; // fallback: 50000 gas
-  try {
-    BigInt gasAmountEst =
-        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
-    gasAmount = "0x${gasAmountEst.toRadixString(16)}";
-    print("ESTIMATED GAS AMOUNT: $gasAmount");
-  } catch (e) {
-    print("ERROR estimating gas amount: $e");
-  }
-
-  if (gasPrice == null) {
-    try {
-      BigInt estimatedGasPrice = await estimateGasPrice(chainRpcUrl);
-      gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
-      print("ESTIMATED GAS PRICE: $gasPrice");
-    } catch (e) {
-      print("ERROR estimating gas price: $e");
-      gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
-    }
-  }
-
-  final params = [
-    {
-      "from": from,
-      "to": collectionId.toString(),
-      "data": data,
-      "gasPrice": gasPrice,
-      "gas": gasAmount
-    },
-  ];
-  return params;
+  return data;
 }
 
 Future<dynamic> getOwner(

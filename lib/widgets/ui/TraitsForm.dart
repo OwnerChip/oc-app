@@ -7,7 +7,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TraitsForm extends StatefulWidget {
   TraitsForm(
-      {required this.submitFunction,
+      {super.key,
+      required this.submitFunction,
       required this.toggleTraitsForm,
       required this.initialTraitsArray});
 
@@ -25,14 +26,15 @@ class TraitsFormState extends State<TraitsForm> {
   static List<Map> traitsArray = [];
 
   //initialize TextFields with already defined traits
+  @override
   void initState() {
     super.initState();
-    widget.initialTraitsArray.forEach((val) {
+    for (var val in widget.initialTraitsArray) {
       traitsTextFields.add(TraitTextInput(
           index: traitsTextFields.length,
           initialText: [val["trait_type"], val["value"]]));
-    });
-    if (traitsTextFields.length == 0) {
+    }
+    if (traitsTextFields.isEmpty) {
       traitsArray.add({"trait_type": "", "value": ""});
       traitsTextFields.add(TraitTextInput(index: traitsTextFields.length));
     }
@@ -46,7 +48,7 @@ class TraitsFormState extends State<TraitsForm> {
   }
 
   void removeTraitInput() {
-    if (traitsTextFields.length > 0) {
+    if (traitsTextFields.isNotEmpty) {
       traitsArray.removeLast();
       setState(() {
         traitsTextFields.removeLast();
@@ -57,7 +59,7 @@ class TraitsFormState extends State<TraitsForm> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: CustomColors(dotenv.get('APP_ID')).cardColor,
+        color: CustomColors(dotenv.get('STYLE_ID')).cardColor,
         child: Form(
             key: _formKey,
             child: Column(children: <Widget>[
@@ -71,33 +73,33 @@ class TraitsFormState extends State<TraitsForm> {
                       text: context.loc.remove,
                       textStyle: Theme.of(context)
                           .textTheme
-                          .bodyText1!
+                          .bodyLarge!
                           .copyWith(
-                              color: CustomColors(dotenv.get('APP_ID'))
+                              color: CustomColors(dotenv.get('STYLE_ID'))
                                   .customRoundedButtonColor,
-                              fontSize: CustomFonts(dotenv.get('APP_ID'))
+                              fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                       .bodyText2FontSize /
                                   1.3),
                       onPressed: () => removeTraitInput()),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   CustomRoundedButton(
                       height: 25,
                       width: 100,
                       text: context.loc.add,
                       textStyle: Theme.of(context)
                           .textTheme
-                          .bodyText1!
+                          .bodyLarge!
                           .copyWith(
-                              color: CustomColors(dotenv.get('APP_ID'))
+                              color: CustomColors(dotenv.get('STYLE_ID'))
                                   .customRoundedButtonColor,
-                              fontSize: CustomFonts(dotenv.get('APP_ID'))
+                              fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                       .bodyText2FontSize /
                                   1.3),
                       onPressed: () => addTraitInput()),
                 ],
               ),
               ...traitsTextFields,
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               CustomRoundedButton(
                   text: context.loc.save,
                   onPressed: () {
@@ -112,7 +114,7 @@ class TraitsFormState extends State<TraitsForm> {
                       widget.submitFunction(traitsArray);
                     }
                   }),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               CustomRoundedButton(
                   text: context.loc.cancel,
                   backgroundColor: Colors.grey,
@@ -127,7 +129,7 @@ class TraitsFormState extends State<TraitsForm> {
 }
 
 class TraitTextInput extends StatefulWidget {
-  TraitTextInput({required this.index, this.initialText});
+  const TraitTextInput({super.key, required this.index, this.initialText});
 
   final int index;
   final List<String>? initialText;
@@ -162,7 +164,7 @@ class _TraitTextInput extends State<TraitTextInput> {
         Expanded(
           flex: 4,
           child: TextFormField(
-            style: Theme.of(context).textTheme.bodyText2,
+            style: Theme.of(context).textTheme.bodyMedium,
             controller: _keyController,
             decoration: InputDecoration(
               enabledBorder: UnderlineInputBorder(
@@ -171,7 +173,7 @@ class _TraitTextInput extends State<TraitTextInput> {
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
-              hintStyle: Theme.of(context).textTheme.bodyText2,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
               hintText: context.loc.type,
             ),
             validator: (value) {
@@ -186,11 +188,11 @@ class _TraitTextInput extends State<TraitTextInput> {
             },
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
             flex: 4,
             child: TextFormField(
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               controller: _valueController,
               decoration: InputDecoration(
                 enabledBorder: UnderlineInputBorder(
@@ -199,7 +201,7 @@ class _TraitTextInput extends State<TraitTextInput> {
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
-                hintStyle: Theme.of(context).textTheme.bodyText2,
+                hintStyle: Theme.of(context).textTheme.bodyMedium,
                 hintText: context.loc.value,
               ),
               validator: (value) {

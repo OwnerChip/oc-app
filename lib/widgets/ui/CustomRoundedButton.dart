@@ -19,7 +19,7 @@ class CustomRoundedButton extends StatelessWidget {
 
   final String text;
   final VoidCallback? onPressed;
-  final Icon? icon; //TODO: Make this SVG to use custom marta icons
+  final Icon? icon;
   final double height;
   final double? width;
   final Color? backgroundColor;
@@ -31,7 +31,7 @@ class CustomRoundedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isActive = true;
 
-    return Container(
+    return SizedBox(
       width: width,
       height: height,
       child: ElevatedButton(
@@ -39,7 +39,7 @@ class CustomRoundedButton extends StatelessWidget {
               (onPressed != null) ? onPressed!() : isActive = false),
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ??
-                CustomColors(dotenv.get('APP_ID')).primaryColor,
+                CustomColors(dotenv.get('STYLE_ID')).primaryColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -52,8 +52,8 @@ class CustomRoundedButton extends StatelessWidget {
               icon != null ? const SizedBox(width: 10) : Container(),
               Text(text,
                   style: textStyle ??
-                      Theme.of(context).textTheme.bodyText1!.copyWith(
-                          color: CustomColors(dotenv.get('APP_ID'))
+                      Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: CustomColors(dotenv.get('STYLE_ID'))
                               .customRoundedButtonColor)),
             ],
           )),

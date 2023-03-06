@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:web3dart/web3dart.dart';
 
 class InfoKeyValues extends StatelessWidget {
   const InfoKeyValues({super.key, required this.keys, required this.values});
@@ -17,9 +15,9 @@ class InfoKeyValues extends StatelessWidget {
 
         return Row(
           children: [
-            Text('$val: ', style: Theme.of(context).textTheme.bodyText2),
+            Text('$val: ', style: Theme.of(context).textTheme.bodyMedium),
             Text(values[idx].toString(),
-                style: Theme.of(context).textTheme.headline5)
+                style: Theme.of(context).textTheme.headlineSmall)
           ],
         );
       }).toList()

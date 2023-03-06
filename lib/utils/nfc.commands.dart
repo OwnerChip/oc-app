@@ -1,7 +1,4 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/platform_tags.dart';
 
 Uint8List SELECT_APP = Uint8List.fromList([
   0x00,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -17,14 +16,14 @@ class CollectionDropdown extends ConsumerWidget {
         ref.watch(selectedCollectionIdProvider);
     final int chainId = ref.watch(selectedChainIdProvider);
     return DropdownButton<dynamic>(
-        dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
+        dropdownColor: CustomColors(dotenv.get('STYLE_ID')).cardColor,
         style: TextStyle(
-            color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
+            color: CustomColors(dotenv.get('STYLE_ID')).chainDropdownTextColor),
         value: collectionId,
         onChanged: (value) {
           ref.read(selectedCollectionIdProvider.notifier).state = value!;
         },
-        items: Collections(dotenv.env['APP_ID']!)
+        items: Collections(dotenv.env['STYLE_ID']!)
             .collections[chainId]!
             .map((collection) {
           return DropdownMenuItem(

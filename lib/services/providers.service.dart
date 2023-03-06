@@ -83,13 +83,13 @@ final chipInfoProvider =
 
 // only used in admin app for selecting the chain
 final selectedChainIdProvider = StateProvider.autoDispose<int>(
-    (ref) => Collections(dotenv.get('APP_ID')).collections.keys.first);
+    (ref) => Collections(dotenv.get('STYLE_ID')).collections.keys.first);
 
 // only used in admin app for selecting the collection
 final selectedCollectionIdProvider =
     StateProvider.autoDispose<EthereumAddress>((ref) {
   final int chainId = ref.watch(selectedChainIdProvider);
-  return Collections(dotenv.get('APP_ID')).collections[chainId]![0]['id']!;
+  return Collections(dotenv.get('STYLE_ID')).collections[chainId]![0]['id']!;
 });
 
 final findTokenProvider = FutureProvider.autoDispose
@@ -135,7 +135,6 @@ final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {
 
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
-  //TODO: get chain ID and collection ID from dropdown menu UI!
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   final TokenInfoObject config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);

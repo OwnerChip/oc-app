@@ -1,3 +1,4 @@
+//import packages
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,20 +7,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 
-//local imports
-import '../utils/localization.helper.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../utils/navigation.arguments.dart';
-import '../widgets/ui/CustomCard.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
-import '../widgets/ui/CustomImage.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
-import '../themes/colorSpecs.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -58,9 +60,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
         text: context.loc.nftDetails,
-        connectedWalletAddress: wc.session.accounts.isEmpty == true
-            ? null
-            : wc.session.accounts[0].toLowerCase(),
       ),
       body: ScreenBodyLayout(children: [
         CustomCard(
@@ -71,10 +70,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 tokenId: chipInfo.tokenId,
               ),
               error: (e, s) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                      context.loc.loadingNFTDataError, 'error'),
-                );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                //       context.loc.loadingNFTDataError, 'error'),
+                // );
                 return CustomImage(
                   loading: true,
                   tokenId: chipInfo.tokenId,
@@ -95,12 +94,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                         nftMetadata.when(
                             loading: () => context.loc.loading,
                             data: (data) => data['name'],
-                            error: (e, s) => context.loc.loading),
-                        style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                            fontSize: CustomFonts(dotenv.get('APP_ID'))
-                                .MetadataNameFontSize,
-                            fontWeight: CustomFonts(dotenv.get('APP_ID'))
-                                .MetadataNameFontWeight))),
+                            error: (e, s) => context.loc.loadingNFTDataError),
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                            fontSize: CustomFonts(dotenv.get('STYLE_ID'))
+                                .metadataNameFontSize,
+                            fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
+                                .metadataNameFontWeight))),
 
                 //show traits button
                 nftMetadata.when(
@@ -112,14 +111,13 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                           width: null,
                           textStyle: Theme.of(context)
                               .textTheme
-                              .bodyText1!
+                              .bodyLarge!
                               .copyWith(
-                                  color: CustomColors(dotenv.get('APP_ID'))
+                                  color: CustomColors(dotenv.get('STYLE_ID'))
                                       .customRoundedButtonColor,
-                                  fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                  fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                                           .bodyText2FontSize /
                                       1.3),
-                          // TODO: reduze size / change layout?
                           text: showDescription
                               ? context.loc.showTraits
                               : context.loc.showDescription,
@@ -149,11 +147,11 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     style: TextStyle(
                                         // color: Theme.of(context).primaryColor,
                                         fontSize:
-                                            CustomFonts(dotenv.get('APP_ID'))
-                                                .MetadataDescriptionFontSize,
+                                            CustomFonts(dotenv.get('STYLE_ID'))
+                                                .metadataDescriptionFontSize,
                                         fontWeight: CustomFonts(
-                                                dotenv.get('APP_ID'))
-                                            .MetadataDescriptionFontWeight)),
+                                                dotenv.get('STYLE_ID'))
+                                            .metadataDescriptionFontWeight)),
                               )
                             : Align(
                                 alignment: Alignment.centerLeft,
@@ -164,20 +162,20 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                               Text(e['trait_type'] + ': ',
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText2!
+                                                      .bodyMedium!
                                                       .copyWith(
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         fontSize: CustomFonts(
                                                                 dotenv.get(
-                                                                    'APP_ID'))
-                                                            .MetadataDescriptionFontSize,
+                                                                    'STYLE_ID'))
+                                                            .metadataDescriptionFontSize,
                                                       )),
                                               Text(e['value'],
                                                   style: TextStyle(
                                                     fontSize: CustomFonts(dotenv
-                                                            .get('APP_ID'))
-                                                        .MetadataDescriptionFontSize,
+                                                            .get('STYLE_ID'))
+                                                        .metadataDescriptionFontSize,
                                                   )),
                                             ],
                                           ))
@@ -234,7 +232,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               },
             ),
             const SizedBox(height: 15),
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
+            dotenv.get('STYLE_ID') == 'ownerchip_infineon'
                 ? Container()
                 : CustomRoundedButton(
                     text: context.loc.showOnRarible,

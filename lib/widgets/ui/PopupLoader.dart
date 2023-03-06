@@ -3,8 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math' as math;
 
 class PopupLoader extends StatefulWidget {
-  const PopupLoader(
-      {Key? key, required String this.svgPath, this.rotateIcon = true})
+  const PopupLoader({Key? key, required this.svgPath, this.rotateIcon = true})
       : super(key: key);
   final String svgPath;
   final bool rotateIcon;

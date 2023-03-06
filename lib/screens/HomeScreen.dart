@@ -1,24 +1,30 @@
-import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
-import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+//import packages
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../utils/localization.helper.dart';
-
-// local files
-import '../utils/utils.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import 'ScanningScreen.dart';
-import 'UserScanResultsScreen.dart';
-import '../utils/navigation.arguments.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
-import '../widgets/ui/CustomHomeScreenButton.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+//import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
+import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -75,6 +81,11 @@ void onInitializeButtonPress(
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(MetadataScreen.routeName));
     }
+  } on CustomException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+          context.loc.errorNoNfcReader, 'error'),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
@@ -90,9 +101,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        connectedWalletAddress: wc.session.accounts.isEmpty == true
-            ? null
-            : wc.session.accounts[0].toLowerCase(),
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
@@ -101,7 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
+            dotenv.get('STYLE_ID') == 'ownerchip_infineon'
                 ? Column(children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,

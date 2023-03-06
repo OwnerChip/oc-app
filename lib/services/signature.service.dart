@@ -12,11 +12,13 @@ Future<List> verifySignatureAuthenticity(NFCPlatform nfc, int randomNumber,
     EthereumAddress chipEthereumAddress, chipTokenId) async {
   // get SIGNATURE from NFC chip
   final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
-  final Uint8List getSigCmd = make_signature_command(0x01, hashedMsg);
+  final Uint8List getSigCmd = makeSignatureCommand(0x01, hashedMsg);
   final List responseGetSignature = await nfc.sendCommand(getSigCmd);
   final Uint8List chipSignatureData = responseGetSignature[0];
-  final int chipSignatureSw1 = responseGetSignature[1];
-  final int chipSignatureSw2 = responseGetSignature[2];
+
+  //success would be 0x90, 0x00 for status words
+  //final int chipSignatureStatusWord1 = responseGetSignature[1];
+  //final int chipSignatureStatusWord2 = responseGetSignature[2];
 
   final MsgSignature signature =
       extractSignature(chipTokenId, hashedMsg, chipSignatureData);
@@ -28,8 +30,6 @@ Future<List> verifySignatureAuthenticity(NFCPlatform nfc, int randomNumber,
     throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
   }
   return [hashedMsg, signature];
-
-  // verify chip authenticity via SMART CONTRACT
 }
 
 Future<bool> verifyTokenAuthenticity(
@@ -39,7 +39,7 @@ Future<bool> verifyTokenAuthenticity(
     Uint8List hashedMsg,
     MsgSignature signature) async {
   try {
-    bool result = await verifyTokenSigner(
+    await verifyTokenSigner(
         chainRpcUrl, collectionId, chipEthereumAddress, hashedMsg, signature);
     return true;
   } catch (e) {
@@ -75,7 +75,7 @@ MsgSignature extractSignature(
   int rLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
 
   signature = signature.substring(2);
-  String rString = "${signature.substring(0, rLength)}";
+  String rString = signature.substring(0, rLength);
   BigInt r = BigInt.parse(rString, radix: 16);
 
   // get s component
@@ -83,7 +83,7 @@ MsgSignature extractSignature(
   int sLength = int.parse(signature.substring(0, 2), radix: 16) * 2;
 
   signature = signature.substring(2);
-  String sString = "${signature.substring(0, sLength)}";
+  String sString = signature.substring(0, sLength);
   BigInt s = BigInt.parse(sString, radix: 16);
 
   // check EIP-2 compliance

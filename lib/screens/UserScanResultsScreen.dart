@@ -1,26 +1,31 @@
+//import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:web3dart/web3dart.dart';
 
-//local imports
-import 'NFTDetailsScreen.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../utils/navigation.arguments.dart';
-import '../widgets/ui/ChipInfo.dart';
-import '../widgets/ui/CustomCard.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
-import '../widgets/ui/CustomImage.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
+//import services
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
@@ -49,7 +54,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(findTokenProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
 
-    final connectedWallet = wc.session.accounts.length > 0
+    final connectedWallet = wc.session.accounts.isNotEmpty
         ? wc.session.accounts[0].toLowerCase()
         : '';
 
@@ -57,18 +62,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         extendBodyBehindAppBar: true,
         appBar: CustomAppBar(
           text: context.loc.tapResults,
-          connectedWalletAddress:
-              wc.connected ? null : connectedWallet, //wallet adresse
         ),
         body: ScreenBodyLayout(children: [
           Stack(
             alignment: Alignment.topCenter,
             children: [
               CustomCard(
-                  margin: EdgeInsets.only(top: 70),
+                  margin: const EdgeInsets.only(top: 70),
                   width: double.infinity,
                   children: [
-                    SizedBox(height: 100),
+                    const SizedBox(height: 100),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -77,12 +80,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                             error: (e, s) => Container(),
                             loading: () => Text(context.loc.loading,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headline1),
+                                style:
+                                    Theme.of(context).textTheme.displayLarge),
                             data: (data) => CustomRoundedButton(
                                 width: 250,
                                 text: context.loc.viewNftDetails,
                                 onPressed: () {
-                                  print(context);
                                   Navigator.of(context)
                                       .pushNamed(NFTDetailsScreen.routeName);
                                 })),
@@ -94,14 +97,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                     //AUTHENTICITY CHECK
 
                     CustomCard(
-                        color: CustomColors(dotenv.get('APP_ID'))
+                        color: CustomColors(dotenv.get('STYLE_ID'))
                             .scaffoldBackgroundColor,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(context.loc.authenticityCheck,
-                                  style: Theme.of(context).textTheme.headline4),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium),
 
                               //AUTHENTICITY CHECK ICON
                               tokenInfo.when(
@@ -132,18 +137,18 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                           textAlign: TextAlign.left,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline5)
+                                              .headlineSmall)
                                       : Text(context.loc.authenticityNftFound,
                                           textAlign: TextAlign.left,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline5),
+                                              .headlineSmall),
                                   error: (e, s) => Text(
                                       context.loc.authenticityNftNotFound,
                                       textAlign: TextAlign.left,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5),
+                                          .headlineSmall),
                                   loading: () =>
                                       const CircularProgressIndicator())),
                         ]),
@@ -151,14 +156,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                     //OWNERSHIP CHECK
                     CustomCard(
-                        color: CustomColors(dotenv.get('APP_ID'))
+                        color: CustomColors(dotenv.get('STYLE_ID'))
                             .scaffoldBackgroundColor,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(context.loc.ownershipCheck,
-                                  style: Theme.of(context).textTheme.headline4),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium),
 
                               //OWNERSHIP CHECK ICON
                               nftOwner.when(
@@ -178,7 +185,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")),
                                 error: (e, s) => SvgPicture.asset(
                                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
-                                loading: () => CircularProgressIndicator(),
+                                loading: () =>
+                                    const CircularProgressIndicator(),
                               )
                             ],
                           ),
@@ -197,7 +205,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                 textAlign: TextAlign.center,
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .headline5),
+                                                    .headlineSmall),
                                             const SizedBox(height: 10),
                                             CustomRoundedButton(
                                                 text: context.loc.connectWallet,
@@ -214,20 +222,20 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline5)
+                                                  .headlineSmall)
                                           :
                                           //NFT owner exists and wallet is connected and wallet is NOT owner
                                           Text(context.loc.youAreNotNftOwner,
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline5),
+                                                  .headlineSmall),
                                   error: (e, s) => Text(
                                       context.loc.youAreNotNftOwner,
                                       textAlign: TextAlign.left,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5),
+                                          .headlineSmall),
                                   loading: () =>
                                       const CircularProgressIndicator())),
                         ]),
@@ -242,7 +250,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(context.loc.nfcCheck,
-                                  style: Theme.of(context).textTheme.headline4),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium),
                               //checkmark icon
                               SvgPicture.asset(
                                   "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg"),
@@ -257,11 +267,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         ])
                   ]),
               nftImageUri.when(
-                loading: () => CustomImage(
+                loading: () => const CustomImage(
                   width: 130,
                   loading: true,
                 ),
-                error: (e, s) => CustomImage(
+                error: (e, s) => const CustomImage(
                   width: 130,
                   loading: false,
                 ),

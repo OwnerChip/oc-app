@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:io';
 import 'SmallTextContainer.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomImage extends StatelessWidget {
-  CustomImage({
+  const CustomImage({
     super.key,
     this.imagePath,
     this.imageFile,
@@ -30,9 +29,9 @@ class CustomImage extends StatelessWidget {
         decoration:
             BoxDecoration(borderRadius: BorderRadius.circular(19), boxShadow: [
           BoxShadow(
-              color: CustomColors(dotenv.get('APP_ID')).secondaryShadowColor!,
+              color: CustomColors(dotenv.get('STYLE_ID')).secondaryShadowColor,
               blurRadius: 5,
-              offset: Offset(3, 2)),
+              offset: const Offset(3, 2)),
         ]),
         child: Stack(children: [
           ClipRRect(

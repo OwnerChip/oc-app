@@ -1,37 +1,39 @@
 // ignore_for_file: use_build_context_synchronously
 
+//import packages
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:web3dart/credentials.dart';
-import '../utils/localization.helper.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-//web3 imports
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import '../services/web3.services.dart';
 
-//nfc imports
-import 'package:nfc_manager/nfc_manager.dart';
+//import services
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
-import '../services/signature.service.dart';
-
-//local imports
-import 'UserScanResultsScreen.dart';
-import 'MetadataInputScreen.dart';
-import 'ChipAlreadyInitializedScreen.dart';
-import '../utils/navigation.arguments.dart';
-import '../utils/utils.dart';
-import '../widgets/ui/CustomAppBar.dart';
-import '../widgets/ui/ScanningIndicator.dart';
-import '../widgets/ui/returnSnackBarWidget.dart';
-import '../widgets/ui/CustomRoundedButton.dart';
-import '../widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/services/signature.service.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
+
+//import screens
+import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ChipAlreadyInitializedScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
+
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/ScanningIndicator.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 class ScanningScreen extends ConsumerStatefulWidget {
@@ -43,14 +45,7 @@ class ScanningScreen extends ConsumerStatefulWidget {
   _ScanningScreen createState() => _ScanningScreen();
 }
 
-//flutter stateless widget
 class _ScanningScreen extends ConsumerState<ScanningScreen> {
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   initScanning(ref);
-  // }
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -77,6 +72,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
 
+        //set chip info data in provider
         ref
             .read(chipInfoProvider.notifier)
             .setChipEthereumAddress(chipEthereumAddress);
@@ -87,20 +83,20 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             await ref.watch(findTokenProvider(chipTokenId).future);
 
         //vibrate phone
-        await vibrateNTimes(3);
+        // await vibrateNTimes(3);
 
         //verify signature
-        List verifyResult = await verifySignatureAuthenticity(
+        List verificationResult = await verifySignatureAuthenticity(
             nfc, randomNumber, chipEthereumAddress, chipTokenId);
-        hashedMsg = verifyResult[0];
-        signature = verifyResult[1];
+        hashedMsg = verificationResult[0];
+        signature = verificationResult[1];
         ref.read(signatureDataProvider.notifier).setSignatureData(
             SignatureData(hashedMsg: hashedMsg, signature: signature));
 
+        NfcManager.instance.stopSession();
+
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
-          NfcManager.instance.stopSession();
-
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
@@ -123,7 +119,6 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 hashedMsg,
                 signature);
 
-            NfcManager.instance.stopSession();
             if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
               Navigator.pushReplacementNamed(
                   context, UserScanResultsScreen.routeName);
@@ -146,7 +141,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
               context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
         );
         //delay for 1 second
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
         Navigator.pop(context);
       }
     });
@@ -164,10 +159,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: CustomAppBar(
-          connectedWalletAddress: wc.session.accounts.isEmpty == true
-              ? null
-              : wc.session.accounts[0].toLowerCase(),
+        appBar: const CustomAppBar(
           showBackButton: false,
         ),
         body: ScreenBodyLayout(
@@ -179,20 +171,20 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(context.loc.initializeChip,
-                          style: Theme.of(context).textTheme.headline2),
+                          style: Theme.of(context).textTheme.displayMedium),
                       RichText(
                         text: TextSpan(
                             text: 'Step 1/',
                             style: Theme.of(context)
                                 .textTheme
-                                .headline6!
+                                .titleLarge!
                                 .copyWith(fontSize: 18),
                             children: [
                               TextSpan(
                                   text: '2',
                                   style: Theme.of(context)
                                       .textTheme
-                                      .headline5!
+                                      .headlineSmall!
                                       .copyWith(fontSize: 18))
                             ]),
                       )
@@ -200,7 +192,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                   )
                 : Text(context.loc.scanning,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headline2),
+                    style: Theme.of(context).textTheme.displayMedium),
             Column(
               children: [
                 SvgPicture.asset(
@@ -218,7 +210,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 Text(context.loc.scanHint,
                     overflow: TextOverflow.fade,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyText1!
+                    style: Theme.of(context).textTheme.bodyLarge!
                     // .copyWith(fontWeight: FontWeight.w400),
                     ),
               ],

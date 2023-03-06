@@ -13,15 +13,15 @@ class Collections {
           137: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'),
-              "name": "Ownerchip Demo"
-            },
+                  '0x1787f9469238E2113CdF83e15F169FBA15F884f5'),
+              "name": "OC Demo Collection"
+            }
           ],
           80001: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'),
-              "name": "Demo Collection"
+                  '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
+              "name": "INFINEON Demo Collection"
             }
           ]
         };
@@ -32,7 +32,7 @@ class Collections {
           80001: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'),
+                  '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
               "name": "Demo Collection"
             }
           ]
@@ -81,8 +81,8 @@ class Collections {
           137: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x6fe0Fd3f6430DcFF517Cd939815Fab115B033679'),
-              "name": "Ownerchip Demo"
+                  '0x1787f9469238E2113CdF83e15F169FBA15F884f5'),
+              "name": "OC Demo Collection"
             },
             {
               "id": "0xE95232cdA853989B86fF8beC94EaEfA78cF35668",
@@ -97,8 +97,8 @@ class Collections {
           80001: [
             {
               "id": EthereumAddress.fromHex(
-                  '0x46f4Cd7c9c6Aca27BECF45Cc5d836dDDac204d32'),
-              "name": "Demo Collection"
+                  '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
+              "name": "INFINEON Demo Collection"
             },
             {
               "id": EthereumAddress.fromHex(
@@ -111,4 +111,4 @@ class Collections {
     }
   }
 }
-// access using: Collections(dotenv.get('APP_ID')).collections,
+// access using: Collections(dotenv.get('STYLE_ID')).collections,
