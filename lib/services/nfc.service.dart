@@ -68,6 +68,39 @@ Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
   return res;
 }
 
+Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
+  // TODO: proper create URL function
+  String url = 'item.ownerchip.com/${chipEthereumAddressHex.toString()}/?app=1';
+
+  // content
+  Uint8List urlBytes = Uint8List.fromList(url.codeUnits);
+  Uint8List typeName = Uint8List.fromList([0x55]);
+  Uint8List httpsPrefix = Uint8List.fromList([0x04]);
+
+  //length
+  Uint8List urlLength = Uint8List.fromList([urlBytes.length]);
+  Uint8List urlPayload = Uint8List.fromList(
+      [...urlLength, ...typeName, ...httpsPrefix, ...urlBytes]);
+
+  Uint8List res = Uint8List.fromList([
+    0x00,
+    0xD6,
+    0x00,
+    0x00,
+    urlPayload.length + 4,
+    0x00,
+    urlPayload.length + 2, // = urlLength + 4
+    0xD1,
+    0x01,
+    ...urlLength, //length of url w/o prefix & type
+    ...typeName,
+    ...httpsPrefix,
+    ...urlBytes
+  ]);
+  print(res);
+  return res;
+}
+
 //****NFC HELPERS****
 
 Future<Uint8List> getFirstKey(NFCPlatform nfc) async {
@@ -126,6 +159,47 @@ Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
   BigInt chipTokenId = bytesToUnsignedInt(chipEthereumAddress);
 
   return [chipEthereumAddressHex, chipTokenId];
+}
+
+// initialize NDEF tag
+Future<void> initializeNdefTag(
+    NFCPlatform nfc, EthereumAddress chipEthereumAddressHex) async {
+  //select Applet
+  var selectAppletRes = await nfc.sendCommand(SELECT_NDEF_APP);
+  Uint8List selectAppletResData = selectAppletRes[0];
+  int selectAppletResCode1 = selectAppletRes[1];
+  int selectAppletResCode2 = selectAppletRes[2];
+  if (!(selectAppletResCode1 == 144 && selectAppletResCode2 == 00)) {
+    throw Exception("Error while selecting NDEF applet");
+  }
+
+  //select NDEF file
+  var selectNdefFileRes = await nfc.sendCommand(SELECT_NDEF_FILE);
+  Uint8List selectNdefFileResData = selectNdefFileRes[0];
+  int selectNdefFileResCode1 = selectNdefFileRes[1];
+  int selectNdefFileResCode2 = selectNdefFileRes[2];
+  if (!(selectNdefFileResCode1 == 144 && selectNdefFileResCode2 == 00)) {
+    throw Exception("Error while selecting NDEF file");
+  }
+
+  //write NDEF message
+  Uint8List ndefUrlMsg = makeWriteNdefUrl(chipEthereumAddressHex);
+  var writeNdefMessageRes = await nfc.sendCommand(ndefUrlMsg);
+  Uint8List writeNdefMessageResData = writeNdefMessageRes[0];
+  int writeNdefMessageResCode1 = writeNdefMessageRes[1];
+  int writeNdefMessageResCode2 = writeNdefMessageRes[2];
+  if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 00)) {
+    throw Exception("Error while writing NDEF message");
+  }
+
+  // lock NDEF file
+  // var lockNdefFileRes = await nfc.sendCommand(LOCK_NDEF_FILE);
+  // Uint8List lockNdefFileResData = lockNdefFileRes[0];
+  // int lockNdefFileResCode1 = lockNdefFileRes[1];
+  // int lockNdefFileResCode2 = lockNdefFileRes[2];
+  // if (!(lockNdefFileResCode1 == 144 && lockNdefFileResCode2 == 00)) {
+  //   throw Exception("Error while locking NDEF");
+  // }
 }
 
 Future<void> nfcPlatformCheck(BuildContext context, NFCPlatform nfc) async {

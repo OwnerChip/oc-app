@@ -72,6 +72,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
 
+        //initialize NDEF tag
+        await initializeNdefTag(nfc, chipEthereumAddress);
+
         //set chip info data in provider
         ref
             .read(chipInfoProvider.notifier)
