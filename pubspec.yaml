@@ -62,6 +62,7 @@ flutter:
     - assets/images/ownerchip/
     - assets/images/stebo/
     - assets/images/ownerchip_infineon/
+    - assets/images/ownerchip_user/
     - assets/contracts/collection.abi.json
     - assets/contracts/registry.abi.json
     - assets/contracts/forwarder.abi.json
