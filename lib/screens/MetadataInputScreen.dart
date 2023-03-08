@@ -141,11 +141,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      setState(() {
-        showOverlay = true;
-        overlayContentType = 'loading';
-        loadingText = context.loc.mintingToken;
-      });
+      //open metamask application
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       String txnHash;
       if (canUseGasStation) {
@@ -163,6 +160,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             collectionId, signatureData, connectedWallet, wc,
             cid: cid);
       }
+
+      setState(() {
+        showOverlay = true;
+        overlayContentType = 'loading';
+        loadingText = context.loc.mintingToken;
+      });
 
       //wait until TX is succeeded or failed
       var txnReceipt =
