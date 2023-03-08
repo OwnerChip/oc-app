@@ -144,6 +144,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //open metamask application
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
+      setState(() {
+        showOverlay = true;
+        overlayContentType = 'loading';
+        loadingText = context.loc.mintingToken;
+      });
+
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
@@ -160,12 +166,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             collectionId, signatureData, connectedWallet, wc,
             cid: cid);
       }
-
-      setState(() {
-        showOverlay = true;
-        overlayContentType = 'loading';
-        loadingText = context.loc.mintingToken;
-      });
 
       //wait until TX is succeeded or failed
       var txnReceipt =

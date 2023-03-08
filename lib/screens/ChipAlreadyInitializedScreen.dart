@@ -78,6 +78,11 @@ class _ChipAlreadyInitializedState
       //launch metamask
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.burning;
+      });
+
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
@@ -97,11 +102,6 @@ class _ChipAlreadyInitializedState
             connectedWallet,
             wc);
       }
-
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.burning;
-      });
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
