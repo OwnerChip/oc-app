@@ -132,9 +132,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         showOverlay = false;
       });
 
-      //open metamask application
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
       //check if user is allowed to use gas station
       final List response =
           await checkMetaTx(collectionId, gaslessMintFunctionSignature);
@@ -143,12 +140,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //open metamask application
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
-      setState(() {
-        showOverlay = true;
-        overlayContentType = 'loading';
-        loadingText = context.loc.mintingToken;
-      });
 
       String txnHash;
       if (canUseGasStation) {
@@ -166,6 +157,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             collectionId, signatureData, connectedWallet, wc,
             cid: cid);
       }
+
+      setState(() {
+        showOverlay = true;
+        overlayContentType = 'loading';
+        loadingText = context.loc.mintingToken;
+      });
 
       //wait until TX is succeeded or failed
       var txnReceipt =

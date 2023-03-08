@@ -70,6 +70,11 @@ class _ChipAlreadyInitializedState
         wc.reconnect();
       }
 
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.burning;
+      });
+
       final List response =
           await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
       final bool canUseGasStation = response[0];
@@ -77,11 +82,6 @@ class _ChipAlreadyInitializedState
 
       //launch metamask
       await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.burning;
-      });
 
       String txnHash;
       if (canUseGasStation) {
