@@ -128,27 +128,21 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
-      setState(() {
-        showOverlay = false;
-      });
-
-      //open metamask application
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
       //check if user is allowed to use gas station
       final List response =
           await checkMetaTx(collectionId, gaslessMintFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      //open metamask application
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
+      // switch to minting loading overlay
       setState(() {
         showOverlay = true;
         overlayContentType = 'loading';
         loadingText = context.loc.mintingToken;
       });
+
+      //open metamask application
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       String txnHash;
       if (canUseGasStation) {
