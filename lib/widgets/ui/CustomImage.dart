@@ -48,10 +48,19 @@ class CustomImage extends StatelessWidget {
                             File(imagePath),
                             fit: BoxFit.cover,
                           )
-                        : Image.network(
-                            imagePath,
+                        : Image.network(imagePath,
                             fit: BoxFit.cover,
-                          ),
+                            frameBuilder: (context, child, frame,
+                                    wasSynchronouslyLoaded) =>
+                                wasSynchronouslyLoaded
+                                    ? child
+                                    : AnimatedOpacity(
+                                        child: child,
+                                        opacity: frame == null ? 0 : 1,
+                                        duration:
+                                            const Duration(milliseconds: 700),
+                                        curve: Curves.easeOut,
+                                      )),
               )),
           tokenId != null
               ? AspectRatio(
