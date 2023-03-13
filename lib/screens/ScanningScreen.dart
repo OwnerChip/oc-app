@@ -67,13 +67,11 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         //check if iso7816 or isodep is available and exit if not
         await nfcPlatformCheck(context, nfc);
 
-        //initialize chip
+        //initialize chip (including NDEF tag if existing)
         List result = await initializeChip(nfc);
         EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
-
-        //initialize NDEF tag
-        await initializeNdefTag(nfc, chipEthereumAddress);
+        bool ndefTagInitialized = result[2];
 
         //set chip info data in provider
         ref
@@ -89,8 +87,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         // await vibrateNTimes(3);
 
         //verify signature
-        List verificationResult = await verifySignatureAuthenticity(
-            nfc, randomNumber, chipEthereumAddress, chipTokenId);
+        List verificationResult = await verifySignatureAuthenticity(nfc,
+            randomNumber, chipEthereumAddress, chipTokenId, ndefTagInitialized);
         hashedMsg = verificationResult[0];
         signature = verificationResult[1];
         ref.read(signatureDataProvider.notifier).setSignatureData(

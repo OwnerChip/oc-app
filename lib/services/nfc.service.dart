@@ -70,33 +70,28 @@ Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
 }
 
 Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
-  // TODO: proper create URL function
-  String url = 'item.ownerchip.com/${chipEthereumAddressHex.toString()}/?app=1';
+  // TODO: carve out proper create URL function
+  String url = 'item.ownerchip.com/${chipEthereumAddressHex.toString()}';
 
-  // content
-  Uint8List urlBytes = Uint8List.fromList(url.codeUnits);
+  // byte content
   Uint8List typeName = Uint8List.fromList([0x55]);
   Uint8List httpsPrefix = Uint8List.fromList([0x04]);
-
-  //length
-  Uint8List urlLength = Uint8List.fromList([urlBytes.length]);
-  Uint8List urlPayload = Uint8List.fromList(
-      [...urlLength, ...typeName, ...httpsPrefix, ...urlBytes]);
+  Uint8List urlBytes = Uint8List.fromList(url.codeUnits);
+  Uint8List urlPayload =
+      Uint8List.fromList([...typeName, ...httpsPrefix, ...urlBytes]);
 
   Uint8List res = Uint8List.fromList([
-    0x00,
+    0,
     0xD6,
-    0x00,
-    0x00,
-    urlPayload.length + 4,
-    0x00,
-    urlPayload.length + 2, // = urlLength + 4
+    0,
+    0,
+    urlPayload.length + 5,
+    0,
+    urlPayload.length + 3,
     0xD1,
     0x01,
-    ...urlLength, //length of url w/o prefix & type
-    ...typeName,
-    ...httpsPrefix,
-    ...urlBytes
+    urlPayload.length - 1,
+    ...urlPayload
   ]);
   print(res);
   return res;
@@ -144,12 +139,14 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
 
 //check if first key already exists, if not, generate key. Return key info.
 Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
+  bool empty = false;
   //empty UintList
   await nfc.sendCommand(SELECT_APP);
 
   Uint8List chipPubKey = await getFirstKey(nfc);
 
   if (chipPubKey.isEmpty) {
+    empty = true;
     chipPubKey = await generatePubAddress(nfc);
   }
   //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
@@ -159,7 +156,12 @@ Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
       EthereumAddress.fromHex("0x${bytesToHex(chipEthereumAddress)}");
   BigInt chipTokenId = bytesToUnsignedInt(chipEthereumAddress);
 
-  return [chipEthereumAddressHex, chipTokenId];
+// initialize NDEF tag if empty
+  if (empty) {
+    await initializeNdefTag(nfc, chipEthereumAddressHex);
+  }
+
+  return [chipEthereumAddressHex, chipTokenId, empty];
 }
 
 // initialize NDEF tag
@@ -193,7 +195,7 @@ Future<void> initializeNdefTag(
   var writeNdefMessageRes = await nfc.sendCommand(ndefUrlMsg);
   int writeNdefMessageResCode1 = writeNdefMessageRes[1];
   int writeNdefMessageResCode2 = writeNdefMessageRes[2];
-  if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 00)) {
+  if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 0)) {
     throw Exception("Error while writing NDEF message");
   }
 
