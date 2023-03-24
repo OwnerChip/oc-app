@@ -90,7 +90,7 @@ class CustomColors {
       case 'stebo':
         primaryColor = const Color(0xffe0ca81);
         primaryColorLight = const Color(0xFFb5a365);
-        shadowColor = const Color(0xFF2E2E2E);
+        shadowColor = const Color(0x002E2E2E);
         cardColor = const Color(0xFF2E2E2E);
         scaffoldBackgroundColor = const Color(0xFF1B1B1B);
         warningColor = Colors.orange;

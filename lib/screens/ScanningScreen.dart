@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'dart:io' show Platform;
 
 //import services
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
@@ -94,7 +95,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         ref.read(signatureDataProvider.notifier).setSignatureData(
             SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-        NfcManager.instance.stopSession();
+        //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read
+        if (Platform.isIOS) {
+          NfcManager.instance.stopSession();
+        }
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
@@ -134,6 +138,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             rethrow;
           }
         }
+        await Future.delayed(const Duration(seconds: 2));
+        NfcManager.instance.stopSession();
       } catch (e) {
         print(e);
         //error reading chip
