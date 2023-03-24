@@ -173,39 +173,42 @@ Future<void> initializeNdefTag(
   int selectAppletResCode2 = selectAppletRes[2];
   if (!(selectAppletResCode1 == 144 && selectAppletResCode2 == 00)) {
     if (selectAppletResCode1 == 106 && selectAppletResCode2 == 130) {
-      throw Exception("No NDEF applet installed!");
+      // do NOTHING ?!
+      print("---- No NDEF applet installed! ----");
     } else {
       throw Exception("Error while selecting NDEF applet. ERROR CODE: " +
           selectAppletResCode1.toRadixString(16) +
           " " +
           selectAppletResCode2.toRadixString(16));
     }
-  }
+  } else {
+    print("---- ... initializing NDEF ----");
 
-  //select NDEF file
-  var selectNdefFileRes = await nfc.sendCommand(SELECT_NDEF_FILE);
-  int selectNdefFileResCode1 = selectNdefFileRes[1];
-  int selectNdefFileResCode2 = selectNdefFileRes[2];
-  if (!(selectNdefFileResCode1 == 144 && selectNdefFileResCode2 == 00)) {
-    throw Exception("Error while selecting NDEF file");
-  }
+    //select NDEF file
+    var selectNdefFileRes = await nfc.sendCommand(SELECT_NDEF_FILE);
+    int selectNdefFileResCode1 = selectNdefFileRes[1];
+    int selectNdefFileResCode2 = selectNdefFileRes[2];
+    if (!(selectNdefFileResCode1 == 144 && selectNdefFileResCode2 == 00)) {
+      throw Exception("Error while selecting NDEF file");
+    }
 
-  //write NDEF message
-  Uint8List ndefUrlMsg = makeWriteNdefUrl(chipEthereumAddressHex);
-  var writeNdefMessageRes = await nfc.sendCommand(ndefUrlMsg);
-  int writeNdefMessageResCode1 = writeNdefMessageRes[1];
-  int writeNdefMessageResCode2 = writeNdefMessageRes[2];
-  if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 0)) {
-    throw Exception("Error while writing NDEF message");
-  }
+    //write NDEF message
+    Uint8List ndefUrlMsg = makeWriteNdefUrl(chipEthereumAddressHex);
+    var writeNdefMessageRes = await nfc.sendCommand(ndefUrlMsg);
+    int writeNdefMessageResCode1 = writeNdefMessageRes[1];
+    int writeNdefMessageResCode2 = writeNdefMessageRes[2];
+    if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 0)) {
+      throw Exception("Error while writing NDEF message");
+    }
 
-  // lock NDEF file
-  // var lockNdefFileRes = await nfc.sendCommand(LOCK_NDEF_FILE);
-  // int lockNdefFileResCode1 = lockNdefFileRes[1];
-  // int lockNdefFileResCode2 = lockNdefFileRes[2];
-  // if (!(lockNdefFileResCode1 == 144 && lockNdefFileResCode2 == 00)) {
-  //   throw Exception("Error while locking NDEF");
-  // }
+    // lock NDEF file
+    // var lockNdefFileRes = await nfc.sendCommand(LOCK_NDEF_FILE);
+    // int lockNdefFileResCode1 = lockNdefFileRes[1];
+    // int lockNdefFileResCode2 = lockNdefFileRes[2];
+    // if (!(lockNdefFileResCode1 == 144 && lockNdefFileResCode2 == 00)) {
+    //   throw Exception("Error while locking NDEF");
+    // }
+  }
 }
 
 Future<void> nfcPlatformCheck(BuildContext context, NFCPlatform nfc) async {
