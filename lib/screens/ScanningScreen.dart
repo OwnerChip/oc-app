@@ -84,9 +84,6 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         TokenInfoObject config =
             await ref.watch(findTokenProvider(chipTokenId).future);
 
-        //vibrate phone
-        // await vibrateNTimes(3);
-
         //verify signature
         List verificationResult = await verifySignatureAuthenticity(nfc,
             randomNumber, chipEthereumAddress, chipTokenId, ndefTagInitialized);
@@ -95,7 +92,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         ref.read(signatureDataProvider.notifier).setSignatureData(
             SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-        //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read
+        //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read for longer
         if (Platform.isIOS) {
           NfcManager.instance.stopSession();
         }
@@ -138,6 +135,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             rethrow;
           }
         }
+        //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 2 seconds to block NDEF read/popup
         await Future.delayed(const Duration(seconds: 2));
         NfcManager.instance.stopSession();
       } catch (e) {
