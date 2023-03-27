@@ -69,7 +69,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         await nfcPlatformCheck(context, nfc);
 
         //initialize chip (including NDEF tag if existing)
-        List result = await initializeChip(nfc);
+        bool initializeNdef =
+            navArgs.nextRoute == ChainSelectorScreen.routeName;
+        List result = await initializeChip(nfc, initializeNdef);
         EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
         bool ndefTagInitialized = result[2];

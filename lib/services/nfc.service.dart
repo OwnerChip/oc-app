@@ -138,7 +138,8 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
 }
 
 //check if first key already exists, if not, generate key. Return key info.
-Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
+Future<List<dynamic>> initializeChip(
+    NFCPlatform nfc, bool initializeNdef) async {
   bool empty = false;
   //empty UintList
   await nfc.sendCommand(SELECT_APP);
@@ -156,8 +157,8 @@ Future<List<dynamic>> initializeChip(NFCPlatform nfc) async {
       EthereumAddress.fromHex("0x${bytesToHex(chipEthereumAddress)}");
   BigInt chipTokenId = bytesToUnsignedInt(chipEthereumAddress);
 
-// initialize NDEF tag if empty
-  if (empty) {
+// initialize NDEF tag if empty AND NDEF should be initialized (aka, user is not just scanning but initializing a chip)
+  if (empty && initializeNdef) {
     await initializeNdefTag(nfc, chipEthereumAddressHex);
   }
 
