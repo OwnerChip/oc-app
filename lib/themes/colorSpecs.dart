@@ -88,9 +88,9 @@ class CustomColors {
         chainDropdownTextColor = Colors.black;
         break;
       case 'stebo':
-        primaryColor = const Color(0xFF00FE93);
-        primaryColorLight = const Color(0xFF0d8c57);
-        shadowColor = const Color(0xFF2E2E2E);
+        primaryColor = const Color(0xffe0ca81);
+        primaryColorLight = const Color(0xFFb5a365);
+        shadowColor = const Color(0x002E2E2E);
         cardColor = const Color(0xFF2E2E2E);
         scaffoldBackgroundColor = const Color(0xFF1B1B1B);
         warningColor = Colors.orange;

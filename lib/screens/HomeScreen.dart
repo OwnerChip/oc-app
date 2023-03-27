@@ -1,4 +1,5 @@
 //import packages
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +80,7 @@ void onInitializeButtonPress(
 
     if (mounted) {
       Navigator.pushNamed(context, ScanningScreen.routeName,
-          arguments: ScanningScreenArguments(MetadataScreen.routeName));
+          arguments: ScanningScreenArguments(ChainSelectorScreen.routeName));
     }
   } on CustomException catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(

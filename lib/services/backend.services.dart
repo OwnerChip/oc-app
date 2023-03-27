@@ -5,7 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// get OC backend client
 Dio getBackendClient() {
   return Dio(BaseOptions(
-      baseUrl: dotenv.get('OC_BACKEND_URL'),
+      baseUrl: dotenv.get('IS_INTERNAL') == 'true'
+          ? dotenv.get('OC_BACKEND_URL_TEST')
+          : dotenv.get('OC_BACKEND_URL'),
       headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
 }
 

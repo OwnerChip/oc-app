@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'dart:io' show Platform;
 
 //import services
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
@@ -67,10 +68,13 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         //check if iso7816 or isodep is available and exit if not
         await nfcPlatformCheck(context, nfc);
 
-        //initialize chip
-        List result = await initializeChip(nfc);
+        //initialize chip (including NDEF tag if existing)
+        bool initializeNdef =
+            navArgs.nextRoute == ChainSelectorScreen.routeName;
+        List result = await initializeChip(nfc, initializeNdef);
         EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
+        bool ndefTagInitialized = result[2];
 
         //set chip info data in provider
         ref
@@ -82,18 +86,18 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         TokenInfoObject config =
             await ref.watch(findTokenProvider(chipTokenId).future);
 
-        //vibrate phone
-        // await vibrateNTimes(3);
-
         //verify signature
-        List verificationResult = await verifySignatureAuthenticity(
-            nfc, randomNumber, chipEthereumAddress, chipTokenId);
+        List verificationResult = await verifySignatureAuthenticity(nfc,
+            randomNumber, chipEthereumAddress, chipTokenId, ndefTagInitialized);
         hashedMsg = verificationResult[0];
         signature = verificationResult[1];
         ref.read(signatureDataProvider.notifier).setSignatureData(
             SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-        NfcManager.instance.stopSession();
+        //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read for longer
+        if (Platform.isIOS) {
+          NfcManager.instance.stopSession();
+        }
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
@@ -133,7 +137,11 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             rethrow;
           }
         }
+        //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 2 seconds to block NDEF read/popup
+        await Future.delayed(const Duration(seconds: 2));
+        NfcManager.instance.stopSession();
       } catch (e) {
+        print(e);
         //error reading chip
         NfcManager.instance.stopSession();
         ScaffoldMessenger.of(context).showSnackBar(

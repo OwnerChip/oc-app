@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">
-  <g id="Group_230" data-name="Group 230" transform="translate(-33 -27)">
+  <g id="Group_216" data-name="Group 216" transform="translate(-33 -27)">
     <rect id="Rectangle_34" data-name="Rectangle 34" width="38" height="38" rx="16" transform="translate(33 27)" fill="#363636"/>
-    <path id="Icon_ionic-md-arrow-round-back" data-name="Icon ionic-md-arrow-round-back" d="M22.122,13.207H11.138L15.4,9.131a1.7,1.7,0,0,0,0-2.32,1.518,1.518,0,0,0-2.217,0L6.087,13.689a1.563,1.563,0,0,0-.462,1.15v.021a1.563,1.563,0,0,0,.462,1.15l7.089,6.878a1.518,1.518,0,0,0,2.217,0,1.7,1.7,0,0,0,0-2.32l-4.26-4.076H22.117a1.607,1.607,0,0,0,1.571-1.643A1.59,1.59,0,0,0,22.122,13.207Z" transform="translate(37.344 30.67)" fill="#00fe93"/>
+    <path id="Icon_ionic-md-arrow-round-back" data-name="Icon ionic-md-arrow-round-back" d="M22.122,13.207H11.138L15.4,9.131a1.7,1.7,0,0,0,0-2.32,1.518,1.518,0,0,0-2.217,0L6.087,13.689a1.563,1.563,0,0,0-.462,1.15v.021a1.563,1.563,0,0,0,.462,1.15l7.089,6.878a1.518,1.518,0,0,0,2.217,0,1.7,1.7,0,0,0,0-2.32l-4.26-4.076H22.117a1.607,1.607,0,0,0,1.571-1.643A1.59,1.59,0,0,0,22.122,13.207Z" transform="translate(37.344 30.67)" fill="#e0ca81"/>
   </g>
 </svg>
