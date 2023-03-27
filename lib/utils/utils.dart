@@ -5,12 +5,19 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:cross_file/cross_file.dart';
+
+String getNdefUrl() {
+  return dotenv.get('IS_INTERNAL') == 'true'
+      ? dotenv.get('NDEF_URL_TEST')
+      : dotenv.get('NDEF_URL');
+}
 
 Future<void> vibrateNTimes(int times) async {
   for (int i = 0; i < times; i++) {

@@ -70,8 +70,7 @@ Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
 }
 
 Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
-  // TODO: carve out proper create URL function
-  String url = 'item.ownerchip.com/${chipEthereumAddressHex.toString()}';
+  String url = getNdefUrl() + chipEthereumAddressHex.toString();
 
   // byte content
   Uint8List typeName = Uint8List.fromList([0x55]);
