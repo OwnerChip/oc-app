@@ -81,7 +81,7 @@ class _ChipAlreadyInitializedState
       final metaTxAgreementId = response[1];
 
       //launch metamask
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+      launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       String txnHash;
       if (canUseGasStation) {

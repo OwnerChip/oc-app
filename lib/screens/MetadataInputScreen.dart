@@ -142,7 +142,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       });
 
       //open metamask application
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+      launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       String txnHash;
       if (canUseGasStation) {

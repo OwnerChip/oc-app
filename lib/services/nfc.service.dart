@@ -100,8 +100,7 @@ Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
 //****NFC HELPERS****
 
 Future<Uint8List> getFirstKey(NFCPlatform nfc) async {
-  Uint8List getKeyInfo = makeGetKeyInfoCommand(0xef);
-  // Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
+  Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
   var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
 
   Uint8List getKeyInfoData = responseGetKeyInfo[0];
