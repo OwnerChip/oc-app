@@ -14,10 +14,9 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:cross_file/cross_file.dart';
 
 String getNdefUrl() {
-  // return dotenv.get('IS_INTERNAL') == 'true'
-  //     ? dotenv.get('NDEF_URL_TEST')
-  //     : dotenv.get('NDEF_URL');
-  return 'google.com';
+  return dotenv.get('IS_INTERNAL') == 'true'
+      ? dotenv.get('NDEF_URL_TEST')
+      : dotenv.get('NDEF_URL');
 }
 
 Future<void> vibrateNTimes(int times) async {

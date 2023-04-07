@@ -137,8 +137,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             rethrow;
           }
         }
-        //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 2 seconds to block NDEF read/popup
-        await Future.delayed(const Duration(seconds: 2));
+        //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 3 seconds to block NDEF read/popup
+        await Future.delayed(const Duration(seconds: 3));
         NfcManager.instance.stopSession();
       } catch (e) {
         print(e);
