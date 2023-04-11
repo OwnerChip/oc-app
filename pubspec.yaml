@@ -3,7 +3,7 @@ description: Connecting physical goods to the blockchain.
 
 publish_to: 'none'
 
-version: 0.9.5+3
+version: 0.9.5+4
 
 environment:
   sdk: '>=2.18.1 <3.0.0'
@@ -15,9 +15,6 @@ dependencies:
     sdk: flutter
   intl: ^0.17.0
   nfc_manager: ^3.2.0
-  # nfc_manager:
-  #   git:
-  #     url: https://github.com/kinggongzilla/flutter-nfc-manager
   web3dart: ^2.4.1
   http: ^0.13.5
   walletconnect_dart: ^0.0.11
@@ -32,6 +29,7 @@ dependencies:
   riverpod_annotation: ^1.1.1
   shared_preferences: ^2.0.17
   async: ^2.9.0
+  sentry_flutter: ^7.4.2
 
 dev_dependencies:
   flutter_test:
