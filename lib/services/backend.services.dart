@@ -1,6 +1,7 @@
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sentry_dio/sentry_dio.dart';
 
 /// get OC backend client
 Dio getBackendClient() {
@@ -19,6 +20,7 @@ Dio getBackendClient() {
 Future<List<dynamic>> checkMetaTx(
     EthereumAddress collectionId, String functionSignatureHash) async {
   final Dio dio = getBackendClient();
+  dio.addSentry();
   final String url = '/collection/$collectionId/metaTx/$functionSignatureHash';
   try {
     final response = await dio.get(url);
@@ -37,6 +39,7 @@ Future<String> sendGaslessRequest(
     String metaTxAgreementId,
     Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
+  dio.addSentry();
   final String url = '/collection/$collectionId/metatx';
   //make post request with dio
   final response = await dio.post(url, data: {

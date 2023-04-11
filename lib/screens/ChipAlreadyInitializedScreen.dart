@@ -12,6 +12,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -120,10 +121,14 @@ class _ChipAlreadyInitializedState
       } else {
         throw Exception(context.loc.burnedError);
       }
-    } catch (e) {
+    } catch (e, s) {
       setState(() {
         isLoading = false;
       });
+      await Sentry.captureException(
+        e,
+        stackTrace: s,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.burnedError, 'error'),
@@ -155,6 +160,10 @@ class _ChipAlreadyInitializedState
     final EthereumAddress connectedWallet = wc.session.accounts.isNotEmpty
         ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
         : zeroAddress;
+    Sentry.configureScope(
+      (scope) =>
+          scope.setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
+    );
     final MsgSignature signature = navArgs.signature;
     final Uint8List hashedMsg = navArgs.hashedMsg;
     final SignatureData signatureData =

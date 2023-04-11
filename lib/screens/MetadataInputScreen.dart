@@ -10,6 +10,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:sentry/sentry.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -183,7 +184,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       } else {
         throw Exception('Transaction failed');
       }
-    } catch (e) {
+    } catch (e, s) {
+      await Sentry.captureException(
+        e,
+        stackTrace: s,
+      );
       //TODO: Send message mint error to analytics/ownerchip
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(

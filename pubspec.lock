@@ -269,10 +269,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio
-      sha256: "7d328c4d898a61efc3cd93655a0955858e29a0aa647f0f9e02d59b3bb275e2e8"
+      sha256: "0894a098594263fe1caaba3520e3016d8a855caeb010a882273189cca10f11e9"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.6"
+    version: "5.1.1"
   eip1559:
     dependency: transitive
     description:
@@ -874,6 +874,14 @@ packages:
     description:
       name: sentry
       sha256: "9b005f502dfd84ca085dfa660dd4f16f7891c1b4b6300fda7c340330e61525d6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.4.2"
+  sentry_dio:
+    dependency: "direct main"
+    description:
+      name: sentry_dio
+      sha256: "3cb2c07d0852527b980a9ad2e39f997ab2a2ea34b309f726a3025181369854c1"
       url: "https://pub.dev"
     source: hosted
     version: "7.4.2"

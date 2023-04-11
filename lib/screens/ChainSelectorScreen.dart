@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:sentry/sentry.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -40,9 +41,17 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
       }
 
       if (mounted) {
+        Sentry.configureScope(
+          (scope) => scope
+              .setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
+        );
         Navigator.pushNamed(context, MetadataScreen.routeName);
       }
-    } catch (e) {
+    } catch (e, s) {
+      await Sentry.captureException(
+        e,
+        stackTrace: s,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorConnectingWallet, 'error'),
