@@ -11,6 +11,7 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'dart:io' show Platform;
+import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
@@ -61,6 +62,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
     //start NFC scan
+    final SCAN_PROCESS = Sentry.startTransaction('initScanning()', 'task');
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       try {
         var nfc = NFCPlatform(tag);
@@ -123,6 +125,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 hashedMsg,
                 signature);
 
+            SCAN_PROCESS.finish();
             if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
               Navigator.pushReplacementNamed(
                   context, UserScanResultsScreen.routeName);
@@ -140,8 +143,14 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 3 seconds to block NDEF read/popup
         await Future.delayed(const Duration(seconds: 3));
         NfcManager.instance.stopSession();
-      } catch (e) {
+      } catch (e, stackTrace) {
         print(e);
+        SCAN_PROCESS.throwable = e;
+        SCAN_PROCESS.status = SpanStatus.deadlineExceeded();
+        await Sentry.captureException(
+          e,
+          stackTrace: stackTrace,
+        );
         //error reading chip
         NfcManager.instance.stopSession();
         ScaffoldMessenger.of(context).showSnackBar(
