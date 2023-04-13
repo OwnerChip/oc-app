@@ -70,18 +70,22 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         var nfc = NFCPlatform(tag);
 
         //check if iso7816 or isodep is available and exit if not
-        await nfcPlatformCheck(context, nfc);
+        await nfcPlatformCheck(context, randomNumber, nfc);
 
         //initialize chip (including NDEF tag if existing)
-        bool initializeNdef =
-            navArgs.nextRoute == ChainSelectorScreen.routeName;
-        List result = await initializeChip(nfc, initializeNdef);
+        bool INIT_PROCESS = navArgs.nextRoute == ChainSelectorScreen.routeName;
+        if (INIT_PROCESS) {
+          await sendAnalyticsTrace(
+              "$randomNumber", "", "INITIALIZE_NDEF_START");
+        }
+        List result = await initializeChip(nfc, INIT_PROCESS, randomNumber);
         EthereumAddress chipEthereumAddress = result[0];
-        String chipWalletAddress = result[0][0];
+        String chipWalletAddress = chipEthereumAddress.toString();
         BigInt chipTokenId = result[1];
         bool ndefTagInitialized = result[2];
         if (ndefTagInitialized) {
-          await sendAnalyticsTrace(chipWalletAddress, "", "CHIP_INITIALIZED");
+          await sendAnalyticsTrace(
+              "$randomNumber", chipWalletAddress, "CHIP_INITIALIZED");
         }
 
         //set chip info data in provider
@@ -109,8 +113,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
-          await sendAnalyticsTrace(
-              chipWalletAddress, "", "SCAN_RESULT_NEGATIVE");
+          await sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_NEGATIVE",
+              tags: {"chipWallet": chipWalletAddress});
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
@@ -135,7 +139,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
             SCAN_PROCESS.finish();
             await sendAnalyticsTrace(
-                chipWalletAddress, "", "SCAN_RESULT_POSITIVE");
+                "$randomNumber", "", "SCAN_RESULT_POSITIVE",
+                tags: {"chipWallet": chipWalletAddress});
             if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
               Navigator.pushReplacementNamed(
                   context, UserScanResultsScreen.routeName);
