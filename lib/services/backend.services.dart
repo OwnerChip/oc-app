@@ -49,3 +49,13 @@ Future<String> sendGaslessRequest(
   });
   return response.data; //txId
 }
+
+// This function will post a user action to the analytics backend.
+Future<void> sendAnalyticsTrace(
+    String name, String type /*, Map<String, dynamic>? tags*/) async {
+  final Dio dio = getBackendClient();
+  dio.addSentry();
+  final String url = '/app/${dotenv.get('BITRISEIO_PACKAGE_NAME')}/action';
+  //make post request with dio
+  await dio.post(url, data: {"name": name, "type": type /*, "tags": tags*/});
+}

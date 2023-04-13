@@ -15,6 +15,7 @@ import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.service.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
@@ -77,6 +78,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         EthereumAddress chipEthereumAddress = result[0];
         BigInt chipTokenId = result[1];
         bool ndefTagInitialized = result[2];
+        if (ndefTagInitialized) {
+          await sendAnalyticsTrace("$result[0]", "CHIP_INITIALIZED");
+        }
 
         //set chip info data in provider
         ref
@@ -103,6 +107,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
+          await sendAnalyticsTrace("$result[0]", "SCAN_RESULT_NEGATIVE");
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
@@ -126,6 +131,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 signature);
 
             SCAN_PROCESS.finish();
+            await sendAnalyticsTrace("$result[0]", "SCAN_RESULT_POSITIVE");
             if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
               Navigator.pushReplacementNamed(
                   context, UserScanResultsScreen.routeName);
@@ -144,9 +150,12 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         await Future.delayed(const Duration(seconds: 3));
         NfcManager.instance.stopSession();
       } catch (e, stackTrace) {
+        // send Error to analytics
+        await sendAnalyticsTrace("$e", "SCAN_ERROR");
         print(e);
         SCAN_PROCESS.throwable = e;
         SCAN_PROCESS.status = SpanStatus.deadlineExceeded();
+        SCAN_PROCESS.finish();
         await Sentry.captureException(
           e,
           stackTrace: stackTrace,

@@ -107,6 +107,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       loadingText = context.loc.uploadingMetadata;
     });
 
+    final MINT_PROCESS = Sentry.startTransaction('initMinting()', 'task');
+
     //if wc bridge is not connected, then reconnect
     if (!wc.bridgeConnected) {
       wc.reconnect();
@@ -116,6 +118,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
     try {
+      final IPFS_PROCESS = Sentry.startTransaction('initIPFSUpload()', 'task');
+      await sendAnalyticsTrace("$connectedWallet", "IPFS_UPLOAD_STARTED");
       //upload image to ipfs
       String imageCid;
       String cid = '';
@@ -129,6 +133,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
+      if (cid != '') {
+        IPFS_PROCESS.finish();
+        await sendAnalyticsTrace("$connectedWallet", "IPFS_UPLOAD_FINISHED");
+      }
+
       //check if user is allowed to use gas station
       final List response =
           await checkMetaTx(collectionId, gaslessMintFunctionSignature);
@@ -141,6 +150,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         overlayContentType = 'loading';
         loadingText = context.loc.mintingToken;
       });
+
+      await sendAnalyticsTrace("$connectedWallet", "MINTING_STARTED");
 
       //open metamask application
       launchUrlString('wc:', mode: LaunchMode.externalApplication);
@@ -168,6 +179,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
+        MINT_PROCESS.finish();
+        await sendAnalyticsTrace("$connectedWallet", "MINTING_SUCCESS");
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -185,11 +198,15 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         throw Exception('Transaction failed');
       }
     } catch (e, s) {
+      // Send message mint error to analytics/ownerchip & Sentry
+      await sendAnalyticsTrace("$connectedWallet", "MINTING_ERROR");
+      MINT_PROCESS.throwable = e;
+      MINT_PROCESS.status = SpanStatus.aborted();
+      MINT_PROCESS.finish();
       await Sentry.captureException(
         e,
         stackTrace: s,
       );
-      //TODO: Send message mint error to analytics/ownerchip
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),

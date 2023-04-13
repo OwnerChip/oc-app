@@ -66,6 +66,7 @@ class _ChipAlreadyInitializedState
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
+    final BURN_PROCESS = Sentry.startTransaction('initBurn()', 'task');
     try {
       if (!wc.bridgeConnected) {
         wc.reconnect();
@@ -113,6 +114,9 @@ class _ChipAlreadyInitializedState
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
           loadingText = context.loc.burnedSuccess;
         });
+        // send status to analytics
+        BURN_PROCESS.finish();
+        await sendAnalyticsTrace("$connectedWallet", "BURN_SUCCESS");
 
         await Future.delayed(const Duration(seconds: 2));
 
@@ -125,6 +129,11 @@ class _ChipAlreadyInitializedState
       setState(() {
         isLoading = false;
       });
+      // send Error to analytics
+      BURN_PROCESS.throwable = e;
+      BURN_PROCESS.status = SpanStatus.aborted();
+      BURN_PROCESS.finish();
+      await sendAnalyticsTrace("$connectedWallet", "BURN_ERROR");
       await Sentry.captureException(
         e,
         stackTrace: s,
