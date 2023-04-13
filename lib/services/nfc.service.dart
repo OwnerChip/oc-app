@@ -158,10 +158,11 @@ Future<List<dynamic>> initializeChip(
       EthereumAddress.fromHex("0x${bytesToHex(chipEthereumAddress)}");
   BigInt chipTokenId = bytesToUnsignedInt(chipEthereumAddress);
 // initialize NDEF tag if empty AND NDEF should be initialized (aka, user is not just scanning but initializing a chip)
-  if (empty && initializeNdef) {
+  if (/*empty &&*/ initializeNdef) {
     try {
+      String url = getNdefUrl() + chipEthereumAddressHex.toString();
       await initializeNdefTag(nfc, chipEthereumAddressHex, randomNumber);
-      await sendAnalyticsTrace("$randomNumber", "", "INITIALIZE_NDEF_SUCCESS",
+      await sendAnalyticsTrace("$randomNumber", url, "INITIALIZE_NDEF_SUCCESS",
           tags: {"chipWallet": chipEthereumAddressHex.toString()});
     } catch (e) {
       await sendAnalyticsTrace("$randomNumber", "", "INITIALIZE_NDEF_ERROR",
