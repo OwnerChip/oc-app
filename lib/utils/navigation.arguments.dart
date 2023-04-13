@@ -6,6 +6,11 @@ class ScanningScreenArguments {
   ScanningScreenArguments(this.nextRoute);
 }
 
+class MetadataInputScreenArguments {
+  final int randomMsg;
+  MetadataInputScreenArguments(this.randomMsg);
+}
+
 class ChipAlreadyInitializedScreenArguments {
   final Uint8List hashedMsg;
   final MsgSignature signature;

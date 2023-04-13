@@ -17,6 +17,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 
 //screen imports
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
@@ -98,8 +99,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     return imageFile!;
   }
 
-  Future<void> createToken(WalletConnect wc, SignatureData signatureData,
-      Map<String, dynamic> metadata, int chainId, EthereumAddress collectionId,
+  Future<void> createToken(
+      int randomNumber,
+      WalletConnect wc,
+      SignatureData signatureData,
+      Map<String, dynamic> metadata,
+      int chainId,
+      EthereumAddress collectionId,
       {XFile? image}) async {
     setState(() {
       showOverlay = true;
@@ -119,7 +125,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     try {
       final IPFS_PROCESS = Sentry.startTransaction('initIPFSUpload()', 'task');
-      await sendAnalyticsTrace("$connectedWallet", "", "IPFS_UPLOAD_STARTED");
+      await sendAnalyticsTrace("$randomNumber", "", "IPFS_UPLOAD_STARTED",
+          tags: {'connectedWallet': connectedWallet});
       //upload image to ipfs
       String imageCid;
       String cid = '';
@@ -135,8 +142,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       if (cid != '') {
         IPFS_PROCESS.finish();
-        await sendAnalyticsTrace(
-            "$connectedWallet", "", "IPFS_UPLOAD_FINISHED");
+        await sendAnalyticsTrace("$randomNumber", cid, "IPFS_UPLOAD_FINISHED",
+            tags: {'connectedWallet': connectedWallet, 'cid': cid});
       }
 
       //check if user is allowed to use gas station
@@ -152,7 +159,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      await sendAnalyticsTrace("$connectedWallet", "", "MINTING_STARTED");
+      await sendAnalyticsTrace("$randomNumber", "", "MINTING_STARTED", tags: {
+        'connectedWallet': connectedWallet,
+        'gasStation': canUseGasStation
+      });
 
       //open metamask application
       launchUrlString('wc:', mode: LaunchMode.externalApplication);
@@ -181,8 +191,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
         MINT_PROCESS.finish();
-        await sendAnalyticsTrace(
-            "$connectedWallet", txnHash, "MINTING_SUCCESS");
+        await sendAnalyticsTrace("$randomNumber", txnHash, "MINTING_SUCCESS",
+            tags: {
+              'connectedWallet': '$connectedWallet',
+              'gasStation': canUseGasStation
+            });
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -201,7 +214,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       }
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
-      await sendAnalyticsTrace("$connectedWallet", "", "MINTING_ERROR");
+      await sendAnalyticsTrace("$randomNumber", "$e", "MINTING_ERROR",
+          tags: {'connectedWallet': '$connectedWallet'});
       MINT_PROCESS.throwable = e;
       MINT_PROCESS.status = SpanStatus.aborted();
       MINT_PROCESS.finish();
@@ -250,6 +264,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as MetadataInputScreenArguments;
+
     WalletConnect wc = ref.watch(walletConnectProvider);
     final int chainId = ref.watch(selectedChainIdProvider);
     final EthereumAddress collectionId =
@@ -431,8 +448,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                         onPressed: () async {
                           FocusManager.instance.primaryFocus?.unfocus();
                           if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(wc, signatureData,
-                                metadata, chainId, collectionId,
+                            fromCancelable(createToken(navArgs.randomMsg, wc,
+                                signatureData, metadata, chainId, collectionId,
                                 image: image));
                           }
                         },

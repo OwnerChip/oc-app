@@ -122,9 +122,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             );
           } else {
             Navigator.pushReplacementNamed(
-              context,
-              ChainSelectorScreen.routeName,
-            );
+                context, ChainSelectorScreen.routeName,
+                arguments: MetadataInputScreenArguments(randomNumber));
           }
         } else {
           //TOKEN EXISTS
