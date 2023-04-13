@@ -116,6 +116,10 @@ final nftOwnerProvider =
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   final TokenInfoObject config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  // ERROR HANDLING
+  if (config.chainId == 0 || config.collectionId == zeroAddress) {
+    return Future.error('No owner found.');
+  }
   EthereumAddress nftOwner = await getOwner(
       getRPCUrlFromChainId(config.chainId),
       config.collectionId,
@@ -138,6 +142,10 @@ final nftMetadataProvider = FutureProvider.autoDispose
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   final TokenInfoObject config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  // ERROR HANDLING (config chainId & collectionId are 0)
+  if (config.chainId == 0 || config.collectionId == zeroAddress) {
+    return {};
+  }
   String tokenUri = await getTokenUri(
       getRPCUrlFromChainId(config.chainId), config.collectionId, tokenId);
   String cid = getCidFromIpfsLink(tokenUri);
@@ -149,6 +157,10 @@ final nftImageProvider =
     FutureProvider.autoDispose.family<String, BigInt>((ref, tokenId) async {
   final Map<String, dynamic> nftMetadata =
       await ref.watch(nftMetadataProvider(tokenId).future);
+  // ERROR HANDLING (nftMetadata is empty)
+  if (nftMetadata.isEmpty) {
+    return '';
+  }
   String cid = getCidFromIpfsLink(nftMetadata['image']);
   String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
   return imageUri;
