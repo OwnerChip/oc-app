@@ -119,7 +119,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     try {
       final IPFS_PROCESS = Sentry.startTransaction('initIPFSUpload()', 'task');
-      await sendAnalyticsTrace("$connectedWallet", "IPFS_UPLOAD_STARTED");
+      await sendAnalyticsTrace("$connectedWallet", "", "IPFS_UPLOAD_STARTED");
       //upload image to ipfs
       String imageCid;
       String cid = '';
@@ -135,7 +135,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       if (cid != '') {
         IPFS_PROCESS.finish();
-        await sendAnalyticsTrace("$connectedWallet", "IPFS_UPLOAD_FINISHED");
+        await sendAnalyticsTrace(
+            "$connectedWallet", "", "IPFS_UPLOAD_FINISHED");
       }
 
       //check if user is allowed to use gas station
@@ -151,7 +152,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      await sendAnalyticsTrace("$connectedWallet", "MINTING_STARTED");
+      await sendAnalyticsTrace("$connectedWallet", "", "MINTING_STARTED");
 
       //open metamask application
       launchUrlString('wc:', mode: LaunchMode.externalApplication);
@@ -180,7 +181,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
         MINT_PROCESS.finish();
-        await sendAnalyticsTrace("$connectedWallet", "MINTING_SUCCESS");
+        await sendAnalyticsTrace(
+            "$connectedWallet", txnHash, "MINTING_SUCCESS");
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -199,7 +201,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       }
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
-      await sendAnalyticsTrace("$connectedWallet", "MINTING_ERROR");
+      await sendAnalyticsTrace("$connectedWallet", "", "MINTING_ERROR");
       MINT_PROCESS.throwable = e;
       MINT_PROCESS.status = SpanStatus.aborted();
       MINT_PROCESS.finish();

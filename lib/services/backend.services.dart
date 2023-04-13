@@ -2,6 +2,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_dio/sentry_dio.dart';
+import 'package:sentry/sentry.dart';
 
 /// get OC backend client
 Dio getBackendClient() {
@@ -51,11 +52,24 @@ Future<String> sendGaslessRequest(
 }
 
 // This function will post a user action to the analytics backend.
-Future<void> sendAnalyticsTrace(
-    String name, String type /*, Map<String, dynamic>? tags*/) async {
+Future<void> sendAnalyticsTrace(String caseId, String description, String type,
+    {Map<String, dynamic>? tags}) async {
   final Dio dio = getBackendClient();
   dio.addSentry();
   final String url = '/app/${dotenv.get('BITRISEIO_PACKAGE_NAME')}/action';
-  //make post request with dio
-  await dio.post(url, data: {"name": name, "type": type /*, "tags": tags*/});
+  //make post request with dio (do not care about response)
+  try {
+    await dio.post(url, data: {
+      "case_id": caseId,
+      "description": description,
+      "type": type,
+      "tags": tags
+    });
+  } catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+  }
 }
