@@ -65,6 +65,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
     //start NFC scan
     final SCAN_PROCESS = Sentry.startTransaction('initScanning()', 'task');
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      await sendAnalyticsTrace("$randomNumber", "SCAN_STARTED");
       try {
         var nfc = NFCPlatform(tag);
 
@@ -76,10 +77,11 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             navArgs.nextRoute == ChainSelectorScreen.routeName;
         List result = await initializeChip(nfc, initializeNdef);
         EthereumAddress chipEthereumAddress = result[0];
+        String chipWalletAddress = result[0][0];
         BigInt chipTokenId = result[1];
         bool ndefTagInitialized = result[2];
         if (ndefTagInitialized) {
-          await sendAnalyticsTrace("$result[0]", "CHIP_INITIALIZED");
+          await sendAnalyticsTrace(chipWalletAddress, "CHIP_INITIALIZED");
         }
 
         //set chip info data in provider
@@ -107,7 +109,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
-          await sendAnalyticsTrace("$result[0]", "SCAN_RESULT_NEGATIVE");
+          await sendAnalyticsTrace(chipWalletAddress, "SCAN_RESULT_NEGATIVE");
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
@@ -131,7 +133,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 signature);
 
             SCAN_PROCESS.finish();
-            await sendAnalyticsTrace("$result[0]", "SCAN_RESULT_POSITIVE");
+            await sendAnalyticsTrace(chipWalletAddress, "SCAN_RESULT_POSITIVE");
             if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
               Navigator.pushReplacementNamed(
                   context, UserScanResultsScreen.routeName);
@@ -151,7 +153,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         NfcManager.instance.stopSession();
       } catch (e, stackTrace) {
         // send Error to analytics
-        await sendAnalyticsTrace("$e", "SCAN_ERROR");
+        await sendAnalyticsTrace("$randomNumber", "SCAN_ERROR");
         print(e);
         SCAN_PROCESS.throwable = e;
         SCAN_PROCESS.status = SpanStatus.deadlineExceeded();
