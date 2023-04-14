@@ -183,17 +183,22 @@ class _ChipAlreadyInitializedState
     return CustomOverlay(
       show: isLoading,
       content: SpinningLoadingSvg(
-          onPressed: () {
-            cancellableOperation?.cancel();
-            setState(() {
-              isLoading = false;
-            });
-            Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (route) => false);
-          },
-          loadingText: loadingText,
-          rotateIcon: isRotating,
-          svgPath: loadingSvgPath),
+        onPressed: () {
+          cancellableOperation?.cancel();
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.pushNamedAndRemoveUntil(
+              context, HomeScreen.routeName, (route) => false);
+        },
+        loadingText: loadingText,
+        rotateIcon: isRotating,
+        svgPath: loadingSvgPath,
+        // enable secondary button
+        secondaryButton: true,
+        secondaryButtonText: context.loc.troubleshoot,
+        secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
+      ),
       child: Scaffold(
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
