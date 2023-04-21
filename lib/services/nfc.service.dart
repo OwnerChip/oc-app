@@ -227,14 +227,15 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
     }
 
     // lock NDEF file if app is not internal test version
-    // else if (dotenv.get('IS_INTERNAL') != 'true') {
-    //   var lockNdefFileRes = await nfc.sendCommand(LOCK_NDEF_FILE);
-    //   int lockNdefFileResCode1 = lockNdefFileRes[1];
-    //   int lockNdefFileResCode2 = lockNdefFileRes[2];
-    //   if (!(lockNdefFileResCode1 == 144 && lockNdefFileResCode2 == 00)) {
-    //     throw Exception("Error while locking NDEF");
-    //   }
-    // }
+    else if (dotenv.get('IS_INTERNAL') != 'true') {
+      var lockNdefFileRes = await nfc.sendCommand(LOCK_NDEF_FILE);
+      int lockNdefFileResCode1 = lockNdefFileRes[1];
+      int lockNdefFileResCode2 = lockNdefFileRes[2];
+      if (!(lockNdefFileResCode1 == 144 && lockNdefFileResCode2 == 00)) {
+        throw Exception(
+            "Error while locking NDEF. ERROR CODE: ${lockNdefFileResCode1.toRadixString(16)} ${lockNdefFileResCode2.toRadixString(16)}");
+      }
+    }
   }
 }
 
