@@ -12,6 +12,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -65,6 +66,7 @@ class _ChipAlreadyInitializedState
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
+    final BURN_PROCESS = Sentry.startTransaction('initBurn()', 'task');
     try {
       if (!wc.bridgeConnected) {
         wc.reconnect();
@@ -74,6 +76,9 @@ class _ChipAlreadyInitializedState
         isLoading = true;
         loadingText = context.loc.burning;
       });
+
+      await sendAnalyticsTrace(
+          "$connectedWallet-${tokenId.toString()}", "", "BURN_STARTED");
 
       final List response =
           await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
@@ -112,6 +117,10 @@ class _ChipAlreadyInitializedState
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
           loadingText = context.loc.burnedSuccess;
         });
+        // send status to analytics
+        BURN_PROCESS.finish();
+        await sendAnalyticsTrace(
+            "$connectedWallet-${tokenId.toString()}", txnHash, "BURN_SUCCESS");
 
         await Future.delayed(const Duration(seconds: 2));
 
@@ -120,10 +129,17 @@ class _ChipAlreadyInitializedState
       } else {
         throw Exception(context.loc.burnedError);
       }
-    } catch (e) {
+    } catch (e, s) {
       setState(() {
         isLoading = false;
       });
+      // send Error to analytics
+      BURN_PROCESS.throwable = e;
+      BURN_PROCESS.status = SpanStatus.aborted();
+      BURN_PROCESS.finish();
+      await sendAnalyticsTrace(
+          "$connectedWallet-${tokenId.toString()}", "", "BURN_ERROR");
+      await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.burnedError, 'error'),
@@ -155,6 +171,10 @@ class _ChipAlreadyInitializedState
     final EthereumAddress connectedWallet = wc.session.accounts.isNotEmpty
         ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
         : zeroAddress;
+    Sentry.configureScope(
+      (scope) =>
+          scope.setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
+    );
     final MsgSignature signature = navArgs.signature;
     final Uint8List hashedMsg = navArgs.hashedMsg;
     final SignatureData signatureData =
@@ -163,17 +183,22 @@ class _ChipAlreadyInitializedState
     return CustomOverlay(
       show: isLoading,
       content: SpinningLoadingSvg(
-          onPressed: () {
-            cancellableOperation?.cancel();
-            setState(() {
-              isLoading = false;
-            });
-            Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (route) => false);
-          },
-          loadingText: loadingText,
-          rotateIcon: isRotating,
-          svgPath: loadingSvgPath),
+        onPressed: () {
+          cancellableOperation?.cancel();
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.pushNamedAndRemoveUntil(
+              context, HomeScreen.routeName, (route) => false);
+        },
+        loadingText: loadingText,
+        rotateIcon: isRotating,
+        svgPath: loadingSvgPath,
+        // enable secondary button
+        secondaryButton: true,
+        secondaryButtonText: context.loc.troubleshoot,
+        secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
+      ),
       child: Scaffold(
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(

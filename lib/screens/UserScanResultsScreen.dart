@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -57,6 +58,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final connectedWallet = wc.session.accounts.isNotEmpty
         ? wc.session.accounts[0].toLowerCase()
         : '';
+    Sentry.configureScope(
+      (scope) => scope.setUser(SentryUser(id: connectedWallet)),
+    );
 
     return Scaffold(
         extendBodyBehindAppBar: true,

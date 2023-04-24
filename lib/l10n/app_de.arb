@@ -98,5 +98,6 @@
     "chooseChain": "Wähle \n Chain + Collection",
     "legal": "Support & Legal Information",
     "selectBlockchain": "Blockchain auswählen",
-    "selectCollection": "Collection auswählen"
+    "selectCollection": "Collection auswählen",
+    "troubleshoot": "Ich brauche Hilfe"
 }

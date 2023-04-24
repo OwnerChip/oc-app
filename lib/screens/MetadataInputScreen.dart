@@ -10,12 +10,14 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:sentry/sentry.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 
 //screen imports
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
@@ -97,14 +99,21 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     return imageFile!;
   }
 
-  Future<void> createToken(WalletConnect wc, SignatureData signatureData,
-      Map<String, dynamic> metadata, int chainId, EthereumAddress collectionId,
+  Future<void> createToken(
+      int randomNumber,
+      WalletConnect wc,
+      SignatureData signatureData,
+      Map<String, dynamic> metadata,
+      int chainId,
+      EthereumAddress collectionId,
       {XFile? image}) async {
     setState(() {
       showOverlay = true;
       overlayContentType = 'loading';
       loadingText = context.loc.uploadingMetadata;
     });
+
+    final MINT_PROCESS = Sentry.startTransaction('initMinting()', 'task');
 
     //if wc bridge is not connected, then reconnect
     if (!wc.bridgeConnected) {
@@ -115,6 +124,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
     try {
+      final IPFS_PROCESS = Sentry.startTransaction('initIPFSUpload()', 'task');
+      await sendAnalyticsTrace("$randomNumber", "", "IPFS_UPLOAD_STARTED",
+          tags: {'connectedWallet': connectedWallet});
       //upload image to ipfs
       String imageCid;
       String cid = '';
@@ -128,6 +140,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //upload metadata json to ipfs
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
+      if (cid != '') {
+        IPFS_PROCESS.finish();
+        await sendAnalyticsTrace("$randomNumber", cid, "IPFS_UPLOAD_FINISHED",
+            tags: {'connectedWallet': connectedWallet, 'cid': cid});
+      }
+
       //check if user is allowed to use gas station
       final List response =
           await checkMetaTx(collectionId, gaslessMintFunctionSignature);
@@ -139,6 +157,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         showOverlay = true;
         overlayContentType = 'loading';
         loadingText = context.loc.mintingToken;
+      });
+
+      await sendAnalyticsTrace("$randomNumber", "", "MINTING_STARTED", tags: {
+        'connectedWallet': connectedWallet,
+        'gasStation': canUseGasStation
       });
 
       //open metamask application
@@ -167,6 +190,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
+        MINT_PROCESS.finish();
+        await sendAnalyticsTrace("$randomNumber", txnHash, "MINTING_SUCCESS",
+            tags: {
+              'connectedWallet': '$connectedWallet',
+              'gasStation': canUseGasStation
+            });
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -183,8 +212,17 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       } else {
         throw Exception('Transaction failed');
       }
-    } catch (e) {
-      //TODO: Send message mint error to analytics/ownerchip
+    } catch (e, s) {
+      // Send message mint error to analytics/ownerchip & Sentry
+      await sendAnalyticsTrace("$randomNumber", "$e", "MINTING_ERROR",
+          tags: {'connectedWallet': '$connectedWallet'});
+      MINT_PROCESS.throwable = e;
+      MINT_PROCESS.status = SpanStatus.aborted();
+      MINT_PROCESS.finish();
+      await Sentry.captureException(
+        e,
+        stackTrace: s,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
@@ -226,6 +264,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as MetadataInputScreenArguments;
+
     WalletConnect wc = ref.watch(walletConnectProvider);
     final int chainId = ref.watch(selectedChainIdProvider);
     final EthereumAddress collectionId =
@@ -247,7 +288,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                   : null,
               loadingText: loadingText,
               svgPath:
-                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg')
+                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
+              // enable secondary button
+              secondaryButton: true,
+              secondaryButtonText: context.loc.troubleshoot,
+              secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'))
           : CustomCard(
               mainAxisSize: MainAxisSize.min,
               maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -407,8 +452,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                         onPressed: () async {
                           FocusManager.instance.primaryFocus?.unfocus();
                           if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(wc, signatureData,
-                                metadata, chainId, collectionId,
+                            fromCancelable(createToken(navArgs.randomMsg, wc,
+                                signatureData, metadata, chainId, collectionId,
                                 image: image));
                           }
                         },

@@ -5,6 +5,7 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -52,12 +53,20 @@ void onScanButtonPress(BuildContext context, mounted) async {
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
     }
-  } on CustomException catch (e) {
+  } on CustomException catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoNfcReader, 'error'),
     );
-  } catch (e) {
+  } catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoInternetConnection, 'error'),
@@ -82,12 +91,20 @@ void onInitializeButtonPress(
       Navigator.pushNamed(context, ScanningScreen.routeName,
           arguments: ScanningScreenArguments(ChainSelectorScreen.routeName));
     }
-  } on CustomException catch (e) {
+  } on CustomException catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoNfcReader, 'error'),
     );
-  } catch (e) {
+  } catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoInternetConnection, 'error'),

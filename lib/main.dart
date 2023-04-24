@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -42,11 +43,17 @@ void main(List<String> args) async {
   //set initialRoute accordingly
   String initialRoute = HomeScreen.routeName;
 
-  runApp(RestartWidget(
-      child: ProviderScope(
-          child: MyApp(
-    initialRoute: initialRoute,
-  ))));
+  //init sentry
+  await SentryFlutter.init((options) {
+    options.dsn = dotenv.env['SENTRY_DSN']!;
+    options.tracesSampleRate = 1.0;
+    options.environment = dotenv.env['BITRISEIO_PACKAGE_NAME']!;
+  },
+      appRunner: () => runApp(RestartWidget(
+              child: ProviderScope(
+                  child: MyApp(
+            initialRoute: initialRoute,
+          )))));
 }
 
 class MyApp extends ConsumerStatefulWidget {

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sentry_dio/sentry_dio.dart';
 
 /// get ipfsGatewayClient
 Dio getIpfsGatewayClient(bool api) {
@@ -36,6 +37,7 @@ Future<String> uploadFileToIPFS(XFile xfile, String fileMimeType) async {
     },
   );
   var ipfs = getIpfsGatewayClient(true);
+  ipfs.addSentry();
   Response response = await ipfs.post(dotenv.get('IPFS_PIN_COMMAND'),
       data: formData, onSendProgress: (int sent, int total) {
     print('$sent / $total');
@@ -47,6 +49,7 @@ Future<String> uploadFileToIPFS(XFile xfile, String fileMimeType) async {
 Future<dynamic> downloadMetadataFromIPFS(String cid) async {
   try {
     var ipfs = getIpfsGatewayClient(false);
+    ipfs.addSentry();
     Response response = await ipfs.get(
       cid,
       options: Options(
@@ -66,6 +69,7 @@ Future<dynamic> downloadMetadataFromIPFS(String cid) async {
 Future<Map<String, String>> getIpfsProviderImageUrl(String cid) async {
   try {
     var ipfs = getIpfsGatewayClient(false);
+    ipfs.addSentry();
     Response response = await ipfs.get(
       cid,
       options: Options(
@@ -94,6 +98,7 @@ Future<Map<String, String>> getIpfsProviderImageUrl(String cid) async {
 Future<bool> upinFileFromIPFS(String cid) async {
   try {
     var ipfs = getIpfsGatewayClient(true);
+    ipfs.addSentry();
     final String deletePath = "${dotenv.get('IPFS_UNPIN_COMMAND')}$cid";
     Response response = await ipfs.delete(deletePath);
     print(response.data);

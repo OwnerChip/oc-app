@@ -11,9 +11,11 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'dart:io' show Platform;
+import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.service.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
@@ -61,20 +63,30 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
     //start NFC scan
+    final SCAN_PROCESS = Sentry.startTransaction('initScanning()', 'task');
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      await sendAnalyticsTrace("$randomNumber", "", "SCAN_STARTED");
       try {
         var nfc = NFCPlatform(tag);
 
         //check if iso7816 or isodep is available and exit if not
-        await nfcPlatformCheck(context, nfc);
+        await nfcPlatformCheck(context, randomNumber, nfc);
 
         //initialize chip (including NDEF tag if existing)
-        bool initializeNdef =
-            navArgs.nextRoute == ChainSelectorScreen.routeName;
-        List result = await initializeChip(nfc, initializeNdef);
+        bool INIT_PROCESS = navArgs.nextRoute == ChainSelectorScreen.routeName;
+        if (INIT_PROCESS) {
+          await sendAnalyticsTrace(
+              "$randomNumber", "", "INITIALIZE_NDEF_START");
+        }
+        List result = await initializeChip(nfc, INIT_PROCESS, randomNumber);
         EthereumAddress chipEthereumAddress = result[0];
+        String chipWalletAddress = chipEthereumAddress.toString();
         BigInt chipTokenId = result[1];
         bool ndefTagInitialized = result[2];
+        if (ndefTagInitialized) {
+          await sendAnalyticsTrace(
+              "$randomNumber", chipWalletAddress, "CHIP_INITIALIZED");
+        }
 
         //set chip info data in provider
         ref
@@ -101,6 +113,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
         if (config.collectionId == zeroAddress) {
           //TOKEN DOES NOT EXIST
+          await sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_NEGATIVE",
+              tags: {"chipWallet": chipWalletAddress});
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
@@ -108,9 +122,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             );
           } else {
             Navigator.pushReplacementNamed(
-              context,
-              ChainSelectorScreen.routeName,
-            );
+                context, ChainSelectorScreen.routeName,
+                arguments: MetadataInputScreenArguments(randomNumber));
           }
         } else {
           //TOKEN EXISTS
@@ -123,6 +136,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 hashedMsg,
                 signature);
 
+            SCAN_PROCESS.finish();
+            await sendAnalyticsTrace(
+                "$randomNumber", "", "SCAN_RESULT_POSITIVE",
+                tags: {"chipWallet": chipWalletAddress});
             if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
               Navigator.pushReplacementNamed(
                   context, UserScanResultsScreen.routeName);
@@ -140,8 +157,17 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 3 seconds to block NDEF read/popup
         await Future.delayed(const Duration(seconds: 3));
         NfcManager.instance.stopSession();
-      } catch (e) {
+      } catch (e, stackTrace) {
+        // send Error to analytics
+        await sendAnalyticsTrace("$randomNumber", "$e", "SCAN_ERROR");
         print(e);
+        SCAN_PROCESS.throwable = e;
+        SCAN_PROCESS.status = SpanStatus.deadlineExceeded();
+        SCAN_PROCESS.finish();
+        await Sentry.captureException(
+          e,
+          stackTrace: stackTrace,
+        );
         //error reading chip
         NfcManager.instance.stopSession();
         ScaffoldMessenger.of(context).showSnackBar(

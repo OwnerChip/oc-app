@@ -1,6 +1,8 @@
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sentry_dio/sentry_dio.dart';
+import 'package:sentry/sentry.dart';
 
 /// get OC backend client
 Dio getBackendClient() {
@@ -19,6 +21,7 @@ Dio getBackendClient() {
 Future<List<dynamic>> checkMetaTx(
     EthereumAddress collectionId, String functionSignatureHash) async {
   final Dio dio = getBackendClient();
+  dio.addSentry();
   final String url = '/collection/$collectionId/metaTx/$functionSignatureHash';
   try {
     final response = await dio.get(url);
@@ -37,6 +40,7 @@ Future<String> sendGaslessRequest(
     String metaTxAgreementId,
     Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
+  dio.addSentry();
   final String url = '/collection/$collectionId/metatx';
   //make post request with dio
   final response = await dio.post(url, data: {
@@ -45,4 +49,27 @@ Future<String> sendGaslessRequest(
     "txRequest": txRequest
   });
   return response.data; //txId
+}
+
+// This function will post a user action to the analytics backend.
+Future<void> sendAnalyticsTrace(String caseId, String description, String type,
+    {Map<String, dynamic>? tags}) async {
+  final Dio dio = getBackendClient();
+  dio.addSentry();
+  final String url = '/app/${dotenv.get('BITRISEIO_PACKAGE_NAME')}/action';
+  //make post request with dio (do not care about response)
+  try {
+    await dio.post(url, data: {
+      "case_id": caseId,
+      "description": description,
+      "type": type,
+      "tags": tags.toString()
+    });
+  } catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+  }
 }

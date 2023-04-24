@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:sentry/sentry.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -20,6 +21,7 @@ import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {
   const ChainSelectorScreen({Key? key}) : super(key: key);
@@ -32,7 +34,7 @@ class ChainSelectorScreen extends ConsumerStatefulWidget {
 
 class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
-      BuildContext context, WalletConnect wc, mounted) async {
+      BuildContext context, WalletConnect wc, mounted, int randomNumber) async {
     final wc = ref.watch(walletConnectProvider);
     try {
       if (!wc.connected) {
@@ -40,9 +42,18 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
       }
 
       if (mounted) {
-        Navigator.pushNamed(context, MetadataScreen.routeName);
+        Sentry.configureScope(
+          (scope) => scope
+              .setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
+        );
+        Navigator.pushNamed(context, MetadataScreen.routeName,
+            arguments: MetadataInputScreenArguments(randomNumber));
       }
-    } catch (e) {
+    } catch (e, s) {
+      await Sentry.captureException(
+        e,
+        stackTrace: s,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorConnectingWallet, 'error'),
@@ -53,7 +64,8 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   @override
   Widget build(BuildContext context) {
     final wc = ref.watch(walletConnectProvider);
-
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as MetadataInputScreenArguments;
     return Scaffold(
       appBar: const CustomAppBar(
         text: 'Select chain',
@@ -86,7 +98,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
           CustomRoundedButton(
             text: 'Next',
             onPressed: () {
-              onInitializeButtonPress(context, wc, mounted);
+              onInitializeButtonPress(context, wc, mounted, navArgs.randomMsg);
             },
           ),
         ],
