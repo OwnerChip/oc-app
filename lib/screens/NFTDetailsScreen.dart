@@ -140,9 +140,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                         showDescription
                             ? Align(
                                 alignment: Alignment.centerLeft,
-                                child: Text(
-                                    data['description'] ??
-                                        '${context.loc.loadingData}...',
+                                child: Text(data['description'] ?? '',
                                     textAlign: TextAlign.left,
                                     style: TextStyle(
                                         // color: Theme.of(context).primaryColor,
