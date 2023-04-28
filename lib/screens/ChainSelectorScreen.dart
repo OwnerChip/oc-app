@@ -68,7 +68,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
         as MetadataInputScreenArguments;
     return Scaffold(
       appBar: const CustomAppBar(
-        text: 'Select chain',
+        text: context.loc.selectChain,
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
