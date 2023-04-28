@@ -33,7 +33,7 @@ class Collections {
             {
               "id": EthereumAddress.fromHex(
                   '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
-              "name": "OwnerChip Demo"
+              "name": "Demo Collection"
             }
           ]
         };
@@ -173,11 +173,6 @@ class Collections {
             },
           ],
           80001: [
-            {
-              "id": EthereumAddress.fromHex(
-                  '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
-              "name": "OwnerChip Demo"
-            },
             {
               "id": EthereumAddress.fromHex(
                   '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
