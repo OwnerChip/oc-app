@@ -67,8 +67,8 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as MetadataInputScreenArguments;
     return Scaffold(
-      appBar: const CustomAppBar(
-        text: 'Select chain',
+      appBar: CustomAppBar(
+        text: context.loc.selectChain,
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
