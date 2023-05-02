@@ -162,10 +162,10 @@ Future<List<dynamic>> initializeChip(
     try {
       String url = getNdefUrl() + chipEthereumAddressHex.toString();
       await initializeNdefTag(nfc, chipEthereumAddressHex, randomNumber);
-      await sendAnalyticsTrace("$randomNumber", url, "INITIALIZE_NDEF_SUCCESS",
+      sendAnalyticsTrace("$randomNumber", url, "INITIALIZE_NDEF_SUCCESS",
           tags: {"chipWallet": chipEthereumAddressHex.toString()});
     } catch (e) {
-      await sendAnalyticsTrace("$randomNumber", "", "INITIALIZE_NDEF_ERROR",
+      sendAnalyticsTrace("$randomNumber", "", "INITIALIZE_NDEF_ERROR",
           tags: {"chipWallet": chipEthereumAddress.toString()});
       rethrow;
     }
@@ -184,7 +184,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
   if (!(selectAppletResCode1 == 144 && selectAppletResCode2 == 00)) {
     if (selectAppletResCode1 == 106 && selectAppletResCode2 == 130) {
       // do NOTHING, but report analytics
-      await sendAnalyticsTrace(
+      sendAnalyticsTrace(
           "$randomNumber",
           "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
           "INITIALIZE_NDEF_NO_APPLET",
@@ -213,7 +213,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
     if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 0)) {
       if (writeNdefMessageResCode1 == 105 && writeNdefMessageResCode2 == 133) {
         // do NOTHING, but report analytics
-        await sendAnalyticsTrace(
+        sendAnalyticsTrace(
             "$randomNumber",
             "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
             "INITIALIZE_NDEF_WRONG_STATE",
@@ -249,7 +249,7 @@ Future<void> nfcPlatformCheck(
       returnSnackBarWidget(
           context.loc.errorHeadingSnackBar, context.loc.noNfc, 'error'),
     );
-    await sendAnalyticsTrace("$caseId", "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
+    sendAnalyticsTrace("$caseId", "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
     //delay for 1 second
     await Future.delayed(Duration(seconds: 1));
     Navigator.pop(context);

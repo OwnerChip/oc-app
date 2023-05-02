@@ -125,7 +125,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     try {
       final IPFS_PROCESS = Sentry.startTransaction('initIPFSUpload()', 'task');
-      await sendAnalyticsTrace("$randomNumber", "", "IPFS_UPLOAD_STARTED",
+      sendAnalyticsTrace("$randomNumber", "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet});
       //upload image to ipfs
       String imageCid;
@@ -142,7 +142,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       if (cid != '') {
         IPFS_PROCESS.finish();
-        await sendAnalyticsTrace("$randomNumber", cid, "IPFS_UPLOAD_FINISHED",
+        sendAnalyticsTrace("$randomNumber", cid, "IPFS_UPLOAD_FINISHED",
             tags: {'connectedWallet': connectedWallet, 'cid': cid});
       }
 
@@ -159,7 +159,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      await sendAnalyticsTrace("$randomNumber", "", "MINTING_STARTED", tags: {
+      sendAnalyticsTrace("$randomNumber", "", "MINTING_STARTED", tags: {
         'connectedWallet': connectedWallet,
         'gasStation': canUseGasStation
       });
@@ -191,11 +191,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
         MINT_PROCESS.finish();
-        await sendAnalyticsTrace("$randomNumber", txnHash, "MINTING_SUCCESS",
-            tags: {
-              'connectedWallet': '$connectedWallet',
-              'gasStation': canUseGasStation
-            });
+        sendAnalyticsTrace("$randomNumber", txnHash, "MINTING_SUCCESS", tags: {
+          'connectedWallet': '$connectedWallet',
+          'gasStation': canUseGasStation
+        });
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -214,7 +213,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       }
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
-      await sendAnalyticsTrace("$randomNumber", "$e", "MINTING_ERROR",
+      sendAnalyticsTrace("$randomNumber", "$e", "MINTING_ERROR",
           tags: {'connectedWallet': '$connectedWallet'});
       MINT_PROCESS.throwable = e;
       MINT_PROCESS.status = SpanStatus.aborted();
