@@ -88,6 +88,9 @@ class _ChipAlreadyInitializedState
       //launch metamask
       launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
+      //wait for 1 second
+      await Future.delayed(Duration(seconds: 1));
+
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
