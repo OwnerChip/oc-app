@@ -106,7 +106,7 @@ class _ChipAlreadyInitializedState
       }
 
       //launch metamask
-      launchUrlString('wc:', mode: LaunchMode.externalApplication);
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       String txnHash = await txnHashFuture;
 

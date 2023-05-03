@@ -182,7 +182,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       }
 
       //open metamask application
-      launchUrlString('wc:', mode: LaunchMode.externalApplication);
+      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       String txnHash = await txnHashFuture;
 
