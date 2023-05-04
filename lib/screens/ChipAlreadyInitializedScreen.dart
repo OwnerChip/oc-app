@@ -85,9 +85,9 @@ class _ChipAlreadyInitializedState
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      Future<String> txnHashFuture;
+      String txnHash;
       if (canUseGasStation) {
-        txnHashFuture = makeAndSendGaslessTx(
+        txnHash = await makeAndSendGaslessTx(
             gaslessBurnFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -96,7 +96,7 @@ class _ChipAlreadyInitializedState
             wc,
             metaTxAgreementId);
       } else {
-        txnHashFuture = makeAndSendNormalTx(
+        txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -104,11 +104,6 @@ class _ChipAlreadyInitializedState
             connectedWallet,
             wc);
       }
-
-      //launch metamask
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
-      String txnHash = await txnHashFuture;
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);

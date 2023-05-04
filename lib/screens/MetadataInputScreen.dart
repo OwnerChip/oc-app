@@ -164,9 +164,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         'gasStation': canUseGasStation
       });
 
-      Future<String> txnHashFuture;
+      String txnHash;
       if (canUseGasStation) {
-        txnHashFuture = makeAndSendGaslessTx(
+        txnHash = await makeAndSendGaslessTx(
             gaslessMintFunctionSignature,
             chainId,
             collectionId,
@@ -176,15 +176,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             metaTxAgreementId,
             cid: cid);
       } else {
-        txnHashFuture = makeAndSendNormalTx(mintFunctionSignature, chainId,
+        txnHash = await makeAndSendNormalTx(mintFunctionSignature, chainId,
             collectionId, signatureData, connectedWallet, wc,
             cid: cid);
       }
-
-      //open metamask application
-      await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
-      String txnHash = await txnHashFuture;
 
       //wait until TX is succeeded or failed
       var txnReceipt =
