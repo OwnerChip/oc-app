@@ -93,6 +93,9 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
+  //open metamask application
+  await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+
   String signature = await wc.sendCustomRequest(
       method: 'eth_signTypedData_v4',
       params: [walletAddress.toString(), json.encode(typedData)],
@@ -125,6 +128,9 @@ Future<String> makeAndSendNormalTx(
       signatureData.hashedMsg,
       signatureData.signature,
       tokenURI: cid != null ? "ipfs://$cid" : null);
+
+  //open metamask application
+  await launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
   String txnHash = await wc.sendCustomRequest(
       method: 'eth_sendTransaction', params: txParams, id: makeRandomInt());

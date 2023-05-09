@@ -77,16 +77,13 @@ class _ChipAlreadyInitializedState
         loadingText = context.loc.burning;
       });
 
-      await sendAnalyticsTrace(
+      sendAnalyticsTrace(
           "$connectedWallet-${tokenId.toString()}", "", "BURN_STARTED");
 
       final List response =
           await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
-
-      //launch metamask
-      launchUrlString('wc:', mode: LaunchMode.externalApplication);
 
       String txnHash;
       if (canUseGasStation) {
@@ -119,7 +116,7 @@ class _ChipAlreadyInitializedState
         });
         // send status to analytics
         BURN_PROCESS.finish();
-        await sendAnalyticsTrace(
+        sendAnalyticsTrace(
             "$connectedWallet-${tokenId.toString()}", txnHash, "BURN_SUCCESS");
 
         await Future.delayed(const Duration(seconds: 2));
@@ -137,7 +134,7 @@ class _ChipAlreadyInitializedState
       BURN_PROCESS.throwable = e;
       BURN_PROCESS.status = SpanStatus.aborted();
       BURN_PROCESS.finish();
-      await sendAnalyticsTrace(
+      sendAnalyticsTrace(
           "$connectedWallet-${tokenId.toString()}", "", "BURN_ERROR");
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
