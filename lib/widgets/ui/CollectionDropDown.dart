@@ -23,12 +23,10 @@ class CollectionDropdown extends ConsumerWidget {
         onChanged: (value) {
           ref.read(selectedCollectionIdProvider.notifier).state = value!;
         },
-        items: Collections(dotenv.env['STYLE_ID']!)
-            .collections[chainId]!
-            .map((collection) {
+        items: allCollections.collections[chainId]!.map((collection) {
           return DropdownMenuItem(
-            value: collection['id'],
-            child: Text(collection['name']!),
+            value: collection.id,
+            child: Text(collection.name),
           );
         }).toList());
   }

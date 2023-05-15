@@ -191,19 +191,22 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             "Collection",
                             "Blockchain"
                           ], values: [
-                            Collections('all')
-                                .collections[data.chainId]!
+                            // first, try to find collection in collections list
+                            allCollections.collections[data.chainId]!
                                 .firstWhere((collection) {
-                              return collection['id'] == data.collectionId;
+                              return collection.id == data.collectionId;
                             },
+                                    // if not found, check chain data
                                     orElse: () => {
+                                          'id': data.collectionId,
                                           'name': contractName.when(
                                             data: (data) => data,
+                                            // if error, show unknown collection
                                             error: (error, stackTrace) =>
                                                 context.loc.unknownCollection,
                                             loading: () => context.loc.loading,
                                           )
-                                        })['name'],
+                                        } as Collection).name,
                             chainConfig[data.chainId]!.networkName,
                           ]),
                           loading: () => Container(),

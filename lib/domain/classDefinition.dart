@@ -2,6 +2,20 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 
+class Collection {
+  final EthereumAddress id;
+  final String name;
+  final int? chainId;
+
+  Collection(this.id, this.name, {this.chainId});
+}
+
+class BlockchainCollectionList {
+  final Map<int, List<Collection>> collections;
+
+  BlockchainCollectionList(this.collections);
+}
+
 class BlockchainConfig {
   final String networkName;
   final String rpcUrl;

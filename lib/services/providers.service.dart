@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -79,17 +80,62 @@ final chipInfoProvider =
   return ChipInfoNotifier();
 });
 
+// **** COLLECTIONS ****
+
+/// get all collections associated with the app
+final appCollectionProvider =
+    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
+  BlockchainCollectionList collections;
+
+  // first, try to get the collections from the backend
+  try {
+    final rawCollections = await getAppCollections() as List<Collection>;
+    collections =
+        groupCollectionsByChainId(rawCollections) as BlockchainCollectionList;
+  } catch (e) {
+    print("Error getting collections from backend: $e");
+    // if the backend is not available, get the collections from the config file
+    collections = allCollections;
+  }
+
+  return Future.value(collections);
+});
+
+/// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
+final findAnyMinterRoleProvider = FutureProvider.autoDispose
+    .family<List<CollectionMinterRoleObject>, EthereumAddress>(
+        (ref, userWalletAddress) async {
+  var res = List<CollectionMinterRoleObject>.empty(growable: true);
+
+  final blockchainCollectionsList =
+      await ref.watch(appCollectionProvider.future);
+
+  //loop through all chains
+  blockchainCollectionsList.collections.keys.map((chainId) async {
+    var collections = blockchainCollectionsList.collections[chainId]!;
+    //loop through all collections
+    collections.map((collection) async {
+      bool hasMinterRole = await checkMinterRole(
+          getRPCUrlFromChainId(chainId), collection.id, userWalletAddress);
+      res.add(
+          CollectionMinterRoleObject(collection.id, chainId, hasMinterRole));
+    });
+  });
+  return res;
+});
+
 // **** CHAIN ID + COLLECTION ID ****
 
 // only used in admin app for selecting the chain
 final selectedChainIdProvider = StateProvider.autoDispose<int>(
-    (ref) => Collections(dotenv.get('STYLE_ID')).collections.keys.first);
+    (ref) => allCollections.collections.keys.first);
 
 // only used in admin app for selecting the collection
 final selectedCollectionIdProvider =
     StateProvider.autoDispose<EthereumAddress>((ref) {
   final int chainId = ref.watch(selectedChainIdProvider);
-  return Collections(dotenv.get('STYLE_ID')).collections[chainId]![0]['id']!;
+  //TODO: final BlockchainCollectionList collections = ref.watch(appCollectionProvider)
+  return allCollections.collections[chainId]![0].id;
 });
 
 final findTokenProvider = FutureProvider.autoDispose
@@ -125,26 +171,6 @@ final nftOwnerProvider =
       config.collectionId,
       chipInfo.tokenId);
   return nftOwner;
-});
-
-/// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
-final findAnyMinterRoleProvider = FutureProvider.autoDispose
-    .family<List<CollectionMinterRoleObject>, EthereumAddress>(
-        (ref, userWalletAddress) async {
-  var res = List<CollectionMinterRoleObject>.empty(growable: true);
-
-  //loop through all chains
-  chainConfig.keys.map((chainId) async {
-    var collections = Collections(dotenv.get('STYLE_ID')).collections[chainId]!;
-    //loop through all collections
-    collections.map((collection) async {
-      bool hasMinterRole = await checkMinterRole(
-          chainConfig[chainId]!.rpcUrl, collection["id"], userWalletAddress);
-      res.add(
-          CollectionMinterRoleObject(collection["id"], chainId, hasMinterRole));
-    });
-  });
-  return res;
 });
 
 //****NFT METADATA****

@@ -21,7 +21,8 @@ class ChainDropdown extends ConsumerWidget {
         onChanged: (value) {
           ref.read(selectedChainIdProvider.notifier).state = value!;
         },
-        items: Collections(dotenv.env['STYLE_ID']!).collections.keys.map((key) {
+        items: //TODO: Collections(dotenv.env['STYLE_ID']!).collections.keys.map((key) {
+            allCollections.collections.keys.map((key) {
           return DropdownMenuItem(
             value: key,
             child: Text(chainConfig[key]!.networkName),
