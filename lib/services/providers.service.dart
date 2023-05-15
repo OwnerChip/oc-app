@@ -127,6 +127,26 @@ final nftOwnerProvider =
   return nftOwner;
 });
 
+/// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
+final findAnyMinterRoleProvider = FutureProvider.autoDispose
+    .family<List<CollectionMinterRoleObject>, EthereumAddress>(
+        (ref, userWalletAddress) async {
+  var res = List<CollectionMinterRoleObject>.empty(growable: true);
+
+  //loop through all chains
+  chainConfig.keys.map((chainId) async {
+    var collections = Collections(dotenv.get('STYLE_ID')).collections[chainId]!;
+    //loop through all collections
+    collections.map((collection) async {
+      bool hasMinterRole = await checkMinterRole(
+          chainConfig[chainId]!.rpcUrl, collection["id"], userWalletAddress);
+      res.add(
+          CollectionMinterRoleObject(collection["id"], chainId, hasMinterRole));
+    });
+  });
+  return res;
+});
+
 //****NFT METADATA****
 
 final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {

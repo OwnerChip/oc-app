@@ -21,6 +21,15 @@ class BlockchainConfig {
       this.forwarderContract});
 }
 
+class CollectionMinterRoleObject {
+  final EthereumAddress collectionId;
+  final int chainId;
+  final bool hasMinterRole;
+
+  CollectionMinterRoleObject(
+      this.collectionId, this.chainId, this.hasMinterRole);
+}
+
 class TokenInfoObject {
   final int chainId;
   final EthereumAddress collectionId;
