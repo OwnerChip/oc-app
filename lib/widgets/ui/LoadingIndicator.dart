@@ -18,7 +18,7 @@ class _LoadingIndicatorState extends State<LoadingIndicator> {
     return Column(
       children: [
         CircularProgressIndicator(
-          color: CustomColors(dotenv.get('STYLE_ID')).progressBarColor,
+          color: CustomColors(dotenv.get('APP_ID')).progressBarColor,
         ),
         Padding(
           padding: const EdgeInsets.all(5),

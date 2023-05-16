@@ -13,15 +13,15 @@ class ChainDropdown extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DropdownButton<int>(
-        dropdownColor: CustomColors(dotenv.get('STYLE_ID')).cardColor,
+        dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
-            color: CustomColors(dotenv.get('STYLE_ID')).chainDropdownTextColor),
+            color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
         // value: chainId,
         value: ref.watch(selectedChainIdProvider),
         onChanged: (value) {
           ref.read(selectedChainIdProvider.notifier).state = value!;
         },
-        items: //TODO: Collections(dotenv.env['STYLE_ID']!).collections.keys.map((key) {
+        items: //TODO: Collections(dotenv.env['APP_ID']!).collections.keys.map((key) {
             allCollections.collections.keys.map((key) {
           return DropdownMenuItem(
             value: key,

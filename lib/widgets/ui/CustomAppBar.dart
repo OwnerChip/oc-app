@@ -66,7 +66,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                       padding: const EdgeInsets.all(0.0),
                       icon: SvgPicture.asset(
                           "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/back.svg"),
-                      color: CustomColors(dotenv.get('STYLE_ID')).black,
+                      color: CustomColors(dotenv.get('APP_ID')).black,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -87,7 +87,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                         padding: const EdgeInsets.all(0.0),
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/disconnect.svg"),
-                        color: CustomColors(dotenv.get('STYLE_ID')).black,
+                        color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () => onButtonPress(context, wc),
                       ),
                       Align(
@@ -109,7 +109,7 @@ class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
                         padding: const EdgeInsets.all(0.0),
                         icon: SvgPicture.asset(
                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/connect.svg"),
-                        color: CustomColors(dotenv.get('STYLE_ID')).black,
+                        color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () => onButtonPress(context, wc),
                       ),
                       Align(
