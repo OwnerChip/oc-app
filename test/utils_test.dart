@@ -1,9 +1,38 @@
 import 'package:flutter/foundation.dart';
+import 'package:ownerchip_whitelabel/config/collections.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:test/test.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 void main() {
+  group('data format helpers', () {
+    test('should re-order the collections by chainId', () {
+      // arrange
+      List<dynamic> rawData = [
+        {
+          'id': '0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e',
+          'name': "test",
+          'chainId': 137
+        }
+      ];
+
+      // act
+      Map<int, List<Collection>> data = groupCollectionsByChainId(rawData);
+
+      // assert
+      expect(data, {
+        137: [
+          Collection(
+              EthereumAddress.fromHex(
+                  '0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e'),
+              "test")
+        ]
+      });
+    });
+  });
+
   group('bigInt helpers', () {
     test('should parse a hex string to BigInt number', () {
       // arrange

@@ -54,16 +54,18 @@ final BlockchainCollectionList allCollections = BlockchainCollectionList({
 
 /// helper function
 Map<int, List<Collection>> groupCollectionsByChainId(
-    List<Collection> collections) {
+    List<dynamic> collections) {
   Map<int, List<Collection>> result = {};
 
-  for (Collection collection in collections) {
-    int chainId = collection.chainId!;
+  for (dynamic collection in collections) {
+    var col = Collection(
+        EthereumAddress.fromHex(collection["id"]), collection["name"]);
+    int chainId = collection["chainId"];
 
     if (result.containsKey(chainId)) {
-      result[chainId]!.add(collection);
+      result[chainId]!.add(col);
     } else {
-      result[chainId] = [collection];
+      result[chainId] = [col];
     }
   }
 
