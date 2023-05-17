@@ -122,7 +122,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
           } else {
             Navigator.pushReplacementNamed(
                 context, ChainSelectorScreen.routeName,
-                arguments: MetadataInputScreenArguments(randomNumber));
+                arguments: MetadataInputScreenArguments(
+                    randomNumber, 0, EthereumAddress.fromHex('0x')));
           }
         } else {
           //TOKEN EXISTS

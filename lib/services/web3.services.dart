@@ -232,7 +232,8 @@ Future<bool> checkMinterRole(String chainRpcUrl,
     return res;
   } catch (e) {
     print('Error while checking MINTER_ROLE: $e');
-    throw Exception('Error while checking MINTER_ROLE: $e');
+    //throw Exception('Error while checking MINTER_ROLE: $e');
+    return false;
   }
 }
 

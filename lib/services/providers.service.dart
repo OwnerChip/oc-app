@@ -21,6 +21,11 @@ final walletConnectProvider =
   return WalletConnector();
 });
 
+final userAddressProvider = FutureProvider.autoDispose<EthereumAddress>((ref) {
+  var wc = ref.watch(walletConnectProvider);
+  return EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
+});
+
 class WalletConnector extends StateNotifier<WalletConnect> {
   WalletConnector()
       : super(WalletConnect(
@@ -82,7 +87,7 @@ final chipInfoProvider =
 
 // **** COLLECTIONS ****
 
-/// get all collections associated with the app
+/// get all collections associated with the app (basis for filtering for MINTER_ROLE)
 final appCollectionProvider =
     FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
   BlockchainCollectionList collections;
@@ -98,44 +103,62 @@ final appCollectionProvider =
     collections = allCollections;
   }
 
-  return Future.value(collections);
+  return collections;
 });
 
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
-final findAnyMinterRoleProvider = FutureProvider.autoDispose
-    .family<List<CollectionMinterRoleObject>, EthereumAddress>(
-        (ref, userWalletAddress) async {
-  var res = List<CollectionMinterRoleObject>.empty(growable: true);
+final findAllMinterRolesProvider = FutureProvider.autoDispose
+    .family<List<Collection>, EthereumAddress>((ref, userWalletAddress) async {
+  var fut = List<Future<Map<String, dynamic>>>.empty(growable: true);
 
   final blockchainCollectionsList =
       await ref.watch(appCollectionProvider.future);
 
   //loop through all chains
-  blockchainCollectionsList.collections.keys.map((chainId) async {
+  blockchainCollectionsList.collections.keys.map((chainId) {
     var collections = blockchainCollectionsList.collections[chainId]!;
     //loop through all collections
-    collections.map((collection) async {
-      bool hasMinterRole = await checkMinterRole(
+    collections.map((collection) {
+      Future<bool> hasMinterRole = checkMinterRole(
           getRPCUrlFromChainId(chainId), collection.id, userWalletAddress);
-      res.add(
-          CollectionMinterRoleObject(collection.id, chainId, hasMinterRole));
+      fut.add({
+        "id": collection.id,
+        "name": collection.name,
+        "chainId": chainId,
+        "hasMinterRole": hasMinterRole
+      } as Future<Map<String, dynamic>>);
     });
   });
+  var resRaw = await Future.wait(fut);
+  List<Collection> res = resRaw
+      .map((e) => Collection(e["id"], e["name"],
+          chainId: e["chainId"], hasMinterRole: e["hasMinterRole"]))
+      .toList();
   return res;
 });
 
 // **** CHAIN ID + COLLECTION ID ****
 
 // only used in admin app for selecting the chain
-final selectedChainIdProvider = StateProvider.autoDispose<int>(
-    (ref) => allCollections.collections.keys.first);
+final relevantCollectionsProvider =
+    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
+  var userAddress = await ref.watch(userAddressProvider.future);
+  var relevantCollections =
+      await ref.watch(findAllMinterRolesProvider(userAddress).future);
+  var res = groupCollectionsByChainId(relevantCollections);
+  return BlockchainCollectionList(res);
+});
+
+// only used in admin app for selecting the chain
+final selectedChainIdProvider = StateProvider.autoDispose
+    .family<int, BlockchainCollectionList>(
+        (ref, col) => col.collections.keys.first);
 
 // only used in admin app for selecting the collection
-final selectedCollectionIdProvider =
-    StateProvider.autoDispose<EthereumAddress>((ref) {
-  final int chainId = ref.watch(selectedChainIdProvider);
-  //TODO: final BlockchainCollectionList collections = ref.watch(appCollectionProvider)
-  return allCollections.collections[chainId]![0].id;
+final selectedCollectionIdProvider = StateProvider.autoDispose
+    .family<EthereumAddress, BlockchainCollectionList>((ref, col) {
+  final int chainId = ref.watch(selectedChainIdProvider(col));
+  return col.collections[chainId]![0].id;
 });
 
 final findTokenProvider = FutureProvider.autoDispose

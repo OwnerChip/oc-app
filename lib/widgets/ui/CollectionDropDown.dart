@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:web3dart/web3dart.dart';
@@ -10,24 +11,35 @@ import 'package:web3dart/web3dart.dart';
 class CollectionDropdown extends ConsumerWidget {
   const CollectionDropdown({super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _buildDropdown(data, ref) {
     final EthereumAddress collectionId =
-        ref.watch(selectedCollectionIdProvider);
-    final int chainId = ref.watch(selectedChainIdProvider);
+        ref.watch(selectedCollectionIdProvider(data));
+    final int chainId = ref.watch(selectedChainIdProvider(data));
+
     return DropdownButton<dynamic>(
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
         value: collectionId,
         onChanged: (value) {
-          ref.read(selectedCollectionIdProvider.notifier).state = value!;
+          ref.read(selectedCollectionIdProvider(data).notifier).state = value!;
         },
-        items: allCollections.collections[chainId]!.map((collection) {
+        items: data.collections[chainId]!.map((collection) {
           return DropdownMenuItem(
             value: collection.id,
             child: Text(collection.name),
           );
         }).toList());
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    AsyncValue<BlockchainCollectionList> relevantCollections =
+        ref.watch(relevantCollectionsProvider);
+
+    return relevantCollections.when(
+        data: (data) => _buildDropdown(data, ref),
+        loading: () => const Text("Loading..."),
+        error: (err, stack) => const Text("Error"));
   }
 }

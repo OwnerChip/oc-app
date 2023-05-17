@@ -5,9 +5,12 @@ import 'package:web3dart/crypto.dart';
 class Collection {
   final EthereumAddress id;
   final String name;
+  final String? symbol;
   final int? chainId;
+  final bool? hasMinterRole;
 
-  Collection(this.id, this.name, {this.chainId});
+  Collection(this.id, this.name,
+      {this.symbol, this.chainId, this.hasMinterRole});
 }
 
 class BlockchainCollectionList {
@@ -33,15 +36,6 @@ class BlockchainConfig {
       required this.raribleUrl,
       required this.blockchainExplorerUrl,
       this.forwarderContract});
-}
-
-class CollectionMinterRoleObject {
-  final EthereumAddress collectionId;
-  final int chainId;
-  final bool hasMinterRole;
-
-  CollectionMinterRoleObject(
-      this.collectionId, this.chainId, this.hasMinterRole);
 }
 
 class TokenInfoObject {

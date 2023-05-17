@@ -1,6 +1,7 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:sentry/sentry.dart';
 
@@ -22,6 +23,7 @@ import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:web3dart/web3dart.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {
   const ChainSelectorScreen({Key? key}) : super(key: key);
@@ -36,6 +38,12 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
       BuildContext context, WalletConnect wc, mounted, int randomNumber) async {
     final wc = ref.watch(walletConnectProvider);
+    BlockchainCollectionList relevantCollections =
+        await ref.watch(relevantCollectionsProvider.future);
+    final int chainId =
+        await ref.watch(selectedChainIdProvider(relevantCollections));
+    final EthereumAddress collectionId =
+        await ref.watch(selectedCollectionIdProvider(relevantCollections));
     try {
       if (!wc.connected) {
         await startWalletConnection(context, wc);
@@ -47,7 +55,8 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
               .setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
         );
         Navigator.pushNamed(context, MetadataScreen.routeName,
-            arguments: MetadataInputScreenArguments(randomNumber));
+            arguments: MetadataInputScreenArguments(
+                randomNumber, chainId, collectionId));
       }
     } catch (e, s) {
       await Sentry.captureException(

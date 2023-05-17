@@ -1,6 +1,7 @@
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:web3dart/web3dart.dart';
 
+// as fallback only!
 final BlockchainCollectionList allCollections = BlockchainCollectionList({
   1: [
     Collection(
