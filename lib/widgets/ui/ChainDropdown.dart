@@ -17,11 +17,11 @@ class ChainDropdown extends ConsumerWidget {
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
         // value: chainId,
-        value: ref.watch(selectedChainIdProvider(data)),
+        value: ref.read(selectedChainIdProvider(data)),
         onChanged: (value) {
           ref.read(selectedChainIdProvider(data).notifier).state = value!;
         },
-        items: data.collections.keys.map((key) {
+        items: data.collections.keys.map<DropdownMenuItem<int>>((int key) {
           return DropdownMenuItem(
             value: key,
             child: Text(chainConfig[key]!.networkName),
@@ -32,7 +32,7 @@ class ChainDropdown extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AsyncValue<BlockchainCollectionList> relevantCollections =
-        ref.watch(relevantCollectionsProvider);
+        ref.watch(findAllMinterRolesProvider);
 
     return relevantCollections.when(
         data: (data) => _buildDropdown(data, ref),

@@ -13,18 +13,6 @@ Dio getBackendClient() {
       headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
 }
 
-/// get a list of all collections associated with a specific app
-Future<List<dynamic>> getAppCollections() async {
-  final Dio dio = getBackendClient();
-  dio.addSentry();
-
-  final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
-  final String url = '/collection/$appId';
-
-  final response = await dio.get(url);
-  return response.data.collections;
-}
-
 // Checks if a gasless transaction is supported by a collection.
 // Returns a tuple of [bool, String].
 // bool: true if a meta transaction is supported, false otherwise.

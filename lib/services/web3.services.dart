@@ -227,9 +227,10 @@ Future<dynamic> getOwner(
 Future<bool> checkMinterRole(String chainRpcUrl,
     EthereumAddress contractAddress, EthereumAddress fromAddress) async {
   try {
-    bool res = await queryCollectionContract(chainRpcUrl, contractAddress,
-        "hasRole", ["MINTER_ROLE", fromAddress]) as bool;
-    return res;
+    Uint8List minterRoleUint8 = keccakUtf8("MINTER_ROLE");
+    List res = await queryCollectionContract(chainRpcUrl, contractAddress,
+        "hasRole", [minterRoleUint8, fromAddress]);
+    return res[0];
   } catch (e) {
     print('Error while checking MINTER_ROLE: $e');
     //throw Exception('Error while checking MINTER_ROLE: $e');

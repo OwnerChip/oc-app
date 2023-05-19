@@ -55,7 +55,7 @@ final BlockchainCollectionList allCollections = BlockchainCollectionList({
 
 /// helper function
 Map<int, List<Collection>> groupCollectionsByChainId(
-    List<dynamic> collections) {
+    List<Collection> collections) {
   Map<int, List<Collection>> result = {};
 
   for (dynamic collection in collections) {

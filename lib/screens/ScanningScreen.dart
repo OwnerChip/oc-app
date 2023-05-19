@@ -111,9 +111,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         }
 
         if (config.collectionId == zeroAddress) {
-          //TOKEN DOES NOT EXIST
           sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_NEGATIVE",
               tags: {"chipWallet": chipWalletAddress});
+          //TOKEN DOES NOT EXIST
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
@@ -122,8 +122,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
           } else {
             Navigator.pushReplacementNamed(
                 context, ChainSelectorScreen.routeName,
-                arguments: MetadataInputScreenArguments(
-                    randomNumber, 0, EthereumAddress.fromHex('0x')));
+                arguments:
+                    MetadataInputScreenArguments(randomNumber, 0, zeroAddress));
           }
         } else {
           //TOKEN EXISTS

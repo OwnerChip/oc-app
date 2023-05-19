@@ -11,20 +11,19 @@ import 'package:web3dart/web3dart.dart';
 class CollectionDropdown extends ConsumerWidget {
   const CollectionDropdown({super.key});
 
-  _buildDropdown(data, ref) {
-    final EthereumAddress collectionId =
-        ref.watch(selectedCollectionIdProvider(data));
+  _buildDropdown(BlockchainCollectionList data, ref) {
+    final Collection collection = ref.read(selectedCollectionIdProvider(data));
     final int chainId = ref.watch(selectedChainIdProvider(data));
 
     return DropdownButton<dynamic>(
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
-        value: collectionId,
+        value: collection.id,
         onChanged: (value) {
           ref.read(selectedCollectionIdProvider(data).notifier).state = value!;
         },
-        items: data.collections[chainId]!.map((collection) {
+        items: data.collections[chainId]!.map<DropdownMenuItem>((collection) {
           return DropdownMenuItem(
             value: collection.id,
             child: Text(collection.name),
@@ -35,7 +34,7 @@ class CollectionDropdown extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AsyncValue<BlockchainCollectionList> relevantCollections =
-        ref.watch(relevantCollectionsProvider);
+        ref.watch(findAllMinterRolesProvider);
 
     return relevantCollections.when(
         data: (data) => _buildDropdown(data, ref),

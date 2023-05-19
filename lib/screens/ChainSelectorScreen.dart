@@ -39,10 +39,10 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
       BuildContext context, WalletConnect wc, mounted, int randomNumber) async {
     final wc = ref.watch(walletConnectProvider);
     BlockchainCollectionList relevantCollections =
-        await ref.watch(relevantCollectionsProvider.future);
+        await ref.watch(findAllMinterRolesProvider.future);
     final int chainId =
         await ref.watch(selectedChainIdProvider(relevantCollections));
-    final EthereumAddress collectionId =
+    final Collection collection =
         await ref.watch(selectedCollectionIdProvider(relevantCollections));
     try {
       if (!wc.connected) {
@@ -56,7 +56,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
         );
         Navigator.pushNamed(context, MetadataScreen.routeName,
             arguments: MetadataInputScreenArguments(
-                randomNumber, chainId, collectionId));
+                randomNumber, chainId, collection.id));
       }
     } catch (e, s) {
       await Sentry.captureException(

@@ -7,7 +7,7 @@ class Collection {
   final String name;
   final String? symbol;
   final int? chainId;
-  final bool? hasMinterRole;
+  bool? hasMinterRole;
 
   Collection(this.id, this.name,
       {this.symbol, this.chainId, this.hasMinterRole});
