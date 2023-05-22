@@ -98,8 +98,6 @@ final findAllMinterRolesProvider =
   bool hasAnyMinterRole = false;
   allCollections.collections.forEach((chainId, collections) {
     for (var collection in collections) {
-      EthereumAddress registryContract =
-          EthereumAddress.fromHex(chainConfig[chainId]!.registryContract);
       Future<bool> hasMinterRoleFuture = checkMinterRole(
           getRPCUrlFromChainId(chainId), collection.id, userWalletAddress);
       futures.add(hasMinterRoleFuture);
@@ -115,6 +113,11 @@ final findAllMinterRolesProvider =
   // create BlockchainCollectionList from res
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
+    // if collection is OPEN, add it to the list
+    if (collection.id ==
+        EthereumAddress.fromHex('0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
+      collection.hasMinterRole = true;
+    }
     if (collection.hasMinterRole!) {
       hasAnyMinterRole = true;
       if (filteredCollections.containsKey(collection.chainId)) {
