@@ -95,6 +95,7 @@ final findAllMinterRolesProvider =
   //loop through all chains
   List<Future> futures = [];
   List<Collection> res = [];
+  bool hasAnyMinterRole = false;
   allCollections.collections.forEach((chainId, collections) {
     for (var collection in collections) {
       EthereumAddress registryContract =
@@ -115,6 +116,7 @@ final findAllMinterRolesProvider =
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
     if (collection.hasMinterRole!) {
+      hasAnyMinterRole = true;
       if (filteredCollections.containsKey(collection.chainId)) {
         filteredCollections[collection.chainId]!.add(collection);
       } else {
@@ -122,7 +124,8 @@ final findAllMinterRolesProvider =
       }
     }
   }
-  return BlockchainCollectionList(filteredCollections);
+  return BlockchainCollectionList(filteredCollections,
+      hasAnyMinterRole: hasAnyMinterRole);
 });
 
 // **** CHAIN ID + COLLECTION ID ****

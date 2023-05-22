@@ -15,8 +15,9 @@ class Collection {
 
 class BlockchainCollectionList {
   final Map<int, List<Collection>> collections;
+  bool? hasAnyMinterRole;
 
-  BlockchainCollectionList(this.collections);
+  BlockchainCollectionList(this.collections, {this.hasAnyMinterRole});
 }
 
 class BlockchainConfig {
