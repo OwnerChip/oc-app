@@ -23,6 +23,7 @@ final walletConnectProvider =
 
 final userAddressProvider = FutureProvider.autoDispose<EthereumAddress>((ref) {
   var wc = ref.watch(walletConnectProvider);
+  ref.keepAlive();
   return EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 });
 
