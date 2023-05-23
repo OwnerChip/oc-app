@@ -88,16 +88,38 @@ final chipInfoProvider =
 
 // **** COLLECTIONS ****
 
+/// get all collections associated with the app (basis for filtering for MINTER_ROLE)
+final appCollectionProvider =
+    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
+  BlockchainCollectionList collections;
+
+  // first, try to get the collections from the backend
+  try {
+    final rawCollections = await getAppCollections() as List<Collection>;
+    collections =
+        groupCollectionsByChainId(rawCollections) as BlockchainCollectionList;
+  } catch (e) {
+    print("Error getting collections from backend: $e");
+    // if the backend is not available, get the collections from the config file
+    collections = allCollections;
+  }
+
+  return collections;
+});
+
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
     FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
   EthereumAddress userWalletAddress =
       await ref.watch(userAddressProvider.future);
+  final unfilteredCollectionsList =
+      await ref.watch(appCollectionProvider.future);
   //loop through all chains
   List<Future> futures = [];
   List<Collection> res = [];
   bool hasAnyMinterRole = false;
-  allCollections.collections.forEach((chainId, collections) {
+
+  unfilteredCollectionsList.collections.forEach((chainId, collections) {
     for (var collection in collections) {
       Future<bool> hasMinterRoleFuture = checkMinterRole(
           getRPCUrlFromChainId(chainId), collection.id, userWalletAddress);
