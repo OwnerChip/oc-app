@@ -72,29 +72,28 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
               height: 60,
             ),
             CustomRoundedButton(
-                text: 'Watch Tutorial', onPressed: () {}, width: 250),
+                text: context.loc.watchTutorial, onPressed: () {}, width: 250),
             const SizedBox(height: 10),
             CustomRoundedButton(
-                text: 'View our Projects', onPressed: () {}, width: 250),
+                text: context.loc.viewProjects, onPressed: () {}, width: 250),
             const SizedBox(height: 10),
             CustomRoundedButton(
-                text: 'Order Chips', onPressed: () {}, width: 250),
+                text: context.loc.orderChips, onPressed: () {}, width: 250),
 
             const SizedBox(height: 60),
             CustomOutlinedButton(
-                buttonText: 'Support',
+                buttonText: context.loc.support,
                 onPressed: () => {
                       launchUrl(Uri.parse(dotenv.get('SUPPORT_PAGE_URL')),
                           mode: LaunchMode.externalApplication)
                     }),
             const SizedBox(height: 10),
             CustomOutlinedButton(
-                buttonText: 'Legal Info',
+                buttonText: context.loc.legal,
                 onPressed: () => {
                       launchUrl(Uri.parse(dotenv.get('LEGAL_PAGE_URL')),
                           mode: LaunchMode.externalApplication)
                     }),
-            //smalle text
             const SizedBox(height: 20),
             Text('Version: ${dotenv.get('VERSION_NUMBER')}',
                 style: Theme.of(context).textTheme.bodySmall),
