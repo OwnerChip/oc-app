@@ -12,6 +12,7 @@ class CustomRoundedButton extends StatelessWidget {
     this.height = 40,
     this.width = double.infinity,
     this.backgroundColor,
+    this.borderColor,
     this.textStyle,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
@@ -23,20 +24,18 @@ class CustomRoundedButton extends StatelessWidget {
   final double height;
   final double? width;
   final Color? backgroundColor;
+  final Color? borderColor;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
   TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
-    bool isActive = true;
-
     return SizedBox(
       width: width,
       height: height,
       child: ElevatedButton(
-          onPressed: (() =>
-              (onPressed != null) ? onPressed!() : isActive = false),
+          onPressed: (() => (onPressed != null) ? onPressed!() : null),
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ??
                 CustomColors(dotenv.get('APP_ID')).primaryColor,

@@ -17,17 +17,20 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -161,55 +164,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onTap: () =>
                             onInitializeButtonPress(context, wc, mounted))
                     : Container(),
-                loading: () => Container(child: const Text('Loading')),
+                loading: () => const Text('Loading'),
                 error: (err, stack) => Container()),
             const SizedBox(height: 20),
-            CustomRoundedButton(
-              width: 250,
-              text: context.loc.moreInfo,
-              onPressed: () => {
-                launchUrl(Uri.parse(dotenv.get('LANDING_PAGE_URL')),
-                    mode: LaunchMode.externalApplication)
-              },
+            CustomOutlinedButton(
+              buttonText: 'More...',
+              onPressed: () =>
+                  Navigator.pushNamed(context, MoreInfoScreen.routeName),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Powered by ',
-                  style: TextStyle(
-                      color: Theme.of(context).primaryColor, fontSize: 12),
-                ),
-                GestureDetector(
-                  onTap: () => {
-                    launchUrl(Uri.parse('https://ownerchip.com'),
-                        mode: LaunchMode.externalApplication)
-                  },
-                  child: Text(
-                    'OwnerChip.com',
-                    style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        color: Theme.of(context).primaryColor,
-                        fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () => {
-                launchUrl(Uri.parse(dotenv.get('LEGAL_PAGE_URL')),
-                    mode: LaunchMode.externalApplication)
-              },
-              child: Text(
-                context.loc.legal,
-                style: TextStyle(
-                    decoration: TextDecoration.underline,
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 12),
-              ),
-            )
           ]),
     );
   }
