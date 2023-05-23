@@ -85,8 +85,10 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     children: [
                       IconButton(
                         padding: const EdgeInsets.all(0.0),
-                        icon: SvgPicture.asset(
-                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/disconnect.svg"),
+                        icon: Icon(Icons.logout,
+                            color:
+                                CustomColors(dotenv.get('APP_ID')).primaryColor,
+                            size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () => onButtonPress(context, wc),
                       ),
@@ -107,8 +109,10 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     children: [
                       IconButton(
                         padding: const EdgeInsets.all(0.0),
-                        icon: SvgPicture.asset(
-                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/connect.svg"),
+                        icon: Icon(Icons.wallet,
+                            color:
+                                CustomColors(dotenv.get('APP_ID')).primaryColor,
+                            size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () => onButtonPress(context, wc),
                       ),
