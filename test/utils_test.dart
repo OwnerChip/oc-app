@@ -10,12 +10,12 @@ void main() {
   group('data format helpers', () {
     test('should re-order the collections by chainId', () {
       // arrange
-      List<dynamic> rawData = [
-        {
-          'id': '0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e',
-          'name': "test",
-          'chainId': 137
-        }
+      List<Collection> rawData = [
+        Collection(
+            EthereumAddress.fromHex(
+                '0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e'),
+            "test",
+            chainId: 137),
       ];
 
       // act
