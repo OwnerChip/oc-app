@@ -128,8 +128,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
-          //withScrollView: dotenv.get('IS_ADMIN') == 'true' ? true : false,
-          mainAxisAlignment: MainAxisAlignment.center,
+          withScrollView: false,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
@@ -149,26 +149,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ])
                 : const SizedBox(height: 20),
-            CustomHomeScreenButton(
-                text: context.loc.scanning,
-                svgPath:
-                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                onTap: () => onScanButtonPress(context, mounted)),
-            const SizedBox(height: 20),
-            relevantCollections.when(
-                data: (data) => data.hasAnyMinterRole!
-                    ? CustomHomeScreenButton(
-                        text: context.loc.initializeChip,
-                        svgPath:
-                            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
-                        onTap: () =>
-                            onInitializeButtonPress(context, wc, mounted))
-                    : Container(),
-                loading: () => const Text('Loading'),
-                error: (err, stack) => Container()),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CustomRoundedButton(
+                  width: 250,
+                  text: context.loc.scanNow,
+                  onPressed: () => onScanButtonPress(context, mounted),
+                ),
+                const SizedBox(height: 20),
+                relevantCollections.when(
+                    data: (data) => data.hasAnyMinterRole!
+                        ? CustomRoundedButton(
+                            width: 250,
+                            text: context.loc.initializeChip,
+                            onPressed: () =>
+                                onInitializeButtonPress(context, wc, mounted),
+                          )
+                        : Container(),
+                    loading: () => Text(context.loc.loading),
+                    error: (err, stack) => Container()),
+              ],
+            ),
             const SizedBox(height: 20),
             CustomOutlinedButton(
-              buttonText: 'More...',
+              buttonText: context.loc.more,
               onPressed: () =>
                   Navigator.pushNamed(context, MoreInfoScreen.routeName),
             ),

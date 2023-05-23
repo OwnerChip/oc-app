@@ -96,9 +96,15 @@
     "continueInBackground": "Im Hintergrund laden",
     "unknownCollection": "Unbekannte Collection",
     "chooseChain": "Wähle \n Chain + Collection",
-    "legal": "Support & Legal Information",
+    "legal": "Legal Information",
+    "support": "Support",
     "selectChain": "Auswahl",
     "selectBlockchain": "Blockchain auswählen",
     "selectCollection": "Collection auswählen",
-    "troubleshoot": "Ich brauche Hilfe"
+    "troubleshoot": "Ich brauche Hilfe",
+    "more": "Mehr...",
+    "watchTutorial": "Tutorial ansehen",
+    "viewProjects": "Unsere Projekte",
+    "orderChips": "Chips bestellen",
+    "scanNow": "Jetzt Scannen"
 }
