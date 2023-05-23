@@ -16,6 +16,7 @@ class CollectionDropdown extends ConsumerWidget {
     final int chainId = ref.watch(selectedChainIdProvider(data));
 
     return DropdownButton<dynamic>(
+        isExpanded: true,
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),

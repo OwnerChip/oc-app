@@ -13,6 +13,7 @@ class ChainDropdown extends ConsumerWidget {
 
   _buildDropdown(data, ref) {
     return DropdownButton<int>(
+        isExpanded: true,
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
