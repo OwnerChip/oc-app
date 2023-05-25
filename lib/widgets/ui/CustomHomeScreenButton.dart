@@ -28,25 +28,12 @@ class CustomHomeScreenButton extends StatelessWidget {
             decoration: BoxDecoration(
               // color: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: CustomColors(dotenv.get('APP_ID'))
-                      .customHomeScreenButtonShadowColor,
-                  blurRadius: 5,
-                  offset: const Offset(3, 4),
-                ),
-              ],
             ),
             child: SvgPicture.asset(
               fit: BoxFit.cover,
               svgPath,
             )),
       ),
-      const SizedBox(height: 10),
-      Text(
-        text,
-        style: Theme.of(context).textTheme.displaySmall,
-      )
     ]);
   }
 }

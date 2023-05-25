@@ -21,7 +21,7 @@ final walletConnectProvider =
   return WalletConnector();
 });
 
-final userAddressProvider = FutureProvider.autoDispose<EthereumAddress>((ref) {
+final userAddressProvider = StateProvider<EthereumAddress>((ref) {
   var wc = ref.watch(walletConnectProvider);
   return EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 });
@@ -90,8 +90,7 @@ final chipInfoProvider =
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
     FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
-  EthereumAddress userWalletAddress =
-      await ref.watch(userAddressProvider.future);
+  EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
   //loop through all chains
   List<Future> futures = [];
   List<Collection> res = [];

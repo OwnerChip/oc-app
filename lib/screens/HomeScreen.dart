@@ -1,12 +1,12 @@
 //import packages
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry/sentry.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -24,6 +24,7 @@ import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -129,7 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: ScreenBodyLayout(
           withScrollView: false,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
@@ -148,10 +149,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                   ])
-                : const SizedBox(height: 20),
+                : Container(),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                CustomHomeScreenButton(
+                    text: context.loc.scanning,
+                    svgPath:
+                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
+                    onTap: () => onScanButtonPress(context, mounted)),
+                const SizedBox(height: 40),
                 CustomRoundedButton(
                   width: 250,
                   text: context.loc.scanNow,

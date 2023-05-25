@@ -23,6 +23,7 @@ class ChainDropdown extends ConsumerWidget {
           ref.read(selectedChainIdProvider(data).notifier).state = value!;
         },
         items: data.collections.keys.map<DropdownMenuItem<int>>((int key) {
+          print('test');
           return DropdownMenuItem(
             value: key,
             child: Text(chainConfig[key]!.networkName),
