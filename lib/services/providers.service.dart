@@ -21,10 +21,12 @@ final walletConnectProvider =
   return WalletConnector();
 });
 
-final userAddressProvider = FutureProvider.autoDispose<EthereumAddress>((ref) {
-  var wc = ref.watch(walletConnectProvider);
-  ref.keepAlive();
-  return EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
+final userAddressProvider = StateProvider<EthereumAddress>((ref) {
+  final wc = ref.watch(walletConnectProvider);
+  final addr = wc.session.accounts.isNotEmpty
+      ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
+      : zeroAddress;
+  return addr;
 });
 
 class WalletConnector extends StateNotifier<WalletConnect> {
@@ -110,10 +112,10 @@ final appCollectionProvider =
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
     FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
-  EthereumAddress userWalletAddress =
-      await ref.watch(userAddressProvider.future);
+  EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
   final unfilteredCollectionsList =
       await ref.watch(appCollectionProvider.future);
+  ref.keepAlive();
   //loop through all chains
   List<Future> futures = [];
   List<Collection> res = [];
@@ -159,13 +161,14 @@ final findAllMinterRolesProvider =
 // only used in admin app for selecting the chain
 final selectedChainIdProvider = StateProvider.autoDispose
     .family<int, BlockchainCollectionList>(
-        (ref, col) => col.collections.keys.first);
+        (ref, col) => col.collections.keys.last);
 
 // only used in admin app for selecting the collection
 final selectedCollectionIdProvider = StateProvider.autoDispose
     .family<Collection, BlockchainCollectionList>((ref, bcCollectionList) {
   final int chainId = ref.watch(selectedChainIdProvider(bcCollectionList));
-  return bcCollectionList.collections[chainId]![0];
+  final Collection res = bcCollectionList.collections[chainId]![0];
+  return res;
 });
 
 final findTokenProvider = FutureProvider.autoDispose

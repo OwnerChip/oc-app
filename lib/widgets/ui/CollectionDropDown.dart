@@ -12,20 +12,20 @@ class CollectionDropdown extends ConsumerWidget {
   const CollectionDropdown({super.key});
 
   _buildDropdown(BlockchainCollectionList data, ref) {
-    final Collection collection = ref.read(selectedCollectionIdProvider(data));
+    final Collection collection = ref.watch(selectedCollectionIdProvider(data));
     final int chainId = ref.watch(selectedChainIdProvider(data));
 
     return DropdownButton<dynamic>(
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
-        value: collection.id,
+        value: collection,
         onChanged: (value) {
-          ref.read(selectedCollectionIdProvider(data).notifier).state = value!;
+          ref.read(selectedCollectionIdProvider(data).notifier).state = value;
         },
         items: data.collections[chainId]!.map<DropdownMenuItem>((collection) {
           return DropdownMenuItem(
-            value: collection.id,
+            value: collection,
             child: Text(collection.name),
           );
         }).toList());
