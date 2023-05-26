@@ -22,8 +22,11 @@ final walletConnectProvider =
 });
 
 final userAddressProvider = StateProvider<EthereumAddress>((ref) {
-  var wc = ref.watch(walletConnectProvider);
-  return EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
+  final wc = ref.watch(walletConnectProvider);
+  final addr = wc.session.accounts.isNotEmpty
+      ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
+      : zeroAddress;
+  return addr;
 });
 
 class WalletConnector extends StateNotifier<WalletConnect> {
@@ -89,8 +92,12 @@ final chipInfoProvider =
 
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
-    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
-  EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
+    FutureProvider<BlockchainCollectionList>((ref) async {
+  WalletConnect wc = ref.read(walletConnectProvider);
+
+  EthereumAddress userWalletAddress = wc.session.accounts.isNotEmpty
+      ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
+      : zeroAddress;
   //loop through all chains
   List<Future> futures = [];
   List<Collection> res = [];
@@ -176,6 +183,7 @@ final nftOwnerProvider =
       getRPCUrlFromChainId(config.chainId),
       config.collectionId,
       chipInfo.tokenId);
+
   return nftOwner;
 });
 
