@@ -100,5 +100,7 @@
     "selectChain": "Select chain",
     "selectBlockchain": "Select a blockchain to connect to",
     "selectCollection": "Select the collection you want to use",
-    "troubleshoot": "I need help"
+    "troubleshoot": "I need help",
+    "pleaseSelect": "- please select -",
+    "pleaseSelectChainAndCollection": "Please select a Blockchain & Collection"
 }

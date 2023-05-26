@@ -100,5 +100,7 @@
     "selectChain": "Auswahl",
     "selectBlockchain": "Blockchain auswählen",
     "selectCollection": "Collection auswählen",
-    "troubleshoot": "Ich brauche Hilfe"
+    "troubleshoot": "Ich brauche Hilfe",
+    "pleaseSelect": "- bitte auswählen -",
+    "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen"
 }
