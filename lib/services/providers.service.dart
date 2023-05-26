@@ -105,7 +105,6 @@ final appCollectionProvider =
     // if the backend is not available, get the collections from the config file
     collections = allCollections;
   }
-
   return collections;
 });
 
@@ -154,7 +153,16 @@ final findAllMinterRolesProvider =
       }
     }
   }
-  return BlockchainCollectionList(filteredCollections,
+  // add zero address for selection ui if more than 1 chain
+  Map<int, List<Collection>> minterCollections =
+      (filteredCollections.length > 1)
+          ? {
+              0: [Collection(zeroAddress, "- please select -")],
+              ...filteredCollections
+            }
+          : filteredCollections;
+
+  return BlockchainCollectionList(minterCollections,
       hasAnyMinterRole: hasAnyMinterRole);
 });
 
@@ -163,7 +171,7 @@ final findAllMinterRolesProvider =
 // only used in admin app for selecting the chain
 final selectedChainIdProvider = StateProvider.autoDispose
     .family<int, BlockchainCollectionList>(
-        (ref, col) => col.collections.keys.last);
+        (ref, col) => col.collections.keys.first);
 
 // only used in admin app for selecting the collection
 final selectedCollectionIdProvider = StateProvider.autoDispose
