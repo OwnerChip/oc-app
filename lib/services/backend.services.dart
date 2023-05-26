@@ -4,25 +4,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_dio/sentry_dio.dart';
 import 'package:sentry/sentry.dart';
 
-/// get OC backend client (with sentry interceptor)
+/// get OC backend client
 Dio getBackendClient() {
-  final client = Dio(BaseOptions(
+  return Dio(BaseOptions(
       baseUrl: dotenv.get('IS_INTERNAL') == 'true'
           ? dotenv.get('OC_BACKEND_URL_TEST')
           : dotenv.get('OC_BACKEND_URL'),
       headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
-  client.addSentry();
-  return client;
-}
-
-/// get a list of all collections associated with a specific app
-Future<List<dynamic>> getAppCollections() async {
-  final Dio dio = getBackendClient();
-  final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
-  final String url = '/app/$appId';
-
-  final response = await dio.get(url);
-  return response.data['collections'];
 }
 
 // Checks if a gasless transaction is supported by a collection.
@@ -33,6 +21,7 @@ Future<List<dynamic>> getAppCollections() async {
 Future<List<dynamic>> checkMetaTx(
     EthereumAddress collectionId, String functionSignatureHash) async {
   final Dio dio = getBackendClient();
+  dio.addSentry();
   final String url = '/collection/$collectionId/metaTx/$functionSignatureHash';
   try {
     final response = await dio.get(url);
@@ -51,6 +40,7 @@ Future<String> sendGaslessRequest(
     String metaTxAgreementId,
     Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
+  dio.addSentry();
   final String url = '/collection/$collectionId/metatx';
   //make post request with dio
   final response = await dio.post(url, data: {
@@ -65,6 +55,7 @@ Future<String> sendGaslessRequest(
 Future<void> sendAnalyticsTrace(String caseId, String description, String type,
     {Map<String, dynamic>? tags}) async {
   final Dio dio = getBackendClient();
+  dio.addSentry();
   final String url = '/app/${dotenv.get('BITRISEIO_PACKAGE_NAME')}/action';
   //make post request with dio (do not care about response)
   try {

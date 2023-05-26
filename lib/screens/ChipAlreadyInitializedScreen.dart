@@ -206,12 +206,13 @@ class _ChipAlreadyInitializedState
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CustomCard(
-                  color: CustomColors(dotenv.get('APP_ID')).cardColor,
+                  color: CustomColors(dotenv.get('STYLE_ID')).cardColor,
                   width: 300,
                   children: [
                     Icon(Icons.warning_amber_rounded,
-                        color: CustomColors(dotenv.get('APP_ID')).warningColor,
-                        size: CustomFonts(dotenv.get('APP_ID'))
+                        color:
+                            CustomColors(dotenv.get('STYLE_ID')).warningColor,
+                        size: CustomFonts(dotenv.get('STYLE_ID'))
                             .adminWarningHeadlineFontSize), //spacing
                     const SizedBox(
                       height: 20,
@@ -220,10 +221,10 @@ class _ChipAlreadyInitializedState
                       context.loc.warning,
                       style: TextStyle(
                           color:
-                              CustomColors(dotenv.get('APP_ID')).warningColor,
-                          fontSize: CustomFonts(dotenv.get('APP_ID'))
+                              CustomColors(dotenv.get('STYLE_ID')).warningColor,
+                          fontSize: CustomFonts(dotenv.get('STYLE_ID'))
                               .adminWarningSubtextFontSize,
-                          fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                          fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
                               .adminWarningSubtextFontWeight),
                     ),
                     const SizedBox(height: 10),
@@ -277,7 +278,7 @@ class _ChipAlreadyInitializedState
                     const SizedBox(
                       height: 8,
                     ),
-                    dotenv.get('APP_ID') == 'ownerchip_infineon'
+                    dotenv.get('STYLE_ID') == 'ownerchip_infineon'
                         ? Container()
                         : CustomRoundedButton(
                             width: 250,

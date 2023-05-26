@@ -89,7 +89,7 @@ class _SetImageWidgetState extends ConsumerState<SetImageWidget> {
                             CustomRoundedButton(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 icon: Icon(Icons.camera_alt_outlined,
-                                    color: CustomColors(dotenv.get('APP_ID'))
+                                    color: CustomColors(dotenv.get('STYLE_ID'))
                                         .metadataImagePickerIconsColor),
                                 width: 180,
                                 text: context.loc.takePicture,
@@ -98,7 +98,7 @@ class _SetImageWidgetState extends ConsumerState<SetImageWidget> {
                             CustomRoundedButton(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 icon: Icon(Icons.image_outlined,
-                                    color: CustomColors(dotenv.get('APP_ID'))
+                                    color: CustomColors(dotenv.get('STYLE_ID'))
                                         .metadataImagePickerIconsColor),
                                 width: 180,
                                 text: context.loc.selectImage,

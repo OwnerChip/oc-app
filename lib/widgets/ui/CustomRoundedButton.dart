@@ -39,7 +39,7 @@ class CustomRoundedButton extends StatelessWidget {
               (onPressed != null) ? onPressed!() : isActive = false),
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ??
-                CustomColors(dotenv.get('APP_ID')).primaryColor,
+                CustomColors(dotenv.get('STYLE_ID')).primaryColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -53,7 +53,7 @@ class CustomRoundedButton extends StatelessWidget {
               Text(text,
                   style: textStyle ??
                       Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: CustomColors(dotenv.get('APP_ID'))
+                          color: CustomColors(dotenv.get('STYLE_ID'))
                               .customRoundedButtonColor)),
             ],
           )),

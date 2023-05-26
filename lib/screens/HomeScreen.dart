@@ -1,5 +1,4 @@
 //import packages
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -117,20 +116,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     WalletConnect wc = ref.watch(walletConnectProvider);
-    AsyncValue<BlockchainCollectionList> relevantCollections =
-        ref.watch(findAllMinterRolesProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const CustomAppBar(
+      appBar: CustomAppBar(
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
-          withScrollView: false,
+          withScrollView: dotenv.get('IS_ADMIN') == 'true' ? true : false,
           mainAxisAlignment: MainAxisAlignment.center,
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
+            dotenv.get('STYLE_ID') == 'ownerchip_infineon'
                 ? Column(children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -152,17 +149,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
                 onTap: () => onScanButtonPress(context, mounted)),
             const SizedBox(height: 20),
-            relevantCollections.when(
-                data: (data) => data.hasAnyMinterRole!
-                    ? CustomHomeScreenButton(
-                        text: context.loc.initializeChip,
-                        svgPath:
-                            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
-                        onTap: () =>
-                            onInitializeButtonPress(context, wc, mounted))
-                    : Container(),
-                loading: () => Container(child: const Text('Loading')),
-                error: (err, stack) => Container()),
+            dotenv.get('IS_ADMIN') == 'true'
+                ? CustomHomeScreenButton(
+                    text: context.loc.initializeChip,
+                    svgPath:
+                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
+                    onTap: () => onInitializeButtonPress(context, wc, mounted))
+                : Container(),
             const SizedBox(height: 20),
             CustomRoundedButton(
               width: 250,

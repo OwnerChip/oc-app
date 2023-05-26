@@ -264,8 +264,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         as MetadataInputScreenArguments;
 
     WalletConnect wc = ref.watch(walletConnectProvider);
-    int chainId = navArgs.chainId;
-    EthereumAddress collectionId = navArgs.collectionId;
+    final int chainId = ref.watch(selectedChainIdProvider);
+    final EthereumAddress collectionId =
+        ref.watch(selectedCollectionIdProvider);
     final SignatureData signatureData = ref.watch(signatureDataProvider);
     return CustomOverlay(
       show: showOverlay,
@@ -335,7 +336,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             ),
             const SizedBox(height: 20),
             CustomCard(
-                color: CustomColors(dotenv.get('APP_ID')).cardColor,
+                color: CustomColors(dotenv.get('STYLE_ID')).cardColor,
                 children: [
                   SetImageWidget(
                     imageFile: image,
@@ -390,13 +391,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                       .textTheme
                                       .bodyLarge!
                                       .copyWith(
-                                          color:
-                                              CustomColors(dotenv.get('APP_ID'))
-                                                  .customRoundedButtonColor,
-                                          fontSize:
-                                              CustomFonts(dotenv.get('APP_ID'))
-                                                      .bodyText2FontSize /
-                                                  1.3),
+                                          color: CustomColors(
+                                                  dotenv.get('STYLE_ID'))
+                                              .customRoundedButtonColor,
+                                          fontSize: CustomFonts(
+                                                      dotenv.get('STYLE_ID'))
+                                                  .bodyText2FontSize /
+                                              1.3),
                                   text: context.loc.traits,
                                   onPressed: () => toggleTraitsForm()),
                             )
@@ -408,7 +409,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                     const BorderRadius.all(Radius.circular(13)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: CustomColors(dotenv.get('APP_ID'))
+                                    color: CustomColors(dotenv.get('STYLE_ID'))
                                         .secondaryShadowColor,
                                     offset: const Offset(1, 3),
                                     blurRadius: 13,
