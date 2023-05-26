@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -251,7 +250,7 @@ Future<void> nfcPlatformCheck(
     );
     sendAnalyticsTrace("$caseId", "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
     //delay for 1 second
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     Navigator.pop(context);
     throw Exception('Tag is not ISO-DEP.');
   }

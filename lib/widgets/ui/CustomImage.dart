@@ -55,11 +55,11 @@ class CustomImage extends StatelessWidget {
                                 wasSynchronouslyLoaded
                                     ? child
                                     : AnimatedOpacity(
-                                        child: child,
                                         opacity: frame == null ? 0 : 1,
                                         duration:
                                             const Duration(milliseconds: 700),
                                         curve: Curves.easeOut,
+                                        child: child,
                                       )),
               )),
           tokenId != null

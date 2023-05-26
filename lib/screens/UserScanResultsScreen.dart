@@ -22,7 +22,6 @@ import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 //import widgets
-import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
@@ -64,7 +63,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
-    final BURN_PROCESS = Sentry.startTransaction('initBurn()', 'task');
+    final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
       if (!wc.bridgeConnected) {
         wc.reconnect();
@@ -113,7 +112,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText = context.loc.burnedSuccess;
         });
         // send status to analytics
-        BURN_PROCESS.finish();
+        burnProcess.finish();
         sendAnalyticsTrace(
             "$connectedWallet-${tokenId.toString()}", txnHash, "BURN_SUCCESS");
 
@@ -129,9 +128,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         isLoading = false;
       });
       // send Error to analytics
-      BURN_PROCESS.throwable = e;
-      BURN_PROCESS.status = SpanStatus.aborted();
-      BURN_PROCESS.finish();
+      burnProcess.throwable = e;
+      burnProcess.status = const SpanStatus.aborted();
+      burnProcess.finish();
       sendAnalyticsTrace(
           "$connectedWallet-${tokenId.toString()}", "", "BURN_ERROR");
       await Sentry.captureException(e, stackTrace: s);

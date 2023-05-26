@@ -9,7 +9,6 @@ import 'package:cross_file/cross_file.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:sentry/sentry.dart';
 
 //misc imports
@@ -113,7 +112,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       loadingText = context.loc.uploadingMetadata;
     });
 
-    final MINT_PROCESS = Sentry.startTransaction('initMinting()', 'task');
+    final mintProcess = Sentry.startTransaction('initMinting()', 'task');
 
     //if wc bridge is not connected, then reconnect
     if (!wc.bridgeConnected) {
@@ -124,7 +123,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
 
     try {
-      final IPFS_PROCESS = Sentry.startTransaction('initIPFSUpload()', 'task');
+      final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
       sendAnalyticsTrace("$randomNumber", "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet});
       //upload image to ipfs
@@ -141,7 +140,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       cid = await uploadFileToIPFS(jsonFile, 'application/json');
 
       if (cid != '') {
-        IPFS_PROCESS.finish();
+        ipfsProcess.finish();
         sendAnalyticsTrace("$randomNumber", cid, "IPFS_UPLOAD_FINISHED",
             tags: {'connectedWallet': connectedWallet, 'cid': cid});
       }
@@ -187,7 +186,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
-        MINT_PROCESS.finish();
+        mintProcess.finish();
         sendAnalyticsTrace("$randomNumber", txnHash, "MINTING_SUCCESS", tags: {
           'connectedWallet': '$connectedWallet',
           'gasStation': canUseGasStation
@@ -212,9 +211,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       // Send message mint error to analytics/ownerchip & Sentry
       sendAnalyticsTrace("$randomNumber", "$e", "MINTING_ERROR",
           tags: {'connectedWallet': '$connectedWallet'});
-      MINT_PROCESS.throwable = e;
-      MINT_PROCESS.status = SpanStatus.aborted();
-      MINT_PROCESS.finish();
+      mintProcess.throwable = e;
+      mintProcess.status = const SpanStatus.aborted();
+      mintProcess.finish();
       await Sentry.captureException(
         e,
         stackTrace: s,

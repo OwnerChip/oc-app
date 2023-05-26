@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'package:web3dart/web3dart.dart';
 import '../../utils/utils.dart';
 import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';

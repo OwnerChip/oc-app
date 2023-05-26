@@ -2,7 +2,6 @@
 
 //import packages
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
@@ -23,9 +22,7 @@ import 'package:ownerchip_whitelabel/services/providers.service.dart';
 //import screens
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
-import 'package:ownerchip_whitelabel/screens/ChipAlreadyInitializedScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
-import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
@@ -65,7 +62,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
     //start NFC scan
-    final SCAN_PROCESS = Sentry.startTransaction('initScanning()', 'task');
+    final scanProcess = Sentry.startTransaction('initScanning()', 'task');
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       sendAnalyticsTrace("$randomNumber", "", "SCAN_STARTED");
       try {
@@ -75,11 +72,11 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         await nfcPlatformCheck(context, randomNumber, nfc);
 
         //initialize chip (including NDEF tag if existing)
-        bool INIT_PROCESS = navArgs.nextRoute == ChainSelectorScreen.routeName;
-        if (INIT_PROCESS) {
+        bool initProcess = navArgs.nextRoute == ChainSelectorScreen.routeName;
+        if (initProcess) {
           sendAnalyticsTrace("$randomNumber", "", "INITIALIZE_NDEF_START");
         }
-        List result = await initializeChip(nfc, INIT_PROCESS, randomNumber);
+        List result = await initializeChip(nfc, initProcess, randomNumber);
         EthereumAddress chipEthereumAddress = result[0];
         String chipWalletAddress = chipEthereumAddress.toString();
         BigInt chipTokenId = result[1];
@@ -138,7 +135,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 hashedMsg,
                 signature);
 
-            SCAN_PROCESS.finish();
+            scanProcess.finish();
             sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_POSITIVE",
                 tags: {"chipWallet": chipWalletAddress});
             Navigator.pushReplacementNamed(
@@ -155,9 +152,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         // send Error to analytics
         sendAnalyticsTrace("$randomNumber", "$e", "SCAN_ERROR");
         print(e);
-        SCAN_PROCESS.throwable = e;
-        SCAN_PROCESS.status = SpanStatus.deadlineExceeded();
-        SCAN_PROCESS.finish();
+        scanProcess.throwable = e;
+        scanProcess.status = const SpanStatus.deadlineExceeded();
+        scanProcess.finish();
         await Sentry.captureException(
           e,
           stackTrace: stackTrace,

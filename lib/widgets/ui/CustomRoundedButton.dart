@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -35,7 +34,7 @@ class CustomRoundedButton extends StatelessWidget {
       width: width,
       height: height,
       child: ElevatedButton(
-          onPressed: (() => (onPressed != null) ? onPressed!() : null),
+          onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ??
                 CustomColors(dotenv.get('APP_ID')).primaryColor,
