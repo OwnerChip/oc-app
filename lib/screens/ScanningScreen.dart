@@ -25,6 +25,7 @@ import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChipAlreadyInitializedScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';

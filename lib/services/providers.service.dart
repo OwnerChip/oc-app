@@ -111,12 +111,11 @@ final appCollectionProvider =
 
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
-    FutureProvider<BlockchainCollectionList>((ref) async {
-
+    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
   final wc = ref.watch(walletConnectProvider);
   EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
   final unfilteredCollectionsList =
-      await ref.watch(appCollectionProvider.future);
+      await ref.read(appCollectionProvider.future);
   //loop through all chains
   List<Future> futures = [];
   List<Collection> res = [];

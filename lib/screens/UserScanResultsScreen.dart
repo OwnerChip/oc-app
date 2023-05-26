@@ -248,19 +248,19 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headlineSmall)
+                                                  .bodyMedium)
                                           : Text(
                                               context.loc.authenticityNftFound,
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headlineSmall),
+                                                  .bodyMedium),
                                       error: (e, s) => Text(
                                           context.loc.authenticityNftNotFound,
                                           textAlign: TextAlign.left,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headlineSmall),
+                                              .bodyMedium),
                                       loading: () =>
                                           const CircularProgressIndicator())),
                             ]),
@@ -320,7 +320,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                     textAlign: TextAlign.center,
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .headlineSmall),
+                                                        .bodyMedium),
                                                 const SizedBox(height: 10),
                                                 CustomRoundedButton(
                                                     text: context
@@ -343,7 +343,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                             TextAlign.left,
                                                         style: Theme.of(context)
                                                             .textTheme
-                                                            .headlineSmall),
+                                                            .bodyMedium),
                                                     const SizedBox(height: 10),
                                                     relevantCollections.when(
                                                         data: (data) {
@@ -390,13 +390,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                   textAlign: TextAlign.left,
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .headlineSmall),
+                                                      .bodyMedium),
                                       error: (e, s) => Text(
                                           context.loc.youAreNotNftOwner,
                                           textAlign: TextAlign.left,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headlineSmall),
+                                              .bodyMedium),
                                       loading: () =>
                                           const CircularProgressIndicator())),
                             ]),
@@ -428,10 +428,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                       ? CustomRoundedButton(
                           text: context.loc.initializeChip,
                           onPressed: () {
-                            Navigator.pushNamed(
-                                context, ScanningScreen.routeName,
-                                arguments: ScanningScreenArguments(
-                                    ChainSelectorScreen.routeName));
+                            if (mounted) {
+                              Navigator.pushNamed(
+                                  context, ScanningScreen.routeName,
+                                  arguments: ScanningScreenArguments(
+                                      ChainSelectorScreen.routeName));
+                              //remove route UserScanresultsscreen with removeRoute
+                              Navigator.of(context)
+                                  .removeRoute(ModalRoute.of(context)!);
+                            }
                           })
                       : CustomRoundedButton(
                           // width: 250,
