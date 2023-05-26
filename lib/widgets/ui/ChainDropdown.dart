@@ -12,14 +12,17 @@ class ChainDropdown extends ConsumerWidget {
   const ChainDropdown({super.key});
 
   _buildDropdown(data, ref) {
+    final int chainId = ref.watch(selectedChainIdProvider(data)) > 0
+        ? ref.watch(selectedChainIdProvider(data))
+        : 80001; //default to mumbai
+
     return DropdownButton<int>(
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
-        // value: chainId,
-        value: ref.read(selectedChainIdProvider(data)),
+        value: chainId,
         onChanged: (value) {
-          ref.read(selectedChainIdProvider(data).notifier).state = value!;
+          ref.read(selectedChainIdProvider(data).notifier).state = value;
         },
         items: data.collections.keys.map<DropdownMenuItem<int>>((int key) {
           return DropdownMenuItem(
