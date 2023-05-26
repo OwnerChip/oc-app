@@ -1,7 +1,8 @@
 //import packages
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:sentry/sentry.dart';
@@ -24,7 +25,6 @@ import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
-import 'package:web3dart/web3dart.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {
   const ChainSelectorScreen({Key? key}) : super(key: key);
@@ -38,13 +38,11 @@ class ChainSelectorScreen extends ConsumerStatefulWidget {
 class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
       BuildContext context, WalletConnect wc, mounted, int randomNumber) async {
-    final wc = ref.watch(walletConnectProvider);
+    final wc = ref.read(walletConnectProvider);
     BlockchainCollectionList relevantCollections =
-        await ref.watch(findAllMinterRolesProvider.future);
-    final int chainId =
-        await ref.watch(selectedChainIdProvider(relevantCollections));
-    final Collection collection =
-        await ref.watch(selectedCollectionIdProvider(relevantCollections));
+        await ref.read(findAllMinterRolesProvider.future);
+    final int? chainId = ref.read(selectedChainIdProvider);
+    final Collection? collection = ref.read(selectedCollectionIdProvider);
     try {
       if (!wc.connected) {
         await startWalletConnection(context, wc);
@@ -55,15 +53,10 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
           (scope) => scope
               .setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
         );
-        if (chainId != 0 && collection.id != zeroAddress) {
+        if (chainId != null && collection != null) {
           Navigator.pushNamed(context, MetadataScreen.routeName,
               arguments: MetadataInputScreenArguments(
                   randomNumber, chainId, collection.id));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                context.loc.pleaseSelectChainAndCollection, 'warning'),
-          );
         }
       }
     } catch (e, s) {
@@ -81,6 +74,9 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   @override
   Widget build(BuildContext context) {
     final wc = ref.watch(walletConnectProvider);
+
+    final int? chainId = ref.watch(selectedChainIdProvider);
+    final Collection? collection = ref.watch(selectedCollectionIdProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as MetadataInputScreenArguments;
     return Scaffold(
@@ -113,9 +109,12 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
           ),
           CustomRoundedButton(
             text: 'Next',
-            onPressed: () {
-              onInitializeButtonPress(context, wc, mounted, navArgs.randomMsg);
-            },
+            onPressed: chainId == null || collection == null
+                ? null
+                : () {
+                    onInitializeButtonPress(
+                        context, wc, mounted, navArgs.randomMsg);
+                  },
           ),
         ],
       ),

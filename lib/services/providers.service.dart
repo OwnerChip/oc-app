@@ -153,31 +153,29 @@ final findAllMinterRolesProvider =
       }
     }
   }
-  // add zero address for selection ui if more than 1 chain
-  Map<int, List<Collection>> minterCollections =
-      (filteredCollections.length > 1)
-          ? {
-              0: [Collection(zeroAddress, "- please select -")],
-              ...filteredCollections
-            }
-          : filteredCollections;
 
-  return BlockchainCollectionList(minterCollections,
+  return BlockchainCollectionList(filteredCollections,
       hasAnyMinterRole: hasAnyMinterRole);
 });
 
 // **** CHAIN ID + COLLECTION ID ****
 
 // only used in admin app for selecting the chain
-final selectedChainIdProvider = StateProvider.autoDispose
-    .family<int, BlockchainCollectionList>(
-        (ref, col) => col.collections.keys.first);
+final selectedChainIdProvider = StateProvider.autoDispose<int?>((ref) {
+  //return null if col.collections.keys has more than one element else return col.collections.keys.first
+  return null;
+});
 
 // only used in admin app for selecting the collection
-final selectedCollectionIdProvider = StateProvider.autoDispose
-    .family<Collection, BlockchainCollectionList>((ref, bcCollectionList) {
-  final int chainId = ref.watch(selectedChainIdProvider(bcCollectionList));
-  final Collection res = bcCollectionList.collections[chainId]![0];
+final selectedCollectionIdProvider =
+    StateProvider.autoDispose<Collection?>((ref) {
+  final int? chainId = ref.watch(selectedChainIdProvider);
+  final AsyncValue<BlockchainCollectionList> collectionList =
+      ref.watch(findAllMinterRolesProvider);
+
+  final Collection? res = chainId != null
+      ? collectionList.asData!.value.collections[chainId]![0]
+      : null;
   return res;
 });
 
