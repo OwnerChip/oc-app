@@ -22,7 +22,7 @@ Future<List<dynamic>> getAppCollections() async {
   final String url = '/app/$appId';
 
   final response = await dio.get(url);
-  return response.data.collections;
+  return response.data['collections'];
 }
 
 // Checks if a gasless transaction is supported by a collection.
