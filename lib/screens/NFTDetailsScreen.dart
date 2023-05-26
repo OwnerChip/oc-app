@@ -96,9 +96,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             data: (data) => data['name'],
                             error: (e, s) => context.loc.loadingNFTDataError),
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            fontSize: CustomFonts(dotenv.get('STYLE_ID'))
+                            fontSize: CustomFonts(dotenv.get('APP_ID'))
                                 .metadataNameFontSize,
-                            fontWeight: CustomFonts(dotenv.get('STYLE_ID'))
+                            fontWeight: CustomFonts(dotenv.get('APP_ID'))
                                 .metadataNameFontWeight))),
 
                 //show traits button
@@ -113,9 +113,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                               .textTheme
                               .bodyLarge!
                               .copyWith(
-                                  color: CustomColors(dotenv.get('STYLE_ID'))
+                                  color: CustomColors(dotenv.get('APP_ID'))
                                       .customRoundedButtonColor,
-                                  fontSize: CustomFonts(dotenv.get('STYLE_ID'))
+                                  fontSize: CustomFonts(dotenv.get('APP_ID'))
                                           .bodyText2FontSize /
                                       1.3),
                           text: showDescription
@@ -145,10 +145,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     style: TextStyle(
                                         // color: Theme.of(context).primaryColor,
                                         fontSize:
-                                            CustomFonts(dotenv.get('STYLE_ID'))
+                                            CustomFonts(dotenv.get('APP_ID'))
                                                 .metadataDescriptionFontSize,
                                         fontWeight: CustomFonts(
-                                                dotenv.get('STYLE_ID'))
+                                                dotenv.get('APP_ID'))
                                             .metadataDescriptionFontWeight)),
                               )
                             : Align(
@@ -166,13 +166,13 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                                             FontWeight.bold,
                                                         fontSize: CustomFonts(
                                                                 dotenv.get(
-                                                                    'STYLE_ID'))
+                                                                    'APP_ID'))
                                                             .metadataDescriptionFontSize,
                                                       )),
                                               Text(e['value'],
                                                   style: TextStyle(
                                                     fontSize: CustomFonts(dotenv
-                                                            .get('STYLE_ID'))
+                                                            .get('APP_ID'))
                                                         .metadataDescriptionFontSize,
                                                   )),
                                             ],
@@ -191,19 +191,22 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             "Collection",
                             "Blockchain"
                           ], values: [
-                            Collections('all')
-                                .collections[data.chainId]!
+                            // first, try to find collection in collections list
+                            allCollections.collections[data.chainId]!
                                 .firstWhere((collection) {
-                              return collection['id'] == data.collectionId;
+                              return collection.id == data.collectionId;
                             },
+                                    // if not found, check chain data
                                     orElse: () => {
+                                          'id': data.collectionId,
                                           'name': contractName.when(
                                             data: (data) => data,
+                                            // if error, show unknown collection
                                             error: (error, stackTrace) =>
                                                 context.loc.unknownCollection,
                                             loading: () => context.loc.loading,
                                           )
-                                        })['name'],
+                                        } as Collection).name,
                             chainConfig[data.chainId]!.networkName,
                           ]),
                           loading: () => Container(),
@@ -230,7 +233,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               },
             ),
             const SizedBox(height: 15),
-            dotenv.get('STYLE_ID') == 'ownerchip_infineon'
+            dotenv.get('APP_ID') == 'ownerchip_infineon'
                 ? Container()
                 : CustomRoundedButton(
                     text: context.loc.showOnRarible,

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -18,6 +19,14 @@ import 'package:web3dart/crypto.dart';
 final walletConnectProvider =
     StateNotifierProvider<WalletConnector, WalletConnect>((ref) {
   return WalletConnector();
+});
+
+final userAddressProvider = StateProvider<EthereumAddress>((ref) {
+  final wc = ref.watch(walletConnectProvider);
+  final addr = wc.session.accounts.isNotEmpty
+      ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
+      : zeroAddress;
+  return addr;
 });
 
 class WalletConnector extends StateNotifier<WalletConnect> {
@@ -79,17 +88,87 @@ final chipInfoProvider =
   return ChipInfoNotifier();
 });
 
+// **** COLLECTIONS ****
+
+/// get all collections associated with the app (basis for filtering for MINTER_ROLE)
+final appCollectionProvider =
+    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
+  BlockchainCollectionList collections;
+
+  // first, try to get the collections from the backend
+  try {
+    final rawCollections = await getAppCollections() as List<Collection>;
+    collections =
+        groupCollectionsByChainId(rawCollections) as BlockchainCollectionList;
+  } catch (e) {
+    print("Error getting collections from backend: $e");
+    // if the backend is not available, get the collections from the config file
+    collections = allCollections;
+  }
+
+  return collections;
+});
+
+/// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
+final findAllMinterRolesProvider =
+    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
+  EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
+  final unfilteredCollectionsList =
+      await ref.watch(appCollectionProvider.future);
+  ref.keepAlive();
+  //loop through all chains
+  List<Future> futures = [];
+  List<Collection> res = [];
+  bool hasAnyMinterRole = false;
+
+  unfilteredCollectionsList.collections.forEach((chainId, collections) {
+    for (var collection in collections) {
+      Future<bool> hasMinterRoleFuture = checkMinterRole(
+          getRPCUrlFromChainId(chainId), collection.id, userWalletAddress);
+      futures.add(hasMinterRoleFuture);
+      res.add(Collection(collection.id, collection.name, chainId: chainId));
+    }
+  });
+  var resRaw = await Future.wait(futures);
+
+  for (var i = 0; i < res.length; i++) {
+    res[i].hasMinterRole = resRaw[i];
+  }
+
+  // create BlockchainCollectionList from res
+  Map<int, List<Collection>> filteredCollections = {};
+  for (Collection collection in res) {
+    // if collection is OPEN, add it to the list
+    if (collection.id ==
+        EthereumAddress.fromHex('0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
+      collection.hasMinterRole = true;
+    }
+    if (collection.hasMinterRole!) {
+      hasAnyMinterRole = true;
+      if (filteredCollections.containsKey(collection.chainId)) {
+        filteredCollections[collection.chainId]!.add(collection);
+      } else {
+        filteredCollections[collection.chainId!] = [collection];
+      }
+    }
+  }
+  return BlockchainCollectionList(filteredCollections,
+      hasAnyMinterRole: hasAnyMinterRole);
+});
+
 // **** CHAIN ID + COLLECTION ID ****
 
 // only used in admin app for selecting the chain
-final selectedChainIdProvider = StateProvider.autoDispose<int>(
-    (ref) => Collections(dotenv.get('STYLE_ID')).collections.keys.first);
+final selectedChainIdProvider = StateProvider.autoDispose
+    .family<int, BlockchainCollectionList>(
+        (ref, col) => col.collections.keys.last);
 
 // only used in admin app for selecting the collection
-final selectedCollectionIdProvider =
-    StateProvider.autoDispose<EthereumAddress>((ref) {
-  final int chainId = ref.watch(selectedChainIdProvider);
-  return Collections(dotenv.get('STYLE_ID')).collections[chainId]![0]['id']!;
+final selectedCollectionIdProvider = StateProvider.autoDispose
+    .family<Collection, BlockchainCollectionList>((ref, bcCollectionList) {
+  final int chainId = ref.watch(selectedChainIdProvider(bcCollectionList));
+  final Collection res = bcCollectionList.collections[chainId]![0];
+  return res;
 });
 
 final findTokenProvider = FutureProvider.autoDispose

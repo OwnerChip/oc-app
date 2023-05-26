@@ -29,7 +29,7 @@ class CustomImage extends StatelessWidget {
         decoration:
             BoxDecoration(borderRadius: BorderRadius.circular(19), boxShadow: [
           BoxShadow(
-              color: CustomColors(dotenv.get('STYLE_ID')).secondaryShadowColor,
+              color: CustomColors(dotenv.get('APP_ID')).secondaryShadowColor,
               blurRadius: 5,
               offset: const Offset(3, 2)),
         ]),
