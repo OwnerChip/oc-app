@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -128,6 +129,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
             const UserScanResultsScreen(),
         NFTDetailsScreen.routeName: (context) => const NFTDetailsScreen(),
         ChainSelectorScreen.routeName: (context) => const ChainSelectorScreen(),
+        MoreInfoScreen.routeName: (context) => const MoreInfoScreen(),
       },
     );
   }

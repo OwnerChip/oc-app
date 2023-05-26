@@ -17,6 +17,7 @@ class ChainDropdown extends ConsumerWidget {
         : 80001; //default to mumbai
 
     return DropdownButton<int>(
+        isExpanded: true,
         dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
             color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
@@ -25,6 +26,7 @@ class ChainDropdown extends ConsumerWidget {
           ref.read(selectedChainIdProvider(data).notifier).state = value;
         },
         items: data.collections.keys.map<DropdownMenuItem<int>>((int key) {
+          print('test');
           return DropdownMenuItem(
             value: key,
             child: Text(chainConfig[key]!.networkName),

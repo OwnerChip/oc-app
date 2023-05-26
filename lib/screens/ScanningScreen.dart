@@ -2,6 +2,7 @@
 
 //import packages
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
@@ -139,15 +140,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             SCAN_PROCESS.finish();
             sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_POSITIVE",
                 tags: {"chipWallet": chipWalletAddress});
-            if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
-              Navigator.pushReplacementNamed(
-                  context, UserScanResultsScreen.routeName);
-            } else {
-              Navigator.pushReplacementNamed(
-                  context, ChipAlreadyInitializedScreen.routeName,
-                  arguments: ChipAlreadyInitializedScreenArguments(
-                      hashedMsg, signature));
-            }
+            Navigator.pushReplacementNamed(
+                context, UserScanResultsScreen.routeName);
           } catch (e) {
             //TOKEN IS NOT AUTHENTIC
             rethrow;

@@ -83,27 +83,26 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
       body: ScreenBodyLayout(
         withScrollView: false,
         children: [
-          const SizedBox(height: 20),
-          Text(
-            textAlign: TextAlign.center,
-            context.loc.chooseChain,
-            style: Theme.of(context).textTheme.displayLarge,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                context.loc.selectBlockchain,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 5),
+              const ChainDropdown(),
+              const SizedBox(height: 20),
+              Text(
+                context.loc.selectCollection,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 5),
+              const CollectionDropdown(),
+              const SizedBox(height: 20),
+            ],
           ),
-          const SizedBox(height: 20),
-          Text(
-            context.loc.selectBlockchain,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 5),
-          const ChainDropdown(),
-          const SizedBox(height: 20),
-          Text(
-            context.loc.selectCollection,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 5),
-          const CollectionDropdown(),
-          const SizedBox(height: 20),
           CustomRoundedButton(
             text: 'Next',
             onPressed: () {

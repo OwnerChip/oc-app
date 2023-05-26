@@ -1,12 +1,12 @@
 //import packages
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry/sentry.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -17,17 +17,21 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -126,7 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: ScreenBodyLayout(
           withScrollView: false,
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
@@ -145,71 +149,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                   ])
-                : const SizedBox(height: 20),
-            CustomHomeScreenButton(
-                text: context.loc.scanning,
-                svgPath:
-                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                onTap: () => onScanButtonPress(context, mounted)),
-            const SizedBox(height: 20),
-            relevantCollections.when(
-                data: (data) => data.hasAnyMinterRole!
-                    ? CustomHomeScreenButton(
-                        text: context.loc.initializeChip,
-                        svgPath:
-                            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_initialize.svg',
-                        onTap: () =>
-                            onInitializeButtonPress(context, wc, mounted))
-                    : Container(),
-                loading: () => Container(child: const Text('Loading')),
-                error: (err, stack) => Container()),
-            const SizedBox(height: 20),
-            CustomRoundedButton(
-              width: 250,
-              text: context.loc.moreInfo,
-              onPressed: () => {
-                launchUrl(Uri.parse(dotenv.get('LANDING_PAGE_URL')),
-                    mode: LaunchMode.externalApplication)
-              },
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+                : Container(),
+            Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Powered by ',
-                  style: TextStyle(
-                      color: Theme.of(context).primaryColor, fontSize: 12),
+                CustomHomeScreenButton(
+                    text: context.loc.scanning,
+                    svgPath:
+                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
+                    onTap: () => onScanButtonPress(context, mounted)),
+                const SizedBox(height: 40),
+                CustomRoundedButton(
+                  width: 250,
+                  text: context.loc.scanNow,
+                  onPressed: () => onScanButtonPress(context, mounted),
                 ),
-                GestureDetector(
-                  onTap: () => {
-                    launchUrl(Uri.parse('https://ownerchip.com'),
-                        mode: LaunchMode.externalApplication)
-                  },
-                  child: Text(
-                    'OwnerChip.com',
-                    style: TextStyle(
-                        decoration: TextDecoration.underline,
-                        color: Theme.of(context).primaryColor,
-                        fontSize: 12),
-                  ),
-                ),
+                const SizedBox(height: 20),
+                relevantCollections.when(
+                    data: (data) => data.hasAnyMinterRole!
+                        ? CustomRoundedButton(
+                            width: 250,
+                            text: context.loc.initializeChip,
+                            onPressed: () =>
+                                onInitializeButtonPress(context, wc, mounted),
+                          )
+                        : Container(),
+                    loading: () => Text(context.loc.loading),
+                    error: (err, stack) => Container()),
               ],
             ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () => {
-                launchUrl(Uri.parse(dotenv.get('LEGAL_PAGE_URL')),
-                    mode: LaunchMode.externalApplication)
-              },
-              child: Text(
-                context.loc.legal,
-                style: TextStyle(
-                    decoration: TextDecoration.underline,
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 12),
-              ),
-            )
+            const SizedBox(height: 20),
+            CustomOutlinedButton(
+              buttonText: context.loc.more,
+              onPressed: () =>
+                  Navigator.pushNamed(context, MoreInfoScreen.routeName),
+            ),
           ]),
     );
   }

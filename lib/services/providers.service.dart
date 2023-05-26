@@ -111,11 +111,12 @@ final appCollectionProvider =
 
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
-    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
+    FutureProvider<BlockchainCollectionList>((ref) async {
+
+  final wc = ref.watch(walletConnectProvider);
   EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
   final unfilteredCollectionsList =
       await ref.watch(appCollectionProvider.future);
-  ref.keepAlive();
   //loop through all chains
   List<Future> futures = [];
   List<Collection> res = [];
@@ -139,8 +140,10 @@ final findAllMinterRolesProvider =
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
     // if collection is OPEN, add it to the list
-    if (collection.id ==
-        EthereumAddress.fromHex('0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
+    if (wc.session.accounts.isNotEmpty &&
+        collection.id ==
+            EthereumAddress.fromHex(
+                '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
       collection.hasMinterRole = true;
     }
     if (collection.hasMinterRole!) {
@@ -203,6 +206,7 @@ final nftOwnerProvider =
       getRPCUrlFromChainId(config.chainId),
       config.collectionId,
       chipInfo.tokenId);
+
   return nftOwner;
 });
 

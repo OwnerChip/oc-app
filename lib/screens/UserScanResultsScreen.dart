@@ -7,13 +7,19 @@ import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:sentry/sentry.dart';
+import 'package:async/async.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
@@ -22,12 +28,17 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
   const UserScanResultsScreen({super.key});
@@ -41,8 +52,106 @@ class UserScanResultsScreen extends ConsumerStatefulWidget {
 class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
   bool loadingImage = true;
 
+  CancelableOperation? cancellableOperation;
+
+  bool isLoading = false;
+  bool isRotating = true;
+  String loadingSvgPath =
+      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+  String loadingText = '';
+
+  Future<void> burnToken(WalletConnect wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final TokenInfoObject config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    final BURN_PROCESS = Sentry.startTransaction('initBurn()', 'task');
+    try {
+      if (!wc.bridgeConnected) {
+        wc.reconnect();
+      }
+
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.burning;
+      });
+
+      sendAnalyticsTrace(
+          "$connectedWallet-${tokenId.toString()}", "", "BURN_STARTED");
+
+      final List response =
+          await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            gaslessBurnFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            metaTxAgreementId);
+      } else {
+        txnHash = await makeAndSendNormalTx(
+            burnFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc);
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        //this means burn succeeded
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
+          loadingText = context.loc.burnedSuccess;
+        });
+        // send status to analytics
+        BURN_PROCESS.finish();
+        sendAnalyticsTrace(
+            "$connectedWallet-${tokenId.toString()}", txnHash, "BURN_SUCCESS");
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        Navigator.pushNamedAndRemoveUntil(
+            context, HomeScreen.routeName, (route) => false);
+      } else {
+        throw Exception(context.loc.burnedError);
+      }
+    } catch (e, s) {
+      setState(() {
+        isLoading = false;
+      });
+      // send Error to analytics
+      BURN_PROCESS.throwable = e;
+      BURN_PROCESS.status = SpanStatus.aborted();
+      BURN_PROCESS.finish();
+      sendAnalyticsTrace(
+          "$connectedWallet-${tokenId.toString()}", "", "BURN_ERROR");
+      await Sentry.captureException(e, stackTrace: s);
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, context.loc.burnedError, 'error'),
+      );
+      print("Error: $e");
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+  }
+
+  Future<dynamic> fromCancelable(Future<dynamic> future) async {
+    cancellableOperation?.cancel();
+    cancellableOperation =
+        CancelableOperation.fromFuture(future, onCancel: () {});
+    return cancellableOperation;
   }
 
   @override
@@ -54,239 +163,285 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final AsyncValue<TokenInfoObject> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     WalletConnect wc = ref.watch(walletConnectProvider);
+    AsyncValue<BlockchainCollectionList> relevantCollections =
+        ref.watch(findAllMinterRolesProvider);
+    final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
+    final SignatureData signatureData = ref.watch(signatureDataProvider);
 
-    final connectedWallet = wc.session.accounts.isNotEmpty
-        ? wc.session.accounts[0].toLowerCase()
-        : '';
     Sentry.configureScope(
-      (scope) => scope.setUser(SentryUser(id: connectedWallet)),
+      (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
     );
 
-    return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: CustomAppBar(
-          text: context.loc.tapResults,
+    return CustomOverlay(
+        show: isLoading,
+        content: SpinningLoadingSvg(
+          onPressed: () {
+            cancellableOperation?.cancel();
+            setState(() {
+              isLoading = false;
+            });
+            Navigator.pushNamedAndRemoveUntil(
+                context, HomeScreen.routeName, (route) => false);
+          },
+          loadingText: loadingText,
+          rotateIcon: isRotating,
+          svgPath: loadingSvgPath,
+          // enable secondary button
+          secondaryButton: true,
+          secondaryButtonText: context.loc.troubleshoot,
+          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
-        body: ScreenBodyLayout(children: [
-          Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              CustomCard(
-                  margin: const EdgeInsets.only(top: 70),
-                  width: double.infinity,
-                  children: [
-                    const SizedBox(height: 100),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+        child: Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: CustomAppBar(
+              text: context.loc.tapResults,
+            ),
+            body: ScreenBodyLayout(children: [
+              Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  CustomCard(
+                      margin: const EdgeInsets.only(top: 70),
+                      width: double.infinity,
                       children: [
-                        //HEADER BUTTON
-                        nftOwner.when(
-                            error: (e, s) => Container(),
-                            loading: () => Text(context.loc.loading,
-                                textAlign: TextAlign.center,
-                                style:
-                                    Theme.of(context).textTheme.displayLarge),
-                            data: (data) => CustomRoundedButton(
-                                width: 250,
-                                text: context.loc.viewNftDetails,
-                                onPressed: () {
-                                  Navigator.of(context)
-                                      .pushNamed(NFTDetailsScreen.routeName);
-                                })),
-                        const SizedBox(height: 15),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
+                        const SizedBox(height: 100),
 
-                    //AUTHENTICITY CHECK
-
-                    CustomCard(
-                        color: CustomColors(dotenv.get('APP_ID'))
-                            .scaffoldBackgroundColor,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //AUTHENTICITY CHECK
+                        CustomCard(
+                            color: CustomColors(dotenv.get('APP_ID'))
+                                .scaffoldBackgroundColor,
                             children: [
-                              Text(context.loc.authenticityCheck,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium),
-
-                              //AUTHENTICITY CHECK ICON
-                              tokenInfo.when(
-                                data: ((data) => data.collectionId ==
-                                        zeroAddress
-                                    ? SvgPicture.asset(
-                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
-                                    : SvgPicture.asset(
-                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")),
-                                error: (e, s) => SvgPicture.asset(
-                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
-                                loading: () =>
-                                    const CircularProgressIndicator(),
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 15),
-
-                          //AUTHENTICITY CHECK BODY
-
-                          Align(
-                              alignment: Alignment.centerLeft,
-                              child: tokenInfo.when(
-                                  data: (data) => data.collectionId ==
-                                          zeroAddress
-                                      ? Text(
-                                          context.loc.authenticityNftNotFound,
-                                          textAlign: TextAlign.left,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headlineSmall)
-                                      : Text(context.loc.authenticityNftFound,
-                                          textAlign: TextAlign.left,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headlineSmall),
-                                  error: (e, s) => Text(
-                                      context.loc.authenticityNftNotFound,
-                                      textAlign: TextAlign.left,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(context.loc.authenticityCheck,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headlineSmall),
-                                  loading: () =>
-                                      const CircularProgressIndicator())),
-                        ]),
-                    const SizedBox(height: 15),
+                                          .headlineMedium),
 
-                    //OWNERSHIP CHECK
-                    CustomCard(
-                        color: CustomColors(dotenv.get('APP_ID'))
-                            .scaffoldBackgroundColor,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(context.loc.ownershipCheck,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium),
+                                  //AUTHENTICITY CHECK ICON
+                                  tokenInfo.when(
+                                    data: ((data) => data.collectionId ==
+                                            zeroAddress
+                                        ? SvgPicture.asset(
+                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
+                                        : SvgPicture.asset(
+                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")),
+                                    error: (e, s) => SvgPicture.asset(
+                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+                                    loading: () =>
+                                        const CircularProgressIndicator(),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(height: 15),
 
-                              //OWNERSHIP CHECK ICON
-                              nftOwner.when(
-                                data: ((data) => !wc.connected
-                                    ?
-                                    //NFT owner exists and wallet is NOT connected
-                                    SvgPicture.asset(
-                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
-                                    : connectedWallet == data.toString()
-                                        ?
-                                        //NFT owner exists and wallet is connected and wallet is owner
-                                        SvgPicture.asset(
-                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
-                                        :
-                                        //NFT owner exists and wallet is connected and wallet is NOT owner
-                                        SvgPicture.asset(
-                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")),
-                                error: (e, s) => SvgPicture.asset(
-                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
-                                loading: () =>
-                                    const CircularProgressIndicator(),
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 15),
+                              //AUTHENTICITY CHECK BODY
 
-                          //OWNERSHIP CHECK BODY
-                          Align(
-                              alignment: Alignment.centerLeft,
-                              child: nftOwner.when(
-                                  data: (data) => !wc.connected
-                                      ?
-                                      //NFT owner exists and wallet is NOT connected
-                                      Column(
-                                          children: [
-                                            Text(context.loc.noWalletConnected,
-                                                textAlign: TextAlign.center,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .headlineSmall),
-                                            const SizedBox(height: 10),
-                                            CustomRoundedButton(
-                                                text: context.loc.connectWallet,
-                                                onPressed: (() => {
-                                                      startWalletConnection(
-                                                          context, wc)
-                                                    }))
-                                          ],
-                                        )
-                                      : connectedWallet == data.toString()
-                                          ?
-                                          //NFT owner exists and wallet is connected and wallet is owner
-                                          Text(context.loc.youAreNftOwner,
+                              Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: tokenInfo.when(
+                                      data: (data) => data.collectionId ==
+                                              zeroAddress
+                                          ? Text(context.loc.authenticityNftNotFound,
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .headlineSmall)
-                                          :
-                                          //NFT owner exists and wallet is connected and wallet is NOT owner
-                                          Text(context.loc.youAreNotNftOwner,
+                                          : Text(
+                                              context.loc.authenticityNftFound,
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .headlineSmall),
-                                  error: (e, s) => Text(
-                                      context.loc.youAreNotNftOwner,
-                                      textAlign: TextAlign.left,
+                                      error: (e, s) => Text(
+                                          context.loc.authenticityNftNotFound,
+                                          textAlign: TextAlign.left,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall),
+                                      loading: () =>
+                                          const CircularProgressIndicator())),
+                            ]),
+                        const SizedBox(height: 15),
+
+                        //OWNERSHIP CHECK
+                        CustomCard(
+                            color: CustomColors(dotenv.get('APP_ID'))
+                                .scaffoldBackgroundColor,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(context.loc.ownershipCheck,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headlineSmall),
-                                  loading: () =>
-                                      const CircularProgressIndicator())),
-                        ]),
-                    const SizedBox(height: 20),
+                                          .headlineMedium),
 
-                    //NFC CHECK
-                    CustomCard(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        children: [
-                          Row(
-                            //space between
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(context.loc.nfcCheck,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium),
-                              //checkmark icon
-                              SvgPicture.asset(
-                                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg"),
-                            ],
-                          ),
-                          const SizedBox(height: 15),
-                          ChipInfo(
-                            tokenId: chipInfo.chipIsInitialized
-                                ? chipInfo.tokenId
-                                : null,
-                          )
-                        ])
-                  ]),
-              nftImageUri.when(
-                loading: () => const CustomImage(
-                  width: 130,
-                  loading: true,
-                ),
-                error: (e, s) => const CustomImage(
-                  width: 130,
-                  loading: false,
-                ),
-                data: (data) => CustomImage(
-                  width: 130,
-                  loading: false,
-                  imagePath: data,
-                ),
+                                  //OWNERSHIP CHECK ICON
+                                  nftOwner.when(
+                                    data: ((data) => !wc.connected
+                                        ?
+                                        //NFT owner exists and wallet is NOT connected
+                                        SvgPicture.asset(
+                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                        : connectedWallet == data
+                                            ?
+                                            //NFT owner exists and wallet is connected and wallet is owner
+                                            SvgPicture.asset(
+                                                "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
+                                            :
+                                            //NFT owner exists and wallet is connected and wallet is NOT owner
+                                            SvgPicture.asset(
+                                                "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")),
+                                    error: (e, s) => SvgPicture.asset(
+                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+                                    loading: () =>
+                                        const CircularProgressIndicator(),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+
+                              //OWNERSHIP CHECK BODY
+                              Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: nftOwner.when(
+                                      data: (data) => !wc.connected
+                                          ?
+                                          //NFT owner exists and wallet is NOT connected
+                                          Column(
+                                              children: [
+                                                Text(
+                                                    context
+                                                        .loc.noWalletConnected,
+                                                    textAlign: TextAlign.center,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headlineSmall),
+                                                const SizedBox(height: 10),
+                                                CustomRoundedButton(
+                                                    text: context
+                                                        .loc.connectWallet,
+                                                    onPressed: (() => {
+                                                          startWalletConnection(
+                                                              context, wc)
+                                                        }))
+                                              ],
+                                            )
+                                          : connectedWallet == data
+                                              ?
+                                              //NFT owner exists and wallet is connected and wallet is owner
+                                              Column(
+                                                  children: [
+                                                    Text(
+                                                        context
+                                                            .loc.youAreNftOwner,
+                                                        textAlign:
+                                                            TextAlign.left,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .headlineSmall),
+                                                    const SizedBox(height: 10),
+                                                    relevantCollections.when(
+                                                        data: (data) {
+                                                          //get collection where user is minter
+                                                          final collection = data
+                                                              .collections[
+                                                                  tokenInfo
+                                                                      .value!
+                                                                      .chainId]!
+                                                              .firstWhere(
+                                                                  (element) => element
+                                                                      .hasMinterRole!,
+                                                                  orElse: () => Collection(
+                                                                      zeroAddress,
+                                                                      '',
+                                                                      hasMinterRole:
+                                                                          false));
+                                                          return collection
+                                                                  .hasMinterRole!
+                                                              ? CustomRoundedButton(
+                                                                  text: context
+                                                                      .loc
+                                                                      .burnToken,
+                                                                  onPressed:
+                                                                      (() => {
+                                                                            fromCancelable(burnToken(
+                                                                                wc,
+                                                                                chipInfo.tokenId,
+                                                                                signatureData,
+                                                                                connectedWallet))
+                                                                          }))
+                                                              : Container();
+                                                        },
+                                                        error: (e, s) =>
+                                                            Container(),
+                                                        loading: () =>
+                                                            Container())
+                                                  ],
+                                                )
+                                              :
+                                              //NFT owner exists and wallet is connected and wallet is NOT owner
+                                              Text(
+                                                  context.loc.youAreNotNftOwner,
+                                                  textAlign: TextAlign.left,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .headlineSmall),
+                                      error: (e, s) => Text(
+                                          context.loc.youAreNotNftOwner,
+                                          textAlign: TextAlign.left,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall),
+                                      loading: () =>
+                                          const CircularProgressIndicator())),
+                            ]),
+                      ]),
+                  nftImageUri.when(
+                    loading: () => const CustomImage(
+                      width: 130,
+                      loading: true,
+                    ),
+                    error: (e, s) => const CustomImage(
+                      width: 130,
+                      loading: false,
+                    ),
+                    data: (data) => CustomImage(
+                      width: 130,
+                      loading: false,
+                      imagePath: data,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ]));
+              const SizedBox(height: 20),
+
+              //if token does not exists
+              tokenInfo.when(
+                  data: (data) => data.collectionId == zeroAddress &&
+                          wc.connected &&
+                          relevantCollections.value!.collections.isNotEmpty
+                      ? CustomRoundedButton(
+                          text: context.loc.initializeChip,
+                          onPressed: () {
+                            Navigator.pushNamed(
+                                context, ScanningScreen.routeName,
+                                arguments: ScanningScreenArguments(
+                                    ChainSelectorScreen.routeName));
+                          })
+                      : CustomRoundedButton(
+                          // width: 250,
+                          text: context.loc.viewNftDetails,
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pushNamed(NFTDetailsScreen.routeName);
+                          }),
+                  error: (e, s) => Container(),
+                  loading: () => Container()),
+            ])));
   }
 }
