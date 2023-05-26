@@ -106,5 +106,7 @@
     "watchTutorial": "Tutorial ansehen",
     "viewProjects": "Unsere Projekte",
     "orderChips": "Chips bestellen",
-    "scanNow": "Jetzt Scannen"
+    "scanNow": "Jetzt Scannen",
+    "pleaseSelect": "- bitte auswählen -",
+    "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen"
 }

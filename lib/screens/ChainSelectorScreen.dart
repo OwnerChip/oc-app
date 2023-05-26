@@ -1,6 +1,7 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:sentry/sentry.dart';
@@ -54,9 +55,16 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
           (scope) => scope
               .setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
         );
-        Navigator.pushNamed(context, MetadataScreen.routeName,
-            arguments: MetadataInputScreenArguments(
-                randomNumber, chainId, collection.id));
+        if (chainId != 0 && collection.id != zeroAddress) {
+          Navigator.pushNamed(context, MetadataScreen.routeName,
+              arguments: MetadataInputScreenArguments(
+                  randomNumber, chainId, collection.id));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                context.loc.pleaseSelectChainAndCollection, 'warning'),
+          );
+        }
       }
     } catch (e, s) {
       await Sentry.captureException(
