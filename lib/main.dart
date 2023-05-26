@@ -6,7 +6,9 @@ import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -43,6 +45,10 @@ void main(List<String> args) async {
 
   //set initialRoute accordingly
   String initialRoute = HomeScreen.routeName;
+
+  //init splash screen
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   //init sentry
   await SentryFlutter.init((options) {
@@ -93,6 +99,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // access providers
     final wc = ref.watch(walletConnectProvider);
     wc.on(
         'disconnect',
@@ -100,6 +107,11 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
               //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
               RestartWidget.restartApp(context),
             });
+    final AsyncValue<BlockchainCollectionList> relevantCollections =
+        ref.watch(findAllMinterRolesProvider);
+
+    // close splash screen
+    FlutterNativeSplash.remove();
 
     return MaterialApp(
       theme: CustomThemeData.getThemeData(),
