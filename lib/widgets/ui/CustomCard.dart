@@ -46,8 +46,8 @@ class CustomCard extends StatelessWidget {
       decoration: BoxDecoration(
           color: color ?? Theme.of(context).cardColor,
           border: Border.all(
-              color:
-                  borderColor ?? CustomColors(dotenv.get('APP_ID')).borderColor,
+              color: borderColor ??
+                  CustomColors(dotenv.get('STYLE_ID')).borderColor,
               width: 1),
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
