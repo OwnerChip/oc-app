@@ -97,9 +97,9 @@ final appCollectionProvider =
 
   // first, try to get the collections from the backend
   try {
-    final rawCollections = await getAppCollections() as List<Collection>;
+    final rawCollections = await getAppCollections();
     collections =
-        groupCollectionsByChainId(rawCollections) as BlockchainCollectionList;
+        BlockchainCollectionList(groupCollectionsByChainId(rawCollections));
   } catch (e) {
     print("Error getting collections from backend: $e");
     // if the backend is not available, get the collections from the config file
