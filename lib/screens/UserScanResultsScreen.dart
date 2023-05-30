@@ -422,7 +422,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               //if token does not exists
               tokenInfo.when(
                   data: (data) => data.collectionId == zeroAddress &&
-                          wc.connected &&
+                          wc.session.accounts.isNotEmpty &&
                           relevantCollections.value!.collections.isNotEmpty
                       ? CustomRoundedButton(
                           text: context.loc.initializeChip,
@@ -437,13 +437,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   .removeRoute(ModalRoute.of(context)!);
                             }
                           })
-                      : CustomRoundedButton(
-                          // width: 250,
+                      : wc.session.accounts.isNotEmpty ? CustomRoundedButton(
                           text: context.loc.viewNftDetails,
                           onPressed: () {
                             Navigator.of(context)
                                 .pushNamed(NFTDetailsScreen.routeName);
-                          }),
+                          }): Container(),
                   error: (e, s) => Container(),
                   loading: () => Container()),
             ])));
