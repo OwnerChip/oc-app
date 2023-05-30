@@ -191,13 +191,15 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           'connectedWallet': '$connectedWallet',
           'gasStation': canUseGasStation
         });
-        await Future.delayed(const Duration(seconds: 2));
-        final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
 
         //fetch metadata and image to update provider before navigating to next screen
-        var metadata =
+        final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+        Map metadata =
             await ref.read(nftMetadataProvider(chipInfo.tokenId).future);
-        var image = await ref.read(nftImageProvider(chipInfo.tokenId).future);
+        String image =
+            await ref.read(nftImageProvider(chipInfo.tokenId).future);
+        await Future.delayed(const Duration(seconds: 2));
+
         Navigator.pushNamedAndRemoveUntil(
           context,
           NFTDetailsScreen.routeName,
