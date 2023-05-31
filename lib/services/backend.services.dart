@@ -17,7 +17,7 @@ Dio getBackendClient() {
 }
 
 /// get a list of all collections associated with a specific app
-Future<List<Collection>> getAppCollections() async {
+Future<List<dynamic>> getAppCollections() async {
   final Dio dio = getBackendClient();
   final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
   final String url = '/app/$appId';
