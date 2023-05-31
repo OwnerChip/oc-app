@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:web3dart/web3dart.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
@@ -15,6 +16,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -22,6 +24,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -33,14 +36,6 @@ class NFTDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
-  bool showDescription = true;
-
-  void toggleDescription() {
-    setState(() {
-      showDescription = !showDescription;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
@@ -56,6 +51,11 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final AsyncValue<Uri> blockchainExplorerUrl =
         ref.watch(blockchainExplorerUrlProvider);
     final AsyncValue<String> contractName = ref.watch(contractNameProvider);
+
+    final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
+
+    final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
@@ -100,31 +100,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                 .metadataNameFontSize,
                             fontWeight: CustomFonts(dotenv.get('APP_ID'))
                                 .metadataNameFontWeight))),
-
-                //show traits button
-                nftMetadata.when(
-                  loading: () => Container(),
-                  data: (data) => data['traits'] != null &&
-                          data['traits']!.isNotEmpty
-                      ? CustomRoundedButton(
-                          height: 30,
-                          width: null,
-                          textStyle: Theme.of(context)
-                              .textTheme
-                              .bodyLarge!
-                              .copyWith(
-                                  color: CustomColors(dotenv.get('APP_ID'))
-                                      .customRoundedButtonColor,
-                                  fontSize: CustomFonts(dotenv.get('APP_ID'))
-                                          .bodyText2FontSize /
-                                      1.3),
-                          text: showDescription
-                              ? context.loc.showTraits
-                              : context.loc.showDescription,
-                          onPressed: () => toggleDescription())
-                      : Container(),
-                  error: (e, s) => Container(),
-                )
               ],
             ),
             Divider(
@@ -134,118 +109,156 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               indent: 0,
               endIndent: 0,
             ),
-            DropdownContainer(
-              title: 'TeSt',
-              content: Text('major test of the content'),
-            ),
+
+            /*** DESCRIPTION ***/
             nftMetadata.when(
-                data: (data) => Column(
-                      children: [
-                        showDescription
-                            ? Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(data['description'] ?? '',
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                        // color: Theme.of(context).primaryColor,
-                                        fontSize:
-                                            CustomFonts(dotenv.get('APP_ID'))
-                                                .metadataDescriptionFontSize,
-                                        fontWeight: CustomFonts(
-                                                dotenv.get('APP_ID'))
-                                            .metadataDescriptionFontWeight)),
-                              )
-                            : Align(
-                                alignment: Alignment.centerLeft,
-                                child: Column(children: <Widget>[
-                                  ...data['traits']
-                                      .map((e) => Row(
-                                            children: [
-                                              Text(e['trait_type'] + ': ',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyMedium!
-                                                      .copyWith(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: CustomFonts(
-                                                                dotenv.get(
-                                                                    'APP_ID'))
-                                                            .metadataDescriptionFontSize,
-                                                      )),
-                                              Text(e['value'],
-                                                  style: TextStyle(
-                                                    fontSize: CustomFonts(dotenv
-                                                            .get('APP_ID'))
-                                                        .metadataDescriptionFontSize,
-                                                  )),
-                                            ],
-                                          ))
-                                      .toList()
-                                ])),
-                        Divider(
-                          color: Theme.of(context).primaryColor,
-                          height: 20,
-                          thickness: 1,
-                          indent: 0,
-                          endIndent: 0,
-                        ),
-                        tokenInfo.when(
-                          data: (data) => InfoKeyValues(keys: const [
-                            "Collection",
-                            "Blockchain"
-                          ], values: [
-                            // first, try to find collection in collections list
-                            allCollections.collections[data.chainId]!
-                                .firstWhere((collection) {
-                              return collection.id == data.collectionId;
-                            },
-                                    // if not found, check chain data
-                                    orElse: () => {
-                                          'id': data.collectionId,
-                                          'name': contractName.when(
-                                            data: (data) => data,
-                                            // if error, show unknown collection
-                                            error: (error, stackTrace) =>
-                                                context.loc.unknownCollection,
-                                            loading: () => context.loc.loading,
-                                          )
-                                        } as Collection).name,
-                            chainConfig[data.chainId]!.networkName,
-                          ]),
-                          loading: () => Container(),
-                          error: (e, s) => Container(),
-                        )
-                      ],
+                data: (data) => DropdownContainer(
+                      isInitiallyExpanded: true,
+                      title: context.loc.description,
+                      content: Text(data['description']),
                     ),
-                error: (e, s) => Container(),
-                loading: () => Container()),
+                error: (e, s) => DropdownContainer(
+                      title: context.loc.description,
+                      content: null,
+                    ),
+                loading: () => DropdownContainer(
+                      title: context.loc.description,
+                      content: null,
+                    )),
+
+            /*** TRAITS ***/
+            nftMetadata.when(
+                data: (data) => data['traits'].isNotEmpty
+                    ? DropdownContainer(
+                        title: context.loc.traits,
+                        content: InfoKeyValues(
+                          keys: <String>[
+                            ...data['traits']
+                                .map(
+                                  (e) => e['trait_type'].toString(),
+                                )
+                                .toList()
+                          ],
+                          values: <String>[
+                            ...data['traits']
+                                .map((e) => e['value'].toString())
+                                .toList()
+                          ],
+                        ))
+                    : Container(),
+                error: (e, s) => DropdownContainer(
+                      title: context.loc.description,
+                      content: null,
+                    ),
+                loading: () => DropdownContainer(
+                      title: context.loc.description,
+                      content: null,
+                    )),
+
+            /*** DIGITAL TWIN ***/
+            tokenInfo.when(
+              data: (data) => DropdownContainer(
+                  title: context.loc.digitalTwin,
+                  content: Column(
+                    children: [
+                      InfoKeyValues(keys: [
+                        context.loc.ownership,
+                        context.loc.authenticity,
+                      ], values: [
+                        // ownership
+                        nftOwner.when(
+                          data: ((data) => !wc.connected
+                              ?
+                              //NFT owner exists and wallet is NOT connected
+                              context.loc.unconfirmed
+                              : connectedWallet == data
+                                  ?
+                                  //NFT owner exists and wallet is connected and wallet is owner
+                                  context.loc.confirmed
+                                  :
+                                  //NFT owner exists and wallet is connected and wallet is NOT owner
+                                  context.loc.unconfirmed),
+                          error: (e, s) => context.loc.ownerError,
+                          loading: () => context.loc.loading,
+                        ),
+
+                        // authenticity
+                        tokenInfo.when(
+                          data: ((data) => data.collectionId == zeroAddress
+                              ? context.loc.unconfirmed
+                              : context.loc.confirmed),
+                          error: (e, s) => context.loc.confirmed,
+                          loading: () => context.loc.loading,
+                        ),
+                      ]),
+                      const SizedBox(height: 20),
+                      InfoKeyValues(keys: const [
+                        "Collection",
+                        "Blockchain",
+                      ], values: [
+                        // first, try to find collection in collections list
+                        allCollections.collections[data.chainId]!.firstWhere(
+                            (collection) {
+                          return collection.id == data.collectionId;
+                        },
+                            // if not found, check chain data
+                            orElse: () => {
+                                  'id': data.collectionId,
+                                  'name': contractName.when(
+                                    data: (data) => data,
+                                    // if error, show unknown collection
+                                    error: (error, stackTrace) =>
+                                        context.loc.unknownCollection,
+                                    loading: () => context.loc.loading,
+                                  )
+                                } as Collection).name,
+                        chainConfig[data.chainId]!.networkName,
+                      ]),
+                      //spacing
+                      const SizedBox(height: 13),
+                      ChipInfo(
+                        tokenId: BigInt.parse(
+                            chipInfo.chipEthereumAddress
+                                .toString()
+                                .substring(2),
+                            radix: 16),
+                      ),
+                      const SizedBox(height: 20),
+                      CustomRoundedButton(
+                        text: context.loc.showOnExplorer,
+                        onPressed: () => {
+                          launchUrl(blockchainExplorerUrl.asData!.value,
+                              mode: LaunchMode.externalApplication)
+                        },
+                      ),
+                    ],
+                  )),
+              loading: () => Container(),
+              error: (e, s) => Container(),
+            ),
+            DropdownContainer(
+              title: context.loc.externalLinks,
+              content: Column(children: [
+                CustomRoundedButton(
+                  text: context.loc.showOnOpenSea,
+                  onPressed: () => {
+                    launchUrl(openseaUrl.asData!.value,
+                        mode: LaunchMode.externalApplication)
+                  },
+                ),
+                const SizedBox(height: 15),
+                dotenv.get('APP_ID') == 'ownerchip_infineon'
+                    ? Container()
+                    : CustomRoundedButton(
+                        text: context.loc.showOnRarible,
+                        onPressed: () => {
+                          launchUrl(raribleUrl.asData!.value,
+                              mode: LaunchMode.externalApplication)
+                        },
+                      ),
+              ]),
+            ),
             const SizedBox(height: 20),
-            CustomRoundedButton(
-              text: context.loc.showOnExplorer,
-              onPressed: () => {
-                launchUrl(blockchainExplorerUrl.asData!.value,
-                    mode: LaunchMode.externalApplication)
-              },
-            ),
-            const SizedBox(height: 15),
-            CustomRoundedButton(
-              text: context.loc.showOnOpenSea,
-              onPressed: () => {
-                launchUrl(openseaUrl.asData!.value,
-                    mode: LaunchMode.externalApplication)
-              },
-            ),
-            const SizedBox(height: 15),
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
-                ? Container()
-                : CustomRoundedButton(
-                    text: context.loc.showOnRarible,
-                    onPressed: () => {
-                      launchUrl(raribleUrl.asData!.value,
-                          mode: LaunchMode.externalApplication)
-                    },
-                  ),
           ],
         )
       ]),

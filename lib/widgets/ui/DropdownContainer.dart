@@ -13,7 +13,7 @@ class DropdownContainer extends StatefulWidget {
       required this.content});
 
   bool isInitiallyExpanded;
-  final Widget content;
+  final Widget? content;
   final String title;
 
   @override
@@ -29,10 +29,14 @@ class _DropdownContainerState extends State<DropdownContainer>
   @override
   void initState() {
     super.initState();
+    isExpanded = widget.isInitiallyExpanded;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
+    if (isExpanded) {
+      _controller.forward();
+    }
   }
 
   @override
@@ -56,8 +60,12 @@ class _DropdownContainerState extends State<DropdownContainer>
   @override
   Widget build(BuildContext context) {
     return CustomCard(
+        margin: EdgeInsets.only(
+          top: 5.0,
+          bottom: 5.0,
+        ),
         padding: const EdgeInsets.only(
-            top: 5.0, bottom: 5.0, left: 10.0, right: 10.0),
+            top: 5.0, bottom: 10.0, left: 10.0, right: 10.0),
         color: CustomColors(dotenv.get('APP_ID')).cardColor,
         children: [
           Row(
@@ -65,16 +73,21 @@ class _DropdownContainerState extends State<DropdownContainer>
             children: [
               Text(widget.title,
                   style: Theme.of(context).textTheme.displaySmall,
-                  textAlign: TextAlign.center),
+                  textAlign: TextAlign.left),
               IconButton(
                 icon: RotationTransition(
                     turns: Tween(begin: 0.0, end: 0.25).animate(_controller),
-                    child: SvgPicture.asset(
-                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/forward_arrow.svg")),
+                    child: widget.content == null
+                        ? SvgPicture.asset(
+                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/forward_arrow_disabled.svg")
+                        : SvgPicture.asset(
+                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/forward_arrow.svg")),
                 color: CustomColors(dotenv.get('APP_ID')).black,
-                onPressed: () {
-                  toggleExpanded();
-                },
+                onPressed: widget.content == null
+                    ? null
+                    : () {
+                        toggleExpanded();
+                      },
               )
             ],
           ),
@@ -95,11 +108,14 @@ class _DropdownContainerState extends State<DropdownContainer>
                           indent: 0,
                           endIndent: 0,
                         ),
-                        widget.content
+                        Align(
+                            //alignment left
+                            alignment: Alignment.centerLeft,
+                            child: widget.content ?? Container())
                       ],
                     ))
                 : Container(),
-          )
+          ),
         ]);
   }
 }

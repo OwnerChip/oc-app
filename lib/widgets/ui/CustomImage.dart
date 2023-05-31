@@ -62,25 +62,6 @@ class CustomImage extends StatelessWidget {
                                         child: child,
                                       )),
               )),
-          tokenId != null
-              ? AspectRatio(
-                  aspectRatio: 0.75,
-                  child: Align(
-                    alignment: const Alignment(-1.0, 0.95),
-                    child: Row(children: [
-                      const SizedBox(width: 5),
-                      const SmallTextContainer(
-                        text: 'Token ID',
-                        copyValue: '',
-                      ),
-                      const SizedBox(width: 10),
-                      SmallTextContainer(
-                        text: '${tokenId.toString().substring(0, 8)}...',
-                        copyValue: tokenId.toString(),
-                      ),
-                    ]),
-                  ))
-              : Container()
         ]));
   }
 }
