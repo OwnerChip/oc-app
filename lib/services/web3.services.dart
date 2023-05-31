@@ -217,7 +217,7 @@ String makeBurnData(
 String makeTransferData(String functionSignatureHash, Uint8List hash,
     MsgSignature signature, EthereumAddress to) {
   String data = functionSignatureHash +
-      to.toString().substring(2).padLeft(24, '0') +
+      to.toString().substring(2).padLeft(64, '0') +
       uint8ListTo32ByteHex(hash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
