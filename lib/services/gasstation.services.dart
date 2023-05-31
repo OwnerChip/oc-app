@@ -47,18 +47,22 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     String functionSignatureHash,
     String chainRpcUrl,
     int chainId,
-    Uint8List tokenIdHash,
+    Uint8List randomValueHash,
     MsgSignature signature,
-    String? tokenURI,
     EthereumAddress from,
-    EthereumAddress to) async {
+    EthereumAddress to,
+    EthereumAddress? toAccount,
+    String? tokenURI) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   String data;
   if (functionSignatureHash == gaslessMintFunctionSignature) {
-    data =
-        makeMintData(functionSignatureHash, tokenIdHash, signature, tokenURI!);
+    data = makeMintData(
+        functionSignatureHash, randomValueHash, signature, tokenURI!);
   } else if (functionSignatureHash == gaslessBurnFunctionSignature) {
-    data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
+    data = makeBurnData(functionSignatureHash, randomValueHash, signature);
+  } else if (functionSignatureHash == gaslessTransferFunctionSignature) {
+    data = makeTransferData(
+        functionSignatureHash, randomValueHash, signature, toAccount!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -92,14 +96,15 @@ Future<List<Map<String, dynamic>>> makeGaslessParams({
   required String functionSignatureHash,
   required String chainRpcUrl,
   required int chainId,
-  required Uint8List tokenIdHash,
+  required Uint8List randomValueHash,
   required MsgSignature signature,
   required EthereumAddress from,
   required EthereumAddress to,
+  EthereumAddress? toAccount,
   String? tokenURI,
 }) async {
   final request = await buildTypedV4Request(functionSignatureHash, chainRpcUrl,
-      chainId, tokenIdHash, signature, tokenURI, from, to);
+      chainId, randomValueHash, signature, from, to, toAccount, tokenURI);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

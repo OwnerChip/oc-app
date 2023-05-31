@@ -108,5 +108,9 @@
     "orderChips": "Chips bestellen",
     "scanNow": "Jetzt Scannen",
     "pleaseSelect": "- bitte auswählen -",
-    "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen"
+    "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen",
+    "transferToken": "Token transferieren",
+    "transferInProgress": "Token wird transferiert",
+    "transferSuccess":  "Token erfolgreich transferiert",
+    "transferError": "Fehler beim Transfer des Tokens"
 }

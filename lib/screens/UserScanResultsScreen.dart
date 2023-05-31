@@ -142,6 +142,91 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
+  Future<void> transferToken(
+      WalletConnect wc,
+      BigInt tokenId,
+      EthereumAddress to,
+      SignatureData signatureData,
+      EthereumAddress connectedWallet) async {
+    final TokenInfoObject config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    final burnProcess = Sentry.startTransaction('initTransfer()', 'task');
+    try {
+      if (!wc.bridgeConnected) {
+        wc.reconnect();
+      }
+
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.transferInProgress;
+      });
+
+      sendAnalyticsTrace(
+          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_STARTED");
+
+      final List response = await checkMetaTx(
+          config.collectionId, gaslessTransferFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            gaslessTransferFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            metaTxAgreementId,
+            toAccount: to);
+      } else {
+        txnHash = await makeAndSendNormalTx(
+            transferFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            toAccount: to);
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        //this means transfer succeeded
+        setState(() {
+          isRotating = false;
+          loadingSvgPath =
+              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg"; //TODO: replace with better symbol
+          loadingText = context.loc.transferSuccess;
+        });
+        // send status to analytics
+        burnProcess.finish();
+        sendAnalyticsTrace("$connectedWallet-${tokenId.toString()}", txnHash,
+            "TRANSFER_SUCCESS");
+      } else {
+        throw Exception(context.loc.transferError);
+      }
+    } catch (e, s) {
+      setState(() {
+        isLoading = false;
+      });
+      // send Error to analytics
+      burnProcess.throwable = e;
+      burnProcess.status = const SpanStatus.aborted();
+      burnProcess.finish();
+      sendAnalyticsTrace(
+          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_ERROR");
+      await Sentry.captureException(e, stackTrace: s);
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.transferError, 'error'),
+      );
+      print("Error: $e");
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
@@ -362,18 +447,29 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                           false));
                                                           return collection
                                                                   .hasMinterRole!
-                                                              ? CustomRoundedButton(
-                                                                  text: context
-                                                                      .loc
-                                                                      .burnToken,
-                                                                  onPressed:
-                                                                      (() => {
-                                                                            fromCancelable(burnToken(
-                                                                                wc,
-                                                                                chipInfo.tokenId,
-                                                                                signatureData,
-                                                                                connectedWallet))
-                                                                          }))
+                                                              ? Column(
+                                                                  children: [
+                                                                      CustomRoundedButton(
+                                                                          text: context
+                                                                              .loc
+                                                                              .burnToken,
+                                                                          onPressed: (() =>
+                                                                              {
+                                                                                fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                              })),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              10),
+                                                                      CustomRoundedButton(
+                                                                          text: context
+                                                                              .loc
+                                                                              .transferToken,
+                                                                          onPressed: (() =>
+                                                                              {
+                                                                                //TODO: replace with actual address
+                                                                                fromCancelable(transferToken(wc, chipInfo.tokenId, EthereumAddress.fromHex("0xd7f42354e6B8cc6DD78EFBEDcd928EB9eEe246b0"), signatureData, connectedWallet))
+                                                                              })),
+                                                                    ])
                                                               : Container();
                                                         },
                                                         error: (e, s) =>
@@ -437,12 +533,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   .removeRoute(ModalRoute.of(context)!);
                             }
                           })
-                      : wc.session.accounts.isNotEmpty ? CustomRoundedButton(
-                          text: context.loc.viewNftDetails,
-                          onPressed: () {
-                            Navigator.of(context)
-                                .pushNamed(NFTDetailsScreen.routeName);
-                          }): Container(),
+                      : wc.session.accounts.isNotEmpty
+                          ? CustomRoundedButton(
+                              text: context.loc.viewNftDetails,
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pushNamed(NFTDetailsScreen.routeName);
+                              })
+                          : Container(),
                   error: (e, s) => Container(),
                   loading: () => Container()),
             ])));

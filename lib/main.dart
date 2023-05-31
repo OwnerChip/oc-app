@@ -15,7 +15,6 @@ import 'screens/HomeScreen.dart';
 import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
-import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
 
@@ -122,8 +121,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
         ScanningScreen.routeName: (context) => const ScanningScreen(),
-        ChipAlreadyInitializedScreen.routeName: (context) =>
-            const ChipAlreadyInitializedScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),
         UserScanResultsScreen.routeName: (context) =>
             const UserScanResultsScreen(),

@@ -79,15 +79,17 @@ Future<String> makeAndSendGaslessTx(
     EthereumAddress walletAddress,
     WalletConnect wc,
     String metaTxAgreementId,
-    {String? cid}) async {
+    {EthereumAddress? toAccount,
+    String? cid}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
     functionSignatureHash: functionSignatureHash,
     chainRpcUrl: getRPCUrlFromChainId(chainId),
     chainId: chainId,
-    tokenIdHash: signatureData.hashedMsg,
+    randomValueHash: signatureData.hashedMsg,
     signature: signatureData.signature,
     from: walletAddress,
     to: collectionId,
+    toAccount: toAccount,
     tokenURI: cid != null ? "ipfs://$cid" : null,
   );
   final Map<String, dynamic> typedData = gaslessTxParams[0];
@@ -112,14 +114,14 @@ Future<String> makeAndSendGaslessTx(
 //It then returns the txnHash.
 
 Future<String> makeAndSendNormalTx(
-  String functionSignatureHash,
-  int chainId,
-  EthereumAddress collectionId,
-  SignatureData signatureData,
-  EthereumAddress walletAddress,
-  WalletConnect wc, {
-  String? cid,
-}) async {
+    String functionSignatureHash,
+    int chainId,
+    EthereumAddress collectionId,
+    SignatureData signatureData,
+    EthereumAddress walletAddress,
+    WalletConnect wc,
+    {EthereumAddress? toAccount,
+    String? cid}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
       collectionId,
@@ -127,6 +129,7 @@ Future<String> makeAndSendNormalTx(
       functionSignatureHash,
       signatureData.hashedMsg,
       signatureData.signature,
+      toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null);
 
   //open metamask application
