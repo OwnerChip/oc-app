@@ -208,7 +208,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                       children: [
                         const SizedBox(height: 100),
                         nftMetadata.when(
-                          loading: () => Container(),
+                          loading: () => Text(context.loc.loading,
+                              style: Theme.of(context).textTheme.displayLarge!),
                           data: (data) => data['name'] != null
                               ? Text(data['name'],
                                   style:
