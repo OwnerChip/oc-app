@@ -4,6 +4,7 @@ import 'CustomCard.dart';
 import 'PopupLoader.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 class SpinningLoadingSvg extends StatelessWidget {
   const SpinningLoadingSvg({
@@ -61,12 +62,13 @@ class SpinningLoadingSvg extends StatelessWidget {
           secondaryButton
               ? Column(children: [
                   const SizedBox(height: 20),
-                  CustomRoundedButton(
-                      text: secondaryButtonText,
-                      onPressed: () => {
-                            launchUrl(Uri.parse(secondaryButtonUrl),
-                                mode: LaunchMode.externalApplication)
-                          })
+                  CustomOutlinedButton(
+                    buttonText: secondaryButtonText,
+                    onPressed: () => {
+                      launchUrl(Uri.parse(secondaryButtonUrl),
+                          mode: LaunchMode.externalApplication)
+                    },
+                  ),
                 ])
               : Container()
         ]);
