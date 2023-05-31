@@ -1,3 +1,4 @@
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,7 +17,7 @@ Dio getBackendClient() {
 }
 
 /// get a list of all collections associated with a specific app
-Future<List<dynamic>> getAppCollections() async {
+Future<List<Collection>> getAppCollections() async {
   final Dio dio = getBackendClient();
   final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
   final String url = '/app/$appId';
