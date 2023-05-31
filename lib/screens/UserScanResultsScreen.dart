@@ -38,6 +38,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
   const UserScanResultsScreen({super.key});
@@ -158,6 +159,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
+    final AsyncValue<Map<String, dynamic>> nftMetadata =
+        ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<TokenInfoObject> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
@@ -204,7 +207,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                       width: double.infinity,
                       children: [
                         const SizedBox(height: 100),
-
+                        nftMetadata.when(
+                          loading: () => Container(),
+                          data: (data) => data['name'] != null
+                              ? Text(data['name'],
+                                  style:
+                                      Theme.of(context).textTheme.displayLarge!)
+                              : Container(),
+                          error: (error, stackTrace) => Container(),
+                        ),
+                        const SizedBox(height: 10),
                         //AUTHENTICITY CHECK
                         CustomCard(
                             color: CustomColors(dotenv.get('APP_ID'))
@@ -313,13 +325,17 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                           //NFT owner exists and wallet is NOT connected
                                           Column(
                                               children: [
-                                                Text(
-                                                    context
-                                                        .loc.noWalletConnected,
-                                                    textAlign: TextAlign.center,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium),
+                                                Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: Text(
+                                                        context.loc
+                                                            .noWalletConnected,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodyMedium)),
                                                 const SizedBox(height: 10),
                                                 CustomRoundedButton(
                                                     text: context
@@ -335,14 +351,18 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               //NFT owner exists and wallet is connected and wallet is owner
                                               Column(
                                                   children: [
-                                                    Text(
-                                                        context
-                                                            .loc.youAreNftOwner,
-                                                        textAlign:
-                                                            TextAlign.left,
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyMedium),
+                                                    Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: Text(
+                                                            context.loc
+                                                                .youAreNftOwner,
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyMedium)),
                                                     const SizedBox(height: 10),
                                                     relevantCollections.when(
                                                         data: (data) {
@@ -384,18 +404,24 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                 )
                                               :
                                               //NFT owner exists and wallet is connected and wallet is NOT owner
-                                              Text(
-                                                  context.loc.youAreNotNftOwner,
-                                                  textAlign: TextAlign.left,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyMedium),
-                                      error: (e, s) => Text(
-                                          context.loc.youAreNotNftOwner,
-                                          textAlign: TextAlign.left,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium),
+                                              Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                      context.loc
+                                                          .youAreNotNftOwner,
+                                                      textAlign: TextAlign.left,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium)),
+                                      error: (e, s) => Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                              context.loc.youAreNotNftOwner,
+                                              textAlign: TextAlign.left,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium)),
                                       loading: () =>
                                           const CircularProgressIndicator())),
                             ]),
@@ -437,12 +463,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   .removeRoute(ModalRoute.of(context)!);
                             }
                           })
-                      : wc.session.accounts.isNotEmpty ? CustomRoundedButton(
-                          text: context.loc.viewNftDetails,
-                          onPressed: () {
-                            Navigator.of(context)
-                                .pushNamed(NFTDetailsScreen.routeName);
-                          }): Container(),
+                      : wc.session.accounts.isNotEmpty
+                          ? CustomRoundedButton(
+                              text: context.loc.viewNftDetails,
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pushNamed(NFTDetailsScreen.routeName);
+                              })
+                          : Container(),
                   error: (e, s) => Container(),
                   loading: () => Container()),
             ])));

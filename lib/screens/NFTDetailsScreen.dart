@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -132,6 +133,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               thickness: 1,
               indent: 0,
               endIndent: 0,
+            ),
+            DropdownContainer(
+              title: 'TeSt',
+              content: Text('major test of the content'),
             ),
             nftMetadata.when(
                 data: (data) => Column(
