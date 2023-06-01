@@ -117,14 +117,17 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 data: (data) => DropdownContainer(
                       isInitiallyExpanded: true,
                       title: context.loc.description,
-                      content: Linkify(
-                        onOpen: (link) async {
-                          if (!await launchUrl(Uri.parse(link.url))) {
-                            throw Exception('Could not launch ${link.url}');
-                          }
-                        },
-                        text: data['description'],
-                      ),
+                      content: data['description'] != null
+                          ? Linkify(
+                              onOpen: (link) async {
+                                if (!await launchUrl(Uri.parse(link.url))) {
+                                  throw Exception(
+                                      'Could not launch ${link.url}');
+                                }
+                              },
+                              text: data['description'],
+                            )
+                          : null,
                     ),
                 error: (e, s) => DropdownContainer(
                       title: context.loc.description,

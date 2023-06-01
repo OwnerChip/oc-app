@@ -29,7 +29,7 @@ class _DropdownContainerState extends State<DropdownContainer>
   @override
   void initState() {
     super.initState();
-    isExpanded = widget.isInitiallyExpanded;
+    isExpanded = widget.content != null ? widget.isInitiallyExpanded : false;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
