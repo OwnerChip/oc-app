@@ -24,7 +24,7 @@
     "cancel": "Abbrechen",
     "allFunctions": "Alle Funktionen",
     "burnAndMint": "Löschen & neu erstellen",
-    "showOnExplorer": "Auf Blockchain anzeigen",
+    "showOnExplorer": "Blockchain Details ansehen",
     "showOnOpenSea": "Auf OpenSea ansehen",
     "showOnRarible": "Auf Rarible ansehen",
     "itemName": "Name",
@@ -108,5 +108,11 @@
     "orderChips": "Chips bestellen",
     "scanNow": "Jetzt Scannen",
     "pleaseSelect": "- bitte auswählen -",
-    "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen"
+    "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen",
+    "digitalTwin": "Digital Twin",
+    "authenticity": "Echtheit",
+    "ownership": "Eigentum",
+    "unconfirmed": "Nicht bestätigt",
+    "confirmed": "Bestätigt",
+    "externalLinks": "Externe Links"
 }

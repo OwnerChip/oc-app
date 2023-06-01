@@ -12,6 +12,7 @@ class CustomCard extends StatelessWidget {
     this.maxHeight = double.infinity,
     this.maxWidth = double.infinity,
     this.margin,
+    this.padding = const EdgeInsets.all(20),
     this.color,
     this.mainAxisSize = MainAxisSize.max,
     this.mainAxisAlignment = MainAxisAlignment.start,
@@ -27,6 +28,7 @@ class CustomCard extends StatelessWidget {
   final double maxHeight;
   final double maxWidth;
   final EdgeInsetsGeometry? margin;
+  final EdgeInsetsGeometry padding;
   final Color? color;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
@@ -42,7 +44,7 @@ class CustomCard extends StatelessWidget {
       height: height,
       width: width,
       margin: margin,
-      padding: const EdgeInsets.all(20),
+      padding: padding,
       decoration: BoxDecoration(
           color: color ?? Theme.of(context).cardColor,
           border: Border.all(

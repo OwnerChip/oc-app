@@ -16,8 +16,9 @@ class ChipInfo extends StatelessWidget {
           ? Row(
               children: [
                 Text('Chip Name: ',
-                    style: Theme.of(context).textTheme.headlineSmall),
-                Text(chipName!, style: Theme.of(context).textTheme.bodyMedium)
+                    style: Theme.of(context).textTheme.bodyMedium),
+                Text(chipName!,
+                    style: Theme.of(context).textTheme.headlineSmall)
               ],
             )
           : Container(),
@@ -26,9 +27,9 @@ class ChipInfo extends StatelessWidget {
           ? Row(
               children: [
                 Text('Token ID: ',
-                    style: Theme.of(context).textTheme.headlineSmall),
-                Text('${tokenId.toString().substring(0, 8)}...',
                     style: Theme.of(context).textTheme.bodyMedium),
+                Text('${tokenId.toString().substring(0, 8)}...',
+                    style: Theme.of(context).textTheme.headlineSmall),
                 IconButton(
                     color: Theme.of(context).primaryColor,
                     padding: EdgeInsets.zero,
@@ -48,10 +49,9 @@ class ChipInfo extends StatelessWidget {
       walletAddress != null
           ? Row(
               children: [
-                Text('Wallet: ',
-                    style: Theme.of(context).textTheme.headlineSmall),
+                Text('Wallet: ', style: Theme.of(context).textTheme.bodyMedium),
                 Text('${walletAddress!.toString().substring(0, 8)}...',
-                    style: Theme.of(context).textTheme.bodyMedium),
+                    style: Theme.of(context).textTheme.headlineSmall),
                 //icon that copies navargs.nftowner to clipboard
                 IconButton(
                     color: Theme.of(context).primaryColor,
