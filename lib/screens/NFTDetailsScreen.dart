@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
@@ -115,7 +117,14 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 data: (data) => DropdownContainer(
                       isInitiallyExpanded: true,
                       title: context.loc.description,
-                      content: Text(data['description']),
+                      content: Linkify(
+                        onOpen: (link) async {
+                          if (!await launchUrl(Uri.parse(link.url))) {
+                            throw Exception('Could not launch ${link.url}');
+                          }
+                        },
+                        text: data['description'],
+                      ),
                     ),
                 error: (e, s) => DropdownContainer(
                       title: context.loc.description,
