@@ -192,13 +192,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           'gasStation': canUseGasStation
         });
 
+        await Future.delayed(const Duration(seconds: 1));
         //fetch metadata and image to update provider before navigating to next screen
         final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
         Map metadata =
             await ref.read(nftMetadataProvider(chipInfo.tokenId).future);
         String image =
             await ref.read(nftImageProvider(chipInfo.tokenId).future);
-        await Future.delayed(const Duration(seconds: 2));
 
         Navigator.pushNamedAndRemoveUntil(
           context,

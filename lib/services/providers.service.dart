@@ -173,7 +173,7 @@ final selectedCollectionIdProvider =
   final AsyncValue<BlockchainCollectionList> collectionList =
       ref.watch(findAllMinterRolesProvider);
 
-  final Collection? res = chainId != null
+  final Collection? res = chainId != null && collectionList.asData != null
       ? collectionList.asData!.value.collections[chainId]![0]
       : null;
   return res;
