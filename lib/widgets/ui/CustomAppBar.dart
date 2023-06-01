@@ -13,7 +13,7 @@ import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
-class CustomAppBar extends ConsumerWidget with PreferredSizeWidget {
+class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key, this.text, this.showBackButton = true})
       : super(key: key);
   final String? text;
