@@ -112,5 +112,7 @@
     "transferToken": "Token transferieren",
     "transferInProgress": "Token wird transferiert",
     "transferSuccess":  "Token erfolgreich transferiert",
-    "transferError": "Fehler beim Transfer des Tokens"
+    "transferError": "Fehler beim Transfer des Tokens",
+    "enterWalletAddress": "Wallet Adresse eingeben",
+    "pleaseEnterValidWalletAddress": "Bitte korrekte Wallet Adresse eingeben."
 }

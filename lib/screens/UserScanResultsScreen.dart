@@ -1,6 +1,7 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -20,6 +21,7 @@ import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
@@ -30,6 +32,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -137,91 +140,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.burnedError, 'error'),
-      );
-      print("Error: $e");
-    }
-  }
-
-  Future<void> transferToken(
-      WalletConnect wc,
-      BigInt tokenId,
-      EthereumAddress to,
-      SignatureData signatureData,
-      EthereumAddress connectedWallet) async {
-    final TokenInfoObject config =
-        await ref.watch(findTokenProvider(tokenId).future);
-    final burnProcess = Sentry.startTransaction('initTransfer()', 'task');
-    try {
-      if (!wc.bridgeConnected) {
-        wc.reconnect();
-      }
-
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.transferInProgress;
-      });
-
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_STARTED");
-
-      final List response = await checkMetaTx(
-          config.collectionId, gaslessTransferFunctionSignature);
-      final bool canUseGasStation = response[0];
-      final metaTxAgreementId = response[1];
-
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            gaslessTransferFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            metaTxAgreementId,
-            toAccount: to);
-      } else {
-        txnHash = await makeAndSendNormalTx(
-            transferFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            toAccount: to);
-      }
-
-      var txnReceipt =
-          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
-        //this means transfer succeeded
-        setState(() {
-          isRotating = false;
-          loadingSvgPath =
-              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg"; //TODO: replace with better symbol
-          loadingText = context.loc.transferSuccess;
-        });
-        // send status to analytics
-        burnProcess.finish();
-        sendAnalyticsTrace("$connectedWallet-${tokenId.toString()}", txnHash,
-            "TRANSFER_SUCCESS");
-      } else {
-        throw Exception(context.loc.transferError);
-      }
-    } catch (e, s) {
-      setState(() {
-        isLoading = false;
-      });
-      // send Error to analytics
-      burnProcess.throwable = e;
-      burnProcess.status = const SpanStatus.aborted();
-      burnProcess.finish();
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_ERROR");
-      await Sentry.captureException(e, stackTrace: s);
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.transferError, 'error'),
       );
       print("Error: $e");
     }
@@ -452,22 +370,24 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                       CustomRoundedButton(
                                                                           text: context
                                                                               .loc
-                                                                              .burnToken,
+                                                                              .transferToken,
                                                                           onPressed: (() =>
                                                                               {
-                                                                                fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                //navigate to transfer screen
+                                                                                Navigator.pushNamed(context, TransferScreen.routeName)
                                                                               })),
                                                                       const SizedBox(
                                                                           height:
                                                                               10),
-                                                                      CustomRoundedButton(
-                                                                          text: context
+                                                                      CustomOutlinedButton(
+                                                                          width: double
+                                                                              .infinity,
+                                                                          buttonText: context
                                                                               .loc
-                                                                              .transferToken,
+                                                                              .burnToken,
                                                                           onPressed: (() =>
                                                                               {
-                                                                                //TODO: replace with actual address
-                                                                                fromCancelable(transferToken(wc, chipInfo.tokenId, EthereumAddress.fromHex("0xd7f42354e6B8cc6DD78EFBEDcd928EB9eEe246b0"), signatureData, connectedWallet))
+                                                                                fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
                                                                               })),
                                                                     ])
                                                               : Container();

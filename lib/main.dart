@@ -17,6 +17,7 @@ import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
+import 'screens/TransferScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -127,6 +128,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         NFTDetailsScreen.routeName: (context) => const NFTDetailsScreen(),
         ChainSelectorScreen.routeName: (context) => const ChainSelectorScreen(),
         MoreInfoScreen.routeName: (context) => const MoreInfoScreen(),
+        TransferScreen.routeName: (context) => const TransferScreen(),
       },
     );
   }
