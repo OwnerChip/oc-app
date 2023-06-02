@@ -60,7 +60,7 @@ class _DropdownContainerState extends State<DropdownContainer>
   @override
   Widget build(BuildContext context) {
     return CustomCard(
-        margin: EdgeInsets.only(
+        margin: const EdgeInsets.only(
           top: 5.0,
           bottom: 5.0,
         ),
@@ -69,30 +69,24 @@ class _DropdownContainerState extends State<DropdownContainer>
         color: CustomColors(dotenv.get('APP_ID')).cardColor,
         children: [
           GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: () => toggleExpanded(),
-              child: Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(widget.title,
-                        style: Theme.of(context).textTheme.displaySmall,
-                        textAlign: TextAlign.left),
-                    IconButton(
-                      icon: RotationTransition(
-                          turns:
-                              Tween(begin: 0.0, end: 0.5).animate(_controller),
-                          child: widget.content == null
-                              ? const Icon(Icons.expand_less_rounded)
-                              : const Icon(Icons.expand_more_rounded)),
-                      color: CustomColors(dotenv.get('APP_ID')).black,
-                      onPressed: widget.content == null
-                          ? null
-                          : () {
-                              toggleExpanded();
-                            },
-                    )
-                  ],
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(widget.title,
+                      style: Theme.of(context).textTheme.displaySmall,
+                      textAlign: TextAlign.left),
+                  IconButton(
+                    icon: RotationTransition(
+                        turns: Tween(begin: 0.0, end: 0.5).animate(_controller),
+                        child: const Icon(Icons.expand_more_rounded)),
+                    color: CustomColors(dotenv.get('APP_ID')).black,
+                    onPressed: () {
+                      toggleExpanded();
+                    },
+                  )
+                ],
               )),
           AnimatedSize(
             duration: const Duration(milliseconds: 200),

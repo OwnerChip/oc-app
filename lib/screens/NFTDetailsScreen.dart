@@ -114,21 +114,23 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
 
             /*** DESCRIPTION ***/
             nftMetadata.when(
-                data: (data) => DropdownContainer(
-                      isInitiallyExpanded: true,
-                      title: context.loc.description,
-                      content: data['description'] != null
-                          ? Linkify(
-                              onOpen: (link) async {
-                                if (!await launchUrl(Uri.parse(link.url))) {
-                                  throw Exception(
-                                      'Could not launch ${link.url}');
-                                }
-                              },
-                              text: data['description'],
-                            )
-                          : null,
-                    ),
+                data: (data) => data['description'].isNotEmpty
+                    ? DropdownContainer(
+                        isInitiallyExpanded: true,
+                        title: context.loc.description,
+                        content: data['description'] != null
+                            ? Linkify(
+                                onOpen: (link) async {
+                                  if (!await launchUrl(Uri.parse(link.url))) {
+                                    throw Exception(
+                                        'Could not launch ${link.url}');
+                                  }
+                                },
+                                text: data['description'],
+                              )
+                            : null,
+                      )
+                    : Container(),
                 error: (e, s) => DropdownContainer(
                       title: context.loc.description,
                       content: null,
