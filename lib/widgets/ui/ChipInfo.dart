@@ -25,23 +25,34 @@ class ChipInfo extends StatelessWidget {
       const SizedBox(height: 5),
       tokenId != null
           ? Row(
+              //space between
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Token ID: ',
                     style: Theme.of(context).textTheme.bodyMedium),
-                Text('${tokenId.toString().substring(0, 8)}...',
-                    style: Theme.of(context).textTheme.headlineSmall),
-                IconButton(
-                    color: Theme.of(context).primaryColor,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    iconSize: 25,
-                    onPressed: () {
-                      Clipboard.setData(
-                          ClipboardData(text: tokenId.toString()));
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Token ID copied to clipboard')));
-                    },
-                    icon: const Icon(Icons.copy))
+                Container(
+                    width: 150,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('${tokenId.toString().substring(0, 8)}...',
+                            style: Theme.of(context).textTheme.headlineSmall),
+                        IconButton(
+                            color: Theme.of(context).primaryColor,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            iconSize: 25,
+                            onPressed: () {
+                              Clipboard.setData(
+                                  ClipboardData(text: tokenId.toString()));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Token ID copied to clipboard')));
+                            },
+                            icon: const Icon(Icons.copy))
+                      ],
+                    ))
               ],
             )
           : Container(),

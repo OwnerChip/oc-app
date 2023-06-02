@@ -214,16 +214,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                           return collection.id == data.collectionId;
                         },
                             // if not found, check chain data
-                            orElse: () => {
-                                  'id': data.collectionId,
-                                  'name': contractName.when(
-                                    data: (data) => data,
-                                    // if error, show unknown collection
-                                    error: (error, stackTrace) =>
-                                        context.loc.unknownCollection,
-                                    loading: () => context.loc.loading,
-                                  )
-                                } as Collection).name,
+                            orElse: () => Collection(
+                                data.collectionId,
+                                contractName.when(
+                                  data: (data) => data,
+                                  // if error, show unknown collection
+                                  error: (error, stackTrace) =>
+                                      context.loc.unknownCollection,
+                                  loading: () => context.loc.loading,
+                                ))).name,
                         chainConfig[data.chainId]!.networkName,
                       ]),
                       //spacing

@@ -14,10 +14,17 @@ class InfoKeyValues extends StatelessWidget {
         String val = entry.value;
 
         return Row(
+          //space between
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
           children: [
             Text('$val: ', style: Theme.of(context).textTheme.bodyMedium),
-            Text(values[idx].toString(),
-                style: Theme.of(context).textTheme.headlineSmall)
+            Container(
+              width: 150,
+              child: Flexible(
+                  child: Text(values[idx].toString(),
+                      style: Theme.of(context).textTheme.headlineSmall)),
+            )
           ],
         );
       }).toList()
