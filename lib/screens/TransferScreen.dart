@@ -1,4 +1,5 @@
 //import packages
+import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -110,6 +111,16 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
               "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg"; //TODO: replace with better symbol
           loadingText = context.loc.transferSuccess;
         });
+        //refresh provider state to update nft owner for next screen
+        AsyncValue<EthereumAddress> owner = ref.refresh(nftOwnerProvider);
+
+        //wait for 1 second to show success icon
+        await Future.delayed(const Duration(seconds: 1));
+        setState(() {
+          isLoading = false;
+        });
+        //navigate to user scan result screen
+        Navigator.pushNamed(context, UserScanResultsScreen.routeName);
         // send status to analytics
         transferProcess.finish();
         sendAnalyticsTrace("$connectedWallet-${tokenId.toString()}", txnHash,
@@ -219,6 +230,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
                           onPressed: (() => {
                                 if (_formKey.currentState!.validate())
                                   {
+                                    FocusScope.of(context).unfocus(),
                                     fromCancelable(transferToken(
                                         wc,
                                         chipInfo.tokenId,
