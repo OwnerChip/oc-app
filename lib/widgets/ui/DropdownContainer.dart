@@ -68,29 +68,32 @@ class _DropdownContainerState extends State<DropdownContainer>
             top: 5.0, bottom: 10.0, left: 10.0, right: 10.0),
         color: CustomColors(dotenv.get('APP_ID')).cardColor,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(widget.title,
-                  style: Theme.of(context).textTheme.displaySmall,
-                  textAlign: TextAlign.left),
-              IconButton(
-                icon: RotationTransition(
-                    turns: Tween(begin: 0.0, end: 0.25).animate(_controller),
-                    child: widget.content == null
-                        ? SvgPicture.asset(
-                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/forward_arrow_disabled.svg")
-                        : SvgPicture.asset(
-                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/forward_arrow.svg")),
-                color: CustomColors(dotenv.get('APP_ID')).black,
-                onPressed: widget.content == null
-                    ? null
-                    : () {
-                        toggleExpanded();
-                      },
-              )
-            ],
-          ),
+          GestureDetector(
+              onTap: () => toggleExpanded(),
+              child: Container(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(widget.title,
+                        style: Theme.of(context).textTheme.displaySmall,
+                        textAlign: TextAlign.left),
+                    IconButton(
+                      icon: RotationTransition(
+                          turns:
+                              Tween(begin: 0.0, end: 0.5).animate(_controller),
+                          child: widget.content == null
+                              ? const Icon(Icons.expand_less_rounded)
+                              : const Icon(Icons.expand_more_rounded)),
+                      color: CustomColors(dotenv.get('APP_ID')).black,
+                      onPressed: widget.content == null
+                          ? null
+                          : () {
+                              toggleExpanded();
+                            },
+                    )
+                  ],
+                ),
+              )),
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
