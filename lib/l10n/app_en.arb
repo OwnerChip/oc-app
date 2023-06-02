@@ -111,7 +111,7 @@
     "pleaseSelectChainAndCollection": "Please select a Blockchain & Collection",
     "transferToken": "Transfer Token",
     "transferInProgress": "Transferring token",
-    "transferSuccess":  "Token transferred successfully",
+    "transferSuccess":  "Token transferred",
     "transferError": "Error transferring token",
     "enterWalletAddress": "Enter wallet address",
     "pleaseEnterValidWalletAddress": "Please enter a valid wallet address."
