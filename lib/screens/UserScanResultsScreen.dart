@@ -1,6 +1,7 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
@@ -20,6 +21,7 @@ import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
@@ -30,6 +32,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -383,18 +386,31 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                           false));
                                                           return collection
                                                                   .hasMinterRole!
-                                                              ? CustomRoundedButton(
-                                                                  text: context
-                                                                      .loc
-                                                                      .burnToken,
-                                                                  onPressed:
-                                                                      (() => {
-                                                                            fromCancelable(burnToken(
-                                                                                wc,
-                                                                                chipInfo.tokenId,
-                                                                                signatureData,
-                                                                                connectedWallet))
-                                                                          }))
+                                                              ? Column(
+                                                                  children: [
+                                                                      CustomRoundedButton(
+                                                                          text: context
+                                                                              .loc
+                                                                              .transferToken,
+                                                                          onPressed: (() =>
+                                                                              {
+                                                                                //navigate to transfer screen
+                                                                                Navigator.pushNamed(context, TransferScreen.routeName)
+                                                                              })),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              10),
+                                                                      CustomOutlinedButton(
+                                                                          width: double
+                                                                              .infinity,
+                                                                          buttonText: context
+                                                                              .loc
+                                                                              .burnToken,
+                                                                          onPressed: (() =>
+                                                                              {
+                                                                                fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                              })),
+                                                                    ])
                                                               : Container();
                                                         },
                                                         error: (e, s) =>

@@ -114,5 +114,11 @@
     "ownership": "Eigentum",
     "unconfirmed": "Nicht bestätigt",
     "confirmed": "Bestätigt",
-    "externalLinks": "Externe Links"
+    "externalLinks": "Externe Links",
+    "transferToken": "Token transferieren",
+    "transferInProgress": "Token wird transferiert",
+    "transferSuccess":  "Token transferiert",
+    "transferError": "Fehler beim Transfer des Tokens",
+    "enterWalletAddress": "Wallet Adresse eingeben",
+    "pleaseEnterValidWalletAddress": "Bitte korrekte Wallet Adresse eingeben."
 }

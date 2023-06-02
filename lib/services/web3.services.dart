@@ -119,13 +119,13 @@ Future<bool> verifyTokenSigner(
     String chainRpcUrl,
     EthereumAddress collectionId,
     EthereumAddress chipWalletAddressHex,
-    Uint8List tokenIdHash,
+    Uint8List randomValueHash,
     MsgSignature signature) async {
   Uint8List r = bytesFromBigInt(signature.r);
   Uint8List s = bytesFromBigInt(signature.s);
   try {
     var result = await queryCollectionContract(chainRpcUrl, collectionId,
-        "getSigner", [tokenIdHash, r, s, BigInt.from(signature.v)]);
+        "getSigner", [randomValueHash, r, s, BigInt.from(signature.v)]);
     bool res = (chipWalletAddressHex ==
         EthereumAddress.fromHex(result[0].toString().toLowerCase()));
     return res;
@@ -134,10 +134,10 @@ Future<bool> verifyTokenSigner(
   }
 }
 
-String makeMintData(String functionSignatureHash, Uint8List tokenIdHash,
+String makeMintData(String functionSignatureHash, Uint8List hash,
     MsgSignature signature, String tokenURI) {
   String data = functionSignatureHash +
-      uint8ListTo32ByteHex(tokenIdHash) + //bytes32
+      uint8ListTo32ByteHex(hash) + //bytes32
       "a0".padLeft(64, '0') + //string prefix
       signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
       signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
@@ -152,17 +152,21 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   EthereumAddress collectionId,
   EthereumAddress? from,
   String functionSignatureHash,
-  Uint8List tokenIdHash,
+  Uint8List randomValueHash,
   MsgSignature signature, {
+  EthereumAddress? toAccount,
   String? tokenURI,
   String? gasPrice,
 }) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
-    data =
-        makeMintData(functionSignatureHash, tokenIdHash, signature, tokenURI!);
+    data = makeMintData(
+        functionSignatureHash, randomValueHash, signature, tokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
-    data = makeBurnData(functionSignatureHash, tokenIdHash, signature);
+    data = makeBurnData(functionSignatureHash, randomValueHash, signature);
+  } else if (functionSignatureHash == transferFunctionSignature) {
+    data = makeTransferData(
+        functionSignatureHash, randomValueHash, signature, toAccount!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -200,10 +204,21 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   return params;
 }
 
-String makeBurnData(String functionSignatureHash, Uint8List tokenIdHash,
-    MsgSignature signature) {
+String makeBurnData(
+    String functionSignatureHash, Uint8List hash, MsgSignature signature) {
   String data = functionSignatureHash +
-      uint8ListTo32ByteHex(tokenIdHash) +
+      uint8ListTo32ByteHex(hash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+String makeTransferData(String functionSignatureHash, Uint8List hash,
+    MsgSignature signature, EthereumAddress to) {
+  String data = functionSignatureHash +
+      to.toString().substring(2).padLeft(64, '0') +
+      uint8ListTo32ByteHex(hash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0');

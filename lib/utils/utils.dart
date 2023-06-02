@@ -13,6 +13,31 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:cross_file/cross_file.dart';
 
+//validate ethereum address
+bool validateEthAddress(String? hex) {
+  bool result = true;
+
+  if (hex == null) {
+    return false;
+  }
+
+  if (hex.length != 42 || !hex.startsWith('0x')) {
+    return false;
+  }
+
+  final address = strip0x(hex);
+  final hash = bytesToHex(keccakAscii(address.toLowerCase()));
+  for (var i = 0; i < 40; i++) {
+    // the nth letter should be uppercase if the nth digit of casemap is 1
+    final hashedPos = int.parse(hash[i], radix: 16);
+    if ((hashedPos > 7 && address[i].toUpperCase() != address[i]) ||
+        (hashedPos <= 7 && address[i].toLowerCase() != address[i])) {
+      result = false;
+    }
+  }
+  return result;
+}
+
 String getNdefUrl() {
   return dotenv.get('IS_INTERNAL') == 'true'
       ? dotenv.get('NDEF_URL_TEST')

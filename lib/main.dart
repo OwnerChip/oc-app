@@ -15,9 +15,9 @@ import 'screens/HomeScreen.dart';
 import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
-import 'screens/ChipAlreadyInitializedScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
+import 'screens/TransferScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -122,14 +122,13 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
         ScanningScreen.routeName: (context) => const ScanningScreen(),
-        ChipAlreadyInitializedScreen.routeName: (context) =>
-            const ChipAlreadyInitializedScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),
         UserScanResultsScreen.routeName: (context) =>
             const UserScanResultsScreen(),
         NFTDetailsScreen.routeName: (context) => const NFTDetailsScreen(),
         ChainSelectorScreen.routeName: (context) => const ChainSelectorScreen(),
         MoreInfoScreen.routeName: (context) => const MoreInfoScreen(),
+        TransferScreen.routeName: (context) => const TransferScreen(),
       },
     );
   }
