@@ -112,7 +112,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
 
             /*** DESCRIPTION ***/
             nftMetadata.when(
-                data: (data) => data['description'].isNotEmpty
+                data: (data) => data['description'] != null &&
+                        data['description'].length > 0
                     ? DropdownContainer(
                         isInitiallyExpanded: true,
                         title: context.loc.description,
@@ -129,13 +130,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             : null,
                       )
                     : Container(),
-                error: (e, s) => DropdownContainer(
-                      title: context.loc.description,
-                      content: null,
-                    ),
-                loading: () => DropdownContainer(
-                      title: context.loc.description,
-                      content: null,
+                error: (e, s) => Container(),
+                loading: () => CircularProgressIndicator(
+                      color: Theme.of(context).primaryColor,
                     )),
 
             /*** TRAITS ***/
@@ -174,8 +171,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                   content: Column(
                     children: [
                       InfoKeyValues(keys: [
-                        context.loc.ownership,
                         context.loc.authenticity,
+                        context.loc.ownership,
                       ], values: [
                         // ownership
                         nftOwner.when(

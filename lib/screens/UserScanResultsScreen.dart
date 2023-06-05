@@ -478,14 +478,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   .removeRoute(ModalRoute.of(context)!);
                             }
                           })
-                      : wc.session.accounts.isNotEmpty
-                          ? CustomRoundedButton(
-                              text: context.loc.viewNftDetails,
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pushNamed(NFTDetailsScreen.routeName);
-                              })
-                          : Container(),
+                      : CustomRoundedButton(
+                          text: context.loc.viewNftDetails,
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pushNamed(NFTDetailsScreen.routeName);
+                          }),
                   error: (e, s) => Container(),
                   loading: () => Container()),
             ])));

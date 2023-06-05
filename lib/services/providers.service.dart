@@ -163,7 +163,13 @@ final findAllMinterRolesProvider =
 // only used in admin app for selecting the chain
 final selectedChainIdProvider = StateProvider.autoDispose<int?>((ref) {
   //return null if col.collections.keys has more than one element else return col.collections.keys.first
-  return null;
+  final AsyncValue<BlockchainCollectionList> collectionList =
+      ref.watch(findAllMinterRolesProvider);
+  final int? res = collectionList.asData != null &&
+          collectionList.asData!.value.collections.keys.length == 1
+      ? collectionList.asData!.value.collections.keys.first
+      : null;
+  return res;
 });
 
 // only used in admin app for selecting the collection
@@ -173,7 +179,9 @@ final selectedCollectionIdProvider =
   final AsyncValue<BlockchainCollectionList> collectionList =
       ref.watch(findAllMinterRolesProvider);
 
-  final Collection? res = chainId != null && collectionList.asData != null
+  final Collection? res = chainId != null &&
+          collectionList.asData != null &&
+          collectionList.asData!.value.collections[chainId]!.length == 1
       ? collectionList.asData!.value.collections[chainId]![0]
       : null;
   return res;
