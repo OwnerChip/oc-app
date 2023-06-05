@@ -19,11 +19,16 @@ class InfoKeyValues extends StatelessWidget {
 
           children: [
             Text('$val: ', style: Theme.of(context).textTheme.bodyMedium),
-            Container(
+            SizedBox(
               width: 150,
-              child: Flexible(
-                  child: Text(values[idx].toString(),
-                      style: Theme.of(context).textTheme.headlineSmall)),
+              child: Flex(
+                direction: Axis.horizontal,
+                children: [
+                  Flexible(
+                      child: Text(values[idx].toString(),
+                          style: Theme.of(context).textTheme.headlineSmall))
+                ],
+              ),
             )
           ],
         );
