@@ -122,5 +122,7 @@
     "enterWalletAddress": "Wallet Adresse eingeben",
     "pleaseEnterValidWalletAddress": "Bitte korrekte Wallet Adresse eingeben.",
     "creationOfTwin": "Digitalen Zwilling erstellen (NFT)",
-    "warningChainSelector": "Alle eingegebenen NFT Daten \nsind öffentlich."
+    "warningChainSelector": "Alle eingegebenen NFT Daten \nsind öffentlich.",
+    "infoScreenText": "Überprüfe Echtheit und Eigentum von Objekten mit deinem Smartphone.",
+    "transferScreenText": "Sende den Token an eine andere Wallet."
 }

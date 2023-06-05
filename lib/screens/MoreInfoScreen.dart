@@ -44,14 +44,13 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
             const SizedBox(height: 20),
-            //centered text
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.8,
               child: Align(
                 alignment: Alignment.center,
                 child: Text(
                   textAlign: TextAlign.center,
-                  'Check items for authenticity and ownership using your smartphone.',
+                  context.loc.infoScreenText,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
@@ -83,7 +82,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                           mode: LaunchMode.externalApplication)
                     },
                 width: 250),
-
             const SizedBox(height: 60),
             CustomOutlinedButton(
                 buttonText: context.loc.support,

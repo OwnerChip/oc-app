@@ -199,7 +199,19 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
                   key: _formKey,
                   child: Column(
                     children: <Widget>[
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            textAlign: TextAlign.center,
+                            context.loc.transferScreenText,
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 60),
                       TextFormField(
                         controller: _inputController,
                         onChanged: (text) => setState(() {
