@@ -41,7 +41,11 @@ class ChainDropdown extends ConsumerWidget {
 
     return relevantCollections.when(
         data: (data) => _buildDropdown(data, ref, context.loc.pleaseSelect),
-        loading: () => const Text("Loading..."),
+        loading: () => const SizedBox(
+            height: 50,
+            width: double.infinity,
+            child: Align(
+                alignment: Alignment.centerLeft, child: Text("Loading..."))),
         error: (err, stack) => const Text("Error"));
   }
 }
