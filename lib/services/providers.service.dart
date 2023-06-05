@@ -83,13 +83,13 @@ final chipInfoProvider =
 
 // only used in admin app for selecting the chain
 final selectedChainIdProvider = StateProvider.autoDispose<int>(
-    (ref) => Collections(dotenv.get('STYLE_ID')).collections.keys.first);
+    (ref) => Collections(dotenv.get('APP_ID')).collections.keys.first);
 
 // only used in admin app for selecting the collection
 final selectedCollectionIdProvider =
     StateProvider.autoDispose<EthereumAddress>((ref) {
   final int chainId = ref.watch(selectedChainIdProvider);
-  return Collections(dotenv.get('STYLE_ID')).collections[chainId]![0]['id']!;
+  return Collections(dotenv.get('APP_ID')).collections[chainId]![0]['id']!;
 });
 
 final findTokenProvider = FutureProvider.autoDispose

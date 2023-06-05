@@ -194,4 +194,4 @@ class Collections {
     }
   }
 }
-// access using: Collections(dotenv.get('STYLE_ID')).collections,
+// access using: Collections(dotenv.get('APP_ID')).collections,

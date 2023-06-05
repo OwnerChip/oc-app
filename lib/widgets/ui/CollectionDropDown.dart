@@ -16,14 +16,14 @@ class CollectionDropdown extends ConsumerWidget {
         ref.watch(selectedCollectionIdProvider);
     final int chainId = ref.watch(selectedChainIdProvider);
     return DropdownButton<dynamic>(
-        dropdownColor: CustomColors(dotenv.get('STYLE_ID')).cardColor,
+        dropdownColor: CustomColors(dotenv.get('APP_ID')).cardColor,
         style: TextStyle(
-            color: CustomColors(dotenv.get('STYLE_ID')).chainDropdownTextColor),
+            color: CustomColors(dotenv.get('APP_ID')).chainDropdownTextColor),
         value: collectionId,
         onChanged: (value) {
           ref.read(selectedCollectionIdProvider.notifier).state = value!;
         },
-        items: Collections(dotenv.env['STYLE_ID']!)
+        items: Collections(dotenv.env['APP_ID']!)
             .collections[chainId]!
             .map((collection) {
           return DropdownMenuItem(
