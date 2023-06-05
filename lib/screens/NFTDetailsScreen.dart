@@ -131,9 +131,13 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                       )
                     : Container(),
                 error: (e, s) => Container(),
-                loading: () => CircularProgressIndicator(
-                      color: Theme.of(context).primaryColor,
-                    )),
+                loading: () => SizedBox(
+                    height: 45,
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor,
+                        )))),
 
             /*** TRAITS ***/
             nftMetadata.when(
