@@ -16,7 +16,7 @@ class InfoKeyValues extends StatelessWidget {
         return Row(
           //space between
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('$val: ', style: Theme.of(context).textTheme.bodyMedium),
             SizedBox(
