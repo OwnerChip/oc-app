@@ -99,8 +99,8 @@
     "legal": "Legal Information",
     "support": "Support",
     "selectChain": "Auswahl",
-    "selectBlockchain": "Blockchain auswählen",
-    "selectCollection": "Collection auswählen",
+    "selectBlockchain": "Blockchain",
+    "selectCollection": "Collection",
     "troubleshoot": "Ich brauche Hilfe",
     "more": "Mehr...",
     "watchTutorial": "Tutorial ansehen",
@@ -120,5 +120,7 @@
     "transferSuccess":  "Token transferiert",
     "transferError": "Fehler beim Transfer des Tokens",
     "enterWalletAddress": "Wallet Adresse eingeben",
-    "pleaseEnterValidWalletAddress": "Bitte korrekte Wallet Adresse eingeben."
+    "pleaseEnterValidWalletAddress": "Bitte korrekte Wallet Adresse eingeben.",
+    "creationOfTwin": "Digitalen Zwilling erstellen (NFT)",
+    "warningChainSelector": "Alle eingegebenen NFT Daten \nsind öffentlich."
 }

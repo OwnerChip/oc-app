@@ -99,8 +99,8 @@
     "legal": "Legal Information",
     "support": "Support",
     "selectChain": "Select chain",
-    "selectBlockchain": "Select a blockchain to connect to",
-    "selectCollection": "Select the collection you want to use",
+    "selectBlockchain": "Blockchain",
+    "selectCollection": "Collection",
     "troubleshoot": "I need help",
     "more": "More Information",
     "watchTutorial": "Watch Tutorial",
@@ -120,5 +120,7 @@
     "transferSuccess":  "Token transferred",
     "transferError": "Error transferring token",
     "enterWalletAddress": "Enter wallet address",
-    "pleaseEnterValidWalletAddress": "Please enter a valid wallet address."
+    "pleaseEnterValidWalletAddress": "Please enter a valid wallet address.",
+    "creationOfTwin": "Creation of digital twin (NFT)",
+    "warningChainSelector": "All data that is entered on next screen \nwill be publicly visible."
 }

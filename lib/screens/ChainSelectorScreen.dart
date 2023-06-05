@@ -24,6 +24,10 @@ import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+//import dotenv
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+//import svg
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {
   const ChainSelectorScreen({Key? key}) : super(key: key);
@@ -86,6 +90,36 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
       body: ScreenBodyLayout(
         withScrollView: false,
         children: [
+          Row(
+            children: [
+              const SizedBox(width: 22),
+              RichText(
+                text: TextSpan(
+                    text: 'Step 1/',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge!
+                        .copyWith(fontSize: 18),
+                    children: [
+                      TextSpan(
+                          text: '2',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall!
+                              .copyWith(fontSize: 18))
+                    ]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 40),
+          Text(
+            context.loc.creationOfTwin,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                  fontSize: 24,
+                ),
+          ),
+          const SizedBox(height: 30),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -115,6 +149,26 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                         context, wc, mounted, navArgs.randomMsg);
                   },
           ),
+          const SizedBox(height: 60),
+          Row(
+            children: [
+              //warning icon
+              const SizedBox(width: 20),
+              SvgPicture.asset(
+                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+              SizedBox(width: 10),
+              //Text
+              Expanded(
+                child: Text(
+                  context.loc.warningChainSelector,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium!
+                      .copyWith(fontSize: 15, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          )
         ],
       ),
     );
