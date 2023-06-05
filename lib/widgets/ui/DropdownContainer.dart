@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'dart:math' as math;
 
 class DropdownContainer extends StatefulWidget {
   DropdownContainer(

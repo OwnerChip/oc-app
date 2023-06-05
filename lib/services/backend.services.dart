@@ -1,4 +1,3 @@
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
