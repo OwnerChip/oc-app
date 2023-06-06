@@ -159,14 +159,14 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                           ],
                         ))
                     : Container(),
-                error: (e, s) => DropdownContainer(
-                      title: context.loc.description,
-                      content: null,
-                    ),
-                loading: () => DropdownContainer(
-                      title: context.loc.description,
-                      content: null,
-                    )),
+                error: (e, s) => Container(),
+                loading: () => SizedBox(
+                    height: 45,
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).primaryColor,
+                        )))),
 
             /*** DIGITAL TWIN ***/
             tokenInfo.when(
