@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
+import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -19,6 +21,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 Future<WalletConnect> createWalletConnector() async {
   WalletConnectSecureStorage sessionStorage = WalletConnectSecureStorage();
@@ -64,6 +67,99 @@ Future<void> startWalletConnection(
         'success'));
     print(e);
   }
+}
+
+// Future<ConnectResponse?> startWalletConnection2(
+//     BuildContext context, Web3App wcClient) async {
+//   try {
+//     return await wcClient.connect(requiredNamespaces: {
+//       'eip155': const RequiredNamespace(
+//         chains: ['eip155:1'], // Ethereum chain
+//         methods: [
+//           'eth_sendTransaction',
+//           'eth_signTypedData',
+//           'personal_sign'
+//         ], // Requestable Methods
+//         events: ['accountsChanged'], // Requestable Methods
+//       ),
+//     });
+//   } catch (e) {
+//     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+//         context.loc.errorHeadingSnackBar,
+//         context.loc.errorConnectingWallet,
+//         'success'));
+//     print(e);
+//     return null;
+//   }
+// }
+
+Uri convertToWcLink({
+  required String appLink,
+  required String wcUri,
+  bool isDeepLink = false,
+}) {
+  final wcPath = 'wc?uri=${Uri.encodeComponent(wcUri)}';
+  if (isDeepLink) {
+    final scheme = Uri.tryParse(appLink)?.scheme;
+    if (scheme != null) {
+      return Uri.parse('$scheme://$wcPath');
+    }
+  }
+  return Uri.parse('$appLink/$wcPath');
+}
+
+Future<void> showQrCode(
+  BuildContext context,
+  ConnectResponse response,
+) async {
+  // Show the QR code
+  debugPrint('Showing QR Code: ${response.uri}');
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text(
+          'Show QR Code',
+          textAlign: TextAlign.center,
+        ),
+        content: SizedBox(
+          width: 300,
+          height: 350,
+          child: Center(
+            child: Column(
+              children: [
+                QrImageView(
+                  data: response.uri!.toString(),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await Clipboard.setData(
+                      ClipboardData(
+                        text: response.uri!.toString(),
+                      ),
+                    );
+                    // await showPlatformToast(
+                    //   child: const Text(
+                    //     StringConstants.copiedToClipboard,
+                    //   ),
+                    //   context: context,
+                    // );
+                  },
+                  child: const Text(
+                    'Copy URL to Clipboard',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 // This code creates a gasless transaction.

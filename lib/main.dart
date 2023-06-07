@@ -7,8 +7,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -79,6 +81,25 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     super.initState();
     ref.read(walletConnectProvider.notifier).resetWalletConnector();
+
+    //init walletconnect client
+    createWcClient();
+  }
+
+  void createWcClient() async {
+    Web3App? wcClient = await Web3App.createInstance(
+      relayUrl:
+          'wss://relay.walletconnect.com', // The relay websocket URL, leave blank to use the default
+      projectId: '2c1f8425ead06e944ba87cc51745fcd2',
+      metadata: const PairingMetadata(
+        name: 'OwnerChip',
+        description: 'Connecting physical objects to the blockchain',
+        url: 'https://walletconnect.com',
+        icons: ['https://avatars.githubusercontent.com/u/37784886'],
+      ),
+    );
+    //set walletconnect client provider
+    ref.read(walletConnectProvider2.notifier).state = wcClient;
   }
 
   //remove lifecycle events listener
@@ -99,14 +120,16 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // access providers
     final wc = ref.watch(walletConnectProvider);
+
     wc.on(
         'disconnect',
         (payload) => {
               //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
               RestartWidget.restartApp(context),
             });
+
+    //fetch relevant collections here to avoid loading in in later screens
     final AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
 

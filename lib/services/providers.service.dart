@@ -13,6 +13,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 //****WALLETCONNECT****
 
@@ -43,6 +44,19 @@ class WalletConnector extends StateNotifier<WalletConnect> {
     state = await createWalletConnector();
   }
 }
+
+final sessionProvider2 = StateProvider<SessionData?>((ref) {
+  Web3App? wcClient = ref.watch(walletConnectProvider2);
+  wcClient?.onSessionEvent.subscribe((sessionEvent) {
+    print('session event');
+  });
+  return null;
+});
+
+//wallet connect 2 provider
+final walletConnectProvider2 = StateProvider<Web3App?>((ref) {
+  return null;
+});
 
 //**** SIGNATIURE DATA */
 
