@@ -131,13 +131,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                       )
                     : Container(),
                 error: (e, s) => Container(),
-                loading: () => SizedBox(
-                    height: 45,
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColor,
-                        )))),
+                loading: () => DropdownContainer(
+                    title: context.loc.loading, content: null)),
 
             /*** TRAITS ***/
             nftMetadata.when(
@@ -160,13 +155,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                         ))
                     : Container(),
                 error: (e, s) => Container(),
-                loading: () => SizedBox(
-                    height: 45,
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColor,
-                        )))),
+                loading: () => DropdownContainer(
+                    title: context.loc.loading, content: null)),
 
             /*** DIGITAL TWIN ***/
             tokenInfo.when(
