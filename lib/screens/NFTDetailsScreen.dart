@@ -168,7 +168,16 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                         context.loc.authenticity,
                         context.loc.ownership,
                       ], values: [
+                        // authenticity
+                        tokenInfo.when(
+                          data: ((data) => data.collectionId == zeroAddress
+                              ? context.loc.unconfirmed
+                              : context.loc.confirmed),
+                          error: (e, s) => context.loc.confirmed,
+                          loading: () => context.loc.loading,
+                        ),
                         // ownership
+
                         nftOwner.when(
                           data: ((data) => !wc.connected
                               ?
@@ -182,15 +191,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   //NFT owner exists and wallet is connected and wallet is NOT owner
                                   context.loc.unconfirmed),
                           error: (e, s) => context.loc.ownerError,
-                          loading: () => context.loc.loading,
-                        ),
-
-                        // authenticity
-                        tokenInfo.when(
-                          data: ((data) => data.collectionId == zeroAddress
-                              ? context.loc.unconfirmed
-                              : context.loc.confirmed),
-                          error: (e, s) => context.loc.confirmed,
                           loading: () => context.loc.loading,
                         ),
                       ]),
