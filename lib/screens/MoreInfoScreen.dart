@@ -1,5 +1,4 @@
 //import packages
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +30,8 @@ class MoreInfoScreen extends ConsumerStatefulWidget {
 class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
   @override
   Widget build(BuildContext context) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
+    //TODO: check
+    final wc = ref.watch(wcProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,

@@ -1,13 +1,11 @@
-// ignore_for_file: use_build_context_synchronously
-
 //package imports
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -16,6 +14,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/domain/eip155.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -23,75 +22,36 @@ import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
-Future<WalletConnect> createWalletConnector() async {
-  WalletConnectSecureStorage sessionStorage = WalletConnectSecureStorage();
-  WalletConnectSession? session = await sessionStorage.getSession();
-
-  //store current time to check if session is expired
-  var now = DateTime.now().millisecondsSinceEpoch;
-  int sessionDuration = 1000 * 60 * 60 * 48; //2 days
-
-  final storage = await SharedPreferences.getInstance();
-  final prevSessionExpiration = storage.getInt('sessionExpirationTime') ?? 0;
-  if (now > prevSessionExpiration) {
-    //session expired
-    await sessionStorage.removeSession();
-    session = null;
-    storage.setInt('sessionExpirationTime', now + sessionDuration);
-  }
-
-  return WalletConnect(
-      bridge: 'https://bridge.walletconnect.org',
-      session: session == null || !session.connected ? null : session,
-      sessionStorage: sessionStorage,
-      clientMeta: const PeerMeta(
-        name: 'OwnerChip Demo',
-        description: 'Connecting physical objects to the blockchain.',
-        url: 'https://walletconnect.org',
-        // icons: ["${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png"]
-      ));
-}
-
 // This function starts a wallet connection with the WalletConnect connector.
-Future<void> startWalletConnection(
-    BuildContext context, WalletConnect connector) async {
+Future<ConnectResponse?> startWalletConnection(
+    BuildContext context, WidgetRef ref, Web3App wc) async {
+  ConnectResponse response;
   try {
-    await connector.connect(onDisplayUri: (uri) async {
-      await launchUrlString(uri, mode: LaunchMode.externalApplication);
+    response = await wc.connect(requiredNamespaces: {
+      'eip155': RequiredNamespace(chains: [
+        'eip155:1'
+      ], methods: [
+        'eth_sendTransaction',
+        'eth_signTypedData',
+        'eth_signTypedData_v4',
+        'personal_sign'
+      ], events: EIP155.events.values.toList() // Requestable Events
+          ),
     });
-    connector.sessionStorage?.store(connector.session);
+    // persist session data
+    final SessionData session = await response.session.future;
+    ref.read(wcSessionProvider.notifier).state = session;
+
+    return response;
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
         context.loc.errorConnectingWallet,
-        'success'));
+        'error'));
     print(e);
   }
+  return null;
 }
-
-// Future<ConnectResponse?> startWalletConnection2(
-//     BuildContext context, Web3App wcClient) async {
-//   try {
-//     return await wcClient.connect(requiredNamespaces: {
-//       'eip155': const RequiredNamespace(
-//         chains: ['eip155:1'], // Ethereum chain
-//         methods: [
-//           'eth_sendTransaction',
-//           'eth_signTypedData',
-//           'personal_sign'
-//         ], // Requestable Methods
-//         events: ['accountsChanged'], // Requestable Methods
-//       ),
-//     });
-//   } catch (e) {
-//     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-//         context.loc.errorHeadingSnackBar,
-//         context.loc.errorConnectingWallet,
-//         'success'));
-//     print(e);
-//     return null;
-//   }
-// }
 
 Uri convertToWcLink({
   required String appLink,
@@ -173,7 +133,7 @@ Future<String> makeAndSendGaslessTx(
     EthereumAddress collectionId,
     SignatureData signatureData,
     EthereumAddress walletAddress,
-    WalletConnect wc,
+    Web3App wc,
     String metaTxAgreementId,
     {EthereumAddress? toAccount,
     String? cid}) async {
@@ -191,13 +151,15 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
-  //open metamask application
-  await launchUrlString('wc:', mode: LaunchMode.externalApplication);
-
-  String signature = await wc.sendCustomRequest(
+  //TODO: Check if this is the correct way to get the signature with v2
+  String signature = await wc.request(
+    topic: '',
+    chainId: 'eip155:$chainId',
+    request: SessionRequestParams(
       method: 'eth_signTypedData_v4',
       params: [walletAddress.toString(), json.encode(typedData)],
-      id: makeRandomInt());
+    ),
+  );
 
   String txnHash = await sendGaslessRequest(
       collectionId, signature, metaTxAgreementId, request);
@@ -215,7 +177,7 @@ Future<String> makeAndSendNormalTx(
     EthereumAddress collectionId,
     SignatureData signatureData,
     EthereumAddress walletAddress,
-    WalletConnect wc,
+    Web3App wc,
     {EthereumAddress? toAccount,
     String? cid}) async {
   var txParams = await buildEthSendTransactionRequest(
@@ -228,10 +190,15 @@ Future<String> makeAndSendNormalTx(
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null);
 
-  //open metamask application
-  await launchUrlString('wc:', mode: LaunchMode.externalApplication);
+  String txnHash = await wc.request(
+    topic: '$makeRandomInt()',
+    chainId: 'eip155:$chainId',
+    request: SessionRequestParams(
+      method: 'eth_sendTransaction',
+      params: txParams,
+    ),
+  );
 
-  String txnHash = await wc.sendCustomRequest(
-      method: 'eth_sendTransaction', params: txParams, id: makeRandomInt());
+  //TODO: Check if this is the correct way to get the txHash with v2
   return txnHash;
 }

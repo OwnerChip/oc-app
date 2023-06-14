@@ -1,6 +1,5 @@
 //import packages
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +27,7 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -75,8 +75,7 @@ void onScanButtonPress(BuildContext context, mounted) async {
   }
 }
 
-void onInitializeButtonPress(
-    BuildContext context, WalletConnect wc, mounted) async {
+void onInitializeButtonPress(BuildContext context, Web3App wc, mounted) async {
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {
@@ -116,7 +115,8 @@ void onInitializeButtonPress(
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
+    //TODO: check
+    final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     return Scaffold(
@@ -163,7 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 20),
                 relevantCollections.when(
                     data: (data) => data.hasAnyMinterRole! &&
-                            wc.session.accounts.isNotEmpty
+                            wc!.getActiveSessions().isNotEmpty
                         ? CustomRoundedButton(
                             width: 250,
                             text: context.loc.initializeChip,

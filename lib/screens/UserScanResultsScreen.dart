@@ -4,8 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:sentry/sentry.dart';
 import 'package:async/async.dart';
@@ -61,14 +61,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
-  Future<void> burnToken(WalletConnect wc, BigInt tokenId,
+  Future<void> burnToken(Web3App wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final wcSession = ref.watch(wcSessionProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
-      if (!wc.bridgeConnected) {
-        wc.reconnect();
+      if (wcSession == null) {
+        startWalletConnection(context, ref, wc);
       }
 
       setState(() {
@@ -165,7 +166,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<TokenInfoObject> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
-    WalletConnect wc = ref.watch(walletConnectProvider);
+
+    //TODO: fix
+    final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
@@ -295,7 +298,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //OWNERSHIP CHECK ICON
                                   nftOwner.when(
-                                    data: ((data) => !wc.connected
+                                    data: ((data) => wc!
+                                            .getActiveSessions()
+                                            .isNotEmpty
                                         ?
                                         //NFT owner exists and wallet is NOT connected
                                         SvgPicture.asset(
@@ -322,7 +327,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: nftOwner.when(
-                                      data: (data) => !wc.connected
+                                      data: (data) => wc!
+                                              .getActiveSessions()
+                                              .isNotEmpty
                                           ?
                                           //NFT owner exists and wallet is NOT connected
                                           Column(
@@ -344,7 +351,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         .loc.connectWallet,
                                                     onPressed: (() => {
                                                           startWalletConnection(
-                                                              context, wc)
+                                                              context, ref, wc)
                                                         }))
                                               ],
                                             )
@@ -437,8 +444,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodyMedium)),
-                                      loading: () =>
-                                          const CircularProgressIndicator())),
+                                      loading: () => const CircularProgressIndicator())),
                             ]),
                       ]),
                   nftImageUri.when(
@@ -463,7 +469,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               //if token does not exists
               tokenInfo.when(
                   data: (data) => data.collectionId == zeroAddress &&
-                          wc.session.accounts.isNotEmpty &&
+                          wc!.getActiveSessions().isNotEmpty &&
                           relevantCollections.value!.collections.isNotEmpty
                       ? CustomRoundedButton(
                           text: context.loc.initializeChip,

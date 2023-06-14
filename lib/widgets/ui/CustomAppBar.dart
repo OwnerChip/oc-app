@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
+import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/utils.dart';
 import 'returnSnackBarWidget.dart';
@@ -13,7 +13,6 @@ import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:walletconnect_qrcode_modal_dart/walletconnect_qrcode_modal_dart.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key, this.text, this.showBackButton = true})
@@ -21,21 +20,25 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String? text;
   final bool showBackButton; //valid values: 'back', 'logo'
 
-  void onButtonPress(BuildContext context, WalletConnect wc) async {
+  void onButtonPress(BuildContext context, WidgetRef ref, Web3App wc) async {
+    final wcSession = ref.watch(wcSessionProvider);
     try {
       //check if there is internet connections
       if (!await checkInternetConnection()) {
         throw Exception("No internet connection");
       }
       //if wc bridge is not connected, then reconnect
-      if (!wc.bridgeConnected) {
-        wc.reconnect();
+      if (wcSession == null) {
+        startWalletConnection(context, ref, wc);
       }
       //if wallet is connected then kill session, else connect wallet
-      if (wc.connected) {
-        wc.killSession();
+      if (wcSession != null) {
+        //TODO: add proper values
+        wc.disconnectSession(
+            topic: 'topic',
+            reason: WalletConnectError(code: 1, message: 'MANUAL DISCONNECT'));
       } else {
-        startWalletConnection(context, wc);
+        startWalletConnection(context, ref, wc);
       }
     } catch (e) {
       //show error snackbar
@@ -48,30 +51,15 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   void onButtonPress2(
       BuildContext context, WidgetRef ref, Web3App wcClient) async {
-    ConnectResponse resp = await wcClient.connect(requiredNamespaces: {
-      'eip155': const RequiredNamespace(
-        chains: ['eip155:1'], // Ethereum chain
-        methods: [
-          'eth_sendTransaction',
-          'eth_signTypedData',
-          'personal_sign'
-        ], // Requestable Methods
-        events: ['accountsChanged'], // Requestable Methods
-      ),
-    });
-    String? uri = resp.uri.toString();
+    ConnectResponse? resp = await startWalletConnection(context, ref, wcClient);
+    String? uri = resp?.uri.toString() ?? '';
+
+    //TODO: DO USE A DEDICATED FUNCTION INSTEAD!
     String walletLink = 'https://link.trustwallet.com';
     Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: uri);
 
-    print(walletDeepLink);
-
     await launchUrlString(walletDeepLink.toString(),
         mode: LaunchMode.externalApplication);
-
-    final SessionData session = await resp.session.future;
-    print(session);
-
-    ref.read(sessionProvider2.notifier).state = session;
   }
 
   //necessary to use because flutter?!
@@ -80,9 +68,8 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
-    Web3App? wcClient = ref.watch(walletConnectProvider2);
-    SessionData? session = ref.watch(sessionProvider2);
+    Web3App? wcClient = ref.watch(wcProvider);
+    SessionData? wcSession = ref.watch(wcSessionProvider);
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
@@ -111,7 +98,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: [
         Padding(
             padding: const EdgeInsets.only(right: 5),
-            child: session != null
+            child: wcSession != null
                 ? Stack(
                     alignment: Alignment.topCenter,
                     children: [

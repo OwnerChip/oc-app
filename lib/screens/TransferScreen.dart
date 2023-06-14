@@ -1,9 +1,9 @@
 //import packages
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:async/async.dart';
 import 'package:sentry/sentry.dart';
@@ -52,18 +52,15 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
 
   CancelableOperation? cancellableOperation;
 
-  Future<void> transferToken(
-      WalletConnect wc,
-      BigInt tokenId,
-      EthereumAddress to,
-      SignatureData signatureData,
-      EthereumAddress connectedWallet) async {
+  Future<void> transferToken(Web3App wc, BigInt tokenId, EthereumAddress to,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final wcSession = ref.read(wcSessionProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final transferProcess = Sentry.startTransaction('initTransfer()', 'task');
     try {
-      if (!wc.bridgeConnected) {
-        wc.reconnect();
+      if (wcSession == null) {
+        startWalletConnection(context, ref, wc);
       }
 
       setState(() {
@@ -162,7 +159,8 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
+    //TODO: fix
+    final wc = ref.watch(wcProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
     final SignatureData signatureData = ref.watch(signatureDataProvider);
@@ -244,7 +242,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
                                   {
                                     FocusScope.of(context).unfocus(),
                                     fromCancelable(transferToken(
-                                        wc,
+                                        wc!,
                                         chipInfo.tokenId,
                                         EthereumAddress.fromHex(
                                             textInput.trim()),

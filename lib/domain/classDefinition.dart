@@ -1,3 +1,4 @@
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
@@ -62,4 +63,24 @@ class SignatureData {
   MsgSignature signature;
 
   SignatureData({required this.hashedMsg, required this.signature});
+}
+
+enum WCSignType {
+  message,
+  personalMessage,
+  typedMessageV2,
+  typedMessageV3,
+  typedMessageV4,
+}
+
+class EthereumSignMessage {
+  final String data;
+  final String address;
+  final WCSignType type;
+
+  const EthereumSignMessage({
+    required this.data,
+    required this.address,
+    required this.type,
+  });
 }

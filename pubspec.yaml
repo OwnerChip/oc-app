@@ -17,15 +17,13 @@ dependencies:
   nfc_manager: ^3.2.0
   web3dart: ^2.4.1
   http: ^0.13.5
-  walletconnect_dart: ^0.0.11
   url_launcher: ^6.1.6
-  walletconnect_secure_storage: ^1.0.0
   flutter_dotenv: ^5.0.2
   dio: ^5.0.0
   image_picker: ^0.8.6
   flutter_riverpod: ^2.1.1
   flutter_native_splash: ^2.2.16
-  flutter_svg: ^1.1.6
+  flutter_svg: ^2.0.6
   riverpod_annotation: ^1.1.1
   shared_preferences: ^2.0.17
   async: ^2.9.0
@@ -35,6 +33,7 @@ dependencies:
   walletconnect_flutter_v2: ^2.0.8
   qr_flutter: ^4.1.0
   walletconnect_qrcode_modal_dart: ^0.4.2
+  web3modal_flutter: ^1.0.0
 
 dev_dependencies:
   flutter_test:

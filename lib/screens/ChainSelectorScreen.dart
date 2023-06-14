@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:sentry/sentry.dart';
 
 //import widgets
@@ -28,6 +27,8 @@ import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 //import svg
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
+import 'package:web3dart/web3dart.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {
   const ChainSelectorScreen({Key? key}) : super(key: key);
@@ -40,21 +41,21 @@ class ChainSelectorScreen extends ConsumerStatefulWidget {
 
 class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
-      BuildContext context, WalletConnect wc, mounted, int randomNumber) async {
-    final wc = ref.read(walletConnectProvider);
+      BuildContext context, Web3App wc, mounted, int randomNumber) async {
+    final wc = ref.read(wcProvider);
     BlockchainCollectionList relevantCollections =
         await ref.read(findAllMinterRolesProvider.future);
     final int? chainId = ref.read(selectedChainIdProvider);
     final Collection? collection = ref.read(selectedCollectionIdProvider);
     try {
-      if (!wc.connected) {
-        await startWalletConnection(context, wc);
+      if (wc!.getActiveSessions().isEmpty) {
+        await startWalletConnection(context, ref, wc);
       }
 
       if (mounted) {
+        EthereumAddress userAddr = ref.watch(userAddressProvider);
         Sentry.configureScope(
-          (scope) => scope
-              .setUser(SentryUser(id: wc.session.accounts[0].toLowerCase())),
+          (scope) => scope.setUser(SentryUser(id: userAddr.toString())),
         );
         if (chainId != null && collection != null) {
           Navigator.pushNamed(context, MetadataScreen.routeName,
@@ -76,7 +77,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wc = ref.watch(walletConnectProvider);
+    final wc = ref.watch(wcProvider);
 
     final int? chainId = ref.watch(selectedChainIdProvider);
     final Collection? collection = ref.watch(selectedCollectionIdProvider);
@@ -146,7 +147,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                 ? null
                 : () {
                     onInitializeButtonPress(
-                        context, wc, mounted, navArgs.randomMsg);
+                        context, wc!, mounted, navArgs.randomMsg);
                   },
           ),
           const SizedBox(height: 60),

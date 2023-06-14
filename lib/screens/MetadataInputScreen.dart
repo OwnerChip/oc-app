@@ -6,9 +6,9 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:sentry/sentry.dart';
 
 //misc imports
@@ -100,7 +100,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
   Future<void> createToken(
       int randomNumber,
-      WalletConnect wc,
+      Web3App wc,
       SignatureData signatureData,
       Map<String, dynamic> metadata,
       int chainId,
@@ -112,15 +112,16 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       loadingText = context.loc.uploadingMetadata;
     });
 
+    final wcSession = ref.read(wcSessionProvider);
+
     final mintProcess = Sentry.startTransaction('initMinting()', 'task');
 
     //if wc bridge is not connected, then reconnect
-    if (!wc.bridgeConnected) {
-      wc.reconnect();
+    if (wcSession == null) {
+      startWalletConnection(context, ref, wc);
     }
 
-    EthereumAddress connectedWallet =
-        EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase());
+    EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     try {
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
@@ -270,7 +271,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as MetadataInputScreenArguments;
 
-    WalletConnect wc = ref.watch(walletConnectProvider);
+    //TODO: check
+    final wc = ref.watch(wcProvider);
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
     final SignatureData signatureData = ref.watch(signatureDataProvider);
@@ -454,7 +456,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                         onPressed: () async {
                           FocusManager.instance.primaryFocus?.unfocus();
                           if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(navArgs.randomMsg, wc,
+                            fromCancelable(createToken(navArgs.randomMsg, wc!,
                                 signatureData, metadata, chainId, collectionId,
                                 image: image));
                           }

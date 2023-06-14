@@ -9,7 +9,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'dart:io' show Platform;
 import 'package:sentry/sentry.dart';
 
@@ -179,7 +178,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    WalletConnect wc = ref.watch(walletConnectProvider);
+    //TODO: check
+    final wc = ref.watch(wcProvider);
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(

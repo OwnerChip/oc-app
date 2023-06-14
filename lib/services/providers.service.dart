@@ -1,9 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,45 +16,22 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 //****WALLETCONNECT****
 
-final walletConnectProvider =
-    StateNotifierProvider<WalletConnector, WalletConnect>((ref) {
-  return WalletConnector();
+//wallet connect 2 provider
+final wcProvider = StateProvider<Web3App?>((ref) {
+  return null;
+});
+
+final wcSessionProvider = StateProvider<SessionData?>((ref) {
+  return null;
 });
 
 final userAddressProvider = StateProvider<EthereumAddress>((ref) {
-  final wc = ref.watch(walletConnectProvider);
-  final addr = wc.session.accounts.isNotEmpty
-      ? EthereumAddress.fromHex(wc.session.accounts[0].toLowerCase())
+  final session = ref.watch(wcSessionProvider);
+  final addr = session != null
+      ? EthereumAddress.fromHex(
+          session.namespaces['eip155']!.accounts[0].substring(9))
       : zeroAddress;
   return addr;
-});
-
-class WalletConnector extends StateNotifier<WalletConnect> {
-  WalletConnector()
-      : super(WalletConnect(
-            bridge: 'https://bridge.walletconnect.org',
-            clientMeta: const PeerMeta(
-              name: 'OwnerChip Demo',
-              description: 'Connecting physical objects to the blockchain.',
-              url: 'https://walletconnect.org',
-              // icons: ["${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png"]
-            )));
-  void resetWalletConnector() async {
-    state = await createWalletConnector();
-  }
-}
-
-final sessionProvider2 = StateProvider<SessionData?>((ref) {
-  Web3App? wcClient = ref.watch(walletConnectProvider2);
-  wcClient?.onSessionEvent.subscribe((sessionEvent) {
-    print('session event');
-  });
-  return null;
-});
-
-//wallet connect 2 provider
-final walletConnectProvider2 = StateProvider<Web3App?>((ref) {
-  return null;
 });
 
 //**** SIGNATIURE DATA */
@@ -125,7 +101,7 @@ final appCollectionProvider =
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
     FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
-  final wc = ref.watch(walletConnectProvider);
+  final wc = ref.watch(wcProvider);
   EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
   final unfilteredCollectionsList =
       await ref.read(appCollectionProvider.future);
@@ -152,7 +128,8 @@ final findAllMinterRolesProvider =
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
     // if collection is OPEN, add it to the list
-    if (wc.session.accounts.isNotEmpty &&
+    if (wc != null &&
+        wc.getActiveSessions().isNotEmpty &&
         collection.id ==
             EthereumAddress.fromHex(
                 '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {

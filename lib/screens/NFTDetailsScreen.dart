@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
-import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 
@@ -45,7 +44,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
         ref.watch(nftImageProvider(chipInfo.tokenId));
     final AsyncValue<TokenInfoObject> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
-    WalletConnect wc = ref.watch(walletConnectProvider);
+    //TODO: check
+    final wc = ref.watch(wcProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
@@ -180,7 +180,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                       ], values: [
                         // ownership
                         nftOwner.when(
-                          data: ((data) => !wc.connected
+                          data: ((data) => wc!.getActiveSessions().isEmpty
                               ?
                               //NFT owner exists and wallet is NOT connected
                               context.loc.unconfirmed

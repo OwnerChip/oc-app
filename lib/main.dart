@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -25,6 +25,8 @@ import 'screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
 import 'widgets/logic/RestartWidget.dart';
+import 'widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 
 // setup logger
 void _setupLogging() {
@@ -74,60 +76,104 @@ class MyApp extends ConsumerStatefulWidget {
   _MyApp createState() => _MyApp();
 }
 
+//root widget
 class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
-  //listen to lifecycle events (e.g. resume app from background)
-  @override
-  void initState() {
-    WidgetsBinding.instance.addObserver(this);
-    super.initState();
-    ref.read(walletConnectProvider.notifier).resetWalletConnector();
+  // setup walletconnect client
+  bool wcIsInitialized = false;
+  Web3App? wcClient;
 
-    //init walletconnect client
-    createWcClient();
-  }
-
-  void createWcClient() async {
-    Web3App? wcClient = await Web3App.createInstance(
-      relayUrl:
-          'wss://relay.walletconnect.com', // The relay websocket URL, leave blank to use the default
-      projectId: '2c1f8425ead06e944ba87cc51745fcd2',
+  Future<void> initWcClient() async {
+    wcClient = await Web3App.createInstance(
+      relayUrl: 'wss://relay.walletconnect.com',
+      projectId: dotenv.env['WC_PROJECT_ID']!,
       metadata: const PairingMetadata(
         name: 'OwnerChip',
         description: 'Connecting physical objects to the blockchain',
-        url: 'https://walletconnect.com',
+        url: 'https://www.ownerchip.com',
         icons: ['https://avatars.githubusercontent.com/u/37784886'],
       ),
     );
     //set walletconnect client provider
-    ref.read(walletConnectProvider2.notifier).state = wcClient;
+    ref.read(wcProvider.notifier).state = wcClient;
+
+    // Register event handlers
+    final events = EIP155.events.values.toList();
+    chainConfig.keys.map((chainId) => {
+          for (final event in events)
+            {
+              wcClient!.registerEventHandler(
+                  chainId: 'eip155:$chainId', event: event)
+            }
+        });
+
+    wcClient!.onSessionPing.subscribe(_onSessionPing);
+    wcClient!.onSessionEvent.subscribe(_onSessionEvent);
+
+    setState(() {
+      wcIsInitialized = true;
+    });
+  }
+
+  // handle WC session ping
+  void _onSessionPing(SessionPing? args) {
+    debugPrint(args!.topic);
+
+    //TODO: UPDATE SESSION PROVIDER
+    //ref.watch(wcSessionProvider.notifier).state = args;
+
+    //show a popup
+    returnSnackBarWidget('', 'Topic: ${args!.topic}', 'error');
+  }
+
+  // handle WC session event
+  void _onSessionEvent(SessionEvent? args) {
+    debugPrint(args!.topic);
+
+    //TODO: UPDATE SESSION PROVIDER
+    //ref.watch(wcSessionProvider.notifier).state = args;
+
+    //show a popup
+    returnSnackBarWidget(
+        '',
+        'Topic: ${args.topic}\nEvent Name: ${args.name}\nEvent Data: ${args.data}',
+        'error');
+  }
+
+  //listen to lifecycle events (e.g. resume app from background)
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+
+    //init walletconnect client
+    initWcClient();
+
+    super.initState();
   }
 
   //remove lifecycle events listener
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    wcClient!.onSessionPing.unsubscribe(_onSessionPing);
     super.dispose();
   }
 
   //do stuff on app resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    //make new wallet connect connector when app is resumed(brought to foreground); necessary to prevent errors with metamask/walletconnect
-    if (state == AppLifecycleState.resumed) {
-      ref.read(walletConnectProvider.notifier).resetWalletConnector();
-    }
+    //TODO: wc session provider stuff ?
   }
 
   @override
   Widget build(BuildContext context) {
-    final wc = ref.watch(walletConnectProvider);
+    final wc = ref.watch(wcProvider);
 
-    wc.on(
-        'disconnect',
-        (payload) => {
-              //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
-              RestartWidget.restartApp(context),
-            });
+    // wc.on(
+    //     'disconnect',
+    //     (payload) => {
+    //           //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
+    //           RestartWidget.restartApp(context),
+    //         });
 
     //fetch relevant collections here to avoid loading in in later screens
     final AsyncValue<BlockchainCollectionList> relevantCollections =
