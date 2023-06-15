@@ -118,7 +118,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     //if wc bridge is not connected, then reconnect
     if (wcSession == null) {
-      startWalletConnection(context, ref, wc);
+      final wcResp = await startWalletConnection(context, ref, wc);
+      final session = await wcResp.session.future;
+      ref.read(wcSessionProvider.notifier).state = session;
     }
 
     EthereumAddress connectedWallet = ref.read(userAddressProvider);

@@ -43,13 +43,16 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
       BuildContext context, Web3App wc, mounted, int randomNumber) async {
     final wc = ref.read(wcProvider);
+    final wcSession = ref.read(wcSessionProvider);
     BlockchainCollectionList relevantCollections =
         await ref.read(findAllMinterRolesProvider.future);
     final int? chainId = ref.read(selectedChainIdProvider);
     final Collection? collection = ref.read(selectedCollectionIdProvider);
     try {
-      if (wc!.getActiveSessions().isEmpty) {
-        await startWalletConnection(context, ref, wc);
+      if (wcSession == null) {
+        final wcResp = await startWalletConnection(context, ref, wc!);
+        final session = await wcResp.session.future;
+        ref.read(wcSessionProvider.notifier).state = session;
       }
 
       if (mounted) {

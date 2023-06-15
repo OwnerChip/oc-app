@@ -102,6 +102,7 @@ final appCollectionProvider =
 final findAllMinterRolesProvider =
     FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
   final wc = ref.watch(wcProvider);
+  final wcSession = ref.watch(wcSessionProvider);
   EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
   final unfilteredCollectionsList =
       await ref.read(appCollectionProvider.future);
@@ -129,7 +130,7 @@ final findAllMinterRolesProvider =
   for (Collection collection in res) {
     // if collection is OPEN, add it to the list
     if (wc != null &&
-        wc.getActiveSessions().isNotEmpty &&
+        wcSession != null &&
         collection.id ==
             EthereumAddress.fromHex(
                 '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {

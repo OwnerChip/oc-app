@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/utils.dart';
 import 'returnSnackBarWidget.dart';
@@ -18,27 +18,28 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key, this.text, this.showBackButton = true})
       : super(key: key);
   final String? text;
-  final bool showBackButton; //valid values: 'back', 'logo'
+  final bool showBackButton;
 
-  void onButtonPress(BuildContext context, WidgetRef ref, Web3App wc) async {
+  Future<void> onButtonPress(
+      BuildContext context, WidgetRef ref, Web3App wc) async {
     final wcSession = ref.watch(wcSessionProvider);
     try {
       //check if there is internet connections
       if (!await checkInternetConnection()) {
         throw Exception("No internet connection");
       }
-      //if wc bridge is not connected, then reconnect
-      if (wcSession == null) {
-        startWalletConnection(context, ref, wc);
-      }
       //if wallet is connected then kill session, else connect wallet
       if (wcSession != null) {
-        //TODO: add proper values
+        //TODO: find CORRECT SESSION & add proper message
         wc.disconnectSession(
-            topic: 'topic',
-            reason: WalletConnectError(code: 1, message: 'MANUAL DISCONNECT'));
+            topic: wcSession.topic,
+            reason:
+                WalletConnectError(code: 6000, message: 'MANUAL DISCONNECT'));
+        ref.read(wcSessionProvider.notifier).state = null;
       } else {
-        startWalletConnection(context, ref, wc);
+        final wcResp = await startWalletConnection(context, ref, wc);
+        final session = await wcResp.session.future;
+        ref.read(wcSessionProvider.notifier).state = session;
       }
     } catch (e) {
       //show error snackbar
@@ -47,19 +48,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
           context.loc.errorNoInternetConnection,
           'error'));
     }
-  }
-
-  void onButtonPress2(
-      BuildContext context, WidgetRef ref, Web3App wcClient) async {
-    ConnectResponse? resp = await startWalletConnection(context, ref, wcClient);
-    String? uri = resp?.uri.toString() ?? '';
-
-    //TODO: DO USE A DEDICATED FUNCTION INSTEAD!
-    String walletLink = 'https://link.trustwallet.com';
-    Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: uri);
-
-    await launchUrlString(walletDeepLink.toString(),
-        mode: LaunchMode.externalApplication);
   }
 
   //necessary to use because flutter?!
@@ -99,6 +87,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
         Padding(
             padding: const EdgeInsets.only(right: 5),
             child: wcSession != null
+                // DISCONNECT
                 ? Stack(
                     alignment: Alignment.topCenter,
                     children: [
@@ -110,8 +99,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         // onPressed: () => onButtonPress(context, wc),
-                        onPressed: () =>
-                            onButtonPress2(context, ref, wcClient!),
+                        onPressed: () => onButtonPress(context, ref, wcClient!),
                       ),
                       Align(
                         alignment: const Alignment(0.0, 0.95),
@@ -125,6 +113,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       ),
                     ],
                   )
+                // CONNECT
                 : Stack(
                     alignment: Alignment.topCenter,
                     children: [
@@ -136,8 +125,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         // onPressed: () => onButtonPress(context, wc),
-                        onPressed: () =>
-                            onButtonPress2(context, ref, wcClient!),
+                        onPressed: () => onButtonPress(context, ref, wcClient!),
                       ),
                       Align(
                         alignment: const Alignment(0.0, 0.95),

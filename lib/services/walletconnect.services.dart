@@ -23,34 +23,25 @@ import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 // This function starts a wallet connection with the WalletConnect connector.
-Future<ConnectResponse?> startWalletConnection(
+Future<ConnectResponse> startWalletConnection(
     BuildContext context, WidgetRef ref, Web3App wc) async {
-  ConnectResponse response;
-  try {
-    response = await wc.connect(requiredNamespaces: {
-      'eip155': RequiredNamespace(chains: [
-        'eip155:1'
-      ], methods: [
-        'eth_sendTransaction',
-        'eth_signTypedData',
-        'eth_signTypedData_v4',
-        'personal_sign'
-      ], events: EIP155.events.values.toList() // Requestable Events
-          ),
-    });
-    // persist session data
-    final SessionData session = await response.session.future;
-    ref.read(wcSessionProvider.notifier).state = session;
+  ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
+    'eip155': RequiredNamespace(chains: [
+      'eip155:1'
+    ], methods: [
+      'eth_sendTransaction',
+      'eth_signTypedData',
+      'eth_signTypedData_v4',
+      'personal_sign'
+    ], events: EIP155.events.values.toList()),
+  });
+  String? uri = wcResp.uri.toString();
+  String walletLink = 'https://link.trustwallet.com';
+  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: uri);
 
-    return response;
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        context.loc.errorConnectingWallet,
-        'error'));
-    print(e);
-  }
-  return null;
+  await launchUrlString(walletDeepLink.toString(),
+      mode: LaunchMode.externalApplication);
+  return wcResp;
 }
 
 Uri convertToWcLink({

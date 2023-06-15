@@ -60,7 +60,9 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
     final transferProcess = Sentry.startTransaction('initTransfer()', 'task');
     try {
       if (wcSession == null) {
-        startWalletConnection(context, ref, wc);
+        final wcResp = await startWalletConnection(context, ref, wc);
+        final session = await wcResp.session.future;
+        ref.read(wcSessionProvider.notifier).state = session;
       }
 
       setState(() {

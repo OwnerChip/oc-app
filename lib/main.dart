@@ -90,7 +90,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         name: 'OwnerChip',
         description: 'Connecting physical objects to the blockchain',
         url: 'https://www.ownerchip.com',
-        icons: ['https://avatars.githubusercontent.com/u/37784886'],
+        icons: ['https://avatars.githubusercontent.com/u/116345848'],
       ),
     );
     //set walletconnect client provider
@@ -118,7 +118,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void _onSessionPing(SessionPing? args) {
     debugPrint(args!.topic);
 
-    //TODO: UPDATE SESSION PROVIDER
+    //TODO: UPDATE SESSION PROVIDER???
     //ref.watch(wcSessionProvider.notifier).state = args;
 
     //show a popup
