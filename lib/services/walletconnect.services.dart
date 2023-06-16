@@ -27,7 +27,8 @@ Future<ConnectResponse> startWalletConnection(
     BuildContext context, WidgetRef ref, Web3App wc) async {
   ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
     'eip155': RequiredNamespace(chains: [
-      'eip155:1'
+      'eip155:1',
+      'eip155:137',
     ], methods: [
       'eth_sendTransaction',
       'eth_signTypedData',
