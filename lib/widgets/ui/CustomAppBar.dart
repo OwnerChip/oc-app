@@ -35,11 +35,8 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             topic: wcSession.topic,
             reason:
                 WalletConnectError(code: 6000, message: 'MANUAL DISCONNECT'));
-        ref.read(wcSessionProvider.notifier).state = null;
       } else {
         final wcResp = await startWalletConnection(context, ref, wc);
-        final session = await wcResp.session.future;
-        ref.read(wcSessionProvider.notifier).state = session;
       }
     } catch (e) {
       //show error snackbar

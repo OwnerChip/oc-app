@@ -61,8 +61,6 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
     try {
       if (wcSession == null) {
         final wcResp = await startWalletConnection(context, ref, wc);
-        final session = await wcResp.session.future;
-        ref.read(wcSessionProvider.notifier).state = session;
       }
 
       setState(() {

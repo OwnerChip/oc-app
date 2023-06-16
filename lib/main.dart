@@ -106,37 +106,29 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
             }
         });
 
-    wcClient!.onSessionPing.subscribe(_onSessionPing);
     wcClient!.onSessionEvent.subscribe(_onSessionEvent);
+    wcClient!.onSessionConnect.subscribe(_onSessionConnect);
+    wcClient!.onSessionDelete.subscribe(_onSessionDisconnect);
 
     setState(() {
       wcIsInitialized = true;
     });
   }
 
-  // handle WC session ping
-  void _onSessionPing(SessionPing? args) {
-    debugPrint(args!.topic);
+  void _onSessionConnect(SessionConnect? args) {
+    ref.watch(wcSessionProvider.notifier).state = args?.session;
+  }
 
-    //TODO: UPDATE SESSION PROVIDER???
-    //ref.watch(wcSessionProvider.notifier).state = args;
-
-    //show a popup
-    returnSnackBarWidget('', 'Topic: ${args!.topic}', 'error');
+  void _onSessionDisconnect(SessionDelete? args) {
+    ref.watch(wcSessionProvider.notifier).state = null;
   }
 
   // handle WC session event
   void _onSessionEvent(SessionEvent? args) {
     debugPrint(args!.topic);
 
-    //TODO: UPDATE SESSION PROVIDER
+    //TODO: UPDATE SESSION PROVIDER??
     //ref.watch(wcSessionProvider.notifier).state = args;
-
-    //show a popup
-    returnSnackBarWidget(
-        '',
-        'Topic: ${args.topic}\nEvent Name: ${args.name}\nEvent Data: ${args.data}',
-        'error');
   }
 
   //listen to lifecycle events (e.g. resume app from background)
@@ -154,7 +146,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    wcClient!.onSessionPing.unsubscribe(_onSessionPing);
+    wcClient!.onSessionConnect.unsubscribe(_onSessionConnect);
     super.dispose();
   }
 
@@ -167,13 +159,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final wc = ref.watch(wcProvider);
-
-    // wc.on(
-    //     'disconnect',
-    //     (payload) => {
-    //           //restart app, if web3 session is disconnected, to go back to login screen because Navigator cannot be accessed here
-    //           RestartWidget.restartApp(context),
-    //         });
 
     //fetch relevant collections here to avoid loading in in later screens
     final AsyncValue<BlockchainCollectionList> relevantCollections =
