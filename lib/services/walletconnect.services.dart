@@ -125,6 +125,7 @@ Future<String> makeAndSendGaslessTx(
     SignatureData signatureData,
     EthereumAddress walletAddress,
     Web3App wc,
+    SessionData wcSession,
     String metaTxAgreementId,
     {EthereumAddress? toAccount,
     String? cid}) async {
@@ -142,10 +143,15 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
-  //TODO: Check if this is the correct way to get the signature with v2
+  //TODO: use MODAL
+  String walletLink = 'https://link.trustwallet.com';
+  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+  await launchUrlString(walletDeepLink.toString(),
+      mode: LaunchMode.externalApplication);
+
   String signature = await wc.request(
-    topic: '',
-    chainId: 'eip155:$chainId',
+    topic: wcSession.topic,
+    chainId: 'eip155:1', //TODO: usw chainID - BUT: session is always "1"
     request: SessionRequestParams(
       method: 'eth_signTypedData_v4',
       params: [walletAddress.toString(), json.encode(typedData)],
@@ -169,6 +175,7 @@ Future<String> makeAndSendNormalTx(
     SignatureData signatureData,
     EthereumAddress walletAddress,
     Web3App wc,
+    SessionData wcSession,
     {EthereumAddress? toAccount,
     String? cid}) async {
   var txParams = await buildEthSendTransactionRequest(
@@ -181,9 +188,15 @@ Future<String> makeAndSendNormalTx(
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null);
 
+  //TODO: use MODAL
+  String walletLink = 'https://link.trustwallet.com';
+  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+  await launchUrlString(walletDeepLink.toString(),
+      mode: LaunchMode.externalApplication);
+
   String txnHash = await wc.request(
-    topic: '$makeRandomInt()',
-    chainId: 'eip155:$chainId',
+    topic: wcSession.topic,
+    chainId: 'eip155:1', //TODO: usw chainID - BUT: session is always "1"
     request: SessionRequestParams(
       method: 'eth_sendTransaction',
       params: txParams,

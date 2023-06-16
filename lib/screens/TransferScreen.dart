@@ -87,6 +87,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
             signatureData,
             connectedWallet,
             wc,
+            wcSession!,
             metaTxAgreementId,
             toAccount: to);
       } else {
@@ -97,6 +98,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
             signatureData,
             connectedWallet,
             wc,
+            wcSession!,
             toAccount: to);
       }
 

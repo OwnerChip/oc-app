@@ -175,11 +175,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             signatureData,
             connectedWallet,
             wc,
+            wcSession!,
             metaTxAgreementId,
             cid: cid);
       } else {
         txnHash = await makeAndSendNormalTx(mintFunctionSignature, chainId,
-            collectionId, signatureData, connectedWallet, wc,
+            collectionId, signatureData, connectedWallet, wc, wcSession!,
             cid: cid);
       }
 

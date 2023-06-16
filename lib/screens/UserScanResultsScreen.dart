@@ -96,6 +96,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             signatureData,
             connectedWallet,
             wc,
+            wcSession!,
             metaTxAgreementId);
       } else {
         txnHash = await makeAndSendNormalTx(
@@ -104,7 +105,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             config.collectionId,
             signatureData,
             connectedWallet,
-            wc);
+            wc,
+            wcSession!);
       }
 
       var txnReceipt =
