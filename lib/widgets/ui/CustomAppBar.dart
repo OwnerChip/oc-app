@@ -86,59 +86,37 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: [
         Padding(
             padding: const EdgeInsets.only(right: 5),
-            child: wcSession != null
-                // DISCONNECT
-                ? Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      IconButton(
-                        padding: const EdgeInsets.all(0.0),
-                        icon: Icon(Icons.logout,
-                            color:
-                                CustomColors(dotenv.get('APP_ID')).primaryColor,
-                            size: 35),
-                        color: CustomColors(dotenv.get('APP_ID')).black,
-                        // onPressed: () => onButtonPress(context, wc),
-                        onPressed: () => onButtonPress(context, ref, wcClient!),
-                      ),
-                      Align(
-                        alignment: const Alignment(0.0, 0.95),
-                        child: Text(
-                          context.loc.disconnect,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  )
-                // CONNECT
-                : Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      IconButton(
-                        padding: const EdgeInsets.all(0.0),
-                        icon: Icon(Icons.wallet,
-                            color:
-                                CustomColors(dotenv.get('APP_ID')).primaryColor,
-                            size: 35),
-                        color: CustomColors(dotenv.get('APP_ID')).black,
-                        // onPressed: () => onButtonPress(context, wc),
-                        onPressed: () => onButtonPress(context, ref, wcClient!),
-                      ),
-                      Align(
-                        alignment: const Alignment(0.0, 0.95),
-                        child: Text(
-                          context.loc.connect,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(fontSize: 10),
-                        ),
-                      ),
-                    ],
-                  ))
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                IconButton(
+                  padding: const EdgeInsets.all(0.0),
+                  icon: wcSession != null
+                      ? Icon(Icons.logout,
+                          color:
+                              CustomColors(dotenv.get('APP_ID')).primaryColor,
+                          size: 35)
+                      : Icon(Icons.wallet,
+                          color:
+                              CustomColors(dotenv.get('APP_ID')).primaryColor,
+                          size: 35),
+                  color: CustomColors(dotenv.get('APP_ID')).black,
+                  onPressed: () => onButtonPress(context, ref, wcClient!),
+                ),
+                Align(
+                  alignment: const Alignment(0.0, 0.95),
+                  child: Text(
+                    wcSession != null
+                        ? context.loc.disconnect
+                        : context.loc.connect,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(fontSize: 12),
+                  ),
+                ),
+              ],
+            ))
       ],
       titleTextStyle: Theme.of(context).textTheme.displaySmall,
       backgroundColor: Colors.transparent,
