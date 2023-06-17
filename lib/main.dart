@@ -1,4 +1,6 @@
 //import packages
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -117,27 +120,47 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   void _onSessionConnect(SessionConnect? args) {
     ref.watch(wcSessionProvider.notifier).state = args?.session;
+    //store new session
+    final storage = SharedPreferences.getInstance();
+    final session = jsonEncode(args?.session);
+    storage.then((value) => value.setString('session', session));
   }
 
   void _onSessionDisconnect(SessionDelete? args) {
     ref.watch(wcSessionProvider.notifier).state = null;
+    //store new session
+    final storage = SharedPreferences.getInstance();
+    storage.then((value) => value.remove('session'));
   }
 
   // handle WC session event
   void _onSessionEvent(SessionEvent? args) {
     debugPrint(args!.topic);
 
-    //TODO: UPDATE SESSION PROVIDER??
+    //TODO: UPDATE SESSION PROVIDER AND STORE SESSION
     //ref.watch(wcSessionProvider.notifier).state = args;
   }
 
-  //listen to lifecycle events (e.g. resume app from background)
+  Future<void> _setSessionProviderFromPersistedSession() async {
+    final storage = await SharedPreferences.getInstance();
+
+    final storedSession = storage.getString('session');
+    if (storedSession != null) {
+      //TODO: check if session is expired
+      ref.watch(wcSessionProvider.notifier).state =
+          SessionData.fromJson(jsonDecode(storedSession));
+    }
+  }
+
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
 
     //init walletconnect client
     initWcClient();
+
+    //read persisted session
+    _setSessionProviderFromPersistedSession();
 
     super.initState();
   }
