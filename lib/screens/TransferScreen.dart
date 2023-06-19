@@ -161,7 +161,6 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //TODO: fix
     final wc = ref.watch(wcProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);

@@ -178,8 +178,6 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //TODO: check
-    final wc = ref.watch(wcProvider);
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
     return Scaffold(

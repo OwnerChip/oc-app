@@ -4,9 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-//import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
-
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
@@ -30,9 +27,6 @@ class MoreInfoScreen extends ConsumerStatefulWidget {
 class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
   @override
   Widget build(BuildContext context) {
-    //TODO: check
-    final wc = ref.watch(wcProvider);
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
