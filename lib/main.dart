@@ -146,9 +146,17 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
     final storedSession = storage.getString('session');
     if (storedSession != null) {
-      //TODO: check if session is expired
-      ref.watch(wcSessionProvider.notifier).state =
-          SessionData.fromJson(jsonDecode(storedSession));
+      SessionData session = SessionData.fromJson(jsonDecode(storedSession));
+      // check if session is expired
+      int currentTimeInSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      int expiryTimeInSeconds = session.expiry;
+      int oneHourInSeconds = 3600;
+      if (0 < (currentTimeInSeconds - expiryTimeInSeconds - oneHourInSeconds)) {
+        //session expires in less than one hour
+        storage.remove('session');
+        return;
+      }
+      ref.watch(wcSessionProvider.notifier).state = session;
     }
   }
 
@@ -170,6 +178,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     wcClient!.onSessionConnect.unsubscribe(_onSessionConnect);
+    wcClient!.onSessionDelete.unsubscribe(_onSessionDisconnect);
+    wcClient!.onSessionEvent.unsubscribe(_onSessionEvent);
     super.dispose();
   }
 
