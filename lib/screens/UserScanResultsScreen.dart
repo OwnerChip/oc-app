@@ -366,6 +366,17 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                 .textTheme
                                                                 .bodyMedium)),
                                                     const SizedBox(height: 10),
+                                                    CustomRoundedButton(
+                                                        text: context
+                                                            .loc.transferToken,
+                                                        onPressed: (() => {
+                                                              //navigate to transfer screen
+                                                              Navigator.pushNamed(
+                                                                  context,
+                                                                  TransferScreen
+                                                                      .routeName)
+                                                            })),
+                                                    const SizedBox(height: 10),
                                                     relevantCollections.when(
                                                         data: (data) {
                                                           //get collection where user is minter
@@ -385,18 +396,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                   .hasMinterRole!
                                                               ? Column(
                                                                   children: [
-                                                                      CustomRoundedButton(
-                                                                          text: context
-                                                                              .loc
-                                                                              .transferToken,
-                                                                          onPressed: (() =>
-                                                                              {
-                                                                                //navigate to transfer screen
-                                                                                Navigator.pushNamed(context, TransferScreen.routeName)
-                                                                              })),
-                                                                      const SizedBox(
-                                                                          height:
-                                                                              10),
                                                                       CustomOutlinedButton(
                                                                           width: double
                                                                               .infinity,
