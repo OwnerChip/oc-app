@@ -369,19 +369,18 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                     relevantCollections.when(
                                                         data: (data) {
                                                           //get collection where user is minter
-                                                          final collection = data
-                                                              .collections[
-                                                                  tokenInfo
-                                                                      .value!
-                                                                      .chainId]!
-                                                              .firstWhere(
+                                                          Collection collection = data.collections[tokenInfo.value!.chainId] != null
+                                                              ? data.collections[tokenInfo.value!.chainId]!.firstWhere(
                                                                   (element) => element
                                                                       .hasMinterRole!,
                                                                   orElse: () => Collection(
-                                                                      zeroAddress,
-                                                                      '',
+                                                                      zeroAddress, '',
                                                                       hasMinterRole:
-                                                                          false));
+                                                                          false))
+                                                              : Collection(
+                                                                  zeroAddress, '',
+                                                                  hasMinterRole:
+                                                                      false);
                                                           return collection
                                                                   .hasMinterRole!
                                                               ? Column(
