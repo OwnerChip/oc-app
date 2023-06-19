@@ -115,7 +115,6 @@ void onInitializeButtonPress(BuildContext context, Web3App wc, mounted) async {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    //TODO: check
     final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);

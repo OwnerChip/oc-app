@@ -28,7 +28,6 @@ import 'screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
 import 'widgets/logic/RestartWidget.dart';
-import 'widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 
 // setup logger
@@ -139,6 +138,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
     //TODO: UPDATE SESSION PROVIDER AND STORE SESSION
     //ref.watch(wcSessionProvider.notifier).state = args;
+    print(args!.topic);
   }
 
   Future<void> _setSessionProviderFromPersistedSession() async {
@@ -185,14 +185,10 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   //do stuff on app resume
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    //TODO: wc session provider stuff ?
-  }
+  void didChangeAppLifecycleState(AppLifecycleState state) async {}
 
   @override
   Widget build(BuildContext context) {
-    final wc = ref.watch(wcProvider);
-
     //fetch relevant collections here to avoid loading in in later screens
     final AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);

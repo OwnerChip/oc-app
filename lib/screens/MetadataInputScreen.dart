@@ -271,8 +271,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as MetadataInputScreenArguments;
-
-    //TODO: check
     final wc = ref.watch(wcProvider);
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
