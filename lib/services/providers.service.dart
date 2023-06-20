@@ -27,10 +27,9 @@ final wcSessionProvider = StateProvider<SessionData?>((ref) {
 
 final userAddressProvider = StateProvider<EthereumAddress>((ref) {
   final session = ref.watch(wcSessionProvider);
-  // TODO: support multiple protocols at once? (not just polygon as default)
   final addr = session != null
       ? EthereumAddress.fromHex(
-          session.namespaces['eip155']!.accounts[0].substring(11))
+          session.namespaces['eip155']!.accounts[0].split(':').last)
       : zeroAddress;
   return addr;
 });
