@@ -124,5 +124,6 @@
     "creationOfTwin": "Digitalen Zwilling erstellen (NFT)",
     "warningChainSelector": "Alle eingegebenen NFT Daten \nsind öffentlich.",
     "infoScreenText": "Überprüfe Echtheit und Eigentum von Objekten mit deinem Smartphone.",
-    "transferScreenText": "Sende den Token an eine andere Wallet."
+    "transferScreenText": "Sende den Token an eine andere Wallet.",
+    "step": "Schritt"
 }

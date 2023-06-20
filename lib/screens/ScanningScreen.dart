@@ -199,7 +199,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                           style: Theme.of(context).textTheme.displayMedium),
                       RichText(
                         text: TextSpan(
-                            text: 'Step 1/',
+                            text: '${context.loc.step} 1/',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleLarge!

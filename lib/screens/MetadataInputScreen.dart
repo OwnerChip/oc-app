@@ -324,7 +324,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                 const SizedBox(width: 22),
                 RichText(
                   text: TextSpan(
-                      text: 'Step 2/',
+                      text: '${context.loc.step} 2/',
                       style: Theme.of(context)
                           .textTheme
                           .titleLarge!

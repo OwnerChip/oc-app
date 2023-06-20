@@ -95,7 +95,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
               const SizedBox(width: 22),
               RichText(
                 text: TextSpan(
-                    text: 'Step 1/',
+                    text: '${context.loc.step} 1/',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge!
