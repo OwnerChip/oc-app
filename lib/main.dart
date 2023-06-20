@@ -90,7 +90,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       projectId: dotenv.env['WC_PROJECT_ID']!,
       metadata: const PairingMetadata(
         name: 'OwnerChip',
-        description: 'Connecting physical objects to the blockchain',
+        description:
+            'OwnerChip - Connecting physical objects to the blockchain',
         url: 'https://www.ownerchip.com',
         icons: ['https://avatars.githubusercontent.com/u/116345848'],
       ),
@@ -100,13 +101,12 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
     // Register event handlers
     final events = EIP155.events.values.toList();
-    chainConfig.keys.map((chainId) => {
-          for (final event in events)
-            {
-              wcClient!.registerEventHandler(
-                  chainId: 'eip155:$chainId', event: event)
-            }
-        });
+    for (int chainId in chainConfig.keys) {
+      for (final event in events) {
+        wcClient!
+            .registerEventHandler(chainId: 'eip155:$chainId', event: event);
+      }
+    }
 
     wcClient!.onSessionEvent.subscribe(_onSessionEvent);
     wcClient!.onSessionConnect.subscribe(_onSessionConnect);
@@ -123,6 +123,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final storage = SharedPreferences.getInstance();
     final session = jsonEncode(args?.session);
     storage.then((value) => value.setString('session', session));
+    //TODO: show a popup
   }
 
   void _onSessionDisconnect(SessionDelete? args) {
@@ -130,25 +131,35 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     //store new session
     final storage = SharedPreferences.getInstance();
     storage.then((value) => value.remove('session'));
+    //TODO: show a popup
   }
 
   // handle WC session event
   void _onSessionEvent(SessionEvent? args) {
-    debugPrint(args!.topic);
-
-    //TODO: UPDATE SESSION PROVIDER AND STORE SESSION
-    //ref.watch(wcSessionProvider.notifier).state = args;
-    print(args!.topic);
+    if (args?.name == "accountsChanged") {
+      // simply disconnect?
+      //TODO: remove session from connected wallet as well!
+      SessionDelete deleteArgs = SessionDelete(args!.topic);
+      _onSessionDisconnect(deleteArgs);
+      //TODO: show a popup
+    } else {
+      //do nothing?
+    }
   }
 
   Future<void> _setSessionProviderFromPersistedSession() async {
     final storage = await SharedPreferences.getInstance();
 
     final storedSession = storage.getString('session');
+    //check if a session is stored
     if (storedSession != null) {
-      //TODO: check if session is expired
-      ref.watch(wcSessionProvider.notifier).state =
-          SessionData.fromJson(jsonDecode(storedSession));
+      final session = SessionData.fromJson(jsonDecode(storedSession));
+      //check if the stored session is expired
+      double nowPlusOneHour =
+          DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
+      if (session.expiry > nowPlusOneHour) {
+        ref.watch(wcSessionProvider.notifier).state = session;
+      }
     }
   }
 
