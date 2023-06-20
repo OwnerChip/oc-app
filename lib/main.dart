@@ -111,6 +111,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     wcClient!.onSessionEvent.subscribe(_onSessionEvent);
     wcClient!.onSessionConnect.subscribe(_onSessionConnect);
     wcClient!.onSessionDelete.subscribe(_onSessionDisconnect);
+    wcClient!.onSessionExpire.unsubscribe(_onSessionExpire);
 
     setState(() {
       wcIsInitialized = true;
@@ -132,6 +133,14 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final storage = SharedPreferences.getInstance();
     storage.then((value) => value.remove('session'));
     //TODO: show a popup
+  }
+
+  void _onSessionExpire(SessionExpire? event) {
+    if (event?.topic != null) {
+      // simply disconnect?
+      SessionDelete deleteArgs = SessionDelete(event!.topic);
+      _onSessionDisconnect(deleteArgs);
+    }
   }
 
   // handle WC session event
