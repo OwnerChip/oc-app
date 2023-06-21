@@ -3,6 +3,25 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 
+class WalletType {
+  final String name;
+  final String iconUri;
+  final String deeplinkUri;
+
+  WalletType(this.name, this.iconUri, this.deeplinkUri);
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'iconUri': iconUri,
+        'deeplinkUri': deeplinkUri,
+      };
+
+  WalletType.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        iconUri = json['iconUri'],
+        deeplinkUri = json['deeplinkUri'];
+}
+
 class Collection {
   final EthereumAddress id;
   final String name;

@@ -21,6 +21,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -60,7 +61,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
     final transferProcess = Sentry.startTransaction('initTransfer()', 'task');
     try {
       if (wcSession == null) {
-        final wcResp = await startWalletConnection(context, ref, wc);
+        walletPopupBuilder(context, ref, wc);
       }
 
       setState(() {
@@ -87,6 +88,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
             wc,
             wcSession!,
             metaTxAgreementId,
+            ref.read(walletTypeProvider)!,
             toAccount: to);
       } else {
         txnHash = await makeAndSendNormalTx(

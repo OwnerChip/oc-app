@@ -20,7 +20,7 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 // This function starts a wallet connection with the WalletConnect connector.
 Future<ConnectResponse> startWalletConnection(
-    BuildContext context, WidgetRef ref, Web3App wc) async {
+    BuildContext context, WidgetRef ref, Web3App wc, String walletLink) async {
   ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
     'eip155': RequiredNamespace(chains: [
       'eip155:137'
@@ -32,7 +32,6 @@ Future<ConnectResponse> startWalletConnection(
     ], events: EIP155.events.values.toList()),
   });
   String? uri = wcResp.uri.toString();
-  String walletLink = 'https://metamask.app.link';
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: uri);
 
   await launchUrlString(walletDeepLink.toString(),
@@ -123,6 +122,7 @@ Future<String> makeAndSendGaslessTx(
     Web3App wc,
     SessionData wcSession,
     String metaTxAgreementId,
+    WalletType walletType,
     {EthereumAddress? toAccount,
     String? cid}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
@@ -140,7 +140,7 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> request = gaslessTxParams[1];
 
   //TODO: use MODAL
-  String walletLink = 'https://metamask.app.link';
+  String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);

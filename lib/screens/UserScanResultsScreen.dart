@@ -32,6 +32,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -69,7 +70,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
       if (wcSession == null) {
-        final wcResp = await startWalletConnection(context, ref, wc);
+        walletPopupBuilder(context, ref, wc);
       }
 
       setState(() {
@@ -95,7 +96,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             connectedWallet,
             wc,
             wcSession!,
-            metaTxAgreementId);
+            metaTxAgreementId,
+            ref.read(walletTypeProvider)!
+            );
       } else {
         txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
@@ -348,7 +351,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                     text: context
                                                         .loc.connectWallet,
                                                     onPressed: (() => {
-                                                          startWalletConnection(
+                                                          walletPopupBuilder(
                                                               context, ref, wc!)
                                                         }))
                                               ],

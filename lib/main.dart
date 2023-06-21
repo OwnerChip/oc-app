@@ -29,6 +29,7 @@ import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
 import 'widgets/logic/RestartWidget.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 
 // setup logger
 void _setupLogging() {
@@ -119,20 +120,25 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 
   void _onSessionConnect(SessionConnect? args) {
+    WalletType? walletType = walletConfig[args?.session.peer.metadata.name];
+    ref.watch(walletTypeProvider.notifier).state = walletType;
     ref.watch(wcSessionProvider.notifier).state = args?.session;
-    //store new session
     final storage = SharedPreferences.getInstance();
     final session = jsonEncode(args?.session);
+    //store session
     storage.then((value) => value.setString('session', session));
-    //TODO: show a popup
+    //store wallet type (e.g. trust wallet, metamask, etc.)
+    storage.then((value) =>
+        value.setString('walletType', jsonEncode(walletType!.toJson())));
   }
 
   void _onSessionDisconnect(SessionDelete? args) {
     ref.watch(wcSessionProvider.notifier).state = null;
-    //store new session
+    ref.watch(walletTypeProvider.notifier).state = null;
+    //remove session and wallet type
     final storage = SharedPreferences.getInstance();
     storage.then((value) => value.remove('session'));
-    //TODO: show a popup
+    storage.then((value) => value.remove('walletType'));
   }
 
   void _onSessionExpire(SessionExpire? event) {
@@ -160,17 +166,21 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final storage = await SharedPreferences.getInstance();
 
     final storedSession = storage.getString('session');
+    final storedWalletType = storage.getString('walletType');
     //check if a session is stored
-    if (storedSession != null) {
+    if (storedSession != null && storedWalletType != null) {
       final session = SessionData.fromJson(jsonDecode(storedSession));
+      final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
       //check if the stored session is expired
       double nowPlusOneHour =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
       if (session.expiry > nowPlusOneHour) {
         ref.watch(wcSessionProvider.notifier).state = session;
+        ref.watch(walletTypeProvider.notifier).state = walletType;
       } else {
-        //remove session from storage
+        //remove session and wallet type from storage
         storage.remove('session');
+        storage.remove('walletType');
       }
     }
   }

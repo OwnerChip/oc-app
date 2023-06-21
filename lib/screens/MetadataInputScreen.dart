@@ -32,6 +32,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -105,6 +106,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       Map<String, dynamic> metadata,
       int chainId,
       EthereumAddress collectionId,
+      WalletType walletType,
       {XFile? image}) async {
     setState(() {
       showOverlay = true;
@@ -118,7 +120,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     //if wc bridge is not connected, then reconnect
     if (wcSession == null) {
-      final wcResp = await startWalletConnection(context, ref, wc);
+      walletPopupBuilder(context, ref, wc);
     }
 
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
@@ -175,6 +177,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             wc,
             wcSession!,
             metaTxAgreementId,
+            walletType,
             cid: cid);
       } else {
         txnHash = await makeAndSendNormalTx(mintFunctionSignature, chainId,
@@ -455,8 +458,14 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                         onPressed: () async {
                           FocusManager.instance.primaryFocus?.unfocus();
                           if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(navArgs.randomMsg, wc!,
-                                signatureData, metadata, chainId, collectionId,
+                            fromCancelable(createToken(
+                                navArgs.randomMsg,
+                                wc!,
+                                signatureData,
+                                metadata,
+                                chainId,
+                                collectionId,
+                                ref.read(walletTypeProvider)!,
                                 image: image));
                           }
                         },

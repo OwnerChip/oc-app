@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -50,7 +51,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
     final Collection? collection = ref.read(selectedCollectionIdProvider);
     try {
       if (wcSession == null) {
-        final wcResp = await startWalletConnection(context, ref, wc!);
+        walletPopupBuilder(context, ref, wc!);
       }
 
       if (mounted) {

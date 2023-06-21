@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +19,10 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 //wallet connect 2 provider
 final wcProvider = StateProvider<Web3App?>((ref) {
+  return null;
+});
+
+final walletTypeProvider = StateProvider<WalletType?>((ref) {
   return null;
 });
 
