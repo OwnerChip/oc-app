@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 final WalletType _metamask = WalletType(
     "Metamask",
     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/metamask.png",
-    'https://metamask.app.com');
+    'https://metamask.app.link');
 
 final WalletType _trustWallet = WalletType(
     "Trust Wallet",

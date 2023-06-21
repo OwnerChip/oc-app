@@ -141,6 +141,7 @@ Future<String> makeAndSendGaslessTx(
 
   //TODO: use MODAL
   String walletLink = walletType.deeplinkUri;
+  // String walletLink = 'https://link.trustwallet.com';
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);
