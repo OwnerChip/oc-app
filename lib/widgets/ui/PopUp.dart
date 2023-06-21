@@ -22,10 +22,10 @@ Future<void> walletPopupBuilder(
           //border radius
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
-          title: const Padding(
+          title: Padding(
             padding: EdgeInsets.only(top: 20, bottom: 10),
             child: Text(
-              'Choose wallet to connect',
+              context.loc.chooseWallet,
               textAlign: TextAlign.center,
             ),
           ),
@@ -136,26 +136,30 @@ Future<void> walletPopupBuilder(
                   text: TextSpan(
                     style: const TextStyle(color: Colors.grey),
                     children: [
-                      const TextSpan(
-                          text: 'By connecting your wallet you agree to our '),
+                      TextSpan(text: context.loc.agreeToWhenConnecting),
                       TextSpan(
-                        text: 'terms of service',
+                        text: context.loc.generalTerms,
                         style: const TextStyle(color: Colors.blue),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () async {
-                            await launchUrl(Uri.parse('https://flutter.dev'));
+                            await launchUrl(
+                                Uri.parse(dotenv.get('TERMS_PAGE_URL')));
                           },
                       ),
-                      const TextSpan(
-                        text: ' and ',
+                      TextSpan(
+                        text: " ${context.loc.and} ",
                       ),
                       TextSpan(
-                        text: 'privacy policy',
+                        text: context.loc.privacyPolicy,
                         style: const TextStyle(color: Colors.blue),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () async {
-                            await launchUrl(Uri.parse('https://flutter.dev'));
+                            await launchUrl(
+                                Uri.parse(dotenv.get('LEGAL_PAGE_URL')));
                           },
+                      ),
+                      TextSpan(
+                        text: "${context.loc.zu}.",
                       ),
                     ],
                   ),
@@ -167,10 +171,8 @@ Future<void> walletPopupBuilder(
   );
 }
 
-//TODO: Move this to PopUp.dart
 Future<void> onWalletPress(
     BuildContext context, WidgetRef ref, Web3App wc, String walletLink) async {
-  final wcSession = ref.watch(wcSessionProvider);
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {

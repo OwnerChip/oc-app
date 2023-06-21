@@ -55,7 +55,7 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             CustomRoundedButton(
                 text: context.loc.watchTutorial,
                 onPressed: () => {
-                      launchUrl(Uri.parse('http://www.ownerchip.com/tutorial'),
+                      launchUrl(Uri.parse(dotenv.get('TUTORIAL_PAGE_URL')),
                           mode: LaunchMode.externalApplication)
                     },
                 width: 250),
@@ -63,7 +63,7 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             CustomRoundedButton(
                 text: context.loc.viewProjects,
                 onPressed: () => {
-                      launchUrl(Uri.parse('http://www.ownerchip.com/projects'),
+                      launchUrl(Uri.parse(dotenv.get('PROJECTS_PAGE_URL')),
                           mode: LaunchMode.externalApplication)
                     },
                 width: 250),
@@ -71,8 +71,7 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             CustomRoundedButton(
                 text: context.loc.orderChips,
                 onPressed: () => {
-                      launchUrl(
-                          Uri.parse('http://www.ownerchip.com/orderchips'),
+                      launchUrl(Uri.parse(dotenv.get('ORDER_CHIPS_URL')),
                           mode: LaunchMode.externalApplication)
                     },
                 width: 250),
