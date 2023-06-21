@@ -13,5 +13,5 @@ final WalletType _trustWallet = WalletType(
 
 final Map<String, WalletType> walletConfig = {
   'Trust Wallet': _trustWallet,
-  'Metamask': _metamask,
+  'Metamask Wallet': _metamask,
 };
