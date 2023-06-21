@@ -87,6 +87,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final metaTxAgreementId = response[1];
 
       String txnHash;
+
+      final walletType = ref.read(walletTypeProvider);
+
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             gaslessBurnFunctionSignature,
@@ -97,8 +100,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             wc,
             wcSession!,
             metaTxAgreementId,
-            ref.read(walletTypeProvider)!
-            );
+            walletType!);
       } else {
         txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
@@ -108,7 +110,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             connectedWallet,
             wc,
             wcSession!,
-            ref.read(walletTypeProvider)!);
+            walletType!);
       }
 
       var txnReceipt =

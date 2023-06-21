@@ -83,7 +83,7 @@ Future<void> walletPopupBuilder(
                   GestureDetector(
                       onTap: () {
                         onWalletPress(context, ref, wc,
-                            walletConfig['Metamask Wallet']!.deeplinkUri);
+                            walletConfig['MetaMask Wallet']!.deeplinkUri);
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -107,12 +107,12 @@ Future<void> walletPopupBuilder(
                               child: Padding(
                                   padding: const EdgeInsets.all(7),
                                   child: Image.asset(
-                                      walletConfig['Metamask Wallet']!.iconUri,
+                                      walletConfig['MetaMask Wallet']!.iconUri,
                                       fit: BoxFit.contain))),
                           Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: Text(
-                                walletConfig['Metamask Wallet']!.name,
+                                walletConfig['MetaMask Wallet']!.name,
                                 style: Theme.of(context)
                                     .textTheme
                                     .displaySmall!
