@@ -174,6 +174,7 @@ Future<String> makeAndSendNormalTx(
     EthereumAddress walletAddress,
     Web3App wc,
     SessionData wcSession,
+    WalletType walletType,
     {EthereumAddress? toAccount,
     String? cid}) async {
   var txParams = await buildEthSendTransactionRequest(
@@ -187,7 +188,7 @@ Future<String> makeAndSendNormalTx(
       tokenURI: cid != null ? "ipfs://$cid" : null);
 
   //TODO: use MODAL
-  String walletLink = 'https://link.trustwallet.com';
+  String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);

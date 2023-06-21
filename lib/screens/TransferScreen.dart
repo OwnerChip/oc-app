@@ -99,6 +99,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
             connectedWallet,
             wc,
             wcSession!,
+            ref.read(walletTypeProvider)!,
             toAccount: to);
       }
 

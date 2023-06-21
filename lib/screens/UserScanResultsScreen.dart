@@ -107,7 +107,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!);
+            wcSession!,
+            ref.read(walletTypeProvider)!);
       }
 
       var txnReceipt =
