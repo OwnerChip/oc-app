@@ -41,8 +41,12 @@ Future<void> walletPopupBuilder(
                 children: [
                   GestureDetector(
                       onTap: () {
-                        onWalletPress(context, ref, wc,
-                            walletConfig['Trust Wallet']!.deeplinkUri);
+                        onWalletPress(
+                            context,
+                            ref,
+                            wc,
+                            walletConfig['https://trustwallet.com']!
+                                .deeplinkUri);
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -66,13 +70,14 @@ Future<void> walletPopupBuilder(
                               child: Padding(
                                 padding: const EdgeInsets.all(7),
                                 child: Image.asset(
-                                    walletConfig['Trust Wallet']!.iconUri,
+                                    walletConfig['https://trustwallet.com']!
+                                        .iconUri,
                                     fit: BoxFit.contain),
                               )),
                           Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: Text(
-                                walletConfig['Trust Wallet']!.name,
+                                walletConfig['https://trustwallet.com']!.name,
                                 style: Theme.of(context)
                                     .textTheme
                                     .displaySmall!
@@ -83,7 +88,7 @@ Future<void> walletPopupBuilder(
                   GestureDetector(
                       onTap: () {
                         onWalletPress(context, ref, wc,
-                            walletConfig['MetaMask Wallet']!.deeplinkUri);
+                            walletConfig['https://metamask.io']!.deeplinkUri);
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -107,12 +112,13 @@ Future<void> walletPopupBuilder(
                               child: Padding(
                                   padding: const EdgeInsets.all(7),
                                   child: Image.asset(
-                                      walletConfig['MetaMask Wallet']!.iconUri,
+                                      walletConfig['https://metamask.io']!
+                                          .iconUri,
                                       fit: BoxFit.contain))),
                           Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: Text(
-                                walletConfig['MetaMask Wallet']!.name,
+                                walletConfig['https://metamask.io']!.name,
                                 style: Theme.of(context)
                                     .textTheme
                                     .displaySmall!

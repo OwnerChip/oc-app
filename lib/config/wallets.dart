@@ -12,6 +12,6 @@ final WalletType _trustWallet = WalletType(
     'https://link.trustwallet.com');
 
 final Map<String, WalletType> walletConfig = {
-  'Trust Wallet': _trustWallet,
-  'MetaMask Wallet': _metamask,
+  'https://trustwallet.com': _trustWallet,
+  'https://metamask.io': _metamask,
 };

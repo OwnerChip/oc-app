@@ -120,7 +120,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 
   void _onSessionConnect(SessionConnect? args) {
-    WalletType? walletType = walletConfig[args?.session.peer.metadata.name];
+    WalletType? walletType = walletConfig[args?.session.peer.metadata.url];
     ref.watch(walletTypeProvider.notifier).state = walletType;
     ref.watch(wcSessionProvider.notifier).state = args?.session;
     final storage = SharedPreferences.getInstance();

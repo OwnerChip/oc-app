@@ -106,7 +106,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       Map<String, dynamic> metadata,
       int chainId,
       EthereumAddress collectionId,
-      WalletType walletType,
       {XFile? image}) async {
     setState(() {
       showOverlay = true;
@@ -166,6 +165,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         'gasStation': canUseGasStation
       });
 
+      final walletType = ref.read(walletTypeProvider);
+
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
@@ -177,7 +178,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             wc,
             wcSession!,
             metaTxAgreementId,
-            walletType,
+            walletType!,
             cid: cid);
       } else {
         txnHash = await makeAndSendNormalTx(
@@ -188,7 +189,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             connectedWallet,
             wc,
             wcSession!,
-            ref.read(walletTypeProvider)!,
+            walletType!,
             cid: cid);
       }
 
@@ -465,14 +466,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                         onPressed: () async {
                           FocusManager.instance.primaryFocus?.unfocus();
                           if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(
-                                navArgs.randomMsg,
-                                wc!,
-                                signatureData,
-                                metadata,
-                                chainId,
-                                collectionId,
-                                ref.read(walletTypeProvider)!,
+                            fromCancelable(createToken(navArgs.randomMsg, wc!,
+                                signatureData, metadata, chainId, collectionId,
                                 image: image));
                           }
                         },
