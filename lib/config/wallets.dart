@@ -11,7 +11,25 @@ final WalletType _trustWallet = WalletType(
     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/trustwallet.png",
     'https://link.trustwallet.com');
 
+final WalletType _zerionWallet = WalletType(
+    "Zerion Wallet",
+    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/zerionwallet.png",
+    'https://wallet.zerion.io');
+
+final WalletType _rainbowWallet = WalletType(
+    "Rainbow Wallet",
+    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/rainbowwallet.webp",
+    'https://rnbwapp.com');
+
+final WalletType _zengoWallet = WalletType(
+    "ZenGo Wallet",
+    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/zengowallet.webp",
+    'zengo://get.zengo.com');
+
 final Map<String, WalletType> walletConfig = {
   'https://trustwallet.com': _trustWallet,
   'https://metamask.io': _metamask,
+  'https://zerion.io': _zerionWallet,
+  'https://rainbow.me': _rainbowWallet,
+  'https://zengo.com': _zengoWallet,
 };

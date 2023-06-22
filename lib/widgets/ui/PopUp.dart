@@ -36,100 +36,225 @@ Future<void> walletPopupBuilder(
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  GestureDetector(
-                      onTap: () {
-                        onWalletPress(
-                            context,
-                            ref,
-                            wc,
-                            walletConfig['https://trustwallet.com']!
-                                .deeplinkUri);
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                              decoration: BoxDecoration(
-                                  color:
-                                      const Color.fromARGB(255, 243, 243, 243),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(13)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: CustomColors(dotenv.get('APP_ID'))
-                                          .secondaryShadowColor,
-                                      offset: const Offset(1, 3),
-                                      blurRadius: 5,
-                                    )
-                                  ]),
-                              width: 60,
-                              height: 60,
-                              child: Padding(
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                // trust wallet
+                GestureDetector(
+                    onTap: () {
+                      onWalletPress(context, ref, wc,
+                          walletConfig['https://trustwallet.com']!.deeplinkUri);
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 243, 243, 243),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(13)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CustomColors(dotenv.get('APP_ID'))
+                                        .secondaryShadowColor,
+                                    offset: const Offset(1, 3),
+                                    blurRadius: 5,
+                                  )
+                                ]),
+                            width: 60,
+                            height: 60,
+                            child: Padding(
+                              padding: const EdgeInsets.all(7),
+                              child: Image.asset(
+                                  walletConfig['https://trustwallet.com']!
+                                      .iconUri,
+                                  fit: BoxFit.contain),
+                            )),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              walletConfig['https://trustwallet.com']!.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displaySmall!
+                                  .copyWith(fontSize: 14),
+                            ))
+                      ],
+                    )),
+                // metamask wallet
+                GestureDetector(
+                    onTap: () {
+                      onWalletPress(context, ref, wc,
+                          walletConfig['https://metamask.io']!.deeplinkUri);
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 243, 243, 243),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(13)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CustomColors(dotenv.get('APP_ID'))
+                                        .secondaryShadowColor,
+                                    offset: const Offset(1, 3),
+                                    blurRadius: 5,
+                                  )
+                                ]),
+                            child: Padding(
                                 padding: const EdgeInsets.all(7),
                                 child: Image.asset(
-                                    walletConfig['https://trustwallet.com']!
+                                    walletConfig['https://metamask.io']!
                                         .iconUri,
-                                    fit: BoxFit.contain),
-                              )),
-                          Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                walletConfig['https://trustwallet.com']!.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .displaySmall!
-                                    .copyWith(fontSize: 14),
-                              ))
-                        ],
-                      )),
-                  GestureDetector(
-                      onTap: () {
-                        onWalletPress(context, ref, wc,
-                            walletConfig['https://metamask.io']!.deeplinkUri);
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                  color:
-                                      const Color.fromARGB(255, 243, 243, 243),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(13)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: CustomColors(dotenv.get('APP_ID'))
-                                          .secondaryShadowColor,
-                                      offset: const Offset(1, 3),
-                                      blurRadius: 5,
-                                    )
-                                  ]),
-                              child: Padding(
-                                  padding: const EdgeInsets.all(7),
-                                  child: Image.asset(
-                                      walletConfig['https://metamask.io']!
-                                          .iconUri,
-                                      fit: BoxFit.contain))),
-                          Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                walletConfig['https://metamask.io']!.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .displaySmall!
-                                    .copyWith(
-                                      fontSize: 14,
-                                    ),
-                              ))
-                        ],
-                      ))
-                ],
-              ),
+                                    fit: BoxFit.contain))),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              walletConfig['https://metamask.io']!.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displaySmall!
+                                  .copyWith(
+                                    fontSize: 14,
+                                  ),
+                            ))
+                      ],
+                    )),
+              ]),
+/* MORE WALLETS
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                // zerion wallet
+                GestureDetector(
+                    onTap: () {
+                      onWalletPress(context, ref, wc,
+                          walletConfig['https://zerion.io']!.deeplinkUri);
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 243, 243, 243),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(13)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CustomColors(dotenv.get('APP_ID'))
+                                        .secondaryShadowColor,
+                                    offset: const Offset(1, 3),
+                                    blurRadius: 5,
+                                  )
+                                ]),
+                            child: Padding(
+                                padding: const EdgeInsets.all(7),
+                                child: Image.asset(
+                                    walletConfig['https://zerion.io']!.iconUri,
+                                    fit: BoxFit.contain))),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              walletConfig['https://zerion.io']!.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displaySmall!
+                                  .copyWith(
+                                    fontSize: 14,
+                                  ),
+                            ))
+                      ],
+                    )),
+                // rainbow wallet
+                GestureDetector(
+                    onTap: () {
+                      onWalletPress(context, ref, wc,
+                          walletConfig['https://rainbow.me']!.deeplinkUri);
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 243, 243, 243),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(13)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CustomColors(dotenv.get('APP_ID'))
+                                        .secondaryShadowColor,
+                                    offset: const Offset(1, 3),
+                                    blurRadius: 5,
+                                  )
+                                ]),
+                            child: Padding(
+                                padding: const EdgeInsets.all(7),
+                                child: Image.asset(
+                                    walletConfig['https://rainbow.me']!.iconUri,
+                                    fit: BoxFit.contain))),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              walletConfig['https://rainbow.me']!.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displaySmall!
+                                  .copyWith(
+                                    fontSize: 14,
+                                  ),
+                            ))
+                      ],
+                    )),
+              ]),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                // zengo wallet
+                GestureDetector(
+                    onTap: () {
+                      onWalletPress(context, ref, wc,
+                          walletConfig['https://zengo.com']!.deeplinkUri);
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 243, 243, 243),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(13)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CustomColors(dotenv.get('APP_ID'))
+                                        .secondaryShadowColor,
+                                    offset: const Offset(1, 3),
+                                    blurRadius: 5,
+                                  )
+                                ]),
+                            child: Padding(
+                                padding: const EdgeInsets.all(7),
+                                child: Image.asset(
+                                    walletConfig['https://zengo.com']!.iconUri,
+                                    fit: BoxFit.contain))),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              walletConfig['https://zengo.com']!.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displaySmall!
+                                  .copyWith(
+                                    fontSize: 14,
+                                  ),
+                            ))
+                      ],
+                    )),
+              ]),
+*/
               Padding(
                 padding: const EdgeInsets.only(top: 50),
                 child: RichText(
