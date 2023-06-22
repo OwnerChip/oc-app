@@ -109,8 +109,7 @@ class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
         //this means transfer succeeded
         setState(() {
           isRotating = false;
-          loadingSvgPath =
-              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg"; //TODO: replace with better symbol
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = context.loc.transferSuccess;
         });
         //refresh provider state to update nft owner for next screen

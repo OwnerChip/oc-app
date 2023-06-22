@@ -156,7 +156,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       //TODO: remove session from connected wallet as well!
       SessionDelete deleteArgs = SessionDelete(args!.topic);
       _onSessionDisconnect(deleteArgs);
-      //TODO: show a popup
     } else {
       //do nothing?
     }

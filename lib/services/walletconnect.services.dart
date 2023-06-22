@@ -139,9 +139,7 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
-  //TODO: use MODAL
   String walletLink = walletType.deeplinkUri;
-  // String walletLink = 'https://link.trustwallet.com';
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);
@@ -187,7 +185,6 @@ Future<String> makeAndSendNormalTx(
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null);
 
-  //TODO: use MODAL
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
   await launchUrlString(walletDeepLink.toString(),
@@ -203,6 +200,5 @@ Future<String> makeAndSendNormalTx(
     ),
   );
 
-  //TODO: Check if this is the correct way to get the txHash with v2
   return txnHash;
 }
