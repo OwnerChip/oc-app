@@ -130,13 +130,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                       )
                     : Container(),
                 error: (e, s) => Container(),
-                loading: () => SizedBox(
-                    height: 45,
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColor,
-                        )))),
+                loading: () => DropdownContainer(
+                    title: context.loc.loading, content: null)),
 
             /*** TRAITS ***/
             nftMetadata.when(
@@ -159,13 +154,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                         ))
                     : Container(),
                 error: (e, s) => Container(),
-                loading: () => SizedBox(
-                    height: 45,
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(
-                          color: Theme.of(context).primaryColor,
-                        )))),
+                loading: () => DropdownContainer(
+                    title: context.loc.loading, content: null)),
 
             /*** DIGITAL TWIN ***/
             tokenInfo.when(
@@ -177,7 +167,16 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                         context.loc.authenticity,
                         context.loc.ownership,
                       ], values: [
+                        // authenticity
+                        tokenInfo.when(
+                          data: ((data) => data.collectionId == zeroAddress
+                              ? context.loc.unconfirmed
+                              : context.loc.confirmed),
+                          error: (e, s) => context.loc.confirmed,
+                          loading: () => context.loc.loading,
+                        ),
                         // ownership
+
                         nftOwner.when(
                           data: ((data) => wc!.getActiveSessions().isEmpty
                               ?
@@ -191,15 +190,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   //NFT owner exists and wallet is connected and wallet is NOT owner
                                   context.loc.unconfirmed),
                           error: (e, s) => context.loc.ownerError,
-                          loading: () => context.loc.loading,
-                        ),
-
-                        // authenticity
-                        tokenInfo.when(
-                          data: ((data) => data.collectionId == zeroAddress
-                              ? context.loc.unconfirmed
-                              : context.loc.confirmed),
-                          error: (e, s) => context.loc.confirmed,
                           loading: () => context.loc.loading,
                         ),
                       ]),

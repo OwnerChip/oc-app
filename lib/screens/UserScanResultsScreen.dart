@@ -377,38 +377,36 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                 .textTheme
                                                                 .bodyMedium)),
                                                     const SizedBox(height: 10),
+                                                    CustomRoundedButton(
+                                                        text: context
+                                                            .loc.transferToken,
+                                                        onPressed: (() => {
+                                                              //navigate to transfer screen
+                                                              Navigator.pushNamed(
+                                                                  context,
+                                                                  TransferScreen
+                                                                      .routeName)
+                                                            })),
+                                                    const SizedBox(height: 10),
                                                     relevantCollections.when(
                                                         data: (data) {
                                                           //get collection where user is minter
-                                                          final collection = data
-                                                              .collections[
-                                                                  tokenInfo
-                                                                      .value!
-                                                                      .chainId]!
-                                                              .firstWhere(
+                                                          Collection collection = data.collections[tokenInfo.value!.chainId] != null
+                                                              ? data.collections[tokenInfo.value!.chainId]!.firstWhere(
                                                                   (element) => element
                                                                       .hasMinterRole!,
                                                                   orElse: () => Collection(
-                                                                      zeroAddress,
-                                                                      '',
+                                                                      zeroAddress, '',
                                                                       hasMinterRole:
-                                                                          false));
+                                                                          false))
+                                                              : Collection(
+                                                                  zeroAddress, '',
+                                                                  hasMinterRole:
+                                                                      false);
                                                           return collection
                                                                   .hasMinterRole!
                                                               ? Column(
                                                                   children: [
-                                                                      CustomRoundedButton(
-                                                                          text: context
-                                                                              .loc
-                                                                              .transferToken,
-                                                                          onPressed: (() =>
-                                                                              {
-                                                                                //navigate to transfer screen
-                                                                                Navigator.pushNamed(context, TransferScreen.routeName)
-                                                                              })),
-                                                                      const SizedBox(
-                                                                          height:
-                                                                              10),
                                                                       CustomOutlinedButton(
                                                                           width: double
                                                                               .infinity,
@@ -489,12 +487,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   .removeRoute(ModalRoute.of(context)!);
                             }
                           })
-                      : CustomRoundedButton(
-                          text: context.loc.viewNftDetails,
-                          onPressed: () {
-                            Navigator.of(context)
-                                .pushNamed(NFTDetailsScreen.routeName);
-                          }),
+                      : data.collectionId == zeroAddress
+                          ? Container()
+                          : CustomRoundedButton(
+                              text: context.loc.viewNftDetails,
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pushNamed(NFTDetailsScreen.routeName);
+                              }),
                   error: (e, s) => Container(),
                   loading: () => Container()),
             ])));
