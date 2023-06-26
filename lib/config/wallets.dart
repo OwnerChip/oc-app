@@ -28,7 +28,7 @@ final WalletType _zengoWallet = WalletType(
 
 final Map<String, WalletType> walletConfig = {
   'https://trustwallet.com': _trustWallet,
-  'https://metamask.io': _metamask,
+  'https://metamask.io/': _metamask,
   'https://zerion.io': _zerionWallet,
   'https://rainbow.me': _rainbowWallet,
   'https://zengo.com': _zengoWallet,

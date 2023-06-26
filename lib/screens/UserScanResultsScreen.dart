@@ -65,11 +65,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
   Future<void> burnToken(Web3App wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
-      if (wcSession == null) {
+      if (wcSession == null || walletType == null) {
         walletPopupBuilder(context, ref, wc);
       }
 
@@ -87,8 +88,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final metaTxAgreementId = response[1];
 
       String txnHash;
-
-      final walletType = ref.read(walletTypeProvider);
 
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
