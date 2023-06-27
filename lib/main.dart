@@ -14,6 +14,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3dart/web3dart.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -151,7 +152,11 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   // handle WC session event
   void _onSessionEvent(SessionEvent? args) {
-    if (args?.name == "accountsChanged") {
+    EthereumAddress newWalletAddr =
+        EthereumAddress.fromHex(args!.data[0].split(':')[2]);
+    EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
+
+    if (args?.name == "accountsChanged" && currentWalletAddr != newWalletAddr) {
       // simply disconnect?
       //TODO: remove session from connected wallet as well!
       SessionDelete deleteArgs = SessionDelete(args!.topic);
@@ -181,6 +186,10 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         storage.remove('session');
         storage.remove('walletType');
       }
+    } else {
+      //remove session and wallet type from storage
+      storage.remove('session');
+      storage.remove('walletType');
     }
   }
 
@@ -214,12 +223,10 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     //fetch relevant collections here to avoid loading in in later screens
-    final AsyncValue<BlockchainCollectionList> relevantCollections =
-        ref.watch(findAllMinterRolesProvider);
+    ref.watch(findAllMinterRolesProvider);
 
     // close splash screen
     FlutterNativeSplash.remove();
-
     return MaterialApp(
       theme: CustomThemeData.getThemeData(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

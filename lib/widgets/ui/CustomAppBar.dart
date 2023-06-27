@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key, this.text, this.showBackButton = true})
@@ -68,10 +69,14 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                 CustomColors(dotenv.get('APP_ID')).primaryColor,
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
-                        onPressed: () => wc!.disconnectSession(
-                            topic: wcSession.topic,
-                            reason: WalletConnectError(
-                                code: 6000, message: 'MANUAL DISCONNECT')),
+                        onPressed: () {
+                          wc!.disconnectSession(
+                              topic: wcSession.topic,
+                              reason: WalletConnectError(
+                                  code: 6000, message: 'MANUAL DISCONNECT'));
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, HomeScreen.routeName, (route) => false);
+                        },
                       )
                     : IconButton(
                         padding: const EdgeInsets.all(0.0),
