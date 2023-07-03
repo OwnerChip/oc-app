@@ -153,7 +153,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   // handle WC session event
   void _onSessionEvent(SessionEvent? args) {
     EthereumAddress newWalletAddr =
-        EthereumAddress.fromHex(args!.data[0].split(':')[2]);
+        EthereumAddress.fromHex(args?.data[0].split(':')[2]);
     EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
 
     if (args?.name == "accountsChanged" && currentWalletAddr != newWalletAddr) {

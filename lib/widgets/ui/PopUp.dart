@@ -12,6 +12,9 @@ import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+
+//import customfont
 
 Future<void> walletPopupBuilder(
     BuildContext context, WidgetRef ref, Web3App wc) async {
@@ -19,6 +22,7 @@ Future<void> walletPopupBuilder(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
+          backgroundColor: Theme.of(context).cardColor,
           //border radius
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
@@ -29,10 +33,10 @@ Future<void> walletPopupBuilder(
               textAlign: TextAlign.center,
             ),
           ),
-          titleTextStyle: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 112, 112, 112)),
+          titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
+              fontSize: CustomFonts(dotenv.get('APP_ID')).metadataNameFontSize,
+              fontWeight:
+                  CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
