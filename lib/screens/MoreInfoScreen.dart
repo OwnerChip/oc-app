@@ -68,13 +68,15 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                     },
                 width: 250),
             const SizedBox(height: 10),
-            CustomRoundedButton(
-                text: context.loc.orderChips,
-                onPressed: () => {
-                      launchUrl(Uri.parse(dotenv.get('ORDER_CHIPS_URL')),
-                          mode: LaunchMode.externalApplication)
-                    },
-                width: 250),
+            dotenv.get('APP_ID') == 'ownerchip'
+                ? CustomRoundedButton(
+                    text: context.loc.orderChips,
+                    onPressed: () => {
+                          launchUrl(Uri.parse(dotenv.get('ORDER_CHIPS_URL')),
+                              mode: LaunchMode.externalApplication)
+                        },
+                    width: 250)
+                : Container(),
             const SizedBox(height: 60),
             CustomOutlinedButton(
                 buttonText: context.loc.support,

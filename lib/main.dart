@@ -83,11 +83,10 @@ class MyApp extends ConsumerStatefulWidget {
 //root widget
 class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   // setup walletconnect client
-  bool wcIsInitialized = false;
   Web3App? wcClient;
 
   Future<void> initWcClient() async {
-    wcClient = await Web3App.createInstance(
+    Web3App wcClient = await Web3App.createInstance(
       relayUrl: 'wss://relay.walletconnect.com',
       projectId: dotenv.env['WC_PROJECT_ID']!,
       metadata: const PairingMetadata(
@@ -105,19 +104,14 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final events = EIP155.events.values.toList();
     for (int chainId in chainConfig.keys) {
       for (final event in events) {
-        wcClient!
-            .registerEventHandler(chainId: 'eip155:$chainId', event: event);
+        wcClient.registerEventHandler(chainId: 'eip155:$chainId', event: event);
       }
     }
 
-    wcClient!.onSessionEvent.subscribe(_onSessionEvent);
-    wcClient!.onSessionConnect.subscribe(_onSessionConnect);
-    wcClient!.onSessionDelete.subscribe(_onSessionDisconnect);
-    wcClient!.onSessionExpire.unsubscribe(_onSessionExpire);
-
-    setState(() {
-      wcIsInitialized = true;
-    });
+    wcClient.onSessionEvent.subscribe(_onSessionEvent);
+    wcClient.onSessionConnect.subscribe(_onSessionConnect);
+    wcClient.onSessionDelete.subscribe(_onSessionDisconnect);
+    wcClient.onSessionExpire.subscribe(_onSessionExpire);
   }
 
   void _onSessionConnect(SessionConnect? args) {
@@ -213,6 +207,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     wcClient!.onSessionConnect.unsubscribe(_onSessionConnect);
     wcClient!.onSessionDelete.unsubscribe(_onSessionDisconnect);
     wcClient!.onSessionEvent.unsubscribe(_onSessionEvent);
+    wcClient!.onSessionExpire.unsubscribe(_onSessionExpire);
+
     super.dispose();
   }
 
@@ -225,7 +221,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     //fetch relevant collections here to avoid loading in in later screens
     ref.watch(findAllMinterRolesProvider);
 
-    // close splash screen
     FlutterNativeSplash.remove();
     return MaterialApp(
       theme: CustomThemeData.getThemeData(),
