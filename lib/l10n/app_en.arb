@@ -116,7 +116,7 @@
     "confirmed": "Confirmed",
     "externalLinks": "External Links",
     "transferToken": "Transfer Token",
-    "transferInProgress": "Transferring token",
+    "transferInProgress": "Transfering token",
     "transferSuccess":  "Token transferred",
     "transferError": "Error transferring token",
     "enterWalletAddress": "Enter wallet address",
