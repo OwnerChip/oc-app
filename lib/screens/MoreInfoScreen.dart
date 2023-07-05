@@ -10,10 +10,9 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
-//import screens
-
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/config/moreInfoButtons.dart';
 
 class MoreInfoScreen extends ConsumerStatefulWidget {
   const MoreInfoScreen({Key? key}) : super(key: key);
@@ -52,31 +51,46 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             const SizedBox(
               height: 60,
             ),
-            CustomRoundedButton(
-                text: context.loc.watchTutorial,
-                onPressed: () => {
-                      launchUrl(Uri.parse(dotenv.get('TUTORIAL_PAGE_URL')),
-                          mode: LaunchMode.externalApplication)
-                    },
-                width: 250),
-            const SizedBox(height: 10),
-            CustomRoundedButton(
-                text: context.loc.viewProjects,
-                onPressed: () => {
-                      launchUrl(Uri.parse(dotenv.get('PROJECTS_PAGE_URL')),
-                          mode: LaunchMode.externalApplication)
-                    },
-                width: 250),
-            const SizedBox(height: 10),
-            dotenv.get('APP_ID') == 'ownerchip'
-                ? CustomRoundedButton(
-                    text: context.loc.orderChips,
-                    onPressed: () => {
-                          launchUrl(Uri.parse(dotenv.get('ORDER_CHIPS_URL')),
-                              mode: LaunchMode.externalApplication)
-                        },
-                    width: 250)
-                : Container(),
+
+            ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
+                .roundedButtons
+                .map((button) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: CustomRoundedButton(
+                        text: button.text,
+                        onPressed: () => {
+                              launchUrl(Uri.parse(button.url),
+                                  mode: LaunchMode.externalApplication)
+                            },
+                        width: 250)))
+                .toList(),
+
+            // CustomRoundedButton(
+            //     text: context.loc.watchTutorial,
+            //     onPressed: () => {
+            //           launchUrl(Uri.parse(dotenv.get('TUTORIAL_PAGE_URL')),
+            //               mode: LaunchMode.externalApplication)
+            //         },
+            //     width: 250),
+            // const SizedBox(height: 10),
+            // CustomRoundedButton(
+            //     text: context.loc.viewProjects,
+            //     onPressed: () => {
+            //           launchUrl(Uri.parse(dotenv.get('PROJECTS_PAGE_URL')),
+            //               mode: LaunchMode.externalApplication)
+            //         },
+            //     width: 250),
+            // const SizedBox(height: 10),
+            // dotenv.get('APP_ID') == 'ownerchip'
+            //     ? CustomRoundedButton(
+            //         text: context.loc.orderChips,
+            //         onPressed: () => {
+            //               launchUrl(Uri.parse(dotenv.get('ORDER_CHIPS_URL')),
+            //                   mode: LaunchMode.externalApplication)
+            //             },
+            //         width: 250)
+            //     : Container(),
+
             const SizedBox(height: 60),
             CustomOutlinedButton(
                 buttonText: context.loc.support,
