@@ -64,11 +64,10 @@ void main(List<String> args) async {
     options.tracesSampleRate = 1.0;
     options.environment = dotenv.env['BITRISEIO_PACKAGE_NAME']!;
   },
-      appRunner: () => runApp(RestartWidget(
-              child: ProviderScope(
-                  child: MyApp(
+      appRunner: () => runApp(ProviderScope(
+              child: MyApp(
             initialRoute: initialRoute,
-          )))));
+          ))));
 }
 
 class MyApp extends ConsumerStatefulWidget {

@@ -22,9 +22,7 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 Future<ConnectResponse> startWalletConnection(
     BuildContext context, WidgetRef ref, Web3App wc, String walletLink) async {
   ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
-    'eip155': RequiredNamespace(chains: [
-      'eip155:137'
-    ], methods: [
+    'eip155': RequiredNamespace(chains: [], methods: [
       'eth_sendTransaction',
       'eth_signTypedData',
       'eth_signTypedData_v4',
@@ -146,8 +144,7 @@ Future<String> makeAndSendGaslessTx(
 
   String signature = await wc.request(
     topic: wcSession.topic,
-    chainId:
-        'eip155:137', //TODO: usw chainID - BUT: default session is always "137"
+    chainId: 'eip155:${chainId}',
     request: SessionRequestParams(
       method: 'eth_signTypedData_v4',
       params: [walletAddress.toString(), json.encode(typedData)],
@@ -192,8 +189,7 @@ Future<String> makeAndSendNormalTx(
 
   String txnHash = await wc.request(
     topic: wcSession.topic,
-    chainId:
-        'eip155:137', //TODO: usw chainID - BUT: default session is always "137"
+    chainId: 'eip155:${chainId}',
     request: SessionRequestParams(
       method: 'eth_sendTransaction',
       params: txParams,
