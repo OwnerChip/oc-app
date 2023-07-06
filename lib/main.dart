@@ -145,15 +145,17 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   // handle WC session event
   void _onSessionEvent(SessionEvent? args) {
-    EthereumAddress newWalletAddr =
-        EthereumAddress.fromHex(args?.data[0].split(':')[2]);
-    EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
+    if (args?.name == "accountsChanged") {
+      EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
 
-    if (args?.name == "accountsChanged" && currentWalletAddr != newWalletAddr) {
-      // simply disconnect?
-      //TODO: remove session from connected wallet as well!
-      SessionDelete deleteArgs = SessionDelete(args!.topic);
-      _onSessionDisconnect(deleteArgs);
+      EthereumAddress newWalletAddr =
+          EthereumAddress.fromHex(args?.data[0].split(':')[2]);
+      if (currentWalletAddr != newWalletAddr) {
+        // simply disconnect?
+        //TODO: remove session from connected wallet as well!
+        SessionDelete deleteArgs = SessionDelete(args!.topic);
+        _onSessionDisconnect(deleteArgs);
+      }
     } else {
       //do nothing?
     }

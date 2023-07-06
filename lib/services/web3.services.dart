@@ -5,6 +5,7 @@ import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 
 Web3Client getWeb3Client(String chainRpcUrl) {
   var client = Web3Client(chainRpcUrl, Client());
@@ -178,6 +179,8 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     gasAmount = "0x${gasAmountEst.toRadixString(16)}";
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
+    //send to sentry
+    sendAnalyticsTrace("$makeRandomInt()", "$e", "ESTIMATE_GAS_AMOUNT_ERROR");
     print("ERROR estimating gas amount: $e");
   }
 
