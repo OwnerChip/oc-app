@@ -20,17 +20,32 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 // This function starts a wallet connection with the WalletConnect connector.
 Future<ConnectResponse> startWalletConnection(
-    BuildContext context, WidgetRef ref, Web3App wc, String walletLink) async {
+    BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
+  List<String> chains = [];
+  switch (wallet.name) {
+    case 'Metamask':
+      chains = [];
+      break;
+    case 'Trust Wallet':
+      chains = ['eip155:1', 'eip155:137'];
+      break;
+    default:
+      chains = ['eip155:1', 'eip155:137', 'eip155:80001'];
+      break;
+  }
   ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
-    'eip155': RequiredNamespace(chains: [], methods: [
-      'eth_sendTransaction',
-      'eth_signTypedData',
-      'eth_signTypedData_v4',
-      'personal_sign'
-    ], events: EIP155.events.values.toList()),
+    'eip155': RequiredNamespace(
+        chains: chains,
+        methods: [
+          'eth_sendTransaction',
+          'eth_signTypedData',
+          'eth_signTypedData_v4',
+          'personal_sign'
+        ],
+        events: EIP155.events.values.toList()),
   });
   String? uri = wcResp.uri.toString();
-  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: uri);
+  Uri walletDeepLink = convertToWcLink(appLink: wallet.deeplinkUri, wcUri: uri);
 
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);
@@ -144,7 +159,8 @@ Future<String> makeAndSendGaslessTx(
 
   String signature = await wc.request(
     topic: wcSession.topic,
-    chainId: 'eip155:${chainId}',
+    // chainId: 'eip155:${chainId}',
+    chainId: 'eip155:137',
     request: SessionRequestParams(
       method: 'eth_signTypedData_v4',
       params: [walletAddress.toString(), json.encode(typedData)],
@@ -190,6 +206,7 @@ Future<String> makeAndSendNormalTx(
   String txnHash = await wc.request(
     topic: wcSession.topic,
     chainId: 'eip155:${chainId}',
+    // chainId: 'eip155:137',
     request: SessionRequestParams(
       method: 'eth_sendTransaction',
       params: txParams,

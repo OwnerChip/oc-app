@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -45,7 +46,7 @@ Future<void> walletPopupBuilder(
                 GestureDetector(
                     onTap: () {
                       onWalletPress(context, ref, wc,
-                          walletConfig['https://trustwallet.com']!.deeplinkUri);
+                          walletConfig['https://trustwallet.com']!);
                     },
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -87,7 +88,7 @@ Future<void> walletPopupBuilder(
                 GestureDetector(
                     onTap: () {
                       onWalletPress(context, ref, wc,
-                          walletConfig['https://metamask.io/']!.deeplinkUri);
+                          walletConfig['https://metamask.io/']!);
                     },
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -301,7 +302,7 @@ Future<void> walletPopupBuilder(
 }
 
 Future<void> onWalletPress(
-    BuildContext context, WidgetRef ref, Web3App wc, String walletLink) async {
+    BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {
@@ -309,7 +310,7 @@ Future<void> onWalletPress(
     }
     //if wallet is connected then kill session, else connect wallet
 
-    await startWalletConnection(context, ref, wc, walletLink);
+    await startWalletConnection(context, ref, wc, wallet);
     Navigator.pop(context);
   } catch (e) {
     //show error snackbar
