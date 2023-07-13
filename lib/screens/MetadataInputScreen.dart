@@ -114,11 +114,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
 
     final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
 
     final mintProcess = Sentry.startTransaction('initMinting()', 'task');
 
     //if wc bridge is not connected, then reconnect
-    if (wcSession == null) {
+    if (wcSession == null || walletType == null) {
       walletPopupBuilder(context, ref, wc);
     }
 
@@ -164,8 +165,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         'connectedWallet': connectedWallet,
         'gasStation': canUseGasStation
       });
-
-      final walletType = ref.read(walletTypeProvider);
 
       String txnHash;
       if (canUseGasStation) {

@@ -116,7 +116,7 @@
     "confirmed": "Confirmed",
     "externalLinks": "External Links",
     "transferToken": "Transfer Token",
-    "transferInProgress": "Transferring token",
+    "transferInProgress": "Transfering token",
     "transferSuccess":  "Token transferred",
     "transferError": "Error transferring token",
     "enterWalletAddress": "Enter wallet address",
@@ -130,6 +130,7 @@
     "generalTerms": "general terms",
     "and": " and ",
     "privacyPolicy": "privacy policy",
-    "zu": " to",
-    "step": "Step"
+    "zu": "",
+    "step": "Step",
+    "viewGallery": "Gallerie ansehen"
 }

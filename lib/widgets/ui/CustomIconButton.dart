@@ -4,7 +4,7 @@ class CustomIconButton extends StatelessWidget {
   const CustomIconButton(
       {super.key, required this.icon, required this.onPressed});
 
-  final Image icon; //TODO: change to SVG for custom icons
+  final Image icon;
   final Function onPressed;
 
   @override

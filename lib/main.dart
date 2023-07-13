@@ -14,6 +14,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3dart/web3dart.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -27,7 +28,6 @@ import 'screens/TransferScreen.dart';
 //import misc
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
-import 'widgets/logic/RestartWidget.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 
@@ -63,11 +63,10 @@ void main(List<String> args) async {
     options.tracesSampleRate = 1.0;
     options.environment = dotenv.env['BITRISEIO_PACKAGE_NAME']!;
   },
-      appRunner: () => runApp(RestartWidget(
-              child: ProviderScope(
-                  child: MyApp(
+      appRunner: () => runApp(ProviderScope(
+              child: MyApp(
             initialRoute: initialRoute,
-          )))));
+          ))));
 }
 
 class MyApp extends ConsumerStatefulWidget {
@@ -82,11 +81,10 @@ class MyApp extends ConsumerStatefulWidget {
 //root widget
 class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   // setup walletconnect client
-  bool wcIsInitialized = false;
   Web3App? wcClient;
 
   Future<void> initWcClient() async {
-    wcClient = await Web3App.createInstance(
+    Web3App wcClient = await Web3App.createInstance(
       relayUrl: 'wss://relay.walletconnect.com',
       projectId: dotenv.env['WC_PROJECT_ID']!,
       metadata: const PairingMetadata(
@@ -104,19 +102,14 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final events = EIP155.events.values.toList();
     for (int chainId in chainConfig.keys) {
       for (final event in events) {
-        wcClient!
-            .registerEventHandler(chainId: 'eip155:$chainId', event: event);
+        wcClient.registerEventHandler(chainId: 'eip155:$chainId', event: event);
       }
     }
 
-    wcClient!.onSessionEvent.subscribe(_onSessionEvent);
-    wcClient!.onSessionConnect.subscribe(_onSessionConnect);
-    wcClient!.onSessionDelete.subscribe(_onSessionDisconnect);
-    wcClient!.onSessionExpire.unsubscribe(_onSessionExpire);
-
-    setState(() {
-      wcIsInitialized = true;
-    });
+    wcClient.onSessionEvent.subscribe(_onSessionEvent);
+    wcClient.onSessionConnect.subscribe(_onSessionConnect);
+    wcClient.onSessionDelete.subscribe(_onSessionDisconnect);
+    wcClient.onSessionExpire.subscribe(_onSessionExpire);
   }
 
   void _onSessionConnect(SessionConnect? args) {
@@ -152,11 +145,16 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   // handle WC session event
   void _onSessionEvent(SessionEvent? args) {
     if (args?.name == "accountsChanged") {
-      // simply disconnect?
-      //TODO: remove session from connected wallet as well!
-      SessionDelete deleteArgs = SessionDelete(args!.topic);
-      _onSessionDisconnect(deleteArgs);
-      //TODO: show a popup
+      EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
+
+      EthereumAddress newWalletAddr =
+          EthereumAddress.fromHex(args?.data[0].split(':')[2]);
+      if (currentWalletAddr != newWalletAddr) {
+        // simply disconnect?
+        //TODO: remove session from connected wallet as well!
+        SessionDelete deleteArgs = SessionDelete(args!.topic);
+        _onSessionDisconnect(deleteArgs);
+      }
     } else {
       //do nothing?
     }
@@ -182,6 +180,10 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         storage.remove('session');
         storage.remove('walletType');
       }
+    } else {
+      //remove session and wallet type from storage
+      storage.remove('session');
+      storage.remove('walletType');
     }
   }
 
@@ -205,6 +207,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     wcClient!.onSessionConnect.unsubscribe(_onSessionConnect);
     wcClient!.onSessionDelete.unsubscribe(_onSessionDisconnect);
     wcClient!.onSessionEvent.unsubscribe(_onSessionEvent);
+    wcClient!.onSessionExpire.unsubscribe(_onSessionExpire);
+
     super.dispose();
   }
 
@@ -215,12 +219,9 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     //fetch relevant collections here to avoid loading in in later screens
-    final AsyncValue<BlockchainCollectionList> relevantCollections =
-        ref.watch(findAllMinterRolesProvider);
+    ref.watch(findAllMinterRolesProvider);
 
-    // close splash screen
     FlutterNativeSplash.remove();
-
     return MaterialApp(
       theme: CustomThemeData.getThemeData(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

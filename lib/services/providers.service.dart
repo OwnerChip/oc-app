@@ -97,8 +97,8 @@ final appCollectionProvider =
         BlockchainCollectionList(groupCollectionsByChainId(rawCollections));
   } catch (e) {
     print("Error getting collections from backend: $e");
-    // if the backend is not available, get the collections from the config file
-    collections = allCollections;
+    // if the backend is not available, return no collections
+    collections = BlockchainCollectionList({});
   }
   return collections;
 });
