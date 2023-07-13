@@ -147,13 +147,14 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             scanProcess.finish();
             sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_POSITIVE",
                 tags: {"chipWallet": chipWalletAddress});
-            //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 3 seconds to block NDEF read/popup
-            if (!Platform.isIOS) {
-              await Future.delayed(const Duration(seconds: 3));
-              NfcManager.instance.stopSession();
-            }
+            //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 2 seconds to block NDEF read/popup
+
             Navigator.pushReplacementNamed(
                 context, UserScanResultsScreen.routeName);
+            if (!Platform.isIOS) {
+              await Future.delayed(const Duration(seconds: 2));
+              NfcManager.instance.stopSession();
+            }
           } catch (e) {
             //TOKEN IS NOT AUTHENTIC
             rethrow;
