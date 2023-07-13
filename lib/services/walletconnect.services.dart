@@ -21,6 +21,7 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 Future<ConnectResponse> startWalletConnection(
     BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
   List<String> chains = [];
+  //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
   switch (wallet.name) {
     case 'Metamask':
       chains = [];
