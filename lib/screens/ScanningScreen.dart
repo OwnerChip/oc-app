@@ -60,6 +60,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
+    //stop previoud NFC session if existing
+    await NfcManager.instance.stopSession();
+
     //start NFC scan
     final scanProcess = Sentry.startTransaction('initScanning()', 'task');
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
@@ -109,8 +112,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         }
 
         if (config.collectionId == zeroAddress) {
+          scanProcess.finish();
           sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_NEGATIVE",
               tags: {"chipWallet": chipWalletAddress});
+
           //TOKEN DOES NOT EXIST
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
@@ -122,6 +127,11 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 context, ChainSelectorScreen.routeName,
                 arguments:
                     MetadataInputScreenArguments(randomNumber, 0, zeroAddress));
+          }
+          // delay to block NDEF read/popup on Android
+          if (!Platform.isIOS) {
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
           }
         } else {
           //TOKEN EXISTS
@@ -137,6 +147,11 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             scanProcess.finish();
             sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_POSITIVE",
                 tags: {"chipWallet": chipWalletAddress});
+            //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 3 seconds to block NDEF read/popup
+            if (!Platform.isIOS) {
+              await Future.delayed(const Duration(seconds: 3));
+              NfcManager.instance.stopSession();
+            }
             Navigator.pushReplacementNamed(
                 context, UserScanResultsScreen.routeName);
           } catch (e) {
@@ -144,9 +159,6 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             rethrow;
           }
         }
-        //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 3 seconds to block NDEF read/popup
-        await Future.delayed(const Duration(seconds: 3));
-        NfcManager.instance.stopSession();
       } catch (e, stackTrace) {
         // send Error to analytics
         sendAnalyticsTrace("$randomNumber", "$e", "SCAN_ERROR");
