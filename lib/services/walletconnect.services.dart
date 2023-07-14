@@ -24,7 +24,7 @@ Future<ConnectResponse> startWalletConnection(
   //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
   switch (wallet.name) {
     case 'Metamask':
-      chains = [];
+      chains = ['eip155:1'];
       break;
     case 'Trust Wallet':
       chains = ['eip155:1', 'eip155:137'];
@@ -105,7 +105,7 @@ Future<String> makeAndSendGaslessTx(
 
   String signature = await wc.request(
     topic: wcSession.topic,
-    chainId: 'eip155:$chainId',
+    chainId: 'eip155:1',
     request: SessionRequestParams(
       method: 'eth_signTypedData_v4',
       params: [walletAddress.toString(), json.encode(typedData)],
