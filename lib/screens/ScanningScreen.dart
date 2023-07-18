@@ -60,6 +60,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
+    //stop previoud NFC session if existing
+    await NfcManager.instance.stopSession();
+
     //start NFC scan
     final scanProcess = Sentry.startTransaction('initScanning()', 'task');
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
