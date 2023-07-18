@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/services.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -24,7 +23,7 @@ Future<ConnectResponse> startWalletConnection(
   List<String> chains = [];
   switch (wallet.name) {
     case 'Metamask':
-      chains = [];
+      chains = ['eip155:1'];
       break;
     case 'Trust Wallet':
       chains = ['eip155:1', 'eip155:137'];
@@ -65,60 +64,6 @@ Uri convertToWcLink({
     }
   }
   return Uri.parse('$appLink/$wcPath');
-}
-
-Future<void> showQrCode(
-  BuildContext context,
-  ConnectResponse response,
-) async {
-  // Show the QR code
-  debugPrint('Showing QR Code: ${response.uri}');
-
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text(
-          'Show QR Code',
-          textAlign: TextAlign.center,
-        ),
-        content: SizedBox(
-          width: 300,
-          height: 350,
-          child: Center(
-            child: Column(
-              children: [
-                QrImageView(
-                  data: response.uri!.toString(),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await Clipboard.setData(
-                      ClipboardData(
-                        text: response.uri!.toString(),
-                      ),
-                    );
-                    // await showPlatformToast(
-                    //   child: const Text(
-                    //     StringConstants.copiedToClipboard,
-                    //   ),
-                    //   context: context,
-                    // );
-                  },
-                  child: const Text(
-                    'Copy URL to Clipboard',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
 }
 
 // This code creates a gasless transaction.
