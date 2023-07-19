@@ -32,7 +32,8 @@ import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -457,6 +458,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                           )
                         ],
                       )),
+                  const SizedBox(height: 20),
+                  AttachmentUploadButton(
+                      text: 'Upload Digital Content', icon: Icons.add),
                   const SizedBox(height: 20),
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
