@@ -139,7 +139,7 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
 
 //check if first key already exists, if not, generate key. Return key info.
 Future<List<dynamic>> initializeChip(
-    NFCPlatform nfc, bool initializeNdef, int randomNumber) async {
+    NFCPlatform nfc, bool initializeNdef, String sessionId) async {
   bool empty = false;
   //empty UintList
   await nfc.sendCommand(SELECT_APP);
@@ -160,11 +160,11 @@ Future<List<dynamic>> initializeChip(
   if (/*empty &&*/ initializeNdef) {
     try {
       String url = getNdefUrl() + chipEthereumAddressHex.toString();
-      await initializeNdefTag(nfc, chipEthereumAddressHex, randomNumber);
-      sendAnalyticsTrace("$randomNumber", url, "INITIALIZE_NDEF_SUCCESS",
+      await initializeNdefTag(nfc, chipEthereumAddressHex, sessionId);
+      sendAnalyticsTrace(sessionId, url, "INITIALIZE_NDEF_SUCCESS",
           tags: {"chipWallet": chipEthereumAddressHex.toString()});
     } catch (e) {
-      sendAnalyticsTrace("$randomNumber", "", "INITIALIZE_NDEF_ERROR",
+      sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_ERROR",
           tags: {"chipWallet": chipEthereumAddress.toString()});
       rethrow;
     }
@@ -175,7 +175,7 @@ Future<List<dynamic>> initializeChip(
 
 // initialize NDEF tag
 Future<void> initializeNdefTag(NFCPlatform nfc,
-    EthereumAddress chipEthereumAddressHex, int randomNumber) async {
+    EthereumAddress chipEthereumAddressHex, String sessionId) async {
   //select Applet
   var selectAppletRes = await nfc.sendCommand(SELECT_NDEF_APP);
   int selectAppletResCode1 = selectAppletRes[1];
@@ -184,7 +184,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
     if (selectAppletResCode1 == 106 && selectAppletResCode2 == 130) {
       // do NOTHING, but report analytics
       sendAnalyticsTrace(
-          "$randomNumber",
+          "$sessionId",
           "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
           "INITIALIZE_NDEF_NO_APPLET",
           tags: {"chipWallet": chipEthereumAddressHex.toString()});
@@ -213,7 +213,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
       if (writeNdefMessageResCode1 == 105 && writeNdefMessageResCode2 == 133) {
         // do NOTHING, but report analytics
         sendAnalyticsTrace(
-            "$randomNumber",
+            "$sessionId",
             "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
             "INITIALIZE_NDEF_WRONG_STATE",
             tags: {"chipWallet": chipEthereumAddressHex.toString()});
@@ -239,7 +239,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
 }
 
 Future<void> nfcPlatformCheck(
-    BuildContext context, int caseId, NFCPlatform nfc) async {
+    BuildContext context, String sessionId, NFCPlatform nfc) async {
   // null comparison below is NOT unnecessary!
   // ignore: unnecessary_null_comparison
   if (nfc == null) {
@@ -248,7 +248,7 @@ Future<void> nfcPlatformCheck(
       returnSnackBarWidget(
           context.loc.errorHeadingSnackBar, context.loc.noNfc, 'error'),
     );
-    sendAnalyticsTrace("$caseId", "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
+    sendAnalyticsTrace(sessionId, "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
     //delay for 1 second
     await Future.delayed(const Duration(seconds: 1));
     Navigator.pop(context);

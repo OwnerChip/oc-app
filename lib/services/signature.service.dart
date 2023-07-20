@@ -9,13 +9,13 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.service.dart';
 
-Future<List> verifySignatureAuthenticity(NFCPlatform nfc, int randomNumber,
+Future<List> verifySignatureAuthenticity(NFCPlatform nfc, String sessionId,
     EthereumAddress chipEthereumAddress, chipTokenId, selectApp) async {
   // select app if necessary
   await nfc.sendCommand(SELECT_APP);
 
   // get SIGNATURE from NFC chip
-  final Uint8List hashedMsg = keccakUtf8(randomNumber.toString());
+  final Uint8List hashedMsg = keccakUtf8(sessionId);
   final Uint8List getSigCmd = makeSignatureCommand(0x01, hashedMsg);
   final List responseGetSignature = await nfc.sendCommand(getSigCmd);
   final Uint8List chipSignatureData = responseGetSignature[0];
