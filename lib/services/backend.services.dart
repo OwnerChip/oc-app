@@ -82,3 +82,20 @@ Future<void> sendAnalyticsTrace(String caseId, String description, String type,
     print(e);
   }
 }
+
+// This function requests a Session Id from the backend
+Future<String> getSessionId() async {
+  final Dio dio = getBackendClient();
+  try {
+    final response = await dio.get('/auth');
+    final String sessionId = response.data;
+    return sessionId;
+  } catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+    return "";
+  }
+}
