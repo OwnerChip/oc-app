@@ -10,18 +10,17 @@ class ScanningScreenArguments {
 }
 
 class MetadataInputScreenArguments {
-  final int randomMsg;
+  final String sessionId;
   final int chainId;
   final EthereumAddress collectionId;
 
-  MetadataInputScreenArguments(this.randomMsg, this.chainId, this.collectionId);
+  MetadataInputScreenArguments(this.sessionId, this.chainId, this.collectionId);
 }
 
-class ChipAlreadyInitializedScreenArguments {
-  final Uint8List hashedMsg;
-  final MsgSignature signature;
+class UserScanResultsScreenArguments {
+  final String sessionId;
 
-  ChipAlreadyInitializedScreenArguments(this.hashedMsg, this.signature);
+  UserScanResultsScreenArguments(this.sessionId);
 }
 
 class AttachmentScreensArguments {

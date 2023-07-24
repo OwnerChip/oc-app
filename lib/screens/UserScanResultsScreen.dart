@@ -62,7 +62,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
-  Future<void> burnToken(Web3App wc, BigInt tokenId,
+  Future<void> burnToken(String sessionId, Web3App wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
@@ -79,8 +79,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         loadingText = context.loc.burning;
       });
 
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "BURN_STARTED");
+      sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
+        'connectedWallet': connectedWallet,
+        'tokenId': tokenId.toString()
+      });
 
       final List response =
           await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
@@ -123,8 +125,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         });
         // send status to analytics
         burnProcess.finish();
-        sendAnalyticsTrace(
-            "$connectedWallet-${tokenId.toString()}", txnHash, "BURN_SUCCESS");
+        sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
+          'connectedWallet': connectedWallet,
+          'tokenId': tokenId.toString()
+        });
 
         await Future.delayed(const Duration(seconds: 2));
 
@@ -141,8 +145,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       burnProcess.throwable = e;
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "BURN_ERROR");
+      sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
+        'connectedWallet': connectedWallet,
+        'tokenId': tokenId.toString()
+      });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
@@ -165,6 +171,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final navArgs = ModalRoute.of(context)!.settings.arguments
+        as UserScanResultsScreenArguments;
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
@@ -414,7 +422,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                               .burnToken,
                                                                           onPressed: (() =>
                                                                               {
-                                                                                fromCancelable(burnToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                fromCancelable(burnToken(navArgs.sessionId, wc!, chipInfo.tokenId, signatureData, connectedWallet))
                                                                               })),
                                                                     ])
                                                               : Container();
