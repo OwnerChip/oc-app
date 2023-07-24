@@ -2,6 +2,7 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:file_picker/file_picker.dart';
 
 class MoreInfoButton {
   final String text;
@@ -109,4 +110,18 @@ class EthereumSignMessage {
     required this.address,
     required this.type,
   });
+}
+
+enum AttachmentType { text, audio, image, video, url, other }
+
+class Attachment {
+  final String title; //file title set by user
+  final String fileName; //file name including file extension
+  final AttachmentType type;
+  final bool isPrivate;
+  final PlatformFile? file;
+  final String? url;
+
+  Attachment(this.title, this.fileName, this.type,
+      {this.isPrivate = false, this.url, this.file});
 }
