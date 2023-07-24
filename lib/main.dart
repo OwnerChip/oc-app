@@ -24,8 +24,7 @@ import 'screens/MetadataInputScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
 import 'screens/TransferScreen.dart';
-import 'screens/AddFileScreen.dart';
-import 'screens/AddURLScreen.dart';
+import 'screens/AddAttachmentScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
@@ -240,8 +239,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         ChainSelectorScreen.routeName: (context) => const ChainSelectorScreen(),
         MoreInfoScreen.routeName: (context) => const MoreInfoScreen(),
         TransferScreen.routeName: (context) => const TransferScreen(),
-        AddFileScreen.routeName: (context) => const AddFileScreen(),
-        AddURLScreen.routeName: (context) => const AddURLScreen(),
+        AddAttachmentScreen.routeName: (context) => const AddAttachmentScreen(),
       },
     );
   }

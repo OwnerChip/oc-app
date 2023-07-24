@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
+import '../domain/classDefinition.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
@@ -21,4 +22,16 @@ class ChipAlreadyInitializedScreenArguments {
   final MsgSignature signature;
 
   ChipAlreadyInitializedScreenArguments(this.hashedMsg, this.signature);
+}
+
+class AttachmentScreensArguments {
+  final bool isEditMode;
+  final AttachmentType type;
+  final int? index;
+
+  AttachmentScreensArguments(
+    this.isEditMode,
+    this.type, {
+    this.index,
+  });
 }

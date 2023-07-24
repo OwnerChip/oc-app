@@ -14,6 +14,8 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 //****WALLETCONNECT****
 
@@ -288,4 +290,10 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   final String contractAddress = tokenInfo.collectionId.toString();
   String raribleUrl = "$baseUrl/$contractAddress:${chipInfo.tokenId}";
   return Uri.parse(raribleUrl);
+});
+
+//File List Provider
+final attachmentListProvider =
+    StateProvider.autoDispose<List<Attachment>>((ref) {
+  return [];
 });

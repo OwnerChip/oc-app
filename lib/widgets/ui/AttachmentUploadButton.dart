@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import '../../domain/classDefinition.dart';
 
 import '../../utils/localization.helper.dart';
 
@@ -22,9 +25,12 @@ class AttachmentUploadButton extends StatelessWidget {
       initialValue: null,
       onSelected: (int value) {
         if (value == 0) {
-          Navigator.pushNamed(context, '/addFile');
+          Navigator.pushNamed(context, AddAttachmentScreen.routeName,
+              arguments:
+                  AttachmentScreensArguments(false, AttachmentType.text));
         } else {
-          Navigator.pushNamed(context, '/addURL');
+          Navigator.pushNamed(context, AddAttachmentScreen.routeName,
+              arguments: AttachmentScreensArguments(false, AttachmentType.url));
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
@@ -49,13 +55,13 @@ class AttachmentUploadButton extends StatelessWidget {
               BoxShadow(
                 color: CustomColors(dotenv.get('APP_ID')).secondaryShadowColor,
                 offset: const Offset(1, 3),
-                blurRadius: 13,
+                blurRadius: 3,
               )
             ]),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text(
-            'Add Digital Content',
+            text,
             style: TextStyle(
               color: CustomColors(dotenv.get('APP_ID')).primaryColor,
               fontSize: 16,
