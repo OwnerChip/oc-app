@@ -260,8 +260,14 @@ Future<void> walletPopupBuilder(
                     )),
               ]),
 */
+              const SizedBox(height: 30),
+              Text(
+                'When signing in via Metamask make sure to connect with Ethereum Mainnet.',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
               Padding(
-                padding: const EdgeInsets.only(top: 50),
+                padding: const EdgeInsets.only(top: 30),
                 child: RichText(
                   text: TextSpan(
                     style: const TextStyle(color: Colors.grey),
