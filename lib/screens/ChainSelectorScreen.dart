@@ -42,7 +42,7 @@ class ChainSelectorScreen extends ConsumerStatefulWidget {
 
 class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
-      BuildContext context, Web3App wc, mounted, int randomNumber) async {
+      BuildContext context, Web3App wc, mounted, String sessionId) async {
     final wc = ref.read(wcProvider);
     final wcSession = ref.read(wcSessionProvider);
     BlockchainCollectionList relevantCollections =
@@ -62,7 +62,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
         if (chainId != null && collection != null) {
           Navigator.pushNamed(context, MetadataScreen.routeName,
               arguments: MetadataInputScreenArguments(
-                  randomNumber, chainId, collection.id));
+                  sessionId, chainId, collection.id));
         }
       }
     } catch (e, s) {
@@ -149,7 +149,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                 ? null
                 : () {
                     onInitializeButtonPress(
-                        context, wc!, mounted, navArgs.randomMsg);
+                        context, wc!, mounted, navArgs.sessionId);
                   },
           ),
           const SizedBox(height: 60),
@@ -170,6 +170,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                       .copyWith(fontSize: 15, fontWeight: FontWeight.w500),
                 ),
               ),
+              //TODO: show a hint if metamask is connected that the correct CHAIN must be selected in metamask
             ],
           )
         ],

@@ -3,6 +3,13 @@ import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 
+class MoreInfoButton {
+  final String text;
+  final String url;
+
+  MoreInfoButton(this.text, this.url);
+}
+
 class WalletType {
   final String name;
   final String iconUri;

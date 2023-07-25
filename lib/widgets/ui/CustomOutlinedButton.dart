@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomOutlinedButton extends StatelessWidget {
   final double width;
@@ -27,12 +28,13 @@ class CustomOutlinedButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(18.0),
           ),
           side: BorderSide(
-              width: 2, color: CustomColors('ownerchip').primaryColor),
+              width: 2, color: CustomColors(dotenv.get('APP_ID')).primaryColor),
         ),
         onPressed: onPressed,
         child: Text(
           buttonText,
-          style: TextStyle(color: CustomColors('ownerchip').primaryColor),
+          style:
+              TextStyle(color: CustomColors(dotenv.get('APP_ID')).primaryColor),
         ),
       ),
     );

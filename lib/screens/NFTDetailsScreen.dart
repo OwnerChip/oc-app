@@ -69,10 +69,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 tokenId: chipInfo.tokenId,
               ),
               error: (e, s) {
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                //       context.loc.loadingNFTDataError, 'error'),
-                // );
                 return CustomImage(
                   loading: true,
                   tokenId: chipInfo.tokenId,

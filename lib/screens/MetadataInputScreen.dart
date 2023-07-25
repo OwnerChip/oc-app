@@ -100,7 +100,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   }
 
   Future<void> createToken(
-      int randomNumber,
+      String sessionId,
       Web3App wc,
       SignatureData signatureData,
       Map<String, dynamic> metadata,
@@ -114,11 +114,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
 
     final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
 
     final mintProcess = Sentry.startTransaction('initMinting()', 'task');
 
     //if wc bridge is not connected, then reconnect
-    if (wcSession == null) {
+    if (wcSession == null || walletType == null) {
       walletPopupBuilder(context, ref, wc);
     }
 
@@ -126,7 +127,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     try {
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
-      sendAnalyticsTrace("$randomNumber", "", "IPFS_UPLOAD_STARTED",
+      sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet});
       //upload image to ipfs
       String imageCid;
@@ -143,7 +144,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       if (cid != '') {
         ipfsProcess.finish();
-        sendAnalyticsTrace("$randomNumber", cid, "IPFS_UPLOAD_FINISHED",
+        sendAnalyticsTrace(sessionId, cid, "IPFS_UPLOAD_FINISHED",
             tags: {'connectedWallet': connectedWallet, 'cid': cid});
       }
 
@@ -160,12 +161,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      sendAnalyticsTrace("$randomNumber", "", "MINTING_STARTED", tags: {
+      sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
         'connectedWallet': connectedWallet,
         'gasStation': canUseGasStation
       });
-
-      final walletType = ref.read(walletTypeProvider);
 
       String txnHash;
       if (canUseGasStation) {
@@ -200,7 +199,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
         mintProcess.finish();
-        sendAnalyticsTrace("$randomNumber", txnHash, "MINTING_SUCCESS", tags: {
+        sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
           'connectedWallet': '$connectedWallet',
           'gasStation': canUseGasStation
         });
@@ -230,7 +229,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       }
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
-      sendAnalyticsTrace("$randomNumber", "$e", "MINTING_ERROR",
+      sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
           tags: {'connectedWallet': '$connectedWallet'});
       mintProcess.throwable = e;
       mintProcess.status = const SpanStatus.aborted();
@@ -466,7 +465,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                         onPressed: () async {
                           FocusManager.instance.primaryFocus?.unfocus();
                           if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(navArgs.randomMsg, wc!,
+                            fromCancelable(createToken(navArgs.sessionId, wc!,
                                 signatureData, metadata, chainId, collectionId,
                                 image: image));
                           }

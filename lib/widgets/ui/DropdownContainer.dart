@@ -64,7 +64,7 @@ class _DropdownContainerState extends State<DropdownContainer>
         ),
         padding: const EdgeInsets.only(
             top: 5.0, bottom: 10.0, left: 10.0, right: 10.0),
-        color: CustomColors(dotenv.get('APP_ID')).cardColor,
+        color: CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor,
         children: [
           GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -79,7 +79,7 @@ class _DropdownContainerState extends State<DropdownContainer>
                     icon: RotationTransition(
                         turns: Tween(begin: 0.0, end: 0.5).animate(_controller),
                         child: const Icon(Icons.expand_more_rounded)),
-                    color: CustomColors(dotenv.get('APP_ID')).black,
+                    color: CustomColors(dotenv.get('APP_ID')).bodyText2Color,
                     onPressed: () {
                       toggleExpanded();
                     },

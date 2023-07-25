@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 //import packages
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,9 +21,9 @@ import 'package:ownerchip_whitelabel/services/signature.service.dart';
 import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 //import screens
-import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
+import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
@@ -56,33 +58,39 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
   void initScanning(WidgetRef ref) async {
     Uint8List hashedMsg;
     MsgSignature signature;
-    int randomNumber = makeRandomInt();
+    // this random # is used as analytics trace id, case id and session id
+    String sessionIdFromServer = await getSessionId();
+    String sessionId = sessionIdFromServer != ""
+        ? sessionIdFromServer
+        : makeRandomInt().toString();
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
+
+    //stop previoud NFC session if existing
+    await NfcManager.instance.stopSession();
 
     //start NFC scan
     final scanProcess = Sentry.startTransaction('initScanning()', 'task');
     NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      sendAnalyticsTrace("$randomNumber", "", "SCAN_STARTED");
+      sendAnalyticsTrace(sessionId, "", "SCAN_STARTED");
       try {
         var nfc = NFCPlatform(tag);
 
         //check if iso7816 or isodep is available and exit if not
-        await nfcPlatformCheck(context, randomNumber, nfc);
+        await nfcPlatformCheck(context, sessionId, nfc);
 
         //initialize chip (including NDEF tag if existing)
         bool initProcess = navArgs.nextRoute == ChainSelectorScreen.routeName;
         if (initProcess) {
-          sendAnalyticsTrace("$randomNumber", "", "INITIALIZE_NDEF_START");
+          sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_START");
         }
-        List result = await initializeChip(nfc, initProcess, randomNumber);
+        List result = await initializeChip(nfc, initProcess, sessionId);
         EthereumAddress chipEthereumAddress = result[0];
         String chipWalletAddress = chipEthereumAddress.toString();
         BigInt chipTokenId = result[1];
         bool ndefTagInitialized = result[2];
         if (ndefTagInitialized) {
-          sendAnalyticsTrace(
-              "$randomNumber", chipWalletAddress, "CHIP_INITIALIZED");
+          sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
         }
 
         //set chip info data in provider
@@ -97,7 +105,7 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
 
         //verify signature
         List verificationResult = await verifySignatureAuthenticity(nfc,
-            randomNumber, chipEthereumAddress, chipTokenId, ndefTagInitialized);
+            sessionId, chipEthereumAddress, chipTokenId, ndefTagInitialized);
         hashedMsg = verificationResult[0];
         signature = verificationResult[1];
         ref.read(signatureDataProvider.notifier).setSignatureData(
@@ -109,19 +117,27 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
         }
 
         if (config.collectionId == zeroAddress) {
-          sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_NEGATIVE",
+          scanProcess.finish();
+          sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
               tags: {"chipWallet": chipWalletAddress});
+
           //TOKEN DOES NOT EXIST
           if (navArgs.nextRoute == UserScanResultsScreen.routeName) {
             Navigator.pushReplacementNamed(
               context,
               UserScanResultsScreen.routeName,
+              arguments: UserScanResultsScreenArguments(sessionId),
             );
           } else {
             Navigator.pushReplacementNamed(
                 context, ChainSelectorScreen.routeName,
                 arguments:
-                    MetadataInputScreenArguments(randomNumber, 0, zeroAddress));
+                    MetadataInputScreenArguments(sessionId, 0, zeroAddress));
+          }
+          // delay to block NDEF read/popup on Android
+          if (!Platform.isIOS) {
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
           }
         } else {
           //TOKEN EXISTS
@@ -135,21 +151,24 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
                 signature);
 
             scanProcess.finish();
-            sendAnalyticsTrace("$randomNumber", "", "SCAN_RESULT_POSITIVE",
+            sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_POSITIVE",
                 tags: {"chipWallet": chipWalletAddress});
+            //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 2 seconds to block NDEF read/popup
+
             Navigator.pushReplacementNamed(
                 context, UserScanResultsScreen.routeName);
+            if (!Platform.isIOS) {
+              await Future.delayed(const Duration(seconds: 2));
+              NfcManager.instance.stopSession();
+            }
           } catch (e) {
             //TOKEN IS NOT AUTHENTIC
             rethrow;
           }
         }
-        //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 3 seconds to block NDEF read/popup
-        await Future.delayed(const Duration(seconds: 3));
-        NfcManager.instance.stopSession();
       } catch (e, stackTrace) {
         // send Error to analytics
-        sendAnalyticsTrace("$randomNumber", "$e", "SCAN_ERROR");
+        sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
         print(e);
         scanProcess.throwable = e;
         scanProcess.status = const SpanStatus.deadlineExceeded();

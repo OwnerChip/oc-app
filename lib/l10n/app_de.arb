@@ -126,10 +126,11 @@
     "infoScreenText": "Überprüfe Echtheit und Eigentum von Objekten mit deinem Smartphone.",
     "transferScreenText": "Sende den Token an eine andere Wallet.",
     "chooseWallet": "Wallet auswählen und verbinden",
-    "agreeTo": "Beim Verbinden Ihrer Wallet stimmen Sie unseren",
+    "agreeToWhenConnecting": "Beim Verbinden Ihrer Wallet stimmen Sie unseren",
     "generalTerms": "AGB",
     "and": "und",
     "privacyPolicy": "Datenschutzbestimmungen",
     "zu": " zu",
-    "step": "Schritt"
+    "step": "Schritt",
+    "viewGallery": "Gallerie ansehen"
 }
