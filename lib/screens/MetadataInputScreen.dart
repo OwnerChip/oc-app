@@ -41,10 +41,10 @@ import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
-import 'package:ownerchip_whitelabel/services/images.service.dart';
+import 'package:ownerchip_whitelabel/services/images.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
 //theme imports

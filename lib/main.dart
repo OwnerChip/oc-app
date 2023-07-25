@@ -27,7 +27,7 @@ import 'screens/TransferScreen.dart';
 import 'screens/AddAttachmentScreen.dart';
 
 //import misc
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';

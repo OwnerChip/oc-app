@@ -9,7 +9,7 @@ import 'package:async/async.dart';
 import 'package:sentry/sentry.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';

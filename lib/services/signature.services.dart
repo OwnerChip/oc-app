@@ -7,7 +7,7 @@ import 'package:web3dart/web3dart.dart';
 import 'dart:io';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/services/nfc.service.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
 Future<List> verifySignatureAuthenticity(NFCPlatform nfc, String sessionId,
     EthereumAddress chipEthereumAddress, chipTokenId, selectApp) async {

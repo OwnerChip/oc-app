@@ -4,7 +4,7 @@ import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 
