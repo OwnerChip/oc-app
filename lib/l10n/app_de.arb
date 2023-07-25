@@ -132,5 +132,17 @@
     "privacyPolicy": "Datenschutzbestimmungen",
     "zu": " zu",
     "step": "Schritt",
-    "viewGallery": "Gallerie ansehen"
+    "viewGallery": "Gallerie ansehen",
+    "viewGallery": "View Gallery",
+    "chooseFile": "Choose File",
+    "addDigitalContent": "Add Digital Content",
+    "titleTooLong": "Title too long.",
+    "titleCannotBeEmpty": "Title cannot be empty.",
+    "maxAttachmentsReached": "You can only add max. 10 attachments.",
+    "enterValidUrl": "Please enter a valid URL starting with https://.",
+    "urlCannotBeEmpty": "URL cannot be empty.",
+    "contentCanBeViewedPublic": "This content can be viewed by everyone who scans the item.",
+    "contentCanOnlyBeViewedPrivate": "This content can only be viewed by the verified owner.",
+    "addFile": "Add File",
+    "addUrl": "Add URL"
 }

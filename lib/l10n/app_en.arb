@@ -132,5 +132,16 @@
     "privacyPolicy": "privacy policy",
     "zu": "",
     "step": "Step",
-    "viewGallery": "View Gallery"
+    "viewGallery": "View Gallery",
+    "chooseFile": "Datei auswählen",
+    "addDigitalContent": "Digital Content hinzufügen",
+    "titleTooLong": "Titel zu lange.",
+    "titleCannotBeEmpty": "Titel kann nicht leer sein.",
+    "maxAttachmentsReached": "Max. von 10 Anhängen erreicht.",
+    "enterValidUrl": "Bitte gib eine URL mit Anfang 'https://' ein.",
+    "urlCannotBeEmpty": "URL kann nicht leer sein.",
+    "contentCanBeViewedPublic": "Diese Anhänge können von jedem gesehen werden.",
+    "contentCanOnlyBeViewedPrivate": "Diese Anhänge können nur vom Objekt Besitzer gesehen werden.",
+    "addFile": "Datei hinzufügen",
+    "addUrl": "URL hinzufügen"
 }
