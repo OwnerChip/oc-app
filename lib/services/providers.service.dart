@@ -297,3 +297,7 @@ final attachmentListProvider =
     StateProvider.autoDispose<List<Attachment>>((ref) {
   return [];
 });
+
+final sessionIdProvider = StateProvider<String>((ref) {
+  return '';
+});

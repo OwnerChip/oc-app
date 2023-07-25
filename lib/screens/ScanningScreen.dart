@@ -63,6 +63,10 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
     String sessionId = sessionIdFromServer != ""
         ? sessionIdFromServer
         : makeRandomInt().toString();
+
+    //set sesionIdProvider
+    ref.read(sessionIdProvider.notifier).state = sessionId;
+
     final navArgs =
         ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
 
@@ -126,7 +130,6 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             Navigator.pushReplacementNamed(
               context,
               UserScanResultsScreen.routeName,
-              arguments: UserScanResultsScreenArguments(sessionId),
             );
           } else {
             Navigator.pushReplacementNamed(
@@ -156,7 +159,9 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             //iOS NFC session is stopped earlier in code; Android NFC session is stopped here after 2 seconds to block NDEF read/popup
 
             Navigator.pushReplacementNamed(
-                context, UserScanResultsScreen.routeName);
+              context,
+              UserScanResultsScreen.routeName,
+            );
             if (!Platform.isIOS) {
               await Future.delayed(const Duration(seconds: 2));
               NfcManager.instance.stopSession();

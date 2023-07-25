@@ -17,12 +17,6 @@ class MetadataInputScreenArguments {
   MetadataInputScreenArguments(this.sessionId, this.chainId, this.collectionId);
 }
 
-class UserScanResultsScreenArguments {
-  final String sessionId;
-
-  UserScanResultsScreenArguments(this.sessionId);
-}
-
 class AttachmentScreensArguments {
   final bool isEditMode;
   final AttachmentType type;
