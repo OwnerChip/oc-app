@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_dio/sentry_dio.dart';
 import 'package:sentry/sentry.dart';
+import 'package:ownerchip_whitelabel/services/providers.service.dart';
 
 /// get OC backend client (with sentry interceptor)
 Dio getBackendClient() {

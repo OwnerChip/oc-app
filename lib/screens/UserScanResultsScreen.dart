@@ -62,10 +62,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
-  Future<void> burnToken(String sessionId, Web3App wc, BigInt tokenId,
+  Future<void> burnToken(Web3App wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
+    String sessionId = ref.read(sessionIdProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
@@ -171,8 +172,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as UserScanResultsScreenArguments;
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
@@ -422,7 +421,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                               .burnToken,
                                                                           onPressed: (() =>
                                                                               {
-                                                                                fromCancelable(burnToken(navArgs.sessionId, wc!, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                fromCancelable(burnToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
                                                                               })),
                                                                     ])
                                                               : Container();

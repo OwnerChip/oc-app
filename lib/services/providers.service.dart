@@ -289,3 +289,7 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   String raribleUrl = "$baseUrl/$contractAddress:${chipInfo.tokenId}";
   return Uri.parse(raribleUrl);
 });
+
+final sessionIdProvider = StateProvider<String>((ref) {
+  return '';
+});
