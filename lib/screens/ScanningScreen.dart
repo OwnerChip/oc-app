@@ -15,10 +15,10 @@ import 'dart:io' show Platform;
 import 'package:sentry/sentry.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/nfc.service.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/signature.service.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';

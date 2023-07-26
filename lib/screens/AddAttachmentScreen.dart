@@ -4,13 +4,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:mime/mime.dart';
 import 'package:async/async.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:sentry/sentry.dart';
+import 'package:crypto/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
+import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -20,6 +24,7 @@ import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -28,9 +33,10 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
 class AddAttachmentScreen extends ConsumerStatefulWidget {
   const AddAttachmentScreen({Key? key}) : super(key: key);
@@ -92,9 +98,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
           setState(() {
             _titleInputController.text = attachment.title;
-            _urlInputController.text = attachment.url!;
+            _urlInputController.text = attachment.url;
             titleTextInput = attachment.title;
-            urlTextInput = attachment.url!;
+            urlTextInput = attachment.url;
             isPrivate = attachment.isPrivate;
           });
           //set radio button state
@@ -147,55 +153,224 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
   Future<void> editAttachment(AttachmentType type) async {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as AttachmentScreensArguments;
-    //set attachment at corresponding index
-    if (type == AttachmentType.url) {
-      ref.read(attachmentListProvider.notifier).state[navArgs.index!] =
-          Attachment(titleTextInput, urlTextInput, type,
-              url: urlTextInput, isPrivate: isPrivate);
-    } else {
-      ref.read(attachmentListProvider.notifier).state[navArgs.index!] =
-          Attachment(titleTextInput, file!.name, AttachmentType.other,
-              isPrivate: isPrivate, file: file);
+
+    ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+
+    List chainAndCollectionId = await returnChainAndCollectionId();
+    int chainId = chainAndCollectionId[0];
+    EthereumAddress collectionId = chainAndCollectionId[1];
+
+    Attachment attachment =
+        ref.read(attachmentListProvider.notifier).state[navArgs.index!];
+
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = 'Uploading...';
+      });
+      await putAttachmentMetadataToBackend(
+          ref.read(userAddressProvider),
+          chainId,
+          collectionId,
+          chipInfo.tokenId,
+          ref.read(signatureDataProvider),
+          attachment.backendUuid,
+          file!.name,
+          _titleInputController.text,
+          isPrivate);
+
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+
+      //set attachment in provider at corresponding index
+      if (type == AttachmentType.url) {
+        ref.read(attachmentListProvider.notifier).state[navArgs.index!] =
+            Attachment(titleTextInput, urlTextInput, type, urlTextInput,
+                attachment.backendUuid,
+                isPrivate: isPrivate);
+      } else {
+        Attachment attachmentBeingEdited =
+            ref.read(attachmentListProvider.notifier).state[navArgs.index!];
+        attachmentBeingEdited = Attachment(
+            titleTextInput,
+            file!.name,
+            AttachmentType.other,
+            attachmentBeingEdited.url,
+            attachment.backendUuid,
+            isPrivate: isPrivate,
+            file: file);
+      }
+
+      //copy state to trigger rebuild
+      ref.read(attachmentListProvider.notifier).state =
+          List.from(ref.read(attachmentListProvider.notifier).state);
+
+      Navigator.pop(context);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, 'Error updating data.', 'error'),
+      );
+      print(e);
+      Sentry.captureException(e);
     }
-
-    //copy state to trigger rebuild
-    ref.read(attachmentListProvider.notifier).state =
-        List.from(ref.read(attachmentListProvider.notifier).state);
-
-    Navigator.pop(context);
   }
 
-  void uploadFile() {
-    //TODO: upload file here
-    if (file != null) {
-      Attachment attachment = Attachment(
-          titleTextInput, file!.name, AttachmentType.other,
-          isPrivate: isPrivate, file: file);
-      ref.read(attachmentListProvider.notifier).state = [
-        ...ref.read(attachmentListProvider.notifier).state,
-        attachment
-      ];
-      Navigator.pop(context, file);
+  void uploadFile() async {
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = 'Uploading...';
+      });
+
+      //get sha256_hash of file
+      String fileHash = await getSha256HashOfFile(File(file!.path!));
+      int fileSize = file!.size;
+      String contentType = lookupMimeType(file!.path!)!;
+
+      ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+
+      List chainAndCollectionId = await returnChainAndCollectionId();
+      int chainId = chainAndCollectionId[0];
+      EthereumAddress collectionId = chainAndCollectionId[1];
+
+      List response = await postAttachmentMetadataToBackend(
+          ref.read(userAddressProvider),
+          chainId,
+          collectionId,
+          ref.read(chipInfoProvider).tokenId,
+          ref.read(signatureDataProvider),
+          file!.name,
+          _titleInputController.text,
+          isPrivate,
+          fileHash: fileHash,
+          contentType: contentType,
+          fileSize: fileSize);
+
+      String fileUuid = response[0];
+      String awsUrl = response[1];
+
+      //upload file to aws presigned url
+      var awsResponse =
+          await uploadFileToAWS(File(file!.path!), awsUrl, contentType);
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+      if (file != null) {
+        Attachment attachment = Attachment(
+            titleTextInput, file!.name, AttachmentType.other, awsUrl, fileUuid,
+            isPrivate: isPrivate, file: file);
+        ref.read(attachmentListProvider.notifier).state = [
+          ...ref.read(attachmentListProvider.notifier).state,
+          attachment
+        ];
+        Navigator.pop(context, file);
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, 'Error uploading file.', 'error'),
+      );
+      print(e);
+      Sentry.captureException(e);
     }
   }
 
-  void saveUrl() {
-    //TODO: save URL to backend
-    Attachment attachment = Attachment(
-        titleTextInput, urlTextInput, AttachmentType.url,
-        isPrivate: isPrivate, url: urlTextInput);
-    ref.read(attachmentListProvider.notifier).state = [
-      ...ref.read(attachmentListProvider.notifier).state,
-      attachment
-    ];
-    Navigator.pop(context, file);
+  void saveUrl() async {
+    setState(() {
+      isLoading = true;
+      loadingText = 'Saving URL...';
+    });
+
+    List chainAndCollectionId = await returnChainAndCollectionId();
+    int chainId = chainAndCollectionId[0];
+    EthereumAddress collectionId = chainAndCollectionId[1];
+
+    try {
+      List result = await postAttachmentMetadataToBackend(
+          ref.read(userAddressProvider),
+          chainId,
+          collectionId,
+          ref.read(chipInfoProvider).tokenId,
+          ref.read(signatureDataProvider),
+          _titleInputController.text,
+          _titleInputController.text,
+          isPrivate,
+          fileLink: _urlInputController.text);
+
+      String fileUuid = result[0];
+      String status = result[1];
+
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+
+      if (status == 'OK') {
+        Attachment attachment = Attachment(titleTextInput, urlTextInput,
+            AttachmentType.url, urlTextInput, fileUuid,
+            isPrivate: isPrivate);
+        ref.read(attachmentListProvider.notifier).state = [
+          ...ref.read(attachmentListProvider.notifier).state,
+          attachment
+        ];
+        Navigator.pop(context);
+      } else {
+        throw Exception('Error saving URL');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+      //show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            'Error deleting attachment.', 'error'),
+      );
+    }
   }
 
-  //remove file
-  void removeFile() {
+  //remove attachment
+  void removeAttachment() async {
     //get navigation arguments
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as AttachmentScreensArguments;
+    Attachment attachment =
+        ref.read(attachmentListProvider.notifier).state[navArgs.index!];
+
+    List chainAndCollectionId = await returnChainAndCollectionId();
+    int chainId = chainAndCollectionId[0];
+    EthereumAddress collectionId = chainAndCollectionId[1];
+
+    try {
+      String result = await deleteAttachmentFromBackend(
+          ref.read(userAddressProvider),
+          chainId,
+          collectionId,
+          ref.read(chipInfoProvider).tokenId,
+          ref.read(signatureDataProvider),
+          attachment.backendUuid);
+    } catch (e) {
+      //show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, 'Error saving URL.', 'error'),
+      );
+      throw Exception('Error saving URL');
+    }
+
     ref.read(attachmentListProvider.notifier).state.removeAt(navArgs.index!);
     ref.read(attachmentListProvider.notifier).state = List.from(ref
         .read(attachmentListProvider.notifier)
@@ -206,6 +381,25 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       buttonText = context.loc.chooseFile;
       file = null;
     });
+  }
+
+  Future<List> returnChainAndCollectionId() async {
+    ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+
+    //get correct chain and collection
+    TokenInfoObject tokenInfo =
+        await ref.read(findTokenProvider(chipInfo.tokenId).future);
+    int chainId = tokenInfo.chainId;
+    EthereumAddress collectionId = tokenInfo.collectionId;
+    //if token does *not* exits AND chain AND collectionId has been selected by user
+    // --> set chain and collectionId from dropdown state
+    if (tokenInfo.collectionId == zeroAddress &&
+        ref.read(selectedChainIdProvider.notifier).state != null &&
+        ref.read(selectedCollectionIdProvider.notifier).state != null) {
+      chainId = ref.read(selectedChainIdProvider.notifier).state!;
+      collectionId = ref.read(selectedCollectionIdProvider.notifier).state!.id;
+    }
+    return [chainId, collectionId];
   }
 
   @override
@@ -419,7 +613,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                           navArgs != null && navArgs.isEditMode
                               ? CustomOutlinedButton(
                                   buttonText: 'Remove',
-                                  onPressed: () => removeFile(),
+                                  onPressed: () => removeAttachment(),
                                   color: Colors.red,
                                   width: double.infinity,
                                 )

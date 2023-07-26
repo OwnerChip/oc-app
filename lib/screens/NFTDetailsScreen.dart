@@ -50,10 +50,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final AsyncValue<Uri> blockchainExplorerUrl =
         ref.watch(blockchainExplorerUrlProvider);
     final AsyncValue<String> contractName = ref.watch(contractNameProvider);
-
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
-
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
+    var publicAttachments = ref.watch(publicAttachmentsProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,

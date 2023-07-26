@@ -5,6 +5,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
@@ -300,4 +301,30 @@ final attachmentListProvider =
 
 final sessionIdProvider = StateProvider<String>((ref) {
   return '';
+});
+
+//get all public attachments future provider
+final publicAttachmentsProvider = FutureProvider.autoDispose((ref) async {
+  //get tokenId from provider
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+
+  //get all public attachments
+  final response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);
+  print(response);
+
+  //create list of attachments
+  List<Attachment> attachments = [];
+  for (var attachment in response.data) {
+    print('test');
+    attachments.add(Attachment(
+      attachment['title'],
+      attachment['name'],
+      AttachmentType.other,
+      attachment['file_link'],
+      attachment['uuid'],
+      isPrivate: attachment['is_private'],
+    ));
+  }
+  //set attachmentListProvider
+  ref.read(attachmentListProvider.notifier).state = attachments;
 });

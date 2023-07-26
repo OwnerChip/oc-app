@@ -119,9 +119,17 @@ class Attachment {
   final String fileName; //file name including file extension
   final AttachmentType type;
   final bool isPrivate;
+  final String url;
+  final String backendUuid;
   final PlatformFile? file;
-  final String? url;
 
-  Attachment(this.title, this.fileName, this.type,
-      {this.isPrivate = false, this.url, this.file});
+  Attachment(
+    this.title,
+    this.fileName,
+    this.type,
+    this.url,
+    this.backendUuid, {
+    this.isPrivate = false,
+    this.file,
+  });
 }
