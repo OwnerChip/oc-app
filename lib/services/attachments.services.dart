@@ -61,7 +61,7 @@ Future<String> putAttachmentMetadataToBackend(
     String name,
     String title,
     bool isPrivate,
-    {String? fileLink}) async {
+    {String? attachmentUrl}) async {
   final Dio dio = getBackendClient();
 
   const String url = '/files';
@@ -76,7 +76,7 @@ Future<String> putAttachmentMetadataToBackend(
     'uuid': fileUuid,
     'is_private': isPrivate,
     'title': title,
-    'file_link': fileLink,
+    'file_link': attachmentUrl,
   };
 
   try {
@@ -141,6 +141,7 @@ Map<String, dynamic> makeAuthObject(
   SignatureData tokenSignatureData,
 ) {
   return {
+    'sessionId': '1234', //TODO: insert real session id
     'requestedRole': 'CREATOR',
     'chipSignature': {
       'r': "0x" + tokenSignatureData.signature.r.toRadixString(16),
@@ -173,6 +174,60 @@ Future<dynamic> getPublicAttachmentsFromBackend(
     final result = await dio.get(
       url,
     );
+    return result;
+  } catch (e) {
+    print(e);
+    rethrow;
+  }
+}
+
+Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
+  EthereumAddress walletAddress,
+  int chainId,
+  EthereumAddress collectionId,
+  BigInt tokenId,
+  SignatureData tokenSignatureData,
+) async {
+  final Dio dio = getBackendClient();
+  const url = '/files/owner/view-all';
+
+  try {
+    final result = await dio.post(url,
+        data: makeAuthObject(
+          walletAddress,
+          chainId,
+          collectionId,
+          tokenId,
+          tokenSignatureData,
+        ));
+
+    return result;
+  } catch (e) {
+    print(e);
+    rethrow;
+  }
+}
+
+Future<dynamic> deleteAllAttachments(
+  EthereumAddress walletAddress,
+  int chainId,
+  EthereumAddress collectionId,
+  BigInt tokenId,
+  SignatureData tokenSignatureData,
+) async {
+  final Dio dio = getBackendClient();
+  const url = '/files/all';
+
+  try {
+    final result = await dio.delete(url,
+        data: makeAuthObject(
+          walletAddress,
+          chainId,
+          collectionId,
+          tokenId,
+          tokenSignatureData,
+        ));
+
     return result;
   } catch (e) {
     print(e);

@@ -170,6 +170,11 @@ Future<XFile> saveMetadataAsJSONFile(Map<String, dynamic> metadata) async {
 
 //function that returns a file name substring
 String getFileNameSubstring(String fileName) {
+  //if fileName is short, return full file name
+  if (fileName.length <= 14) {
+    return fileName;
+  }
+  //else return substring of file name
   return fileName.substring(0, 5) +
       '...' +
       fileName.substring(fileName.length - 9);

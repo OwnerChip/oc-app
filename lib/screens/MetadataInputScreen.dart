@@ -290,7 +290,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
     final SignatureData signatureData = ref.watch(signatureDataProvider);
-    final List<Attachment>? attachmentList = ref.watch(attachmentListProvider);
+    final List<Attachment>? attachmentList =
+        ref.watch(localAttachmentsProvider);
 
     return CustomOverlay(
       show: showOverlay,
