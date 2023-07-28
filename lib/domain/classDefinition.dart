@@ -121,7 +121,6 @@ class Attachment {
   final bool isPrivate;
   final String url;
   final String backendUuid;
-  final PlatformFile? file;
 
   Attachment(
     this.title,
@@ -130,6 +129,5 @@ class Attachment {
     this.url,
     this.backendUuid, {
     this.isPrivate = false,
-    this.file,
   });
 }

@@ -64,6 +64,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
   String urlTextInput = '';
   String buttonText = 'Choose File';
   bool isPrivate = false;
+  String? fileName;
   PlatformFile? file;
 
   Visibility? _visibility = Visibility.public;
@@ -73,6 +74,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
   @override
   void dispose() {
     _titleInputController.dispose();
+    _urlInputController.dispose();
     super.dispose();
   }
 
@@ -94,7 +96,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         //if edit mode, set title and url
         if (navArgs.isEditMode && navArgs.index != null) {
           Attachment attachment =
-              ref.read(attachmentListProvider.notifier).state[navArgs.index!];
+              ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
 
           setState(() {
             _titleInputController.text = attachment.title;
@@ -113,14 +115,15 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         //if edit mode, set title and file and button text
         if (navArgs != null && navArgs.isEditMode && navArgs.index != null) {
           Attachment attachment =
-              ref.read(attachmentListProvider.notifier).state[navArgs.index!];
+              ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
 
           setState(() {
             _titleInputController.text = attachment.title;
             titleTextInput = attachment.title;
-            file = attachment.file;
+            // file = attachment.file; //TODO: i think this is not necessary when editing
             buttonText = context.loc.save;
             isPrivate = attachment.isPrivate;
+            fileName = attachment.fileName;
           });
           //set radio button state
           _visibility = attachment.isPrivate
@@ -143,6 +146,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     if (result != null) {
       setState(() {
         file = result.files.first;
+        fileName = result.files.first.name;
         buttonText = context.loc.save;
       });
     } else {
@@ -160,8 +164,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
-    Attachment attachment =
-        ref.read(attachmentListProvider.notifier).state[navArgs.index!];
+    Attachment attachmentBeingEdited =
+        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
 
     try {
       setState(() {
@@ -174,10 +178,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           collectionId,
           chipInfo.tokenId,
           ref.read(signatureDataProvider),
-          attachment.backendUuid,
-          file!.name,
-          _titleInputController.text,
-          isPrivate);
+          attachmentBeingEdited.backendUuid,
+          attachmentBeingEdited.fileName,
+          titleTextInput,
+          isPrivate,
+          attachmentUrl: attachmentBeingEdited.type == AttachmentType.url
+              ? urlTextInput
+              : null);
 
       setState(() {
         isLoading = false;
@@ -186,26 +193,27 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
       //set attachment in provider at corresponding index
       if (type == AttachmentType.url) {
-        ref.read(attachmentListProvider.notifier).state[navArgs.index!] =
+        //ATTACHMENT IS URL
+        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
             Attachment(titleTextInput, urlTextInput, type, urlTextInput,
-                attachment.backendUuid,
+                attachmentBeingEdited.backendUuid,
                 isPrivate: isPrivate);
       } else {
-        Attachment attachmentBeingEdited =
-            ref.read(attachmentListProvider.notifier).state[navArgs.index!];
-        attachmentBeingEdited = Attachment(
-            titleTextInput,
-            file!.name,
-            AttachmentType.other,
-            attachmentBeingEdited.url,
-            attachment.backendUuid,
-            isPrivate: isPrivate,
-            file: file);
+        //ATTACHMENT IS FILE
+        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
+            Attachment(
+          titleTextInput,
+          attachmentBeingEdited.fileName,
+          AttachmentType.other,
+          attachmentBeingEdited.url,
+          attachmentBeingEdited.backendUuid,
+          isPrivate: isPrivate,
+        );
       }
 
       //copy state to trigger rebuild
-      ref.read(attachmentListProvider.notifier).state =
-          List.from(ref.read(attachmentListProvider.notifier).state);
+      ref.read(localAttachmentsProvider.notifier).state =
+          List.from(ref.read(localAttachmentsProvider.notifier).state);
 
       Navigator.pop(context);
     } catch (e) {
@@ -246,7 +254,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           collectionId,
           ref.read(chipInfoProvider).tokenId,
           ref.read(signatureDataProvider),
-          file!.name,
+          fileName!,
           _titleInputController.text,
           isPrivate,
           fileHash: fileHash,
@@ -265,10 +273,10 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
       if (file != null) {
         Attachment attachment = Attachment(
-            titleTextInput, file!.name, AttachmentType.other, awsUrl, fileUuid,
-            isPrivate: isPrivate, file: file);
-        ref.read(attachmentListProvider.notifier).state = [
-          ...ref.read(attachmentListProvider.notifier).state,
+            titleTextInput, fileName!, AttachmentType.other, awsUrl, fileUuid,
+            isPrivate: isPrivate);
+        ref.read(localAttachmentsProvider.notifier).state = [
+          ...ref.read(localAttachmentsProvider.notifier).state,
           attachment
         ];
         Navigator.pop(context, file);
@@ -321,8 +329,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         Attachment attachment = Attachment(titleTextInput, urlTextInput,
             AttachmentType.url, urlTextInput, fileUuid,
             isPrivate: isPrivate);
-        ref.read(attachmentListProvider.notifier).state = [
-          ...ref.read(attachmentListProvider.notifier).state,
+        ref.read(localAttachmentsProvider.notifier).state = [
+          ...ref.read(localAttachmentsProvider.notifier).state,
           attachment
         ];
         Navigator.pop(context);
@@ -348,14 +356,14 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as AttachmentScreensArguments;
     Attachment attachment =
-        ref.read(attachmentListProvider.notifier).state[navArgs.index!];
+        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
 
     List chainAndCollectionId = await returnChainAndCollectionId();
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
     try {
-      String result = await deleteAttachmentFromBackend(
+      var result = await deleteAttachmentFromBackend(
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -365,15 +373,15 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     } catch (e) {
       //show error snackbar
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, 'Error saving URL.', 'error'),
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            'Error deleting attachment.', 'error'),
       );
-      throw Exception('Error saving URL');
+      throw Exception('Error deleting attachment');
     }
 
-    ref.read(attachmentListProvider.notifier).state.removeAt(navArgs.index!);
-    ref.read(attachmentListProvider.notifier).state = List.from(ref
-        .read(attachmentListProvider.notifier)
+    ref.read(localAttachmentsProvider.notifier).state.removeAt(navArgs.index!);
+    ref.read(localAttachmentsProvider.notifier).state = List.from(ref
+        .read(localAttachmentsProvider.notifier)
         .state); //state has to be copied and set again to trigger rebuild
     Navigator.pop(context);
     setState(() {
@@ -404,7 +412,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Attachment> attachmentList = ref.watch(attachmentListProvider);
+    List<Attachment> attachmentList = ref.watch(localAttachmentsProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments != null
         ? ModalRoute.of(context)!.settings.arguments
             as AttachmentScreensArguments
@@ -568,13 +576,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                           ),
                           Padding(
                             padding: EdgeInsets.only(top: 10, bottom: 10),
-                            child: file != null //&& file!.names[0] != null
+                            child: fileName != null
                                 ? Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       //if file is chosen (not null) show "[first 5 chars]...[last 9 chars]" of filename
-                                      Text(getFileNameSubstring(file!.name),
+                                      Text(getFileNameSubstring(fileName!),
                                           style: TextStyle(
                                             color: CustomColors(
                                                     dotenv.get('APP_ID'))

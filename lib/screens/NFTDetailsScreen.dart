@@ -1,5 +1,6 @@
 //import packages
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,6 +18,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -52,7 +54,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final AsyncValue<String> contractName = ref.watch(contractNameProvider);
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
-    var publicAttachments = ref.watch(publicAttachmentsProvider);
+    final AsyncValue<List<Attachment>> fetchedAttachments = ref.watch(
+        fetchAttachmentsProvider); //Trigger loading of attachments, which are saved to localAttachmentsProvider
+    List<Attachment> attachments = ref.watch(localAttachmentsProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -151,6 +155,63 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 error: (e, s) => Container(),
                 loading: () => DropdownContainer(
                     title: context.loc.loading, content: null)),
+
+            /*** ATTACHMENTS ***/
+            //fetchedAttachments.when() is a hack to show a loading widget, while the attachments are fetched.
+            //The real attachment UI elements are NOT DIRECTLY dependent on fetchedAttachments,
+            //because the attachments need to be edited locally, but this does not work in a FutureProvider.
+            //Hence the attachments are displayed using localAttachmentsProvider data.
+            fetchedAttachments.when(
+                data: (data) => Container(),
+                error: (e, s) => Container(),
+                loading: () => DropdownContainer(
+                    title: context.loc.loading, content: null)),
+            attachments.isNotEmpty
+                ? DropdownContainer(
+                    title: 'Digital Content',
+                    content: Column(
+                      children: [
+                        ...attachments.map(
+                          (e) => Column(children: [
+                            AttachmentBox(
+                              text: e.title,
+                              icon: e.type == AttachmentType.url
+                                  ? Icons.link
+                                  : Icons.attach_file,
+                              isPrivate: e.isPrivate,
+                              onTap: () {
+                                launchUrl(Uri.parse(e.url),
+                                    mode: LaunchMode.externalApplication);
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                          ]),
+                        ),
+
+                        //if connected wallet is owner
+                        nftOwner.when(
+                          data: ((data) => data == connectedWallet
+                              ? Column(
+                                  children: [
+                                    const SizedBox(height: 10),
+                                    CustomRoundedButton(
+                                        text: 'Edit',
+                                        onPressed: () => {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  ListAttachmentsScreen
+                                                      .routeName)
+                                            })
+                                  ],
+                                )
+                              : Container()),
+                          error: (e, s) => Container(),
+                          loading: () => Container(),
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(),
 
             /*** DIGITAL TWIN ***/
             tokenInfo.when(

@@ -293,38 +293,63 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   return Uri.parse(raribleUrl);
 });
 
-//File List Provider
-final attachmentListProvider =
-    StateProvider.autoDispose<List<Attachment>>((ref) {
-  return [];
-});
-
 final sessionIdProvider = StateProvider<String>((ref) {
   return '';
 });
 
-//get all public attachments future provider
-final publicAttachmentsProvider = FutureProvider.autoDispose((ref) async {
+//This provider is used to display attachment data in the UI and to edit attachment data locally (which is then posted to backend)
+final localAttachmentsProvider =
+    StateProvider.autoDispose<List<Attachment>>((ref) {
+  return [];
+});
+
+//this provider fetches all attachments from backend, and saves them to localAttachmentsProvider!
+//This is necessary to edit attachments locally!
+final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   //get tokenId from provider
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
 
-  //get all public attachments
-  final response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);
-  print(response);
+  //check if connected wallet is nft owner
+  final EthereumAddress nftOwner = await ref.watch(nftOwnerProvider.future);
+  final EthereumAddress userWalletAddress = ref.read(userAddressProvider);
 
+  //if connected wallet is nft owner, get all (private and public) attachments
+  var response;
+  if (nftOwner == userWalletAddress) {
+    //signatureData
+    SignatureData tokenSignatureData = ref.read(signatureDataProvider);
+    TokenInfoObject tokenInfo =
+        await ref.read(findTokenProvider(chipInfo.tokenId).future);
+    response = await getPublicAndPrivateAttachmentsFromBackend(
+        userWalletAddress,
+        tokenInfo.chainId,
+        tokenInfo.collectionId,
+        chipInfo.tokenId,
+        tokenSignatureData);
+  } else {
+    //get all public attachments
+    response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);
+    print(response);
+  }
   //create list of attachments
   List<Attachment> attachments = [];
+  //create list of attachments
   for (var attachment in response.data) {
-    print('test');
     attachments.add(Attachment(
       attachment['title'],
       attachment['name'],
-      AttachmentType.other,
-      attachment['file_link'],
+      attachment['url'].contains(
+              "amazonaws") //TODO: backend should return type of attachment (URL or file) instead of checking like this
+          ? AttachmentType.other
+          : AttachmentType.url,
+      attachment['url'],
       attachment['uuid'],
       isPrivate: attachment['is_private'],
     ));
   }
-  //set attachmentListProvider
-  ref.read(attachmentListProvider.notifier).state = attachments;
+
+  //set state of attachmentListProvider
+  ref.read(localAttachmentsProvider.notifier).state = attachments;
+
+  return attachments;
 });
