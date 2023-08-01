@@ -22,7 +22,7 @@ Future<List> postAttachmentMetadataToBackend(
     int? fileSize}) async {
   final Dio dio = getBackendClient();
 
-  final url = '/files';
+  final url = '/attachments';
   final data = {
     'auth': makeAuthObject(
       walletAddress,
@@ -33,11 +33,11 @@ Future<List> postAttachmentMetadataToBackend(
     ),
     'name': name,
     'title': title,
-    'size': fileSize, //TODO: get size of file
-    'content_type': contentType, //TODO: get content type of file
+    'size': fileSize,
+    'content_type': contentType,
     'sha256_hash': fileHash,
     'is_private': isPrivate,
-    'file_link': fileLink,
+    'link': fileLink,
   };
 
   try {
@@ -64,7 +64,7 @@ Future<String> putAttachmentMetadataToBackend(
     {String? attachmentUrl}) async {
   final Dio dio = getBackendClient();
 
-  const String url = '/files';
+  const String url = '/attachments';
   final data = {
     'auth': makeAuthObject(
       walletAddress,
@@ -75,8 +75,8 @@ Future<String> putAttachmentMetadataToBackend(
     ),
     'uuid': fileUuid,
     'is_private': isPrivate,
-    'title': title,
-    'file_link': attachmentUrl,
+    'new_title': title,
+    'new_link': attachmentUrl,
   };
 
   try {
@@ -94,8 +94,9 @@ Future<dynamic> uploadFileToAWS(
     File file, String uploadUrl, String contentType) async {
   final Dio dio = Dio();
   try {
+    final bytes = await file.readAsBytes();
     final response = await dio.put(uploadUrl,
-        data: file.readAsBytes(), options: Options(contentType: 'image/jpeg'));
+        data: bytes, options: Options(contentType: contentType));
     return response.data;
   } catch (e) {
     print(e);
@@ -113,7 +114,7 @@ Future<dynamic> deleteAttachmentFromBackend(
   String fileUuid,
 ) async {
   final Dio dio = getBackendClient();
-  final url = '/files/$fileUuid';
+  final url = '/attachments/$fileUuid';
 
   try {
     final result = await dio.delete(url,
@@ -169,7 +170,7 @@ Future<dynamic> getPublicAttachmentsFromBackend(
   BigInt tokenId,
 ) async {
   final Dio dio = getBackendClient();
-  final url = '/files/${"0x${tokenId.toRadixString(16)}"}/public';
+  final url = '/attachments/${"0x${tokenId.toRadixString(16)}"}/public';
   try {
     final result = await dio.get(
       url,
@@ -189,7 +190,7 @@ Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
   SignatureData tokenSignatureData,
 ) async {
   final Dio dio = getBackendClient();
-  const url = '/files/owner/view-all';
+  const url = '/attachments/owner/view-all';
 
   try {
     final result = await dio.post(url,
@@ -216,7 +217,7 @@ Future<dynamic> deleteAllAttachments(
   SignatureData tokenSignatureData,
 ) async {
   final Dio dio = getBackendClient();
-  const url = '/files/all';
+  const url = '/attachments';
 
   try {
     final result = await dio.delete(url,

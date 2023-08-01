@@ -297,12 +297,6 @@ final sessionIdProvider = StateProvider<String>((ref) {
   return '';
 });
 
-//This provider is used to display attachment data in the UI and to edit attachment data locally (which is then posted to backend)
-final localAttachmentsProvider =
-    StateProvider.autoDispose<List<Attachment>>((ref) {
-  return [];
-});
-
 //this provider fetches all attachments from backend, and saves them to localAttachmentsProvider!
 //This is necessary to edit attachments locally!
 final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
@@ -338,12 +332,10 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     attachments.add(Attachment(
       attachment['title'],
       attachment['name'],
-      attachment['url'].contains(
-              "amazonaws") //TODO: backend should return type of attachment (URL or file) instead of checking like this
-          ? AttachmentType.other
-          : AttachmentType.url,
+      attachment['is_file'] ? AttachmentType.other : AttachmentType.url,
       attachment['url'],
       attachment['uuid'],
+      isFromCreator: attachment['isFromCreator'],
       isPrivate: attachment['is_private'],
     ));
   }
@@ -352,4 +344,39 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   ref.read(localAttachmentsProvider.notifier).state = attachments;
 
   return attachments;
+});
+
+//This provider is used to display attachment data in the UI and to edit attachment data locally (which is then posted to backend)
+final localAttachmentsProvider =
+    StateProvider.autoDispose<List<Attachment>>((ref) {
+  return [];
+});
+
+//provider with attachments only where isFromCreator == true
+final creatorAttachmentsProvider =
+    Provider.autoDispose<List<Attachment>>((ref) {
+  final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+  return attachments
+      .where((e) => e.isFromCreator != null && e.isFromCreator!)
+      .toList();
+});
+
+//provider with attachments only where isFromCreator == false
+final ownerAttachmentsProvider = Provider.autoDispose<List<Attachment>>((ref) {
+  final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+  return attachments
+      .where((e) => e.isFromCreator != null && !e.isFromCreator!)
+      .toList();
+});
+
+final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject tokenInfo =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final EthereumAddress userWalletAddress = ref.read(userAddressProvider);
+  bool hasMinterRole = await checkMinterRole(
+      getRPCUrlFromChainId(tokenInfo.chainId),
+      tokenInfo.collectionId,
+      userWalletAddress);
+  return hasMinterRole;
 });

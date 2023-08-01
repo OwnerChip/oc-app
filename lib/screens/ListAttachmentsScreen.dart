@@ -31,6 +31,11 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+    final List<Attachment> ownerAttachments =
+        ref.watch(ownerAttachmentsProvider);
+    final List<Attachment> creatorAttachments =
+        ref.watch(creatorAttachmentsProvider);
+    final AsyncValue<bool> hasMinterRole = ref.watch(hasMinterRoleProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
@@ -58,27 +63,82 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                AttachmentUploadButton(
-                    text: 'Upload Digital Content', icon: Icons.add),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Creator content',
+                  ),
+                ),
                 const SizedBox(height: 10),
-                for (var i = 0; i < attachments.length; i++)
+                hasMinterRole.when(
+                    data: (hasMinterRole) {
+                      if (hasMinterRole) {
+                        return Column(
+                          children: [
+                            for (var i = 0; i < creatorAttachments.length; i++)
+                              Column(children: [
+                                AttachmentBox(
+                                  text: creatorAttachments[i].title,
+                                  icon: creatorAttachments[i].type ==
+                                          AttachmentType.url
+                                      ? Icons.link
+                                      : Icons.attach_file,
+                                  isPrivate: creatorAttachments[i].isPrivate,
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                        context, AddAttachmentScreen.routeName,
+                                        arguments: AttachmentScreensArguments(
+                                            true, creatorAttachments[i].type,
+                                            //gets index of attachment that is being edited in localAttachmentsProvider list
+                                            index: attachments.indexWhere((e) =>
+                                                e.backendUuid ==
+                                                creatorAttachments[i]
+                                                    .backendUuid)));
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                              ])
+                          ],
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
+                    loading: () => Container(),
+                    error: (error, stack) => Container()),
+                ownerAttachments.isNotEmpty
+                    ? const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Owner content',
+                        ),
+                      )
+                    : Container(),
+                const SizedBox(height: 10),
+                for (var i = 0; i < ownerAttachments.length; i++)
                   Column(children: [
                     AttachmentBox(
-                      text: attachments[i].title,
-                      icon: attachments[i].type == AttachmentType.url
+                      text: ownerAttachments[i].title,
+                      icon: ownerAttachments[i].type == AttachmentType.url
                           ? Icons.link
                           : Icons.attach_file,
-                      isPrivate: attachments[i].isPrivate,
+                      isPrivate: ownerAttachments[i].isPrivate,
                       onTap: () {
                         Navigator.pushNamed(
                             context, AddAttachmentScreen.routeName,
                             arguments: AttachmentScreensArguments(
-                                true, attachments[i].type,
-                                index: i));
+                                true, ownerAttachments[i].type,
+                                //gets index of attachment that is being edited in localAttachmentsProvider list
+                                index: attachments.indexWhere((e) =>
+                                    e.backendUuid ==
+                                    ownerAttachments[i].backendUuid)));
                       },
                     ),
                     const SizedBox(height: 10),
                   ]),
+                AttachmentUploadButton(
+                    text: 'Upload Digital Content', icon: Icons.add),
+                const SizedBox(height: 10),
               ],
             )
           ]),

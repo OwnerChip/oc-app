@@ -1,9 +1,11 @@
 //import packages
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
@@ -38,6 +40,9 @@ import 'package:ownerchip_whitelabel/services/providers.services.dart';
 //import services
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
+import '../services/images.services.dart';
+import '../services/web3.services.dart';
+
 class AddAttachmentScreen extends ConsumerStatefulWidget {
   const AddAttachmentScreen({Key? key}) : super(key: key);
 
@@ -67,7 +72,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
   String? fileName;
   PlatformFile? file;
 
-  Visibility? _visibility = Visibility.public;
+  Visibility? _visibility =
+      Visibility.public; //this is the radio button state for isPrivate/isPublic
 
   CancelableOperation? cancellableOperation;
 
@@ -95,8 +101,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
         //if edit mode, set title and url
         if (navArgs.isEditMode && navArgs.index != null) {
-          Attachment attachment =
-              ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
+          final List<Attachment> attachments =
+              ref.watch(localAttachmentsProvider);
+          Attachment attachment = attachments[navArgs.index!];
 
           setState(() {
             _titleInputController.text = attachment.title;
@@ -136,6 +143,23 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         }
       }
     });
+  }
+
+  Future<void> pickGalleryImage() async {
+    XFile? imageFile = await getImageFromGallery();
+    //change XFile to File
+    if (imageFile != null) {
+      Uint8List bytes = await imageFile.readAsBytes();
+      int size = await File(imageFile.path).length();
+      setState(() {
+        file = PlatformFile(
+          path: imageFile.path,
+          name: imageFile.name,
+          size: size,
+          bytes: bytes,
+        );
+      });
+    }
   }
 
   //pick file
@@ -194,9 +218,15 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       if (type == AttachmentType.url) {
         //ATTACHMENT IS URL
         ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
-            Attachment(titleTextInput, urlTextInput, type, urlTextInput,
-                attachmentBeingEdited.backendUuid,
-                isPrivate: isPrivate);
+            Attachment(
+          titleTextInput,
+          urlTextInput,
+          type,
+          urlTextInput,
+          attachmentBeingEdited.backendUuid,
+          isPrivate: isPrivate,
+          isFromCreator: attachmentBeingEdited.isFromCreator,
+        );
       } else {
         //ATTACHMENT IS FILE
         ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
@@ -207,14 +237,19 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           attachmentBeingEdited.url,
           attachmentBeingEdited.backendUuid,
           isPrivate: isPrivate,
+          isFromCreator: attachmentBeingEdited.isFromCreator,
         );
       }
 
       //copy state to trigger rebuild
       ref.read(localAttachmentsProvider.notifier).state =
           List.from(ref.read(localAttachmentsProvider.notifier).state);
-
       Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.successHeadingSnackbar, 'File edited.', 'success'),
+      );
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -241,8 +276,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       int fileSize = file!.size;
       String contentType = lookupMimeType(file!.path!)!;
 
-      ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-
+      EthereumAddress walletAddress = await ref.read(userAddressProvider);
       List chainAndCollectionId = await returnChainAndCollectionId();
       int chainId = chainAndCollectionId[0];
       EthereumAddress collectionId = chainAndCollectionId[1];
@@ -271,14 +305,21 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
       if (file != null) {
+        bool hasMinterRole = await checkMinterRole(
+            getRPCUrlFromChainId(chainId), collectionId, walletAddress);
         Attachment attachment = Attachment(
             titleTextInput, fileName!, AttachmentType.other, awsUrl, fileUuid,
-            isPrivate: isPrivate);
+            isPrivate: isPrivate, isFromCreator: hasMinterRole);
         ref.read(localAttachmentsProvider.notifier).state = [
           ...ref.read(localAttachmentsProvider.notifier).state,
           attachment
         ];
         Navigator.pop(context, file);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.successHeadingSnackbar, 'File attached.', 'success'),
+        );
       }
     } catch (e) {
       setState(() {
@@ -327,12 +368,17 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       if (status == 'OK') {
         Attachment attachment = Attachment(titleTextInput, urlTextInput,
             AttachmentType.url, urlTextInput, fileUuid,
-            isPrivate: isPrivate);
+            isPrivate: isPrivate, isFromCreator: false);
         ref.read(localAttachmentsProvider.notifier).state = [
           ...ref.read(localAttachmentsProvider.notifier).state,
           attachment
         ];
         Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.successHeadingSnackbar, 'URL attached.', 'success'),
+        );
       } else {
         throw Exception('Error saving URL');
       }
@@ -354,8 +400,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     //get navigation arguments
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as AttachmentScreensArguments;
-    Attachment attachment =
-        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
+    final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+    Attachment attachment = attachments[navArgs.index!];
 
     List chainAndCollectionId = await returnChainAndCollectionId();
     int chainId = chainAndCollectionId[0];
@@ -383,6 +429,10 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         .read(localAttachmentsProvider.notifier)
         .state); //state has to be copied and set again to trigger rebuild
     Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(
+          context.loc.successHeadingSnackbar, 'Attachment deleted.', 'success'),
+    );
     setState(() {
       file = null;
       buttonText = context.loc.chooseFile;
@@ -419,21 +469,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     return CustomOverlay(
         show: isLoading,
         content: SpinningLoadingSvg(
-          onPressed: () {
-            cancellableOperation?.cancel();
-            setState(() {
-              isLoading = false;
-            });
-            Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (route) => false);
-          },
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
           extendBodyBehindAppBar: true,
@@ -594,22 +632,28 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                   )
                                 : Container(),
                           ),
+
                           CustomRoundedButton(
                               text: buttonText,
                               onPressed: (() => {
+                                    FocusScope.of(context).unfocus(),
+                                    //save edit attachment
                                     if (navArgs != null && navArgs.isEditMode)
                                       {
                                         if (_formKey.currentState!.validate())
                                           editAttachment(navArgs.type)
                                       }
+                                    //save URL
                                     else if (navArgs != null &&
                                         navArgs.type == AttachmentType.url)
                                       {
                                         if (_formKey.currentState!.validate())
                                           saveUrl()
                                       }
+                                    //choose file
                                     else if (file == null)
                                       {pickFile()}
+                                    //upload file
                                     else
                                       {
                                         if (_formKey.currentState!.validate())

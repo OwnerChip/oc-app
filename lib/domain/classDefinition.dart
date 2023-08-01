@@ -121,13 +121,8 @@ class Attachment {
   final bool isPrivate;
   final String url;
   final String backendUuid;
+  final bool? isFromCreator;
 
-  Attachment(
-    this.title,
-    this.fileName,
-    this.type,
-    this.url,
-    this.backendUuid, {
-    this.isPrivate = false,
-  });
+  Attachment(this.title, this.fileName, this.type, this.url, this.backendUuid,
+      {this.isPrivate = false, this.isFromCreator});
 }

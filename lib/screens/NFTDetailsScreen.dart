@@ -57,6 +57,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     final AsyncValue<List<Attachment>> fetchedAttachments = ref.watch(
         fetchAttachmentsProvider); //Trigger loading of attachments, which are saved to localAttachmentsProvider
     List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+    List<Attachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
+    List<Attachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -171,22 +173,83 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                     title: 'Digital Content',
                     content: Column(
                       children: [
-                        ...attachments.map(
-                          (e) => Column(children: [
-                            AttachmentBox(
-                              text: e.title,
-                              icon: e.type == AttachmentType.url
-                                  ? Icons.link
-                                  : Icons.attach_file,
-                              isPrivate: e.isPrivate,
-                              onTap: () {
-                                launchUrl(Uri.parse(e.url),
-                                    mode: LaunchMode.externalApplication);
-                              },
-                            ),
-                            const SizedBox(height: 10),
-                          ]),
-                        ),
+                        creatorAttachments.isNotEmpty
+                            ? Column(
+                                children: [
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Creator content',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ...creatorAttachments.map(
+                                    (e) => Column(children: [
+                                      AttachmentBox(
+                                        text: e.title,
+                                        icon: e.type == AttachmentType.url
+                                            ? Icons.link
+                                            : Icons.attach_file,
+                                        isPrivate: e.isPrivate,
+                                        onTap: () {
+                                          launchUrl(Uri.parse(e.url),
+                                              mode: LaunchMode
+                                                  .externalApplication);
+                                        },
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ]),
+                                  ),
+                                ],
+                              )
+                            : Container(),
+                        ownerAttachments.isNotEmpty
+                            ? Column(
+                                children: [
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Owner content',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ...ownerAttachments.map(
+                                    (e) => Column(children: [
+                                      AttachmentBox(
+                                        text: e.title,
+                                        icon: e.type == AttachmentType.url
+                                            ? Icons.link
+                                            : Icons.attach_file,
+                                        isPrivate: e.isPrivate,
+                                        onTap: () {
+                                          launchUrl(Uri.parse(e.url),
+                                              mode: LaunchMode
+                                                  .externalApplication);
+                                        },
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ]),
+                                  ),
+                                ],
+                              )
+                            : Container(),
+
+                        // ...attachments.map(
+                        //   (e) => Column(children: [
+                        //     AttachmentBox(
+                        //       text: e.title,
+                        //       icon: e.type == AttachmentType.url
+                        //           ? Icons.link
+                        //           : Icons.attach_file,
+                        //       isPrivate: e.isPrivate,
+                        //       onTap: () {
+                        //         launchUrl(Uri.parse(e.url),
+                        //             mode: LaunchMode.externalApplication);
+                        //       },
+                        //     ),
+                        //     const SizedBox(height: 10),
+                        //   ]),
+                        // ),
 
                         //if connected wallet is owner
                         nftOwner.when(
