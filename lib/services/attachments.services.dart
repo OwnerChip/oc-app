@@ -35,7 +35,7 @@ Future<List> postAttachmentMetadataToBackend(
     'title': title,
     'size': fileSize,
     'content_type': contentType,
-    'sha256_hash': fileHash,
+    'sha256_hash': fileHash == null ? null : "0x$fileHash",
     'is_private': isPrivate,
     'link': fileLink,
   };
@@ -97,7 +97,7 @@ Future<dynamic> uploadFileToAWS(
     final bytes = await file.readAsBytes();
     final response = await dio.put(uploadUrl,
         data: bytes, options: Options(contentType: contentType));
-    return response.data;
+    return response;
   } catch (e) {
     print(e);
     rethrow;
