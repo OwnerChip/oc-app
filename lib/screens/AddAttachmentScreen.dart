@@ -10,6 +10,7 @@ import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/ChooseFileButton.dart';
 import 'package:sentry/sentry.dart';
 import 'package:crypto/crypto.dart';
 import 'package:web3dart/web3dart.dart';
@@ -158,6 +159,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           size: size,
           bytes: bytes,
         );
+        fileName = imageFile.name;
+        buttonText = context.loc.save;
       });
     }
   }
@@ -360,6 +363,11 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       String fileUuid = result[0];
       String status = result[1];
 
+      final walletAddress = ref.read(userAddressProvider);
+
+      bool hasMinterRole = await checkMinterRole(
+          getRPCUrlFromChainId(chainId), collectionId, walletAddress);
+
       setState(() {
         isLoading = false;
         loadingText = '';
@@ -368,7 +376,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       if (status == 'OK') {
         Attachment attachment = Attachment(titleTextInput, urlTextInput,
             AttachmentType.url, urlTextInput, fileUuid,
-            isPrivate: isPrivate, isFromCreator: false);
+            isPrivate: isPrivate, isFromCreator: hasMinterRole);
         ref.read(localAttachmentsProvider.notifier).state = [
           ...ref.read(localAttachmentsProvider.notifier).state,
           attachment
@@ -633,33 +641,40 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                 : Container(),
                           ),
 
-                          CustomRoundedButton(
-                              text: buttonText,
-                              onPressed: (() => {
-                                    FocusScope.of(context).unfocus(),
-                                    //save edit attachment
-                                    if (navArgs != null && navArgs.isEditMode)
-                                      {
-                                        if (_formKey.currentState!.validate())
-                                          editAttachment(navArgs.type)
-                                      }
-                                    //save URL
-                                    else if (navArgs != null &&
-                                        navArgs.type == AttachmentType.url)
-                                      {
-                                        if (_formKey.currentState!.validate())
-                                          saveUrl()
-                                      }
-                                    //choose file
-                                    else if (file == null)
-                                      {pickFile()}
-                                    //upload file
-                                    else
-                                      {
-                                        if (_formKey.currentState!.validate())
-                                          uploadFile()
-                                      }
-                                  })),
+                          if (file == null &&
+                              navArgs!.type != AttachmentType.url &&
+                              !navArgs.isEditMode)
+                            ChooseFileButton(
+                              text: 'Choose File',
+                              openFileExplorerFunction: pickFile,
+                              openGalleryFunction: pickGalleryImage,
+                            )
+                          else
+                            CustomRoundedButton(
+                                text: buttonText,
+                                onPressed: (() => {
+                                      FocusScope.of(context).unfocus(),
+                                      //save edit attachment
+                                      if (navArgs != null && navArgs.isEditMode)
+                                        {
+                                          if (_formKey.currentState!.validate())
+                                            editAttachment(navArgs.type)
+                                        }
+                                      //save URL
+                                      else if (navArgs != null &&
+                                          navArgs.type == AttachmentType.url)
+                                        {
+                                          if (_formKey.currentState!.validate())
+                                            saveUrl()
+                                        }
+                                      //upload file
+                                      else
+                                        {
+                                          if (_formKey.currentState!.validate())
+                                            uploadFile()
+                                        }
+                                    })),
+
                           const SizedBox(height: 10),
                           navArgs != null && navArgs.isEditMode
                               ? CustomOutlinedButton(

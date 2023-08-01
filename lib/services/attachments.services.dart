@@ -143,14 +143,11 @@ Map<String, dynamic> makeAuthObject(
 ) {
   return {
     'sessionId': '1234', //TODO: insert real session id
-    'requestedRole': 'CREATOR',
     'chipSignature': {
       'r': "0x" + tokenSignatureData.signature.r.toRadixString(16),
       's': "0x" + tokenSignatureData.signature.s.toRadixString(16),
       'v': 27
     },
-    'chipSignatureMessageDigest':
-        bytesToHex(tokenSignatureData.hashedMsg, include0x: true),
     'tokenId': "0x" + tokenId.toRadixString(16),
     'collectionId': collectionId.toString(),
     'chainId': chainId,
@@ -160,8 +157,6 @@ Map<String, dynamic> makeAuthObject(
       's': '0x243473d1da0f9d515a03227a20932d9bf2a0d7b243d51835097306651fce11db',
       'v': 27
     },
-    'userSignatureMessageDigest':
-        '0x55e564f2b85a019871f4cfde00eb60d91c8d551a850c8945d5a32201063ce618'
   };
 }
 

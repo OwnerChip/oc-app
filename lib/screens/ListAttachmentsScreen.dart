@@ -63,18 +63,18 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Creator content',
-                  ),
-                ),
-                const SizedBox(height: 10),
                 hasMinterRole.when(
                     data: (hasMinterRole) {
                       if (hasMinterRole) {
                         return Column(
                           children: [
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Creator content',
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                             for (var i = 0; i < creatorAttachments.length; i++)
                               Column(children: [
                                 AttachmentBox(
