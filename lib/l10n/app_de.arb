@@ -144,5 +144,19 @@
     "contentCanBeViewedPublic": "Diese Anhänge können von jedem gesehen werden.",
     "contentCanOnlyBeViewedPrivate": "Diese Anhänge können nur vom Objekt Besitzer gesehen werden.",
     "addFile": "Datei hinzufügen",
-    "addUrl": "URL hinzufügen"
+    "addUrl": "URL hinzufügen",
+    "editAttachment": "Anhang bearbeiten",
+    "selectAttachmentYouWantToEdit": "Anhang bearbeiten oder entfernen.",
+    "uploadDigitalContent": "Digital Content hochladen",
+    "creatorContent": "Creator content",
+    "ownerContent": "Owner content",
+    "fileEdited": "Datei bearbeitet.",
+    "errorUpdatingData": "Fehler beim Updaten der Daten.",
+    "errorUploadingFile": "Fehler beim Hochladen.",
+    "fileAttached": "Anhang hinzugefügt.",
+    "savingUrl": "URL speichern...",
+    "urlAttached": "URL hinzugefügt.",
+    "errorSavingUrl": "Fehler beim Hinzufügen der URL.",
+    "errorDeletingAttachment": "Fehler beim Löschen des Anhangs.",
+    "attachmentDeleted": "Anhang gelöscht."
 }

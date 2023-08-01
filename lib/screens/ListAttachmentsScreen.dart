@@ -38,8 +38,8 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
     final AsyncValue<bool> hasMinterRole = ref.watch(hasMinterRoleProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const CustomAppBar(
-        text: 'Edit attachment',
+      appBar: CustomAppBar(
+        text: context.loc.editAttachment,
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
@@ -55,7 +55,7 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                     alignment: Alignment.center,
                     child: Text(
                       textAlign: TextAlign.center,
-                      'Select attachment you want to edit or remove.',
+                      context.loc.selectAttachmentYouWantToEdit,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
@@ -63,15 +63,18 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                 const SizedBox(
                   height: 20,
                 ),
+                AttachmentUploadButton(
+                    text: context.loc.uploadDigitalContent, icon: Icons.add),
+                const SizedBox(height: 10),
                 hasMinterRole.when(
                     data: (hasMinterRole) {
                       if (hasMinterRole) {
                         return Column(
                           children: [
-                            const Align(
+                            Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Creator content',
+                                context.loc.creatorContent,
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -107,10 +110,10 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                     loading: () => Container(),
                     error: (error, stack) => Container()),
                 ownerAttachments.isNotEmpty
-                    ? const Align(
+                    ? Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Owner content',
+                          context.loc.ownerContent,
                         ),
                       )
                     : Container(),
@@ -136,9 +139,6 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                     ),
                     const SizedBox(height: 10),
                   ]),
-                AttachmentUploadButton(
-                    text: 'Upload Digital Content', icon: Icons.add),
-                const SizedBox(height: 10),
               ],
             )
           ]),

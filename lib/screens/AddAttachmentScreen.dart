@@ -250,8 +250,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.successHeadingSnackbar, 'File edited.', 'success'),
+        returnSnackBarWidget(context.loc.successHeadingSnackbar,
+            context.loc.fileEdited, 'success'),
       );
     } catch (e) {
       setState(() {
@@ -259,8 +259,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, 'Error updating data.', 'error'),
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorUpdatingData, 'error'),
       );
       print(e);
       Sentry.captureException(e);
@@ -303,6 +303,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       //upload file to aws presigned url
       var awsResponse =
           await uploadFileToAWS(File(file!.path!), awsUrl, contentType);
+
+      ref.refresh(fetchAttachmentsProvider);
+
       setState(() {
         isLoading = false;
         loadingText = '';
@@ -320,8 +323,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         Navigator.pop(context, file);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-              context.loc.successHeadingSnackbar, 'File attached.', 'success'),
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.fileAttached, 'success'),
         );
       }
     } catch (e) {
@@ -330,8 +333,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, 'Error uploading file.', 'error'),
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorUploadingFile, 'error'),
       );
       print(e);
       Sentry.captureException(e);
@@ -341,7 +344,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
   void saveUrl() async {
     setState(() {
       isLoading = true;
-      loadingText = 'Saving URL...';
+      loadingText = context.loc.savingUrl;
     });
 
     List chainAndCollectionId = await returnChainAndCollectionId();
@@ -384,11 +387,11 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         Navigator.pop(context);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-              context.loc.successHeadingSnackbar, 'URL attached.', 'success'),
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.urlAttached, 'success'),
         );
       } else {
-        throw Exception('Error saving URL');
+        throw Exception(context.loc.errorSavingUrl);
       }
     } catch (e) {
       setState(() {
@@ -398,7 +401,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       //show error snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            'Error deleting attachment.', 'error'),
+            context.loc.errorDeletingAttachment, 'error'),
       );
     }
   }
@@ -427,9 +430,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       //show error snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            'Error deleting attachment.', 'error'),
+            context.loc.errorDeletingAttachment, 'error'),
       );
-      throw Exception('Error deleting attachment');
+      throw Exception(context.loc.errorDeletingAttachment);
     }
 
     ref.read(localAttachmentsProvider.notifier).state.removeAt(navArgs.index!);
@@ -438,8 +441,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         .state); //state has to be copied and set again to trigger rebuild
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(
-          context.loc.successHeadingSnackbar, 'Attachment deleted.', 'success'),
+      returnSnackBarWidget(context.loc.successHeadingSnackbar,
+          context.loc.attachmentDeleted, 'success'),
     );
     setState(() {
       file = null;
@@ -645,7 +648,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                               navArgs!.type != AttachmentType.url &&
                               !navArgs.isEditMode)
                             ChooseFileButton(
-                              text: 'Choose File',
+                              text: context.loc.chooseFile,
                               openFileExplorerFunction: pickFile,
                               openGalleryFunction: pickGalleryImage,
                             )
@@ -678,7 +681,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                           const SizedBox(height: 10),
                           navArgs != null && navArgs.isEditMode
                               ? CustomOutlinedButton(
-                                  buttonText: 'Remove',
+                                  buttonText: context.loc.remove,
                                   onPressed: () => removeAttachment(),
                                   color: Colors.red,
                                   width: double.infinity,

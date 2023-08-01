@@ -143,5 +143,19 @@
     "contentCanBeViewedPublic": "This content can be viewed by everyone who scans the item.",
     "contentCanOnlyBeViewedPrivate": "This content can only be viewed by the verified owner.",
     "addFile": "Add File",
-    "addUrl": "Add URL"
+    "addUrl": "Add URL",
+    "editAttachment": "Edit attachment",
+    "selectAttachmentYouWantToEdit": "Select attachment you want to edit or remove.",
+    "uploadDigitalContent": "Upload Digital Content",
+    "creatorContent": "Creator content",
+    "ownerContent": "Owner content",
+    "fileEdited": "File edited.",
+    "errorUpdatingData": "Error updating data.",
+    "errorUploadingFile": "Error uploading file.",
+    "fileAttached": "File attached.",
+    "savingUrl": "Saving URL...",
+    "urlAttached": "URL attached.",
+    "errorSavingUrl": "Error saving URL.",
+    "errorDeletingAttachment": "Error deleting attachment.",
+    "attachmentDeleted": "Attachment deleted."
 }
