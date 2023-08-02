@@ -9,7 +9,7 @@ import 'package:async/async.dart';
 import 'package:sentry/sentry.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -21,7 +21,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -36,10 +36,10 @@ class TransferScreen extends ConsumerStatefulWidget {
   static const routeName = '/transfer';
 
   @override
-  _MoreInfoScreenState createState() => _MoreInfoScreenState();
+  _TransferScreenState createState() => _TransferScreenState();
 }
 
-class _MoreInfoScreenState extends ConsumerState<TransferScreen> {
+class _TransferScreenState extends ConsumerState<TransferScreen> {
   final _formKey = GlobalKey<FormState>();
   final _inputController = TextEditingController();
 

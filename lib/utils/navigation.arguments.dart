@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
+import '../domain/classDefinition.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
@@ -14,4 +15,16 @@ class MetadataInputScreenArguments {
   final EthereumAddress collectionId;
 
   MetadataInputScreenArguments(this.sessionId, this.chainId, this.collectionId);
+}
+
+class AttachmentScreensArguments {
+  final bool isEditMode;
+  final AttachmentType type;
+  final int? index;
+
+  AttachmentScreensArguments(
+    this.isEditMode,
+    this.type, {
+    this.index,
+  });
 }

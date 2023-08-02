@@ -12,10 +12,10 @@ import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
 //import screens

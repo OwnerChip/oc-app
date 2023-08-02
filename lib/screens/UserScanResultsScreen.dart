@@ -11,10 +11,11 @@ import 'package:sentry/sentry.dart';
 import 'package:async/async.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
@@ -32,7 +33,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -124,6 +125,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
           loadingText = context.loc.burnedSuccess;
         });
+        deleteAllAttachments(connectedWallet, config.chainId,
+            config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
@@ -172,6 +175,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ref.watch(fetchAttachmentsProvider
+    //     .future); //Trigger loading of attachments, but don't use it here
+
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));

@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:crypto/crypto.dart';
 
 //validate ethereum address
 bool validateEthAddress(String? hex) {
@@ -165,4 +166,23 @@ Future<XFile> saveMetadataAsJSONFile(Map<String, dynamic> metadata) async {
   await file.writeAsString(json.encode(metadata));
   XFile jsonFile = XFile(file.path);
   return jsonFile;
+}
+
+//function that returns a file name substring
+String getFileNameSubstring(String fileName) {
+  //if fileName is short, return full file name
+  if (fileName.length <= 14) {
+    return fileName;
+  }
+  //else return substring of file name
+  return fileName.substring(0, 5) +
+      '...' +
+      fileName.substring(fileName.length - 9);
+}
+
+//function that takes file as input and returns sha256 hash as hex string
+Future<String> getSha256HashOfFile(File file) async {
+  final bytes = await file.readAsBytes();
+  final hash = sha256.convert(bytes);
+  return hash.toString();
 }

@@ -17,10 +17,13 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 //screen imports
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 
 //widget imports
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
@@ -32,14 +35,16 @@ import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
-import 'package:ownerchip_whitelabel/services/images.service.dart';
+import 'package:ownerchip_whitelabel/services/images.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 
 //theme imports
@@ -285,6 +290,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
     final SignatureData signatureData = ref.watch(signatureDataProvider);
+    final List<Attachment>? attachmentList =
+        ref.watch(localAttachmentsProvider);
+
     return CustomOverlay(
       show: showOverlay,
       content: overlayContentType == 'loading'
@@ -429,7 +437,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                     color: CustomColors(dotenv.get('APP_ID'))
                                         .secondaryShadowColor,
                                     offset: const Offset(1, 3),
-                                    blurRadius: 13,
+                                    blurRadius: 3,
                                   )
                                 ]),
                             child: TextField(
@@ -458,6 +466,34 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                         ],
                       )),
                   const SizedBox(height: 20),
+
+                  AttachmentUploadButton(
+                      text: 'Upload Digital Content', icon: Icons.add),
+                  const SizedBox(height: 20),
+                  //map over attachmentList to display all attachments as FileBox
+                  if (attachmentList != null)
+                    for (var i = 0; i < attachmentList.length; i++)
+                      Column(
+                        children: [
+                          AttachmentBox(
+                            text: attachmentList[i].title,
+                            icon: attachmentList[i].type == AttachmentType.url
+                                ? Icons.link
+                                : Icons.attach_file,
+                            isPrivate: attachmentList[i].isPrivate,
+                            onTap: () {
+                              //navigate to AddFileScreen with navigation args
+                              Navigator.pushNamed(
+                                  context, AddAttachmentScreen.routeName,
+                                  arguments: AttachmentScreensArguments(
+                                      true, attachmentList[i].type,
+                                      index: i));
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: CustomRoundedButton(

@@ -51,7 +51,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             const SizedBox(
               height: 60,
             ),
-
             ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
                 .roundedButtons
                 .map((button) => Padding(
@@ -64,33 +63,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             },
                         width: 250)))
                 .toList(),
-
-            // CustomRoundedButton(
-            //     text: context.loc.watchTutorial,
-            //     onPressed: () => {
-            //           launchUrl(Uri.parse(dotenv.get('TUTORIAL_PAGE_URL')),
-            //               mode: LaunchMode.externalApplication)
-            //         },
-            //     width: 250),
-            // const SizedBox(height: 10),
-            // CustomRoundedButton(
-            //     text: context.loc.viewProjects,
-            //     onPressed: () => {
-            //           launchUrl(Uri.parse(dotenv.get('PROJECTS_PAGE_URL')),
-            //               mode: LaunchMode.externalApplication)
-            //         },
-            //     width: 250),
-            // const SizedBox(height: 10),
-            // dotenv.get('APP_ID') == 'ownerchip'
-            //     ? CustomRoundedButton(
-            //         text: context.loc.orderChips,
-            //         onPressed: () => {
-            //               launchUrl(Uri.parse(dotenv.get('ORDER_CHIPS_URL')),
-            //                   mode: LaunchMode.externalApplication)
-            //             },
-            //         width: 250)
-            //     : Container(),
-
             const SizedBox(height: 60),
             CustomOutlinedButton(
                 buttonText: context.loc.support,

@@ -11,9 +11,9 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {

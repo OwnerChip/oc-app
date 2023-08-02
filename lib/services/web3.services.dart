@@ -243,11 +243,11 @@ Future<dynamic> getOwner(
 }
 
 Future<bool> checkMinterRole(String chainRpcUrl,
-    EthereumAddress contractAddress, EthereumAddress fromAddress) async {
+    EthereumAddress contractAddress, EthereumAddress walletAddress) async {
   try {
     Uint8List minterRoleUint8 = keccakUtf8("MINTER_ROLE");
     List res = await queryCollectionContract(chainRpcUrl, contractAddress,
-        "hasRole", [minterRoleUint8, fromAddress]);
+        "hasRole", [minterRoleUint8, walletAddress]);
     return res[0];
   } catch (e) {
     print('Error while checking MINTER_ROLE: $e');

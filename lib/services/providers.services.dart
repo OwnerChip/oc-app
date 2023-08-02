@@ -5,6 +5,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
@@ -14,6 +15,8 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 //****WALLETCONNECT****
 
@@ -292,4 +295,88 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
 
 final sessionIdProvider = StateProvider<String>((ref) {
   return '';
+});
+
+//this provider fetches all attachments from backend, and saves them to localAttachmentsProvider!
+//This is necessary to edit attachments locally!
+final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
+  //get tokenId from provider
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+
+  //check if connected wallet is nft owner
+  final EthereumAddress nftOwner = await ref.watch(nftOwnerProvider.future);
+  final EthereumAddress userWalletAddress = ref.read(userAddressProvider);
+
+  //if connected wallet is nft owner, get all (private and public) attachments
+  var response;
+  if (nftOwner == userWalletAddress) {
+    //signatureData
+    SignatureData tokenSignatureData = ref.read(signatureDataProvider);
+    TokenInfoObject tokenInfo =
+        await ref.read(findTokenProvider(chipInfo.tokenId).future);
+    response = await getPublicAndPrivateAttachmentsFromBackend(
+        userWalletAddress,
+        tokenInfo.chainId,
+        tokenInfo.collectionId,
+        chipInfo.tokenId,
+        tokenSignatureData);
+  } else {
+    //get all public attachments
+    response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);
+    print(response);
+  }
+  //create list of attachments
+  List<Attachment> attachments = [];
+  //create list of attachments
+  for (var attachment in response.data) {
+    attachments.add(Attachment(
+      attachment['title'],
+      attachment['name'],
+      attachment['is_file'] ? AttachmentType.other : AttachmentType.url,
+      attachment['url'],
+      attachment['uuid'],
+      isFromCreator: attachment['isFromCreator'],
+      isPrivate: attachment['is_private'],
+    ));
+  }
+
+  //set state of attachmentListProvider
+  ref.read(localAttachmentsProvider.notifier).state = attachments;
+
+  return attachments;
+});
+
+//This provider is used to display attachment data in the UI and to edit attachment data locally (which is then posted to backend)
+final localAttachmentsProvider =
+    StateProvider.autoDispose<List<Attachment>>((ref) {
+  return [];
+});
+
+//provider with attachments only where isFromCreator == true
+final creatorAttachmentsProvider =
+    Provider.autoDispose<List<Attachment>>((ref) {
+  final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+  return attachments
+      .where((e) => e.isFromCreator != null && e.isFromCreator!)
+      .toList();
+});
+
+//provider with attachments only where isFromCreator == false
+final ownerAttachmentsProvider = Provider.autoDispose<List<Attachment>>((ref) {
+  final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+  return attachments
+      .where((e) => e.isFromCreator != null && !e.isFromCreator!)
+      .toList();
+});
+
+final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject tokenInfo =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  final EthereumAddress userWalletAddress = ref.read(userAddressProvider);
+  bool hasMinterRole = await checkMinterRole(
+      getRPCUrlFromChainId(tokenInfo.chainId),
+      tokenInfo.collectionId,
+      userWalletAddress);
+  return hasMinterRole;
 });
