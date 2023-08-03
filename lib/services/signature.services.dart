@@ -138,3 +138,26 @@ bool verifySignature(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   }
   return res;
 }
+
+MsgSignature hexSignatureToRSV(String hexSignature) {
+  //if signature length is not 132 throw error
+  if (hexSignature.length != 132) {
+    throw ("ERROR: Signature length is not 132");
+  }
+  //if signature does not start with 0x throw error
+  if (hexSignature.substring(0, 2) != "0x") {
+    throw ("ERROR: Signature does not start with 0x");
+  }
+
+  //get r, s, v components as Strings
+  String rString = hexSignature.substring(2, 66);
+  String sString = hexSignature.substring(66, 130);
+  String vString = hexSignature.substring(hexSignature.length - 2);
+
+  //convert to BigInt and int
+  BigInt r = BigInt.parse(rString, radix: 16);
+  BigInt s = BigInt.parse(sString, radix: 16);
+  int v = int.parse(vString, radix: 16);
+
+  return MsgSignature(r, s, v);
+}
