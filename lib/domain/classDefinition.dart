@@ -126,3 +126,13 @@ class Attachment {
   Attachment(this.title, this.fileName, this.type, this.url, this.backendUuid,
       {this.isPrivate = false, this.isFromCreator});
 }
+
+class BackendSession {
+  final String sessionId;
+  final SignatureData signatureData;
+  final EthereumAddress userWaleltAddress;
+  final int expiryDate;
+
+  BackendSession(this.sessionId, this.signatureData, this.userWaleltAddress,
+      this.expiryDate);
+}

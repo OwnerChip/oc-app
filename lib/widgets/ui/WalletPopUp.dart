@@ -4,8 +4,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter/gestures.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3dart/credentials.dart';
 import '../../utils/utils.dart';
 import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';
@@ -128,138 +131,6 @@ Future<void> walletPopupBuilder(
                       ],
                     )),
               ]),
-/* MORE WALLETS
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                // zerion wallet
-                GestureDetector(
-                    onTap: () {
-                      onWalletPress(context, ref, wc,
-                          walletConfig['https://zerion.io']!.deeplinkUri);
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 243, 243, 243),
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(13)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: CustomColors(dotenv.get('APP_ID'))
-                                        .secondaryShadowColor,
-                                    offset: const Offset(1, 3),
-                                    blurRadius: 5,
-                                  )
-                                ]),
-                            child: Padding(
-                                padding: const EdgeInsets.all(7),
-                                child: Image.asset(
-                                    walletConfig['https://zerion.io']!.iconUri,
-                                    fit: BoxFit.contain))),
-                        Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Text(
-                              walletConfig['https://zerion.io']!.name,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displaySmall!
-                                  .copyWith(
-                                    fontSize: 14,
-                                  ),
-                            ))
-                      ],
-                    )),
-                // rainbow wallet
-                GestureDetector(
-                    onTap: () {
-                      onWalletPress(context, ref, wc,
-                          walletConfig['https://rainbow.me']!.deeplinkUri);
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 243, 243, 243),
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(13)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: CustomColors(dotenv.get('APP_ID'))
-                                        .secondaryShadowColor,
-                                    offset: const Offset(1, 3),
-                                    blurRadius: 5,
-                                  )
-                                ]),
-                            child: Padding(
-                                padding: const EdgeInsets.all(7),
-                                child: Image.asset(
-                                    walletConfig['https://rainbow.me']!.iconUri,
-                                    fit: BoxFit.contain))),
-                        Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Text(
-                              walletConfig['https://rainbow.me']!.name,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displaySmall!
-                                  .copyWith(
-                                    fontSize: 14,
-                                  ),
-                            ))
-                      ],
-                    )),
-              ]),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                // zengo wallet
-                GestureDetector(
-                    onTap: () {
-                      onWalletPress(context, ref, wc,
-                          walletConfig['https://zengo.com']!.deeplinkUri);
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 243, 243, 243),
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(13)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: CustomColors(dotenv.get('APP_ID'))
-                                        .secondaryShadowColor,
-                                    offset: const Offset(1, 3),
-                                    blurRadius: 5,
-                                  )
-                                ]),
-                            child: Padding(
-                                padding: const EdgeInsets.all(7),
-                                child: Image.asset(
-                                    walletConfig['https://zengo.com']!.iconUri,
-                                    fit: BoxFit.contain))),
-                        Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Text(
-                              walletConfig['https://zengo.com']!.name,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displaySmall!
-                                  .copyWith(
-                                    fontSize: 14,
-                                  ),
-                            ))
-                      ],
-                    )),
-              ]),
-*/
               const SizedBox(height: 30),
               Text(
                 'When signing in via Metamask make sure to connect with Ethereum Mainnet.',
@@ -314,9 +185,10 @@ Future<void> onWalletPress(
     if (!await checkInternetConnection()) {
       throw Exception("No internet connection");
     }
-    //if wallet is connected then kill session, else connect wallet
-
-    await startWalletConnection(context, ref, wc, wallet);
+    ConnectResponse response =
+        await startWalletConnection(context, ref, wc, wallet);
+    var futureRes = await response.session.future;
+    authPopupBuilder(context, ref, wc);
     Navigator.pop(context);
   } catch (e) {
     //show error snackbar

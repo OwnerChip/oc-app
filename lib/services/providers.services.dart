@@ -380,3 +380,7 @@ final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {
       userWalletAddress);
   return hasMinterRole;
 });
+
+final backendSessionProvider = StateProvider<BackendSession?>((ref) {
+  return null;
+});

@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -112,12 +113,14 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     wcClient.onSessionConnect.subscribe(_onSessionConnect);
     wcClient.onSessionDelete.subscribe(_onSessionDisconnect);
     wcClient.onSessionExpire.subscribe(_onSessionExpire);
+
+    FlutterNativeSplash.remove();
   }
 
   void _onSessionConnect(SessionConnect? args) {
     WalletType? walletType = walletConfig[args?.session.peer.metadata.url];
-    ref.watch(walletTypeProvider.notifier).state = walletType;
-    ref.watch(wcSessionProvider.notifier).state = args?.session;
+    ref.read(walletTypeProvider.notifier).state = walletType;
+    ref.read(wcSessionProvider.notifier).state = args?.session;
     final storage = SharedPreferences.getInstance();
     final session = jsonEncode(args?.session);
     //store session
@@ -164,7 +167,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   Future<void> _setSessionProviderFromPersistedSession() async {
     final storage = await SharedPreferences.getInstance();
-
+    // storage.remove('session');
+    // storage.remove('walletType');
     final storedSession = storage.getString('session');
     final storedWalletType = storage.getString('walletType');
     //check if a session is stored
@@ -175,8 +179,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       double nowPlusOneHour =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
       if (session.expiry > nowPlusOneHour) {
-        ref.watch(wcSessionProvider.notifier).state = session;
-        ref.watch(walletTypeProvider.notifier).state = walletType;
+        ref.read(wcSessionProvider.notifier).state = session;
+        ref.read(walletTypeProvider.notifier).state = walletType;
       } else {
         //remove session and wallet type from storage
         storage.remove('session');
@@ -220,10 +224,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    //fetch relevant collections here to avoid loading in in later screens
-    ref.watch(findAllMinterRolesProvider);
-
-    FlutterNativeSplash.remove();
+    ref.refresh(findAllMinterRolesProvider);
     return MaterialApp(
       theme: CustomThemeData.getThemeData(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
