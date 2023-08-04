@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
@@ -129,10 +132,23 @@ class Attachment {
 
 class BackendSession {
   final String sessionId;
-  final SignatureData signatureData;
+  final MsgSignature signatureData;
   final EthereumAddress userWaleltAddress;
   final int expiryDate;
 
   BackendSession(this.sessionId, this.signatureData, this.userWaleltAddress,
       this.expiryDate);
+
+  Map<String, dynamic> toJson() => {
+        'sessionId': sessionId,
+        'signatureData': msgSignatureToJson(signatureData),
+        'userWaleltAddress': userWaleltAddress.hex,
+        'expiryDate': expiryDate.toString(),
+      };
+
+  BackendSession.fromJson(Map<String, dynamic> json)
+      : sessionId = json['sessionId'],
+        signatureData = msgSignatureFromJson(json['signatureData']),
+        userWaleltAddress = EthereumAddress.fromHex(json['userWaleltAddress']),
+        expiryDate = int.parse(json['expiryDate']);
 }

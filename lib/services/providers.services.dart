@@ -42,7 +42,7 @@ final userAddressProvider = StateProvider<EthereumAddress>((ref) {
   return addr;
 });
 
-//**** SIGNATIURE DATA */
+//**** CHIP SIGNATIURE DATA */
 
 class SignatureDataNotifier extends StateNotifier<SignatureData> {
   SignatureDataNotifier()
@@ -59,6 +59,12 @@ class SignatureDataNotifier extends StateNotifier<SignatureData> {
 final signatureDataProvider =
     StateNotifierProvider<SignatureDataNotifier, SignatureData>((ref) {
   return SignatureDataNotifier();
+});
+
+//**** USER SIGNATURE DATA */
+
+final userSignatureProvider = StateProvider.autoDispose<MsgSignature?>((ref) {
+  return null;
 });
 
 //****CHIP INFO****
@@ -314,12 +320,14 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     SignatureData tokenSignatureData = ref.read(signatureDataProvider);
     TokenInfoObject tokenInfo =
         await ref.read(findTokenProvider(chipInfo.tokenId).future);
+    BackendSession? backendSession = ref.read(backendSessionProvider);
     response = await getPublicAndPrivateAttachmentsFromBackend(
-        userWalletAddress,
-        tokenInfo.chainId,
-        tokenInfo.collectionId,
-        chipInfo.tokenId,
-        tokenSignatureData);
+      backendSession!,
+      userWalletAddress,
+      tokenInfo.chainId,
+      tokenInfo.collectionId,
+      chipInfo.tokenId,
+    );
   } else {
     //get all public attachments
     response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);

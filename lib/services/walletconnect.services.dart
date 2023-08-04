@@ -179,12 +179,16 @@ Future<String> sendPersonalSignRequest(
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);
 
+  List<int> utf8CodeUnits = utf8.encode(message);
+  String hexUtf8EncodedMessage =
+      "0x" + utf8CodeUnits.map((e) => e.toRadixString(16)).join();
+
   String signature = await wc.request(
     topic: wcSession.topic,
     chainId: 'eip155:1',
     request: SessionRequestParams(
       method: 'personal_sign',
-      params: [message, walletAddress.toString()],
+      params: [hexUtf8EncodedMessage, walletAddress.toString()],
     ),
   );
 

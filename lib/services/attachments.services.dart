@@ -8,11 +8,11 @@ import 'package:crypto/crypto.dart';
 
 // sends attachment metadata to backend; receives amazon s3 link if file, else "OK"
 Future<List> postAttachmentMetadataToBackend(
+    BackendSession backendSession,
     EthereumAddress walletAddress,
     int chainId,
     EthereumAddress collectionId,
     BigInt tokenId,
-    SignatureData tokenSignatureData,
     String name,
     String title,
     bool isPrivate,
@@ -25,11 +25,12 @@ Future<List> postAttachmentMetadataToBackend(
   final url = '/attachments';
   final data = {
     'auth': makeAuthObject(
+      backendSession.sessionId,
+      backendSession.signatureData,
       walletAddress,
       chainId,
       collectionId,
       tokenId,
-      tokenSignatureData,
     ),
     'name': name,
     'title': title,
@@ -52,11 +53,11 @@ Future<List> postAttachmentMetadataToBackend(
 
 // sends attachment metadata to backend; receives amazon s3 link if file, else "OK"
 Future<String> putAttachmentMetadataToBackend(
+    BackendSession backendSession,
     EthereumAddress walletAddress,
     int chainId,
     EthereumAddress collectionId,
     BigInt tokenId,
-    SignatureData tokenSignatureData,
     String fileUuid,
     String name,
     String title,
@@ -67,11 +68,12 @@ Future<String> putAttachmentMetadataToBackend(
   const String url = '/attachments';
   final data = {
     'auth': makeAuthObject(
+      backendSession.sessionId,
+      backendSession.signatureData,
       walletAddress,
       chainId,
       collectionId,
       tokenId,
-      tokenSignatureData,
     ),
     'uuid': fileUuid,
     'is_private': isPrivate,
@@ -106,11 +108,11 @@ Future<dynamic> uploadFileToAWS(
 
 //remove attachment
 Future<dynamic> deleteAttachmentFromBackend(
+  BackendSession backendSession,
   EthereumAddress walletAddress,
   int chainId,
   EthereumAddress collectionId,
   BigInt tokenId,
-  SignatureData tokenSignatureData,
   String fileUuid,
 ) async {
   final Dio dio = getBackendClient();
@@ -119,11 +121,12 @@ Future<dynamic> deleteAttachmentFromBackend(
   try {
     final result = await dio.delete(url,
         data: makeAuthObject(
+          backendSession.sessionId,
+          backendSession.signatureData,
           walletAddress,
           chainId,
           collectionId,
           tokenId,
-          tokenSignatureData,
         ));
 
     return result;
@@ -135,27 +138,23 @@ Future<dynamic> deleteAttachmentFromBackend(
 
 //funciton that makes auth object for requests
 Map<String, dynamic> makeAuthObject(
+  String sessionId,
+  MsgSignature userSignature,
   EthereumAddress walletAddress,
   int chainId,
   EthereumAddress collectionId,
   BigInt tokenId,
-  SignatureData tokenSignatureData,
 ) {
   return {
-    'sessionId': '1234', //TODO: insert real session id
-    'chipSignature': {
-      'r': "0x" + tokenSignatureData.signature.r.toRadixString(16),
-      's': "0x" + tokenSignatureData.signature.s.toRadixString(16),
-      'v': 27
-    },
+    'sessionId': sessionId, //TODO: insert real session id
     'tokenId': "0x" + tokenId.toRadixString(16),
     'collectionId': collectionId.toString(),
     'chainId': chainId,
     'walletAddress': walletAddress.toString(),
     'userWalletSignature': {
-      'r': '0x083161fbe4c83ccf8c982b674e62eae2d2ff682297878fdb9f13eb93b5213a9f',
-      's': '0x243473d1da0f9d515a03227a20932d9bf2a0d7b243d51835097306651fce11db',
-      'v': 27
+      'r': '0x' + userSignature.r.toRadixString(16),
+      's': '0x' + userSignature.s.toRadixString(16),
+      'v': userSignature.v
     },
   };
 }
@@ -178,11 +177,11 @@ Future<dynamic> getPublicAttachmentsFromBackend(
 }
 
 Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
+  BackendSession backendSession,
   EthereumAddress walletAddress,
   int chainId,
   EthereumAddress collectionId,
   BigInt tokenId,
-  SignatureData tokenSignatureData,
 ) async {
   final Dio dio = getBackendClient();
   const url = '/attachments/owner/view-all';
@@ -190,11 +189,12 @@ Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
   try {
     final result = await dio.post(url,
         data: makeAuthObject(
+          backendSession.sessionId,
+          backendSession.signatureData,
           walletAddress,
           chainId,
           collectionId,
           tokenId,
-          tokenSignatureData,
         ));
 
     return result;
@@ -205,6 +205,7 @@ Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
 }
 
 Future<dynamic> deleteAllAttachments(
+  BackendSession backendSession,
   EthereumAddress walletAddress,
   int chainId,
   EthereumAddress collectionId,
@@ -217,11 +218,12 @@ Future<dynamic> deleteAllAttachments(
   try {
     final result = await dio.delete(url,
         data: makeAuthObject(
+          backendSession.sessionId,
+          backendSession.signatureData,
           walletAddress,
           chainId,
           collectionId,
           tokenId,
-          tokenSignatureData,
         ));
 
     return result;

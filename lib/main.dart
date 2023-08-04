@@ -171,25 +171,34 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     // storage.remove('walletType');
     final storedSession = storage.getString('session');
     final storedWalletType = storage.getString('walletType');
+    final storedBackendSession = storage.getString('backendSession');
     //check if a session is stored
-    if (storedSession != null && storedWalletType != null) {
+    if (storedSession != null &&
+        storedWalletType != null &&
+        storedBackendSession != null) {
       final session = SessionData.fromJson(jsonDecode(storedSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
+      final backendSession =
+          BackendSession.fromJson(jsonDecode(storedBackendSession));
       //check if the stored session is expired
       double nowPlusOneHour =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
-      if (session.expiry > nowPlusOneHour) {
+      if (session.expiry > nowPlusOneHour &&
+          backendSession.expiryDate > nowPlusOneHour) {
         ref.read(wcSessionProvider.notifier).state = session;
         ref.read(walletTypeProvider.notifier).state = walletType;
+        ref.read(backendSessionProvider.notifier).state = backendSession;
       } else {
         //remove session and wallet type from storage
         storage.remove('session');
         storage.remove('walletType');
+        storage.remove('backendSession');
       }
     } else {
       //remove session and wallet type from storage
       storage.remove('session');
       storage.remove('walletType');
+      storage.remove('backendSession');
     }
   }
 

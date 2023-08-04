@@ -161,3 +161,21 @@ MsgSignature hexSignatureToRSV(String hexSignature) {
 
   return MsgSignature(r, s, v);
 }
+
+//MsgSignature to json
+Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
+  return {
+    'r': signature.r.toString(),
+    's': signature.s.toString(),
+    'v': signature.v,
+  };
+}
+
+//json to MsgSignature
+MsgSignature msgSignatureFromJson(Map<String, dynamic> json) {
+  return MsgSignature(
+    BigInt.parse(json['r']),
+    BigInt.parse(json['s']),
+    json['v'],
+  );
+}

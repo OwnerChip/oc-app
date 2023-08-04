@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/utils.dart';
 import 'returnSnackBarWidget.dart';
@@ -30,6 +31,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Web3App? wc = ref.watch(wcProvider);
     SessionData? wcSession = ref.watch(wcSessionProvider);
+    BackendSession? backendSession = ref.watch(backendSessionProvider);
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
@@ -61,7 +63,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
-                wcSession != null
+                wcSession != null && backendSession != null
                     ? IconButton(
                         padding: const EdgeInsets.all(0.0),
                         icon: Icon(Icons.logout,
@@ -72,8 +74,12 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         onPressed: () {
                           wc!.disconnectSession(
                               topic: wcSession.topic,
-                              reason: WalletConnectError(
-                                  code: 6000, message: 'MANUAL DISCONNECT'));
+                              reason: const WalletConnectError(
+                                  code: 6000,
+                                  message:
+                                      'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+                          ref.read(backendSessionProvider.notifier).state =
+                              null; //delete backend session from riverpod
                           Navigator.pushNamedAndRemoveUntil(
                               context, HomeScreen.routeName, (route) => false);
                         },
@@ -90,7 +96,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 Align(
                   alignment: const Alignment(0.0, 0.95),
                   child: Text(
-                    wcSession != null
+                    wcSession != null && backendSession != null
                         ? context.loc.disconnect
                         : context.loc.connect,
                     style: Theme.of(context)

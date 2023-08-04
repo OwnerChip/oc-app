@@ -192,6 +192,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
     Attachment attachmentBeingEdited =
         ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
+    BackendSession? backendSession = ref.read(backendSessionProvider);
 
     try {
       setState(() {
@@ -199,11 +200,11 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = 'Uploading...';
       });
       await putAttachmentMetadataToBackend(
+          backendSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
           chipInfo.tokenId,
-          ref.read(signatureDataProvider),
           attachmentBeingEdited.backendUuid,
           attachmentBeingEdited.fileName,
           titleTextInput,
@@ -279,17 +280,18 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       int fileSize = file!.size;
       String contentType = lookupMimeType(file!.path!)!;
 
+      BackendSession? backendSession = ref.read(backendSessionProvider);
       EthereumAddress walletAddress = await ref.read(userAddressProvider);
       List chainAndCollectionId = await returnChainAndCollectionId();
       int chainId = chainAndCollectionId[0];
       EthereumAddress collectionId = chainAndCollectionId[1];
 
       List response = await postAttachmentMetadataToBackend(
+          backendSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
           ref.read(chipInfoProvider).tokenId,
-          ref.read(signatureDataProvider),
           fileName!,
           _titleInputController.text,
           isPrivate,
@@ -351,13 +353,15 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
+    BackendSession? backendSession = ref.read(backendSessionProvider);
+
     try {
       List result = await postAttachmentMetadataToBackend(
+          backendSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
           ref.read(chipInfoProvider).tokenId,
-          ref.read(signatureDataProvider),
           _titleInputController.text,
           _titleInputController.text,
           isPrivate,
@@ -418,13 +422,15 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
+    BackendSession? backendSession = ref.read(backendSessionProvider);
+
     try {
       var result = await deleteAttachmentFromBackend(
+          backendSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
           ref.read(chipInfoProvider).tokenId,
-          ref.read(signatureDataProvider),
           attachment.backendUuid);
     } catch (e) {
       //show error snackbar

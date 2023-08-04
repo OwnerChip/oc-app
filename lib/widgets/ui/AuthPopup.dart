@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/credentials.dart';
+import 'package:web3dart/crypto.dart';
 import '../../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
@@ -36,19 +42,45 @@ Future<void> authPopupBuilder(
             children: [
               CustomRoundedButton(
                   text: 'Authenticate',
-                  onPressed: () => onTapAuth('insert_session_id', ref)),
+                  onPressed: () =>
+                      onTapAuth(context, 'insert_session_id', ref)),
             ],
           ));
     },
   );
 }
 
-Future<void> onTapAuth(String sessionId, WidgetRef ref) async {
+Future<void> onTapAuth(
+    BuildContext context, String sessionId, WidgetRef ref) async {
   Web3App? wc = ref.read(wcProvider);
   EthereumAddress userWalletAddress = ref.read(userAddressProvider);
   SessionData? session = ref.read(wcSessionProvider);
   WalletType? walletType = ref.read(walletTypeProvider);
 
-  sendPersonalSignRequest(
-      'insert_session_id', userWalletAddress, wc!, session!, walletType!);
+  String sessionId = await getSessionId();
+
+  String hexSignature = await sendPersonalSignRequest(
+      sessionId, userWalletAddress, wc!, session!, walletType!);
+
+  MsgSignature signature = hexSignatureToRSV(hexSignature);
+
+  ref.read(userSignatureProvider.notifier).state =
+      signature; //TODO: remove this provider? probably not necessary
+
+  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+  int sessionExpirationDate = await getSessionExpiration(
+      sevenDaysInSeconds, sessionId, userWalletAddress, signature);
+
+  BackendSession backendSession = BackendSession(sessionId, signature,
+      ref.read(userAddressProvider), sessionExpirationDate);
+
+  ref.read(backendSessionProvider.notifier).state = backendSession;
+
+  //persist session date
+  final SharedPreferences storage = await SharedPreferences.getInstance();
+  final String jsonBackendSession = jsonEncode(backendSession.toJson());
+  storage.setString('backendSession', jsonBackendSession);
+
+  //navigate back
+  Navigator.pop(context);
 }
