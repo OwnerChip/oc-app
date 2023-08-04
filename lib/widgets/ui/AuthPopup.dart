@@ -59,8 +59,11 @@ Future<void> onTapAuth(
 
   String sessionId = await getSessionId();
 
+  String message =
+      "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+
   String hexSignature = await sendPersonalSignRequest(
-      sessionId, userWalletAddress, wc!, session!, walletType!);
+      message, userWalletAddress, wc!, session!, walletType!);
 
   MsgSignature signature = hexSignatureToRSV(hexSignature);
 

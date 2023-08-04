@@ -169,6 +169,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final storage = await SharedPreferences.getInstance();
     // storage.remove('session');
     // storage.remove('walletType');
+    // storage.remove('backendSession');
     final storedSession = storage.getString('session');
     final storedWalletType = storage.getString('walletType');
     final storedBackendSession = storage.getString('backendSession');
