@@ -125,7 +125,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
           loadingText = context.loc.burnedSuccess;
         });
-        deleteAllAttachments(connectedWallet, config.chainId,
+
+        BackendSession? backendSession = ref.read(backendSessionProvider);
+
+        deleteAllAttachments(backendSession!, connectedWallet, config.chainId,
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();

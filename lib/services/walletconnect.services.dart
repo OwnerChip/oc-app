@@ -17,6 +17,8 @@ import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
+import '../widgets/ui/AuthPopup.dart';
+
 // This function starts a wallet connection with the WalletConnect connector.
 Future<ConnectResponse> startWalletConnection(
     BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
@@ -49,6 +51,10 @@ Future<ConnectResponse> startWalletConnection(
 
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);
+  SessionData session = await wcResp.session.future;
+  Navigator.pop(context);
+  authPopupBuilder(context, ref, wc);
+
   return wcResp;
 }
 
@@ -158,4 +164,33 @@ Future<String> makeAndSendNormalTx(
   );
 
   return txnHash;
+}
+
+//personal sign
+Future<String> sendPersonalSignRequest(
+  String message,
+  EthereumAddress walletAddress,
+  Web3App wc,
+  SessionData wcSession,
+  WalletType walletType,
+) async {
+  String walletLink = walletType.deeplinkUri;
+  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+  await launchUrlString(walletDeepLink.toString(),
+      mode: LaunchMode.externalApplication);
+
+  List<int> utf8CodeUnits = utf8.encode(message);
+  String hexUtf8EncodedMessage =
+      "0x" + utf8CodeUnits.map((e) => e.toRadixString(16)).join();
+
+  String signature = await wc.request(
+    topic: wcSession.topic,
+    chainId: 'eip155:1',
+    request: SessionRequestParams(
+      method: 'personal_sign',
+      params: [hexUtf8EncodedMessage, walletAddress.toString()],
+    ),
+  );
+
+  return signature;
 }

@@ -42,7 +42,7 @@ final userAddressProvider = StateProvider<EthereumAddress>((ref) {
   return addr;
 });
 
-//**** SIGNATIURE DATA */
+//**** CHIP SIGNATIURE DATA */
 
 class SignatureDataNotifier extends StateNotifier<SignatureData> {
   SignatureDataNotifier()
@@ -59,6 +59,12 @@ class SignatureDataNotifier extends StateNotifier<SignatureData> {
 final signatureDataProvider =
     StateNotifierProvider<SignatureDataNotifier, SignatureData>((ref) {
   return SignatureDataNotifier();
+});
+
+//**** USER SIGNATURE DATA */
+
+final userSignatureProvider = StateProvider.autoDispose<MsgSignature?>((ref) {
+  return null;
 });
 
 //****CHIP INFO****
@@ -213,7 +219,8 @@ final nftOwnerProvider =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
-    return Future.error('No owner found.');
+    return Future.error(
+        'No owner found.'); //If you want to change the "No owner found." error message, please double check if no other code depends on this string
   }
   EthereumAddress nftOwner = await getOwner(
       getRPCUrlFromChainId(config.chainId),
@@ -302,24 +309,55 @@ final sessionIdProvider = StateProvider<String>((ref) {
 final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   //get tokenId from provider
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  TokenInfoObject tokenInfo =
+      await ref.read(findTokenProvider(chipInfo.tokenId).future);
 
-  //check if connected wallet is nft owner
-  final EthereumAddress nftOwner = await ref.watch(nftOwnerProvider.future);
+  bool tokenExists = true;
+  EthereumAddress nftOwner = zeroAddress;
+  try {
+    //check if connected wallet is nft owner
+    final EthereumAddress nftOwner = await ref.watch(nftOwnerProvider.future);
+  } catch (e) {
+    print(e);
+    if (e == 'No owner found.') {
+      tokenExists =
+          false; //if "No owner found." error is thrown, token does not exist
+    }
+  }
   final EthereumAddress userWalletAddress = ref.read(userAddressProvider);
 
-  //if connected wallet is nft owner, get all (private and public) attachments
   var response;
-  if (nftOwner == userWalletAddress) {
-    //signatureData
+
+  //if token does not exist, the collectionId and chainId is given by the selected
+  //collection and chain from selectedCollectionIdProvider and selectedChainIdProvider (selected on ChainSelectorScreen).
+  //ATTENTION: This relies on the fact that attachments for non existing tokens are only fetched
+  //after the user has selected a collection and chain on ChainSelectorScreen (e.g. on MetadataInputScreens)
+  //IF token DOES exists, the collectionId is given by the tokenInfo (fetched from Blockchain)
+  EthereumAddress collectionId;
+  int? chainId = ref.read(selectedChainIdProvider);
+  Collection? collection = ref.read(selectedCollectionIdProvider);
+  if (!tokenExists && collection != null && chainId != null) {
+    collectionId = collection.id;
+    chainId = collection.chainId!;
+  } else {
+    collectionId = tokenInfo.collectionId;
+    chainId = tokenInfo.chainId;
+  }
+
+  //if connected wallet is nft owner, get all (private and public) attachments
+  //if token does not exist, the creator can fetch all attachments. This is
+  //necessary to show all previously uploaded attachments in MetadataInputScreens
+  if (!tokenExists || nftOwner == userWalletAddress) {
     SignatureData tokenSignatureData = ref.read(signatureDataProvider);
-    TokenInfoObject tokenInfo =
-        await ref.read(findTokenProvider(chipInfo.tokenId).future);
+
+    BackendSession? backendSession = ref.read(backendSessionProvider);
     response = await getPublicAndPrivateAttachmentsFromBackend(
-        userWalletAddress,
-        tokenInfo.chainId,
-        tokenInfo.collectionId,
-        chipInfo.tokenId,
-        tokenSignatureData);
+      backendSession!,
+      userWalletAddress,
+      chainId,
+      collectionId,
+      chipInfo.tokenId,
+    );
   } else {
     //get all public attachments
     response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);
@@ -379,4 +417,8 @@ final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {
       tokenInfo.collectionId,
       userWalletAddress);
   return hasMinterRole;
+});
+
+final backendSessionProvider = StateProvider<BackendSession?>((ref) {
+  return null;
 });

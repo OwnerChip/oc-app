@@ -1,3 +1,4 @@
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -98,5 +99,33 @@ Future<String> getSessionId() async {
     );
     print(e);
     return "";
+  }
+}
+
+Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
+    EthereumAddress userWalletAddress, MsgSignature signature) async {
+  final Dio dio = getBackendClient();
+  try {
+    final response = await dio.post('/auth/${sessionDuration}',
+        data: {
+          "sessionId": sessionId,
+          "walletAddress": userWalletAddress.hex,
+          "userWalletSignature": {
+            'r': '0x' + signature.r.toRadixString(16),
+            's': '0x' + signature.s.toRadixString(16),
+            'v': signature.v
+          }
+        },
+        options: Options(
+          responseType: ResponseType.plain,
+        ));
+    return int.parse(response.data); // unix expiration timestamp
+  } catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+    return 0;
   }
 }
