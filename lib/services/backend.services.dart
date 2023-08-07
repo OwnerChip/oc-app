@@ -63,6 +63,16 @@ Future<String> sendGaslessRequest(
   return response.data; //txId
 }
 
+// gets the hash that needs to be used to sign a gasless tx request.
+Future<String> getGaslessTxHash(
+    EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
+  final Dio dio = getBackendClient();
+  final String url = '/collection/$collectionId/metatx/hash';
+  //make post request with dio
+  final response = await dio.post(url, data: txRequest);
+  return response.data; //hash
+}
+
 // This function will post a user action to the analytics backend.
 Future<void> sendAnalyticsTrace(String caseId, String description, String type,
     {Map<String, dynamic>? tags}) async {
