@@ -205,8 +205,10 @@ final findTokenProvider = FutureProvider.autoDispose
     return TokenInfoObject(chainId, collectionId, tokenId);
   }));
 
-  return result.firstWhere((element) => element.collectionId != zeroAddress,
+  TokenInfoObject tokenInfo = result.firstWhere(
+      (element) => element.collectionId != zeroAddress,
       orElse: () => TokenInfoObject(0, zeroAddress, tokenId));
+  return tokenInfo;
 });
 
 //****NFT OWNER ****

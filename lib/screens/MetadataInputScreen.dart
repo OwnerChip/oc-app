@@ -212,6 +212,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         await Future.delayed(const Duration(seconds: 1));
         //fetch metadata and image to update provider before navigating to next screen
         final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+        TokenInfoObject tokenInfo =
+            await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+        List<Attachment> attachments =
+            await ref.refresh(fetchAttachmentsProvider.future);
         Map metadata =
             await ref.read(nftMetadataProvider(chipInfo.tokenId).future);
         String image =
