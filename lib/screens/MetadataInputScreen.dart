@@ -339,178 +339,190 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           appBar: CustomAppBar(
             text: context.loc.initializeChip,
           ),
-          body: ScreenBodyLayout(children: [
-            Row(
-              children: [
-                const SizedBox(width: 22),
-                RichText(
-                  text: TextSpan(
-                      text: '${context.loc.step} 2/',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge!
-                          .copyWith(fontSize: 18),
-                      children: [
-                        TextSpan(
-                            text: '2',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall!
-                                .copyWith(fontSize: 18))
-                      ]),
+          body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: ScreenBodyLayout(children: [
+                Row(
+                  children: [
+                    const SizedBox(width: 22),
+                    RichText(
+                      text: TextSpan(
+                          text: '${context.loc.step} 2/',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge!
+                              .copyWith(fontSize: 18),
+                          children: [
+                            TextSpan(
+                                text: '2',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(fontSize: 18))
+                          ]),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            CustomCard(
-                color: CustomColors(dotenv.get('APP_ID')).cardColor,
-                children: [
-                  SetImageWidget(
-                    imageFile: image,
-                    setCameraImage: setCameraImage,
-                    setGalleryImage: setGalleryImage,
-                    resetImage: resetImage,
-                  ),
-                  const SizedBox(height: 20),
-                  Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Row(children: [
-                            Expanded(
-                              flex: 5,
-                              child: TextFormField(
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                controller: _titleController,
-                                decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color:
-                                              Theme.of(context).primaryColor),
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color:
-                                              Theme.of(context).primaryColor),
-                                    ),
-                                    contentPadding:
-                                        const EdgeInsets.only(left: 12),
-                                    hintText: context.loc.title,
-                                    hintStyle:
-                                        Theme.of(context).textTheme.bodyMedium),
-                                onChanged: (text) {
-                                  metadata['name'] = text;
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return context.loc.pleaseEnterText;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: CustomRoundedButton(
-                                  height: 25,
-                                  // width: 100,
-                                  textStyle: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(
-                                          color:
-                                              CustomColors(dotenv.get('APP_ID'))
+                const SizedBox(height: 20),
+                CustomCard(
+                    color: CustomColors(dotenv.get('APP_ID')).cardColor,
+                    children: [
+                      SetImageWidget(
+                        imageFile: image,
+                        setCameraImage: setCameraImage,
+                        setGalleryImage: setGalleryImage,
+                        resetImage: resetImage,
+                      ),
+                      const SizedBox(height: 20),
+                      Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              Row(children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: TextFormField(
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    controller: _titleController,
+                                    decoration: InputDecoration(
+                                        enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor),
+                                        ),
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.only(left: 12),
+                                        hintText: context.loc.title,
+                                        hintStyle: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium),
+                                    onChanged: (text) {
+                                      metadata['name'] = text;
+                                    },
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return context.loc.pleaseEnterText;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 3,
+                                  child: CustomRoundedButton(
+                                      height: 25,
+                                      // width: 100,
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                              color: CustomColors(
+                                                      dotenv.get('APP_ID'))
                                                   .customRoundedButtonColor,
-                                          fontSize:
-                                              CustomFonts(dotenv.get('APP_ID'))
+                                              fontSize: CustomFonts(
+                                                          dotenv.get('APP_ID'))
                                                       .bodyText2FontSize /
                                                   1.3),
-                                  text: context.loc.traits,
-                                  onPressed: () => toggleTraitsForm()),
-                            )
-                          ]),
-                          const SizedBox(height: 15),
-                          Container(
-                            decoration: BoxDecoration(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(13)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: CustomColors(dotenv.get('APP_ID'))
-                                        .secondaryShadowColor,
-                                    offset: const Offset(1, 3),
-                                    blurRadius: 3,
-                                  )
-                                ]),
-                            child: TextField(
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              maxLines: 3,
-                              keyboardType: TextInputType.multiline,
-                              controller: _descriptionController,
-                              decoration: InputDecoration(
-                                focusColor: Theme.of(context).primaryColorDark,
-                                hintText: context.loc.description,
-                                hintStyle:
-                                    Theme.of(context).textTheme.bodyMedium,
-                                filled: true,
-                                fillColor:
-                                    Theme.of(context).scaffoldBackgroundColor,
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(13),
+                                      text: context.loc.traits,
+                                      onPressed: () => toggleTraitsForm()),
+                                )
+                              ]),
+                              const SizedBox(height: 15),
+                              Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(13)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .secondaryShadowColor,
+                                        offset: const Offset(1, 3),
+                                        blurRadius: 3,
+                                      )
+                                    ]),
+                                child: TextField(
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  maxLines: 3,
+                                  keyboardType: TextInputType.multiline,
+                                  controller: _descriptionController,
+                                  decoration: InputDecoration(
+                                    focusColor:
+                                        Theme.of(context).primaryColorDark,
+                                    hintText: context.loc.description,
+                                    hintStyle:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .scaffoldBackgroundColor,
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(13),
+                                    ),
+                                  ),
+                                  onChanged: (text) {
+                                    metadata['description'] = text;
+                                  },
                                 ),
+                              )
+                            ],
+                          )),
+                      const SizedBox(height: 20),
+
+                      AttachmentUploadButton(
+                          text: 'Upload Digital Content', icon: Icons.add),
+                      const SizedBox(height: 20),
+                      //map over attachmentList to display all attachments as FileBox
+                      if (attachmentList != null)
+                        for (var i = 0; i < attachmentList.length; i++)
+                          Column(
+                            children: [
+                              AttachmentBox(
+                                text: attachmentList[i].title,
+                                icon:
+                                    attachmentList[i].type == AttachmentType.url
+                                        ? Icons.link
+                                        : Icons.attach_file,
+                                isPrivate: attachmentList[i].isPrivate,
+                                onTap: () {
+                                  //navigate to AddFileScreen with navigation args
+                                  Navigator.pushNamed(
+                                      context, AddAttachmentScreen.routeName,
+                                      arguments: AttachmentScreensArguments(
+                                          true, attachmentList[i].type,
+                                          index: i));
+                                },
                               ),
-                              onChanged: (text) {
-                                metadata['description'] = text;
-                              },
-                            ),
-                          )
-                        ],
-                      )),
-                  const SizedBox(height: 20),
-
-                  AttachmentUploadButton(
-                      text: 'Upload Digital Content', icon: Icons.add),
-                  const SizedBox(height: 20),
-                  //map over attachmentList to display all attachments as FileBox
-                  if (attachmentList != null)
-                    for (var i = 0; i < attachmentList.length; i++)
-                      Column(
-                        children: [
-                          AttachmentBox(
-                            text: attachmentList[i].title,
-                            icon: attachmentList[i].type == AttachmentType.url
-                                ? Icons.link
-                                : Icons.attach_file,
-                            isPrivate: attachmentList[i].isPrivate,
-                            onTap: () {
-                              //navigate to AddFileScreen with navigation args
-                              Navigator.pushNamed(
-                                  context, AddAttachmentScreen.routeName,
-                                  arguments: AttachmentScreensArguments(
-                                      true, attachmentList[i].type,
-                                      index: i));
-                            },
+                              const SizedBox(height: 20),
+                            ],
                           ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
 
-                  Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: CustomRoundedButton(
-                        text: context.loc.mintNft,
-                        onPressed: () async {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(navArgs.sessionId, wc!,
-                                signatureData, metadata, chainId, collectionId,
-                                image: image));
-                          }
-                        },
-                      )),
-                ])
-          ])),
+                      Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: CustomRoundedButton(
+                            text: context.loc.mintNft,
+                            onPressed: () async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              if (_formKey.currentState!.validate()) {
+                                fromCancelable(createToken(
+                                    navArgs.sessionId,
+                                    wc!,
+                                    signatureData,
+                                    metadata,
+                                    chainId,
+                                    collectionId,
+                                    image: image));
+                              }
+                            },
+                          )),
+                    ])
+              ]))),
     );
   }
 }
