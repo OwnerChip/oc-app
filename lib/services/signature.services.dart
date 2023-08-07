@@ -1,16 +1,32 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import 'dart:io';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
+/// sign a hash with the private key of the chip
+Future<MsgSignature> signHash(NFCPlatform nfc, int hexKeyNumber,
+    EthereumAddress chipEthereumAddress, String hash) async {
+  await nfc.sendCommand(SELECT_APP);
+
+  final Uint8List hashBytes = hexToBytes(hash);
+  final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hashBytes);
+  final List responseGetSignature = await nfc.sendCommand(getSigCmd);
+  final Uint8List chipSignatureData = responseGetSignature[0];
+
+  //neccassary for V parameter calculation
+  final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
+  return extractSignature(signer, hashBytes, chipSignatureData);
+}
+
+/// sign a hash with the private key of the chip and verify the signature locally
 Future<List> verifySignatureAuthenticity(NFCPlatform nfc, String sessionId,
-    EthereumAddress chipEthereumAddress, chipTokenId, selectApp) async {
+    EthereumAddress chipEthereumAddress, chipTokenId) async {
   // select app if necessary
   await nfc.sendCommand(SELECT_APP);
 
@@ -36,6 +52,7 @@ Future<List> verifySignatureAuthenticity(NFCPlatform nfc, String sessionId,
   return [hashedMsg, signature];
 }
 
+/// verify the signature of the chip on the smart contract
 Future<bool> verifyTokenAuthenticity(
     String chainRpcUrl,
     EthereumAddress collectionId,
@@ -52,22 +69,15 @@ Future<bool> verifyTokenAuthenticity(
   }
 }
 
-// calculate msg digest (with addded prefix for compliance with personal_sign)
+/// calculate msg digest (with addded prefix for compliance with personal_sign EIP-191)
 Uint8List prepareMsgForSignature(String hexString) {
-  var hashedMsg = keccakUtf8(hexString);
-
-  var prefix = utf8.encode("\x19Ethereum Signed Message:\n32");
   var bytes = BytesBuilder();
-  bytes.add(prefix);
-  bytes.add(hashedMsg);
-  Uint8List prefixedHashedMsg = bytes.toBytes();
-
-  // hash prepended msg
-  Uint8List res = keccak256(prefixedHashedMsg);
-  return res;
+  bytes.add(utf8.encode("\x19Ethereum Signed Message:\n32"));
+  bytes.add(keccakUtf8(hexString));
+  return bytes.toBytes();
 }
 
-// extract & verify signature out of signatureResponse
+/// extract & verify signature out of signatureResponse
 MsgSignature extractSignature(
     BigInt tokenId, Uint8List hashedMsg, Uint8List signatureResp) {
   String signature = hex.encode(signatureResp);
@@ -105,6 +115,7 @@ MsgSignature extractSignature(
   return MsgSignature(r, s, v);
 }
 
+/// helper function to calculate v parameter for signature
 int calculateV(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   int vResult = 27;
   bool res = false;
@@ -122,7 +133,7 @@ int calculateV(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   return vResult;
 }
 
-// verify that the tokenId corresponds to the signer
+/// verify that the tokenId corresponds to the signer
 bool verifySignature(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   bool res = false;
   var vValues = [27, 28];
@@ -139,6 +150,7 @@ bool verifySignature(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   return res;
 }
 
+/// split signature into signature parameters (r, s, v)
 MsgSignature hexSignatureToRSV(String hexSignature) {
   //if signature length is not 132 throw error
   if (hexSignature.length != 132) {
@@ -162,7 +174,7 @@ MsgSignature hexSignatureToRSV(String hexSignature) {
   return MsgSignature(r, s, v);
 }
 
-//MsgSignature to json
+/// convert MsgSignature to json
 Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
   return {
     'r': signature.r.toString(),
@@ -171,7 +183,7 @@ Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
   };
 }
 
-//json to MsgSignature
+/// convert json to MsgSignature
 MsgSignature msgSignatureFromJson(Map<String, dynamic> json) {
   return MsgSignature(
     BigInt.parse(json['r']),

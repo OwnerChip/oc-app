@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -52,6 +53,21 @@ Uint8List makeGetKeyInfoCommand(hexKeyNumber) {
     0x00,
     0x00,
   ]);
+}
+
+Uint8List setPinCommand(String pin) {
+  int pinLength = pin.length;
+
+  final Uint8List cmd = Uint8List.fromList([
+    0x00,
+    0x40,
+    0x00,
+    0x00,
+    pinLength, // Length of the PIN in bytes (between 4 and 62 bytes)
+    ...pin.codeUnits,
+    0x08 // Expected length of answer
+  ]);
+  return cmd;
 }
 
 Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
@@ -253,5 +269,26 @@ Future<void> nfcPlatformCheck(
     await Future.delayed(const Duration(seconds: 1));
     Navigator.pop(context);
     throw Exception('Tag is not ISO-DEP.');
+  }
+}
+
+/// returns PUK value (8 byte) or throws exception
+Future<String> setPin(NFCPlatform nfc, String pin) async {
+  Uint8List cmd = setPinCommand(pin);
+  List<dynamic> res = await nfc.sendCommand(SELECT_APP);
+
+  Uint8List responseCodes = res[0];
+  int responseCode1 = responseCodes[1];
+  int responseCode2 = responseCodes[2];
+
+  // ERROR (0x69 0x85)
+  bool success = !(responseCode1 == 0x69 && responseCode2 == 0x85);
+
+  if (success) {
+    Uint8List puk = responseCodes.sublist(0, 7);
+    Utf8Decoder decoder = Utf8Decoder();
+    return decoder.convert(puk);
+  } else {
+    throw Exception("Error setting pin");
   }
 }

@@ -108,8 +108,8 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
             await ref.watch(findTokenProvider(chipTokenId).future);
 
         //verify signature
-        List verificationResult = await verifySignatureAuthenticity(nfc,
-            sessionId, chipEthereumAddress, chipTokenId, ndefTagInitialized);
+        List verificationResult = await verifySignatureAuthenticity(
+            nfc, sessionId, chipEthereumAddress, chipTokenId);
         hashedMsg = verificationResult[0];
         signature = verificationResult[1];
         ref.read(signatureDataProvider.notifier).setSignatureData(
