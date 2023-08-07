@@ -41,6 +41,10 @@ class CustomFonts {
   late String bodyText2Font = primaryFont;
   late double bodyText2FontSize;
 
+  late FontWeight bodySmallFontWeight = FontWeight.normal;
+  late String bodySmallFont = primaryFont;
+  late double bodySmallFontSize = 14.0;
+
   late double adminWarningHeadlineFontSize;
   late FontWeight adminWarningSubtextFontWeight;
   late double adminWarningSubtextFontSize;
@@ -87,6 +91,10 @@ class CustomFonts {
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
 
+        bodySmallFontWeight = FontWeight.normal;
+        bodySmallFont = primaryFont;
+        bodySmallFontSize = 14.0;
+
         adminWarningHeadlineFontSize = 80.0;
         adminWarningSubtextFontWeight = FontWeight.bold;
         adminWarningSubtextFontSize = 28.0;
@@ -130,6 +138,10 @@ class CustomFonts {
         bodyText2FontWeight = FontWeight.normal;
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
+
+        bodySmallFontWeight = FontWeight.normal;
+        bodySmallFont = primaryFont;
+        bodySmallFontSize = 14.0;
 
         adminWarningHeadlineFontSize = 80.0;
         adminWarningSubtextFontWeight = FontWeight.bold;
@@ -175,6 +187,10 @@ class CustomFonts {
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
 
+        bodySmallFontWeight = FontWeight.normal;
+        bodySmallFont = primaryFont;
+        bodySmallFontSize = 14.0;
+
         adminWarningHeadlineFontSize = 80.0;
         adminWarningSubtextFontWeight = FontWeight.bold;
         adminWarningSubtextFontSize = 28.0;
@@ -218,6 +234,10 @@ class CustomFonts {
         bodyText2FontWeight = FontWeight.normal;
         bodyText2Font = primaryFont;
         bodyText2FontSize = 16.0;
+
+        bodySmallFontWeight = FontWeight.normal;
+        bodySmallFont = primaryFont;
+        bodySmallFontSize = 12.0;
 
         adminWarningHeadlineFontSize = 80.0;
         adminWarningSubtextFontWeight = FontWeight.bold;

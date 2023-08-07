@@ -503,6 +503,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                         children: <Widget>[
                           //TITLE FORM FIELD
                           TextFormField(
+                              style: Theme.of(context).textTheme.bodyMedium,
                               controller: _titleInputController,
                               onChanged: (text) => setState(() {
                                     titleTextInput = text;
@@ -584,9 +585,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                           .primaryColor,
                                     )),
                                 subtitle: Text(
-                                    style: TextStyle(fontSize: 12),
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
                                     context.loc.contentCanBeViewedPublic),
                                 leading: Radio<Visibility>(
+                                  activeColor:
+                                      CustomColors(dotenv.get('APP_ID'))
+                                          .primaryColor,
                                   value: Visibility.public,
                                   groupValue: _visibility,
                                   onChanged: (Visibility? value) {
@@ -607,9 +612,12 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                     )),
                                 subtitle: Text(
                                   context.loc.contentCanOnlyBeViewedPrivate,
-                                  style: TextStyle(fontSize: 12),
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
                                 leading: Radio<Visibility>(
+                                  activeColor:
+                                      CustomColors(dotenv.get('APP_ID'))
+                                          .primaryColor,
                                   value: Visibility.private,
                                   groupValue: _visibility,
                                   onChanged: (Visibility? value) {
