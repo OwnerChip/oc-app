@@ -55,6 +55,55 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
     initScanning(ref);
   }
 
+  void getAuthenticationSignature() async {
+    String sessionIdFromServer = await getSessionId();
+    String sessionId = sessionIdFromServer != ""
+        ? sessionIdFromServer
+        : makeRandomInt().toString();
+
+    //set sesionIdProvider
+    ref.read(sessionIdProvider.notifier).state = sessionId;
+
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
+
+    //stop previoud NFC session if existing
+    await NfcManager.instance.stopSession();
+
+    //start NFC scan
+    final scanProcess =
+        Sentry.startTransaction('getAuthenticationSignature()', 'task');
+
+    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      sendAnalyticsTrace(sessionId, "", "GET_AUTH_SIGNATURE_STARTED");
+      try {
+        var nfc = NFCPlatform(tag);
+
+        //check if iso7816 or isodep is available and exit if not
+        await nfcPlatformCheck(context, sessionId, nfc);
+
+        //initialize chip (including NDEF tag if existing)
+        bool initProcess = navArgs.nextRoute == ChainSelectorScreen.routeName;
+        if (initProcess) {
+          sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_START");
+        }
+        List result = await initializeChip(nfc, false, sessionId);
+        EthereumAddress chipEthereumAddress = result[0];
+        String chipWalletAddress = chipEthereumAddress.toString();
+        BigInt chipTokenId = result[1];
+        bool ndefTagInitialized = result[2];
+      } catch (e) {
+        scanProcess.finish();
+        sendAnalyticsTrace(
+          sessionId,
+          "",
+          "GETU_AUTH_SIGNATURE_FAILED",
+        );
+        return;
+      }
+    });
+  }
+
   void initScanning(WidgetRef ref) async {
     Uint8List hashedMsg;
     MsgSignature signature;
