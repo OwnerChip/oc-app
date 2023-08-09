@@ -63,7 +63,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
-                wcSession != null && backendSession != null
+                /* wcSession != null && */ backendSession != null
                     ? IconButton(
                         padding: const EdgeInsets.all(0.0),
                         icon: Icon(Icons.logout,
@@ -72,12 +72,15 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () {
-                          wc!.disconnectSession(
-                              topic: wcSession.topic,
-                              reason: const WalletConnectError(
-                                  code: 6000,
-                                  message:
-                                      'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+                          if (wc != null && wcSession != null) {
+                            wc.disconnectSession(
+                                topic: wcSession.topic,
+                                reason: const WalletConnectError(
+                                    code: 6000,
+                                    message:
+                                        'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+                          }
+
                           ref.read(backendSessionProvider.notifier).state =
                               null; //delete backend session from riverpod
                           Navigator.pushNamedAndRemoveUntil(
@@ -96,7 +99,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 Align(
                   alignment: const Alignment(0.0, 0.95),
                   child: Text(
-                    wcSession != null && backendSession != null
+                    /* wcSession != null && */ backendSession != null
                         ? context.loc.disconnect
                         : context.loc.connect,
                     style: Theme.of(context)

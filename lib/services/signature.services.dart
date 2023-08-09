@@ -11,17 +11,21 @@ import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
 /// sign a hash with the private key of the chip
 Future<MsgSignature> signHash(NFCPlatform nfc, int hexKeyNumber,
-    EthereumAddress chipEthereumAddress, String hash) async {
+    EthereumAddress chipEthereumAddress, Uint8List hash) async {
   await nfc.sendCommand(SELECT_APP);
 
-  final Uint8List hashBytes = hexToBytes(hash);
-  final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hashBytes);
-  final List responseGetSignature = await nfc.sendCommand(getSigCmd);
-  final Uint8List chipSignatureData = responseGetSignature[0];
+  final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hash);
+  try {
+    final List responseGetSignature = await nfc.sendCommand(getSigCmd);
+    final Uint8List chipSignatureData = responseGetSignature[0];
 
-  //neccassary for V parameter calculation
-  final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
-  return extractSignature(signer, hashBytes, chipSignatureData);
+    //neccassary for V parameter calculation
+    final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
+    return extractSignature(signer, hash, chipSignatureData);
+  } catch (e) {
+    print(e);
+    throw ("ERROR: SIGNATURE FAILED");
+  }
 }
 
 /// sign a hash with the private key of the chip and verify the signature locally
@@ -69,12 +73,33 @@ Future<bool> verifyTokenAuthenticity(
   }
 }
 
-/// calculate msg digest (with addded prefix for compliance with personal_sign EIP-191)
-Uint8List prepareMsgForSignature(String hexString) {
-  var bytes = BytesBuilder();
-  bytes.add(utf8.encode("\x19Ethereum Signed Message:\n32"));
-  bytes.add(keccakUtf8(hexString));
-  return bytes.toBytes();
+/// calculate msg digest (with added prefix for compliance with personal_sign EIP-191)
+// Uint8List prepareMsgForPersonalSignature(String string) {
+//   var bytes = BytesBuilder();
+//   bytes.add(utf8.encode("\x19Ethereum Signed Message:\n32"));
+//   bytes.add(keccakUtf8(hexString));
+//   return bytes.toBytes();
+// }
+
+Uint8List prepareMsgForPersonalSignature(String message) {
+  // Convert the message to hex of utf8 code units
+  List<int> utf8CodeUnits = utf8.encode(message);
+  String hexUtf8EncodedMessage =
+      utf8CodeUnits.map((e) => e.toRadixString(16)).join();
+
+  // get message length
+  String messageLength = utf8CodeUnits.length.toString();
+
+  // Prepend the Ethereum prefix and the message length to the message bytes
+  String prependedMessage =
+      "\x19Ethereum Signed Message:\n" + messageLength + hexUtf8EncodedMessage;
+
+  List<int> fullMessageUtf8 = utf8.encode(prependedMessage);
+  String fullmessageHex =
+      '0x' + fullMessageUtf8.map((e) => e.toRadixString(16)).join();
+
+  // Hash the prepended message using keccakUtf8
+  return keccakUtf8(fullmessageHex);
 }
 
 /// extract & verify signature out of signatureResponse

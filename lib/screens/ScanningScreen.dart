@@ -1,9 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
 //import packages
-import 'dart:ffi';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
@@ -52,10 +54,85 @@ class _ScanningScreen extends ConsumerState<ScanningScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    initScanning(ref);
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
+
+    if (navArgs.scanCard != null && navArgs.scanCard!) {
+      initSmartCardScanning(ref);
+    } else {
+      initItemScanning(ref);
+    }
   }
 
-  void initScanning(WidgetRef ref) async {
+  void initSmartCardScanning(WidgetRef ref) async {
+    String sessionIdFromServer = await getSessionId();
+    String sessionId = sessionIdFromServer != ""
+        ? sessionIdFromServer
+        : makeRandomInt().toString();
+
+    //set sesionIdProvider
+    ref.read(sessionIdProvider.notifier).state = sessionId;
+
+    //stop previoud NFC session if existing
+    await NfcManager.instance.stopSession();
+
+    //start NFC scan
+    final scanProcess = Sentry.startTransaction('initScanning()', 'task');
+    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+      try {
+        var nfc = NFCPlatform(tag);
+
+        //check if iso7816 or isodep is available and exit if not
+        await nfcPlatformCheck(context, sessionId, nfc);
+
+        List result = await initializeChip(
+            nfc, false, sessionId); //write first key if not existing
+        EthereumAddress cardWalletAddress = result[0];
+
+        print(cardWalletAddress.hex);
+        String message =
+            "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+
+        Uint8List msgHash = keccakUtf8(message);
+
+        //get chip signature
+        MsgSignature signature =
+            await signHash(nfc, 0x01, cardWalletAddress, msgHash);
+
+        int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+        int sessionExpirationDate = await getSessionExpiration(
+            sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
+
+        BackendSession backendSession = BackendSession(sessionId, signature,
+            ref.read(userAddressProvider), sessionExpirationDate);
+
+        ref.read(backendSessionProvider.notifier).state = backendSession;
+
+        //persist session date
+        final SharedPreferences storage = await SharedPreferences.getInstance();
+        final String jsonBackendSession = jsonEncode(backendSession.toJson());
+        storage.setString('backendSession', jsonBackendSession);
+
+        NfcManager.instance.stopSession();
+
+        //navigate to homescreen
+        Navigator.pushNamed(context, HomeScreen.routeName);
+      } catch (e) {
+        print(e);
+        NfcManager.instance.stopSession();
+
+        //navigate to homescreen
+        Navigator.pushNamed(context, HomeScreen.routeName);
+        //show error snackbar
+        ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar,
+            'Error connecting smart card.',
+            'error'));
+      }
+    });
+  }
+
+  void initItemScanning(WidgetRef ref) async {
     Uint8List hashedMsg;
     MsgSignature signature;
     // this random # is used as analytics trace id, case id and session id

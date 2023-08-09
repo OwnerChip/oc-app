@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter/gestures.dart';
+import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
@@ -66,7 +68,7 @@ Future<void> walletPopupBuilder(
                 WalletIcon(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
                     'Smart Card',
-                    () {}),
+                    () => onCardPress(context)),
                 Container(width: 65)
               ]),
               const SizedBox(height: 30),
@@ -135,4 +137,11 @@ Future<void> onWalletPress(
         context.loc.errorNoInternetConnection,
         'error'));
   }
+}
+
+void onCardPress(BuildContext context) {
+  //get current navigation route
+  //Navigate to ScanningScreen
+  Navigator.pushNamed(context, ScanningScreen.routeName,
+      arguments: ScanningScreenArguments('', scanCard: true));
 }

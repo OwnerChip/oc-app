@@ -5,8 +5,9 @@ import '../domain/classDefinition.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
+  final bool? scanCard;
 
-  ScanningScreenArguments(this.nextRoute);
+  ScanningScreenArguments(this.nextRoute, {this.scanCard});
 }
 
 class MetadataInputScreenArguments {
