@@ -52,9 +52,10 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     EthereumAddress from,
     EthereumAddress to,
     EthereumAddress? toAccount,
-    String? tokenURI) async {
+    String? tokenURI,
+    BigInt? tokenId) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
-  String data;
+  final String data;
   if (functionSignatureHash == gaslessMintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!);
@@ -63,6 +64,11 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   } else if (functionSignatureHash == gaslessTransferFunctionSignature) {
     data = makeTransferData(
         functionSignatureHash, randomValueHash, signature, toAccount!);
+  } else if (functionSignatureHash == gaslessTransferFunctionSignature) {
+    data = makeTransferToCardData(
+        functionSignatureHash, randomValueHash, signature);
+  } else if (functionSignatureHash == approveFunctionSignature) {
+    data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -92,19 +98,28 @@ Future<Map<String, dynamic>> buildTypedData(int chainId, request) async {
 // which is then signed by the user's wallet to create a signature.
 // This request is then passed to the smart contract as a gasless transaction.
 
-Future<List<Map<String, dynamic>>> makeGaslessParams({
-  required String functionSignatureHash,
-  required String chainRpcUrl,
-  required int chainId,
-  required Uint8List randomValueHash,
-  required MsgSignature signature,
-  required EthereumAddress from,
-  required EthereumAddress to,
-  EthereumAddress? toAccount,
-  String? tokenURI,
-}) async {
-  final request = await buildTypedV4Request(functionSignatureHash, chainRpcUrl,
-      chainId, randomValueHash, signature, from, to, toAccount, tokenURI);
+Future<List<Map<String, dynamic>>> makeGaslessParams(
+    {required String functionSignatureHash,
+    required String chainRpcUrl,
+    required int chainId,
+    required Uint8List randomValueHash,
+    required MsgSignature signature,
+    required EthereumAddress from,
+    required EthereumAddress to,
+    EthereumAddress? toAccount,
+    String? tokenURI,
+    BigInt? tokenId}) async {
+  final request = await buildTypedV4Request(
+      functionSignatureHash,
+      chainRpcUrl,
+      chainId,
+      randomValueHash,
+      signature,
+      from,
+      to,
+      toAccount,
+      tokenURI,
+      tokenId);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

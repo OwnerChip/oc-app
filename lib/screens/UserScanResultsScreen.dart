@@ -95,7 +95,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
-            gaslessBurnFunctionSignature,
+            burnFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
@@ -165,6 +165,105 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
+  Future<void> claimToken(Web3App wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final wcSession = ref.watch(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    String sessionId = ref.read(sessionIdProvider);
+    final TokenInfoObject config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    final claimProcess = Sentry.startTransaction('initClaim()', 'task');
+    try {
+      if (wcSession == null || walletType == null) {
+        walletPopupBuilder(context, ref, wc);
+      }
+
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.transferInProgress;
+      });
+
+      sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
+        'connectedWallet': connectedWallet,
+        'tokenId': tokenId.toString()
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      String txnHash;
+
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            transferToCardFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            metaTxAgreementId,
+            walletType!,
+            tokenId: tokenId);
+      } else {
+        txnHash = await makeAndSendNormalTx(
+            burnFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            walletType!);
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        //this means claiming token succeeded
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = context.loc.transferSuccess;
+        });
+
+        // send status to analytics
+        claimProcess.finish();
+        sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
+          'connectedWallet': connectedWallet,
+          'tokenId': tokenId.toString()
+        });
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        Navigator.pushNamedAndRemoveUntil(
+            context, HomeScreen.routeName, (route) => false);
+      } else {
+        throw Exception(context.loc.burnedError);
+      }
+    } catch (e, s) {
+      setState(() {
+        isLoading = false;
+      });
+      // send Error to analytics
+      claimProcess.throwable = e;
+      claimProcess.status = const SpanStatus.aborted();
+      claimProcess.finish();
+      sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
+        'connectedWallet': connectedWallet,
+        'tokenId': tokenId.toString()
+      });
+      await Sentry.captureException(e, stackTrace: s);
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.transferError, 'error'),
+      );
+      print("Error: $e");
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
@@ -187,6 +286,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final AsyncValue<Map<String, dynamic>> nftMetadata =
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
+    final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
     final AsyncValue<TokenInfoObject> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
 
@@ -443,16 +543,42 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                 )
                                               :
                                               //NFT owner exists and wallet is connected and wallet is NOT owner
-                                              Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Text(
-                                                      context.loc
-                                                          .youAreNotNftOwner,
-                                                      textAlign: TextAlign.left,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyMedium)),
+                                              Column(children: [
+                                                  Align(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Text(
+                                                          context.loc
+                                                              .youAreNotNftOwner,
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          style:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium)),
+                                                  approval.when(
+                                                      data: (data) {
+                                                        //check if a wallet can CLAIM OWNERSHIP
+                                                        return data ==
+                                                                connectedWallet
+                                                            ? Column(children: [
+                                                                CustomOutlinedButton(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    buttonText:
+                                                                        "Claim Ownership",
+                                                                    onPressed:
+                                                                        (() => {
+                                                                              fromCancelable(claimToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                            })),
+                                                              ])
+                                                            : Container();
+                                                      },
+                                                      error: (e, s) =>
+                                                          Container(),
+                                                      loading: () =>
+                                                          Container())
+                                                ]),
                                       error: (e, s) => Align(
                                           alignment: Alignment.centerLeft,
                                           child: Text(

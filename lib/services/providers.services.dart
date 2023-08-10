@@ -230,6 +230,25 @@ final nftOwnerProvider =
   return nftOwner;
 });
 
+//**NFT APPROVAL CHECKER */
+final nftApprovalProvider =
+    FutureProvider.autoDispose<EthereumAddress>((ref) async {
+  // watch chipInfoProvider
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject config =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  // ERROR HANDLING
+  if (config.chainId == 0 || config.collectionId == zeroAddress) {
+    return Future.error('No approval found.');
+  }
+  EthereumAddress nftApproval = await getApproved(
+      getRPCUrlFromChainId(config.chainId),
+      config.collectionId,
+      chipInfo.tokenId);
+
+  return nftApproval;
+});
+
 //****NFT METADATA****
 
 final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {

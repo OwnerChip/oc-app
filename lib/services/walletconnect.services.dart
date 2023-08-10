@@ -89,18 +89,19 @@ Future<String> makeAndSendGaslessTx(
     String metaTxAgreementId,
     WalletType walletType,
     {EthereumAddress? toAccount,
-    String? cid}) async {
+    String? cid,
+    BigInt? tokenId}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
-    functionSignatureHash: functionSignatureHash,
-    chainRpcUrl: getRPCUrlFromChainId(chainId),
-    chainId: chainId,
-    randomValueHash: signatureData.hashedMsg,
-    signature: signatureData.signature,
-    from: walletAddress,
-    to: collectionId,
-    toAccount: toAccount,
-    tokenURI: cid != null ? "ipfs://$cid" : null,
-  );
+      functionSignatureHash: functionSignatureHash,
+      chainRpcUrl: getRPCUrlFromChainId(chainId),
+      chainId: chainId,
+      randomValueHash: signatureData.hashedMsg,
+      signature: signatureData.signature,
+      from: walletAddress,
+      to: collectionId,
+      toAccount: toAccount,
+      tokenURI: cid != null ? "ipfs://$cid" : null,
+      tokenId: tokenId);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 

@@ -53,7 +53,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   CancelableOperation? cancellableOperation;
 
-  Future<void> transferToken(Web3App wc, BigInt tokenId, EthereumAddress to,
+  Future<void> approveToken(Web3App wc, BigInt tokenId, EthereumAddress to,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.read(wcSessionProvider);
     final TokenInfoObject config =
@@ -80,7 +80,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
-            gaslessTransferFunctionSignature,
+            approveFunctionSignature, // APPROVE
             config.chainId,
             config.collectionId,
             signatureData,
@@ -89,7 +89,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             wcSession!,
             metaTxAgreementId,
             ref.read(walletTypeProvider)!,
-            toAccount: to);
+            toAccount: to,
+            tokenId: tokenId);
       } else {
         txnHash = await makeAndSendNormalTx(
             transferFunctionSignature,
@@ -207,7 +208,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           alignment: Alignment.center,
                           child: Text(
                             textAlign: TextAlign.center,
-                            context.loc.transferScreenText,
+                            "Approve to claim Ownership",
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                         ),
@@ -239,12 +240,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       ),
                       const SizedBox(height: 20),
                       CustomRoundedButton(
-                          text: context.loc.transferToken,
+                          text: "Approve",
                           onPressed: (() => {
                                 if (_formKey.currentState!.validate())
                                   {
                                     FocusScope.of(context).unfocus(),
-                                    fromCancelable(transferToken(
+                                    fromCancelable(approveToken(
                                         wc!,
                                         chipInfo.tokenId,
                                         EthereumAddress.fromHex(
