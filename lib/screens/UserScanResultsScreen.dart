@@ -188,8 +188,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         'tokenId': tokenId.toString()
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
+      final List response = await checkMetaTx(
+          config.collectionId, transferToCardFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -241,7 +241,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         Navigator.pushNamedAndRemoveUntil(
             context, HomeScreen.routeName, (route) => false);
       } else {
-        throw Exception(context.loc.burnedError);
+        throw Exception(context.loc.transferError);
       }
     } catch (e, s) {
       setState(() {
@@ -562,10 +562,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         return data ==
                                                                 connectedWallet
                                                             ? Column(children: [
-                                                                CustomOutlinedButton(
+                                                                const SizedBox(
+                                                                    height: 15),
+                                                                CustomRoundedButton(
                                                                     width: double
                                                                         .infinity,
-                                                                    buttonText:
+                                                                    text:
                                                                         "Claim Ownership",
                                                                     onPressed:
                                                                         (() => {

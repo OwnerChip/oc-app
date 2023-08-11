@@ -64,7 +64,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   } else if (functionSignatureHash == gaslessTransferFunctionSignature) {
     data = makeTransferData(
         functionSignatureHash, randomValueHash, signature, toAccount!);
-  } else if (functionSignatureHash == gaslessTransferFunctionSignature) {
+  } else if (functionSignatureHash == transferToCardFunctionSignature) {
     data = makeTransferToCardData(
         functionSignatureHash, randomValueHash, signature);
   } else if (functionSignatureHash == approveFunctionSignature) {
