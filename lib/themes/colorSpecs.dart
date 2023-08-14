@@ -15,6 +15,7 @@ class CustomColors {
   late Color headline6Color;
   late Color bodyText1Color;
   late Color bodyText2Color;
+  late Color bodySmallColor;
   late Color borderColor;
   late Color successColor;
   late Color warningColor;
@@ -46,6 +47,7 @@ class CustomColors {
         headline6Color = primaryColorLight;
         bodyText1Color = primaryColorLight;
         bodyText2Color = primaryColor;
+        bodySmallColor = primaryColor;
         borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);
@@ -75,6 +77,8 @@ class CustomColors {
         headline6Color = primaryColorLight;
         bodyText1Color = primaryColorLight;
         bodyText2Color = primaryColor;
+        bodySmallColor = primaryColor;
+
         borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);
@@ -102,6 +106,8 @@ class CustomColors {
         headline6Color = const Color(0xFFFFFFFF);
         bodyText1Color = const Color(0xFFFFFFFF);
         bodyText2Color = const Color(0xFFFFFFFF);
+        bodySmallColor = const Color(0xFFFFFFFF);
+
         borderColor = const Color(0xFF2E2E2E);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);
@@ -130,6 +136,8 @@ class CustomColors {
         headline6Color = primaryColorLight;
         bodyText1Color = primaryColorLight;
         bodyText2Color = primaryColor;
+        bodySmallColor = primaryColor;
+
         borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);

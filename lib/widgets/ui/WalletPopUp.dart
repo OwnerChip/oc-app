@@ -137,7 +137,7 @@ Future<void> onWalletPress(
     //show error snackbar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
-        context.loc.errorNoInternetConnection,
+        'User denied connection request.',
         'error'));
   }
 }

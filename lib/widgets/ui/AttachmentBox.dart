@@ -27,6 +27,7 @@ class AttachmentBox extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(),
       child: CustomCard(
+        color: Theme.of(context).scaffoldBackgroundColor,
         padding:
             const EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
         children: [

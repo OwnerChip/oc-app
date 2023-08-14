@@ -314,7 +314,8 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   EthereumAddress nftOwner = zeroAddress;
   try {
     //check if connected wallet is nft owner
-    final EthereumAddress nftOwner = await ref.watch(nftOwnerProvider.future);
+    nftOwner = await ref.read(nftOwnerProvider.future);
+    print('nftOwner: $nftOwner');
   } catch (e) {
     print(e);
     if (e == 'No owner found.') {
