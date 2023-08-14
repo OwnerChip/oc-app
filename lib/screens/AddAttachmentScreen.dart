@@ -35,7 +35,7 @@ import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
 //import services

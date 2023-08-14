@@ -193,7 +193,7 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
 }
 
 //check if first key already exists, if not, generate key. Return key info.
-Future<List<dynamic>> initializeChip(
+Future<List<dynamic>> createFirstKeypairOnChip(
     NFCPlatform nfc, bool initializeNdef, String sessionId) async {
   bool empty = false;
   //empty UintList

@@ -12,7 +12,7 @@ import 'package:async/async.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
@@ -40,7 +40,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
@@ -67,7 +67,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
-    String sessionId = ref.read(sessionIdProvider);
+    String sessionId = ref.read(backendSessionProvider)!.sessionId;
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
@@ -195,7 +195,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
-    final SignatureData signatureData = ref.watch(signatureDataProvider);
+    final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
 
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),

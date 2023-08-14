@@ -194,3 +194,36 @@ Future<String> sendPersonalSignRequest(
 
   return signature;
 }
+
+Future<String> getGaslessTxHash(
+    String functionSignatureHash,
+    int chainId,
+    EthereumAddress collectionId,
+    SignatureData signatureData,
+    EthereumAddress walletAddress,
+    Web3App wc,
+    SessionData wcSession,
+    String metaTxAgreementId,
+    WalletType walletType,
+    {EthereumAddress? toAccount,
+    String? cid}) async {
+  // build tx object
+  final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
+    functionSignatureHash: functionSignatureHash,
+    chainRpcUrl: getRPCUrlFromChainId(chainId),
+    chainId: chainId,
+    randomValueHash: signatureData.hashedMsg,
+    signature: signatureData.signature,
+    from: walletAddress,
+    to: collectionId,
+    toAccount: toAccount,
+    tokenURI: cid != null ? "ipfs://$cid" : null,
+  );
+
+  final Map<String, dynamic> typedData = gaslessTxParams[0];
+  final Map<String, dynamic> request = gaslessTxParams[1];
+
+  String hash = await getEthSignTypedDataSignature(collectionId, request);
+
+  return hash;
+}

@@ -10,7 +10,7 @@ import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:url_launcher/url_launcher_string.dart';

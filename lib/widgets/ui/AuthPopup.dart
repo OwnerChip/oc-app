@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';

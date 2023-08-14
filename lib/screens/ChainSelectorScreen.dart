@@ -16,14 +16,14 @@ import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 //import dotenv
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 //import svg

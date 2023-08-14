@@ -5,9 +5,12 @@ import '../domain/classDefinition.dart';
 
 class ScanningScreenArguments {
   final String nextRoute;
-  final bool? scanCard;
+  final String? sessionId;
+  final Uint8List? msgHashToSign;
+  final bool? isAuthSign;
 
-  ScanningScreenArguments(this.nextRoute, {this.scanCard});
+  ScanningScreenArguments(this.nextRoute,
+      {this.sessionId, this.isAuthSign, this.msgHashToSign});
 }
 
 class MetadataInputScreenArguments {

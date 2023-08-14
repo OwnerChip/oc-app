@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -206,6 +210,14 @@ Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
     's': signature.s.toString(),
     'v': signature.v,
   };
+}
+
+//convert MsgSignature to hex
+String msgSignatureToHex(MsgSignature signature) {
+  String r = signature.r.toRadixString(16);
+  String s = signature.s.toRadixString(16);
+  String v = signature.v.toRadixString(16);
+  return "0x$r$s$v";
 }
 
 /// convert json to MsgSignature

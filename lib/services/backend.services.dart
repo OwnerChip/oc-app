@@ -64,7 +64,7 @@ Future<String> sendGaslessRequest(
 }
 
 // gets the hash that needs to be used to sign a gasless tx request.
-Future<String> getGaslessTxHash(
+Future<String> getEthSignTypedDataSignature(
     EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
   final String url = '/collection/$collectionId/metatx/hash';

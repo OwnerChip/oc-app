@@ -16,7 +16,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
@@ -45,7 +45,7 @@ import 'package:ownerchip_whitelabel/services/images.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //theme imports
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -289,7 +289,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     final wc = ref.watch(wcProvider);
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
-    final SignatureData signatureData = ref.watch(signatureDataProvider);
+    final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final AsyncValue<List<Attachment>> fetchedAttachments =
         ref.watch(fetchAttachmentsProvider);
     final List<Attachment>? attachmentList =
