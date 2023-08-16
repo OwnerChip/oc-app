@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AndroidNfcPopup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -51,89 +52,108 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
 
   //start NFC scan
   final scanProcess = Sentry.startTransaction('initScanning()', 'task');
-  NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-    sendAnalyticsTrace(sessionId, "", "INITIALIZE_SCAN_STARTED");
-    try {
-      var nfc = NFCPlatform(tag);
 
-      //check if iso7816 or isodep is available and exit if not
-      await nfcPlatformCheck(context, sessionId, nfc);
-      //initialize chip (including NDEF tag if existing)
+  if (Platform.isAndroid) {
+    //show NFC popup
+    ScaffoldMessenger.of(context).showSnackBar(
+      showNfcSnackbar(ScaffoldMessenger.of(context)),
+    );
+  }
 
-      sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_START");
+  NfcManager.instance.startSession(
+      alertMessage:
+          'Hold phone near NFC chip to start creation of digital twin.',
+      onDiscovered: (NfcTag tag) async {
+        sendAnalyticsTrace(sessionId, "", "INITIALIZE_SCAN_STARTED");
+        try {
+          var nfc = NFCPlatform(tag);
 
-      List result = await createFirstKeypairOnChip(nfc, true, sessionId);
-      EthereumAddress chipEthereumAddress = result[0];
-      String chipWalletAddress = chipEthereumAddress.toString();
-      BigInt chipTokenId = result[1];
-      bool ndefTagInitialized = result[2];
-      if (ndefTagInitialized) {
-        sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
-      }
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
+          //initialize chip (including NDEF tag if existing)
 
-      //set chip info data in provider
-      setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
+          sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_START");
 
-      TokenInfoObject config =
-          await ref.watch(findTokenProvider(chipTokenId).future);
+          List result = await createFirstKeypairOnChip(nfc, true, sessionId);
+          EthereumAddress chipEthereumAddress = result[0];
+          String chipWalletAddress = chipEthereumAddress.toString();
+          BigInt chipTokenId = result[1];
+          bool ndefTagInitialized = result[2];
+          if (ndefTagInitialized) {
+            sendAnalyticsTrace(
+                sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+          }
 
-      //verify signature
-      List verificationResult = await verifySignatureAuthenticity(
-          nfc, sessionId, chipEthereumAddress, chipTokenId);
-      Uint8List hashedMsg = verificationResult[0];
-      MsgSignature signature = verificationResult[1];
-      ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-          SignatureData(hashedMsg: hashedMsg, signature: signature));
+          //set chip info data in provider
+          setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
 
-      //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read for longer
-      if (Platform.isIOS) {
-        NfcManager.instance.stopSession();
-      }
+          TokenInfoObject config =
+              await ref.watch(findTokenProvider(chipTokenId).future);
 
-      //TOKEN DOES NOT EXIST
-      if (config.collectionId == zeroAddress) {
-        scanProcess.finish();
-        sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
-            tags: {"chipWallet": chipWalletAddress});
+          //verify signature
+          List verificationResult = await verifySignatureAuthenticity(
+              nfc, sessionId, chipEthereumAddress, chipTokenId);
+          Uint8List hashedMsg = verificationResult[0];
+          MsgSignature signature = verificationResult[1];
+          ref.read(chipSignatureDataProvider.notifier).setSignatureData(
+              SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-        //TODO: WHY DO I PASS METADATAScreen Arguments t o ChainSelectorScreen??
-        Navigator.pushNamed(context, ChainSelectorScreen.routeName,
-            arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
-      }
-      //TOKEN EXISTS
-      else {
-        await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
-            signature, scanProcess, sessionId, chipWalletAddress, context);
+          //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read for longer
+          if (Platform.isIOS) {
+            NfcManager.instance.stopSession();
+          }
 
-        Navigator.pushNamed(
-          context,
-          UserScanResultsScreen.routeName,
-        );
-      }
-      // delay to block NDEF read/popup on Android
-      if (!Platform.isIOS) {
-        await Future.delayed(const Duration(seconds: 2));
-        NfcManager.instance.stopSession();
-      }
-    } catch (e, stackTrace) {
-      // send Error to analytics
-      sendAnalyticsTrace(sessionId, "$e", "INIALIZE_SCAN_ERROR");
-      print(e);
-      scanProcess.throwable = e;
-      scanProcess.status = const SpanStatus.deadlineExceeded();
-      scanProcess.finish();
-      await Sentry.captureException(
-        e,
-        stackTrace: stackTrace,
-      );
-      //error reading chip
-      NfcManager.instance.stopSession();
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
-      );
-    }
-  });
+          //TOKEN DOES NOT EXIST
+          if (config.collectionId == zeroAddress) {
+            scanProcess.finish();
+            sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+                tags: {"chipWallet": chipWalletAddress});
+
+            //TODO: WHY DO I PASS METADATAScreen Arguments t o ChainSelectorScreen??
+            Navigator.pushNamed(context, ChainSelectorScreen.routeName,
+                arguments:
+                    MetadataInputScreenArguments(sessionId, 0, zeroAddress));
+          }
+          //TOKEN EXISTS
+          else {
+            await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+                signature, scanProcess, sessionId, chipWalletAddress, context);
+
+            Navigator.pushNamed(
+              context,
+              UserScanResultsScreen.routeName,
+            );
+          }
+          // delay to block NDEF read/popup on Android
+          //if platform is android
+          if (Platform.isAndroid) {
+            //delay 2 seconds
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          }
+        } catch (e, stackTrace) {
+          // send Error to analytics
+          sendAnalyticsTrace(sessionId, "$e", "INIALIZE_SCAN_ERROR");
+          print(e);
+          scanProcess.throwable = e;
+          scanProcess.status = const SpanStatus.deadlineExceeded();
+          scanProcess.finish();
+          await Sentry.captureException(
+            e,
+            stackTrace: stackTrace,
+          );
+          //error reading chip
+          NfcManager.instance.stopSession();
+          if (Platform.isAndroid) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                context.loc.nfcError, 'error'),
+          );
+        }
+      });
 }
 
 Future<void> scanItem(WidgetRef ref, BuildContext context) async {
@@ -147,83 +167,95 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
   await NfcManager.instance.stopSession();
   //start NFC scan
   final scanProcess = Sentry.startTransaction('initScanning()', 'task');
-  NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-    sendAnalyticsTrace(sessionId, "", "SCAN_STARTED");
-    try {
-      var nfc = NFCPlatform(tag);
 
-      //check if iso7816 or isodep is available and exit if not
-      await nfcPlatformCheck(context, sessionId, nfc);
+  if (Platform.isAndroid) {
+    //show NFC popup
+    ScaffoldMessenger.of(context).showSnackBar(
+      showNfcSnackbar(ScaffoldMessenger.of(context)),
+    );
+  }
+  NfcManager.instance.startSession(
+      alertMessage: 'Hold phone near NFC tag to scan item.',
+      onDiscovered: (NfcTag tag) async {
+        sendAnalyticsTrace(sessionId, "", "SCAN_STARTED");
+        try {
+          var nfc = NFCPlatform(tag);
 
-      //create first keypair if not existing
-      List result = await createFirstKeypairOnChip(nfc, false, sessionId);
-      EthereumAddress chipEthereumAddress = result[0];
-      String chipWalletAddress = chipEthereumAddress.toString();
-      BigInt chipTokenId = result[1];
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
 
-      //set chip info data in provider
-      setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
+          //create first keypair if not existing
+          List result = await createFirstKeypairOnChip(nfc, false, sessionId);
+          EthereumAddress chipEthereumAddress = result[0];
+          String chipWalletAddress = chipEthereumAddress.toString();
+          BigInt chipTokenId = result[1];
 
-      TokenInfoObject config =
-          await ref.watch(findTokenProvider(chipTokenId).future);
+          //set chip info data in provider
+          setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
 
-      //verify signature
-      List verificationResult = await verifySignatureAuthenticity(
-          nfc, sessionId, chipEthereumAddress, chipTokenId);
-      Uint8List hashedMsg = verificationResult[0];
-      MsgSignature signature = verificationResult[1];
-      ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-          SignatureData(hashedMsg: hashedMsg, signature: signature));
+          TokenInfoObject config =
+              await ref.watch(findTokenProvider(chipTokenId).future);
 
-      //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read for longer
-      if (Platform.isIOS) {
-        NfcManager.instance.stopSession();
-      }
+          //verify signature
+          List verificationResult = await verifySignatureAuthenticity(
+              nfc, sessionId, chipEthereumAddress, chipTokenId);
+          Uint8List hashedMsg = verificationResult[0];
+          MsgSignature signature = verificationResult[1];
+          ref.read(chipSignatureDataProvider.notifier).setSignatureData(
+              SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-      //TOKEN DOES NOT EXIST
-      if (config.collectionId == zeroAddress) {
-        scanProcess.finish();
-        sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
-            tags: {"chipWallet": chipWalletAddress});
+          //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read for longer
+          if (Platform.isIOS) {
+            NfcManager.instance.stopSession();
+          }
 
-        Navigator.pushNamed(
-          context,
-          UserScanResultsScreen.routeName,
-        );
-      } else {
-        //TOKEN EXISTS
-        await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
-            signature, scanProcess, sessionId, chipWalletAddress, context);
+          //TOKEN DOES NOT EXIST
+          if (config.collectionId == zeroAddress) {
+            scanProcess.finish();
+            sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+                tags: {"chipWallet": chipWalletAddress});
 
-        Navigator.pushNamed(
-          context,
-          UserScanResultsScreen.routeName,
-        );
-      }
-      // delay to block NDEF read/popup on Android
-      if (!Platform.isIOS) {
-        await Future.delayed(const Duration(seconds: 2));
-        NfcManager.instance.stopSession();
-      }
-    } catch (e, stackTrace) {
-      // send Error to analytics
-      sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
-      print(e);
-      scanProcess.throwable = e;
-      scanProcess.status = const SpanStatus.deadlineExceeded();
-      scanProcess.finish();
-      await Sentry.captureException(
-        e,
-        stackTrace: stackTrace,
-      );
-      //error reading chip
-      NfcManager.instance.stopSession();
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.nfcError, 'error'),
-      );
-    }
-  });
+            Navigator.pushNamed(
+              context,
+              UserScanResultsScreen.routeName,
+            );
+          } else {
+            //TOKEN EXISTS
+            await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+                signature, scanProcess, sessionId, chipWalletAddress, context);
+
+            Navigator.pushNamed(
+              context,
+              UserScanResultsScreen.routeName,
+            );
+          }
+          // delay to block NDEF read/popup on Android
+          if (Platform.isAndroid) {
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          }
+        } catch (e, stackTrace) {
+          // send Error to analytics
+          sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
+          print(e);
+          scanProcess.throwable = e;
+          scanProcess.status = const SpanStatus.deadlineExceeded();
+          scanProcess.finish();
+          await Sentry.captureException(
+            e,
+            stackTrace: stackTrace,
+          );
+          //error reading chip
+          NfcManager.instance.stopSession();
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                context.loc.nfcError, 'error'),
+          );
+        }
+      });
 }
 
 void setChipInfoProvider(
@@ -283,30 +315,41 @@ Future<MsgSignature?> makeCardSignature(
   //start NFC scan
   Sentry.startTransaction('makeCardSignature()', 'task');
   try {
-    await NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      var nfc = NFCPlatform(tag);
+    if (Platform.isAndroid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        showNfcSnackbar(ScaffoldMessenger.of(context)),
+      );
+    }
 
-      //check if iso7816 or isodep is available and exit if not
-      await nfcPlatformCheck(context, sessionId, nfc);
+    NfcManager.instance.startSession(
+        alertMessage: 'Hold phone near Smart Card to sign transaction.',
+        onDiscovered: (NfcTag tag) async {
+          var nfc = NFCPlatform(tag);
 
-      //create first key if not existing
-      List result = await createFirstKeypairOnChip(nfc, false, sessionId);
-      EthereumAddress cardWalletAddress = result[0];
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
 
-      //get chip signature
-      signature = await signHash(
-          nfc, 0x01, cardWalletAddress, hexToBytes(msgHashToSign));
+          //create first key if not existing
+          List result = await createFirstKeypairOnChip(nfc, false, sessionId);
+          EthereumAddress cardWalletAddress = result[0];
 
-      NfcManager.instance.stopSession();
+          //get chip signature
+          signature = await signHash(
+              nfc, 0x01, cardWalletAddress, hexToBytes(msgHashToSign));
 
-      //complete the future with the signature
-      completer.complete(signature);
-    });
+          NfcManager.instance.stopSession();
+
+          //complete the future with the signature
+          completer.complete(signature);
+        });
     //return the future from the completer
     return completer.future;
   } catch (e) {
     print(e);
     NfcManager.instance.stopSession();
+    if (Platform.isAndroid) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
 
     //show error snackbar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
@@ -324,33 +367,50 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
 
   //start NFC scan
   Sentry.startTransaction('makeCardSignature()', 'task');
+
+  if (Platform.isAndroid) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      showNfcSnackbar(ScaffoldMessenger.of(context)),
+    );
+  }
+
   try {
-    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
-      var nfc = NFCPlatform(tag);
+    NfcManager.instance.startSession(
+        alertMessage: 'Hold phone near Smart Card sign in.',
+        onDiscovered: (NfcTag tag) async {
+          var nfc = NFCPlatform(tag);
 
-      String sessionId = await getSessionId();
-      String message =
-          "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
-      Uint8List msgHashToSign = keccakUtf8(message);
+          String sessionId = await getSessionId();
+          String message =
+              "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+          Uint8List msgHashToSign = keccakUtf8(message);
 
-      //check if iso7816 or isodep is available and exit if not
-      await nfcPlatformCheck(context, sessionId, nfc);
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
 
-      //create first key if not existing
-      List result = await createFirstKeypairOnChip(nfc, false, sessionId);
-      EthereumAddress cardWalletAddress = result[0];
+          //create first key if not existing
+          List result = await createFirstKeypairOnChip(nfc, false, sessionId);
+          EthereumAddress cardWalletAddress = result[0];
 
-      //get chip signature
-      MsgSignature signature =
-          await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign);
+          //get chip signature
+          MsgSignature signature =
+              await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign);
 
-      NfcManager.instance.stopSession();
+          NfcManager.instance.stopSession();
+          if (Platform.isAndroid) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          }
 
-      await saveBackendSession(sessionId, cardWalletAddress, signature, ref);
+          await saveBackendSession(
+              sessionId, cardWalletAddress, signature, ref);
 
-      Navigator.pop(context);
-    });
+          Navigator.pop(context);
+        });
   } catch (e) {
+    NfcManager.instance.stopSession();
+    if (Platform.isAndroid) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
     print(e);
   }
 }
