@@ -11,7 +11,6 @@ import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -19,8 +18,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/web3dart.dart';
 
 //import screens
+import 'config/constants.dart';
 import 'screens/HomeScreen.dart';
-import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
@@ -131,8 +130,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 
   void _onSessionDisconnect(SessionDelete? args) {
-    ref.watch(wcSessionProvider.notifier).state = null;
-    ref.watch(walletTypeProvider.notifier).state = null;
     //remove session and wallet type
     final storage = SharedPreferences.getInstance();
     storage.then((value) => value.remove('session'));
@@ -243,7 +240,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       //register all routes
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
-        ScanningScreen.routeName: (context) => const ScanningScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),
         UserScanResultsScreen.routeName: (context) =>
             const UserScanResultsScreen(),

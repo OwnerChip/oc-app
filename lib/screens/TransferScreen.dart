@@ -60,10 +60,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         await ref.watch(findTokenProvider(tokenId).future);
     final transferProcess = Sentry.startTransaction('initTransfer()', 'task');
     try {
-      if (wcSession == null) {
-        walletPopupBuilder(context, ref, wc);
-      }
-
       setState(() {
         isLoading = true;
         loadingText = context.loc.transferInProgress;
@@ -80,13 +76,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
+            ref,
+            context,
             gaslessTransferFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
             ref.read(walletTypeProvider)!,
             toAccount: to);

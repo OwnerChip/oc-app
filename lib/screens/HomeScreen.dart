@@ -18,7 +18,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 //import screens
-import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';

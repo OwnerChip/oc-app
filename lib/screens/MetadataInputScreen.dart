@@ -123,11 +123,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     final mintProcess = Sentry.startTransaction('initMinting()', 'task');
 
-    //if wc bridge is not connected, then reconnect
-    if (wcSession == null || walletType == null) {
-      walletPopupBuilder(context, ref, wc);
-    }
-
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     try {
@@ -174,13 +169,15 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
+            ref,
+            context,
             gaslessMintFunctionSignature,
             chainId,
             collectionId,
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
             walletType!,
             cid: cid);

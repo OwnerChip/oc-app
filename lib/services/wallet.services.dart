@@ -2,6 +2,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/services.dart';
@@ -79,13 +82,15 @@ Uri convertToWcLink({
 // It then sends the gasless transaction request to the backend and returns the txnHash.
 
 Future<String> makeAndSendGaslessTx(
+    WidgetRef ref,
+    BuildContext context,
     String functionSignatureHash,
     int chainId,
     EthereumAddress collectionId,
     SignatureData signatureData,
     EthereumAddress walletAddress,
-    Web3App wc,
-    SessionData wcSession,
+    Web3App? wc, //Note: wc and wcSession are null if smart card is used for tx
+    SessionData? wcSession,
     String metaTxAgreementId,
     WalletType walletType,
     {EthereumAddress? toAccount,
@@ -109,14 +114,23 @@ Future<String> makeAndSendGaslessTx(
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);
 
-  String signature = await wc.request(
-    topic: wcSession.topic,
-    chainId: 'eip155:1',
-    request: SessionRequestParams(
-      method: 'eth_signTypedData_v4',
-      params: [walletAddress.toString(), json.encode(typedData)],
-    ),
-  );
+  String signature;
+  if (walletType.name == 'Smart Card') {
+    String hash = await getGaslessTxHash(request, collectionId);
+
+    MsgSignature? cardSig = await makeCardSignature(ref, context, hash);
+
+    signature = msgSignatureToHex(cardSig!);
+  } else {
+    signature = await wc!.request(
+      topic: wcSession!.topic,
+      chainId: 'eip155:1',
+      request: SessionRequestParams(
+        method: 'eth_signTypedData_v4',
+        params: [walletAddress.toString(), json.encode(typedData)],
+      ),
+    );
+  }
 
   String txnHash = await sendGaslessRequest(
       collectionId, signature, metaTxAgreementId, request);
@@ -195,34 +209,7 @@ Future<String> sendPersonalSignRequest(
   return signature;
 }
 
-Future<String> getGaslessTxHash(
-    String functionSignatureHash,
-    int chainId,
-    EthereumAddress collectionId,
-    SignatureData signatureData,
-    EthereumAddress walletAddress,
-    Web3App wc,
-    SessionData wcSession,
-    String metaTxAgreementId,
-    WalletType walletType,
-    {EthereumAddress? toAccount,
-    String? cid}) async {
-  // build tx object
-  final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
-    functionSignatureHash: functionSignatureHash,
-    chainRpcUrl: getRPCUrlFromChainId(chainId),
-    chainId: chainId,
-    randomValueHash: signatureData.hashedMsg,
-    signature: signatureData.signature,
-    from: walletAddress,
-    to: collectionId,
-    toAccount: toAccount,
-    tokenURI: cid != null ? "ipfs://$cid" : null,
-  );
-
-  final Map<String, dynamic> typedData = gaslessTxParams[0];
-  final Map<String, dynamic> request = gaslessTxParams[1];
-
+Future<String> getGaslessTxHash(request, collectionId) async {
   String hash = await getEthSignTypedDataSignature(collectionId, request);
 
   return hash;

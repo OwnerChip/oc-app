@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 //import packages
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -36,6 +37,7 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 
 Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
   // this random # is used as analytics trace id, case id and session id
@@ -265,25 +267,23 @@ Future<void> verifyAuthenticity(
 //returns MsgSignature if everything worked correctly
 //returns null if user cancels scan or error occurs
 Future<MsgSignature?> makeCardSignature(
-    WidgetRef ref, BuildContext context) async {
+    WidgetRef ref, BuildContext context, msgHashToSign) async {
   MsgSignature? signature;
 
-  final navArgs =
-      ModalRoute.of(context)!.settings.arguments as ScanningScreenArguments;
-
-  //if user is int he process of authentication, msgToSign is the sessionId, else a backendsession already exists
-  //and sessionId is taken from backendSessionProvider
-  String sessionId = navArgs.isAuthSign != null && navArgs.isAuthSign!
-      ? navArgs.sessionId!
-      : ref.read(backendSessionProvider)!.sessionId;
-
   //stop previoud NFC session if existing
-  await NfcManager.instance.stopSession();
+  // await NfcManager.instance.stopSession();
+
+  String sessionId = ref.read(backendSessionProvider) != null
+      ? ref.read(backendSessionProvider)!.sessionId
+      : makeRandomInt().toString();
+
+  //create a completer to return a future
+  Completer<MsgSignature?> completer = Completer();
 
   //start NFC scan
   Sentry.startTransaction('makeCardSignature()', 'task');
   try {
-    NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
+    await NfcManager.instance.startSession(onDiscovered: (NfcTag tag) async {
       var nfc = NFCPlatform(tag);
 
       //check if iso7816 or isodep is available and exit if not
@@ -294,39 +294,28 @@ Future<MsgSignature?> makeCardSignature(
       EthereumAddress cardWalletAddress = result[0];
 
       //get chip signature
-      signature =
-          await signHash(nfc, 0x01, cardWalletAddress, navArgs.msgHashToSign!);
+      signature = await signHash(
+          nfc, 0x01, cardWalletAddress, hexToBytes(msgHashToSign));
 
       NfcManager.instance.stopSession();
 
-      // if (navArgs.isAuthSign != null && navArgs.isAuthSign!) {
-      //   await saveBackendSession(
-      //       sessionId, cardWalletAddress, signature, ref);
-      // } else {
-      //   ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-      //   TokenInfoObject tokenInfo =
-      //       await ref.read(findTokenProvider(chipInfo.tokenId).future);
-      //   //TODO: send transaction to blockchain
-      //   //check if user is allowed to use gas station
-      //   final List response =
-      //       await checkMetaTx(tokenInfo.collectionId, gaslessMintFunctionSignature);
-      //   final bool canUseGasStation = response[0];
-      //   final metaTxAgreementId = response[1];
-      //   String txnHash = await sendGaslessRequest(
-      //       tokenInfo.collectionId, msgSignatureToHex(signature), metaTxAgreementId, request);
-      // }
+      //complete the future with the signature
+      completer.complete(signature);
     });
+    //return the future from the completer
+    return completer.future;
   } catch (e) {
     print(e);
     NfcManager.instance.stopSession();
 
     //show error snackbar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        'Error connecting smart card.',
-        'error'));
+        context.loc.errorHeadingSnackBar, 'Error making signature.', 'error'));
+
+    //complete the future with null
+    completer.complete(null);
+    return completer.future;
   }
-  return signature;
 }
 
 Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
@@ -358,6 +347,8 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
       NfcManager.instance.stopSession();
 
       await saveBackendSession(sessionId, cardWalletAddress, signature, ref);
+
+      Navigator.pop(context);
     });
   } catch (e) {
     print(e);
@@ -373,6 +364,8 @@ Future<void> saveBackendSession(
   int sessionExpirationDate = await getSessionExpiration(
       sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
 
+  ref.read(userAddressProvider.notifier).state = cardWalletAddress;
+  ref.read(walletTypeProvider.notifier).state = walletConfig['ocSmartCard'];
   BackendSession backendSession = BackendSession(sessionId, signature,
       ref.read(userAddressProvider), sessionExpirationDate);
 

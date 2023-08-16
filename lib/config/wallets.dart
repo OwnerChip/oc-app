@@ -1,6 +1,9 @@
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+final WalletType _smartCard = WalletType('Smart Card',
+    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png", '');
+
 final WalletType _metamask = WalletType(
     "Metamask",
     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/metamask.png",
@@ -27,6 +30,7 @@ final WalletType _zengoWallet = WalletType(
     'zengo://get.zengo.com');
 
 final Map<String, WalletType> walletConfig = {
+  'ocSmartCard': _smartCard,
   'https://trustwallet.com': _trustWallet,
   'https://metamask.io/': _metamask,
   'https://zerion.io': _zerionWallet,

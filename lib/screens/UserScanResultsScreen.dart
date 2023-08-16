@@ -1,6 +1,7 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,8 +20,6 @@ import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
-import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
-import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 
@@ -72,10 +71,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
-      if (wcSession == null || walletType == null) {
-        walletPopupBuilder(context, ref, wc);
-      }
-
       setState(() {
         isLoading = true;
         loadingText = context.loc.burning;
@@ -95,13 +90,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
+            ref,
+            context,
             gaslessBurnFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
             walletType!);
       } else {
@@ -321,7 +318,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //OWNERSHIP CHECK ICON
                                   nftOwner.when(
-                                    data: ((data) => wcSession == null
+                                    data: ((data) => connectedWallet ==
+                                            zeroAddress
                                         ?
                                         //NFT owner exists and wallet is NOT connected
                                         SvgPicture.asset(
@@ -348,7 +346,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: nftOwner.when(
-                                      data: (data) => wcSession == null
+                                      data: (data) => connectedWallet ==
+                                              zeroAddress
                                           ?
                                           //NFT owner exists and wallet is NOT connected
                                           Column(
@@ -487,19 +486,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               //if token does not exists
               tokenInfo.when(
                   data: (data) => data.collectionId == zeroAddress &&
-                          wcSession != null &&
+                          connectedWallet != zeroAddress &&
                           relevantCollections.value!.collections.isNotEmpty
                       ? CustomRoundedButton(
                           text: context.loc.initializeChip,
-                          onPressed: () {
+                          onPressed: () async {
                             if (mounted) {
-                              Navigator.pushNamed(
-                                  context, ScanningScreen.routeName,
-                                  arguments: ScanningScreenArguments(
-                                      ChainSelectorScreen.routeName));
-                              //remove route UserScanresultsscreen with removeRoute
-                              Navigator.of(context)
-                                  .removeRoute(ModalRoute.of(context)!);
+                              await initializeItem(ref, context);
                             }
                           })
                       : data.collectionId == zeroAddress

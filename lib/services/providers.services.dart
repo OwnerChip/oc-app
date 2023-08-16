@@ -143,8 +143,7 @@ final findAllMinterRolesProvider =
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
     // if collection is OPEN, add it to the list
-    if (wc != null &&
-        wcSession != null &&
+    if (ref.read(backendSessionProvider) != null &&
         collection.id ==
             EthereumAddress.fromHex(
                 '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {

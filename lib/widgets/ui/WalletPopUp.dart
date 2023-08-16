@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter/gestures.dart';
-import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/credentials.dart';
-import 'package:web3dart/crypto.dart';
 import '../../utils/utils.dart';
 import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 

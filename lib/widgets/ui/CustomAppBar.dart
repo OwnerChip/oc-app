@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/utils.dart';
@@ -63,7 +64,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
-                /* wcSession != null && */ backendSession != null
+                 backendSession != null
                     ? IconButton(
                         padding: const EdgeInsets.all(0.0),
                         icon: Icon(Icons.logout,
@@ -72,6 +73,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () {
+                          //only delete wc session if user is connected via wallet connect
                           if (wc != null && wcSession != null) {
                             wc.disconnectSession(
                                 topic: wcSession.topic,
@@ -81,6 +83,11 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                         'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
                           }
 
+                          //reset providers
+                          ref.read(userAddressProvider.notifier).state =
+                              zeroAddress; //delete user address from riverpod
+                          ref.read(walletTypeProvider.notifier).state =
+                              null; //delete wallet type from riverpod
                           ref.read(backendSessionProvider.notifier).state =
                               null; //delete backend session from riverpod
                           Navigator.pushNamedAndRemoveUntil(
@@ -99,7 +106,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 Align(
                   alignment: const Alignment(0.0, 0.95),
                   child: Text(
-                    /* wcSession != null && */ backendSession != null
+                     backendSession != null
                         ? context.loc.disconnect
                         : context.loc.connect,
                     style: Theme.of(context)
