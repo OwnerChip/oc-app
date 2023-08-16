@@ -405,7 +405,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       //show error snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorDeletingAttachment, 'error'),
+            context.loc.errorSavingUrl, 'error'),
       );
     }
   }
