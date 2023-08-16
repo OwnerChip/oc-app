@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -14,6 +16,7 @@ void main() {
       expect(res, [0x00, 0x40, 0x00, 0x00, 0x04, 49, 50, 51, 52, 0x08]);
     });
   });
+
   group('data format helpers', () {
     test('should re-order the collections by chainId', () {
       // arrange
@@ -119,6 +122,26 @@ void main() {
       // assert
       expect(tokenId.toString(),
           "643025298622660478098289384378752240690720980366");
+    });
+
+    test(
+        'should transform a hex with a leading 0 to a valid BigInt and back to hexString',
+        () {
+      //arrange
+      String ethAddress = "0x0ae7a580a3101f78bade64da3257abb20ad309af";
+
+      //act 1
+      BigInt tokenId = hexToBigInt(hexToBytes(ethAddress));
+
+      //assert 1
+      expect(tokenId.toString(),
+          "62255797149168553891434335013600620774643927471");
+
+      //act 2
+      String ethAddress2 = convertTokenIdToEthereumAddress(tokenId);
+
+      //assert 2
+      expect(ethAddress2, ethAddress);
     });
 
     test('should transform a BigInt number to a hexString', () {

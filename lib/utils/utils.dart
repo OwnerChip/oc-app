@@ -147,7 +147,7 @@ String uint8ListTo32ByteHex(Uint8List uint8List) {
 
 String convertTokenIdToEthereumAddress(BigInt intToConvert) {
   var hex = intToConvert.toRadixString(16);
-  return "0x${hex.padLeft(40)}";
+  return "0x${hex.padLeft(40, '0')}";
 }
 
 // specific to secora chip response
