@@ -130,8 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 20),
                 relevantCollections.when(
                     data: (data) => data.hasAnyMinterRole! &&
-                            wc != null &&
-                            wc!.getActiveSessions().isNotEmpty
+                            ref.read(backendSessionProvider) != null
                         ? CustomRoundedButton(
                             width: 250,
                             text: context.loc.initializeChip,

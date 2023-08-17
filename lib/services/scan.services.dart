@@ -130,7 +130,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
             //delay 2 seconds
             await Future.delayed(const Duration(seconds: 2));
             NfcManager.instance.stopSession();
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            // ScaffoldMessenger.of(context).hideCurrentSnackBar();
           }
         } catch (e, stackTrace) {
           // send Error to analytics
@@ -209,6 +209,10 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
             NfcManager.instance.stopSession();
           }
 
+          if (Platform.isAndroid) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          }
+
           //TOKEN DOES NOT EXIST
           if (config.collectionId == zeroAddress) {
             scanProcess.finish();
@@ -233,7 +237,6 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
           if (Platform.isAndroid) {
             await Future.delayed(const Duration(seconds: 2));
             NfcManager.instance.stopSession();
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
           }
         } catch (e, stackTrace) {
           // send Error to analytics
@@ -337,7 +340,16 @@ Future<MsgSignature?> makeCardSignature(
           signature = await signHash(
               nfc, 0x01, cardWalletAddress, hexToBytes(msgHashToSign));
 
-          NfcManager.instance.stopSession();
+          //stop NFC session if iOS, Android nfc Session is stopped later to block NDEF read for longer
+          if (Platform.isIOS) {
+            NfcManager.instance.stopSession();
+          }
+
+          if (Platform.isAndroid) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            await Future.delayed(const Duration(milliseconds: 1500));
+            NfcManager.instance.stopSession();
+          }
 
           //complete the future with the signature
           completer.complete(signature);
@@ -366,15 +378,15 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
   await NfcManager.instance.stopSession();
 
   //start NFC scan
-  Sentry.startTransaction('makeCardSignature()', 'task');
-
-  if (Platform.isAndroid) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      showNfcSnackbar(ScaffoldMessenger.of(context)),
-    );
-  }
+  Sentry.startTransaction('authenticateCard()', 'task');
 
   try {
+    ScaffoldFeatureController? scaffoldMessenger;
+    if (Platform.isAndroid) {
+      scaffoldMessenger = ScaffoldMessenger.of(context).showSnackBar(
+        showNfcSnackbar(ScaffoldMessenger.of(context)),
+      );
+    }
     NfcManager.instance.startSession(
         alertMessage: 'Hold phone near Smart Card sign in.',
         onDiscovered: (NfcTag tag) async {
@@ -396,15 +408,20 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
           MsgSignature signature =
               await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign);
 
-          NfcManager.instance.stopSession();
+          if (Platform.isIOS) {
+            NfcManager.instance.stopSession();
+          }
           if (Platform.isAndroid) {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            scaffoldMessenger!.close();
           }
 
           await saveBackendSession(
               sessionId, cardWalletAddress, signature, ref);
 
-          Navigator.pop(context);
+          if (Platform.isAndroid) {
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
+          }
         });
   } catch (e) {
     NfcManager.instance.stopSession();

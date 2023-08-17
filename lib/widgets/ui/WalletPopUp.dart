@@ -134,5 +134,6 @@ Future<void> onWalletPress(
 }
 
 void onCardPress(WidgetRef ref, BuildContext context) async {
+  Navigator.pop(context);
   await authenticateCard(ref, context);
 }

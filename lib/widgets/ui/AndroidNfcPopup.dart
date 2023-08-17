@@ -4,10 +4,6 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/NfcAnimation.dart';
 
-// A global key to access the scaffold messenger state from anywhere
-final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-    GlobalKey<ScaffoldMessengerState>();
-
 // A function to show the snackbar
 SnackBar showNfcSnackbar(ScaffoldMessengerState scaffoldMessengerState) {
   // Return a snackbar widget with a custom content and animation
@@ -20,7 +16,7 @@ SnackBar showNfcSnackbar(ScaffoldMessengerState scaffoldMessengerState) {
       // Use a TweenAnimationBuilder as the content parameter
       content: TweenAnimationBuilder(
         tween: Tween<double>(begin: 0.0, end: 1.0),
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 150),
         builder: (context, value, child) {
           // Calculate the position and opacity of the snackbar based on the animation value
           final offset = (1 - value) * 100;
