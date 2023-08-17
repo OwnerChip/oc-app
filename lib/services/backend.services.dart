@@ -1,3 +1,4 @@
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
@@ -108,7 +109,8 @@ Future<String> getSessionId() async {
       stackTrace: s,
     );
     print(e);
-    return "";
+    //fallback!
+    return makeRandomInt().toString();
   }
 }
 
