@@ -69,7 +69,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   late Map<String, dynamic> metadata;
   XFile? image;
   bool showImageOptions = false;
-  bool showOverlay = false;
+  bool isLoading = false;
   String overlayContentType = 'loading'; //can be "traits" or "loading"
   String loadingText = '';
   CancelableOperation? cancellableOperation;
@@ -104,6 +104,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     return imageFile!;
   }
 
+  Future<void> toggleLoading() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
   Future<void> createToken(
       String sessionId,
       Web3App wc,
@@ -113,7 +119,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       EthereumAddress collectionId,
       {XFile? image}) async {
     setState(() {
-      showOverlay = true;
+      isLoading = true;
       overlayContentType = 'loading';
       loadingText = context.loc.uploadingMetadata;
     });
@@ -156,7 +162,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       // switch to minting loading overlay
       setState(() {
-        showOverlay = true;
+        isLoading = true;
         overlayContentType = 'loading';
         loadingText = context.loc.mintingToken;
       });
@@ -180,7 +186,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             wcSession,
             metaTxAgreementId,
             walletType!,
-            cid: cid);
+            cid: cid,
+            toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
             mintFunctionSignature,
@@ -224,7 +231,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           (Route route) => route.isFirst,
         );
         setState(() {
-          showOverlay = false;
+          isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
@@ -249,14 +256,14 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
       );
       setState(() {
-        showOverlay = false;
+        isLoading = false;
       });
     }
   }
 
   void toggleTraitsForm() {
     setState(() {
-      showOverlay = !showOverlay;
+      isLoading = !isLoading;
       overlayContentType = 'traits';
     });
   }
@@ -297,14 +304,14 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         ref.watch(localAttachmentsProvider);
 
     return CustomOverlay(
-      show: showOverlay,
+      show: isLoading,
       content: overlayContentType == 'loading'
           ? SpinningLoadingSvg(
               onPressed: loadingText == context.loc.mintingToken
                   ? () {
                       cancellableOperation?.cancel();
                       setState(() {
-                        showOverlay = false;
+                        isLoading = false;
                       });
                       Navigator.pushNamedAndRemoveUntil(
                           context, HomeScreen.routeName, (route) => false);

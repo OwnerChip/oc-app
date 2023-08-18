@@ -302,8 +302,8 @@ Future<void> verifyAuthenticity(
 /* GET SIGNATURE A MESSAGE/HASH FORM CARD*/
 //returns MsgSignature if everything worked correctly
 //returns null if user cancels scan or error occurs
-Future<MsgSignature?> makeCardSignature(
-    WidgetRef ref, BuildContext context, msgHashToSign) async {
+Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
+    msgHashToSign, Function? toggleLoading) async {
   MsgSignature? signature;
   NFCOverlay nfcOverlay = NFCOverlay();
 
@@ -326,6 +326,7 @@ Future<MsgSignature?> makeCardSignature(
     }
 
     NfcManager.instance.startSession(
+        onError: (error) => toggleLoading != null ? toggleLoading() : null,
         alertMessage: 'Hold phone near Smart Card to sign transaction.',
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);

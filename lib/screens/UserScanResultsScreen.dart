@@ -62,6 +62,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
+  Future<void> toggleLoading() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
   Future<void> burnToken(Web3App wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
@@ -100,7 +106,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             wc,
             wcSession,
             metaTxAgreementId,
-            walletType!);
+            walletType!,
+            toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,

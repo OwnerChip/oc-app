@@ -53,6 +53,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   CancelableOperation? cancellableOperation;
 
+  Future<void> toggleLoading() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
   Future<void> transferToken(Web3App wc, BigInt tokenId, EthereumAddress to,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.read(wcSessionProvider);
@@ -87,7 +93,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             wcSession,
             metaTxAgreementId,
             ref.read(walletTypeProvider)!,
-            toAccount: to);
+            toAccount: to,
+            toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
             transferFunctionSignature,

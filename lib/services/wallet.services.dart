@@ -94,7 +94,8 @@ Future<String> makeAndSendGaslessTx(
     String metaTxAgreementId,
     WalletType walletType,
     {EthereumAddress? toAccount,
-    String? cid}) async {
+    String? cid,
+    Function? toggleLoading}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
     functionSignatureHash: functionSignatureHash,
     chainRpcUrl: getRPCUrlFromChainId(chainId),
@@ -109,32 +110,38 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
-  String signature;
-  if (walletType.name == 'Smart Card') {
-    String hash = await getGaslessTxHash(request, collectionId);
+  try {
+    String signature;
+    if (walletType.name == 'Smart Card') {
+      String hash = await getGaslessTxHash(request, collectionId);
 
-    MsgSignature? cardSig = await makeCardSignature(ref, context, hash);
+      MsgSignature? cardSig =
+          await makeCardSignature(ref, context, hash, toggleLoading);
 
-    signature = msgSignatureToHex(cardSig!);
-  } else {
-    String walletLink = walletType.deeplinkUri;
-    Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
-    await launchUrlString(walletDeepLink.toString(),
-        mode: LaunchMode.externalApplication);
+      signature = msgSignatureToHex(cardSig!);
+    } else {
+      String walletLink = walletType.deeplinkUri;
+      Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+      await launchUrlString(walletDeepLink.toString(),
+          mode: LaunchMode.externalApplication);
 
-    signature = await wc!.request(
-      topic: wcSession!.topic,
-      chainId: 'eip155:1',
-      request: SessionRequestParams(
-        method: 'eth_signTypedData_v4',
-        params: [walletAddress.toString(), json.encode(typedData)],
-      ),
-    );
+      signature = await wc!.request(
+        topic: wcSession!.topic,
+        chainId: 'eip155:1',
+        request: SessionRequestParams(
+          method: 'eth_signTypedData_v4',
+          params: [walletAddress.toString(), json.encode(typedData)],
+        ),
+      );
+    }
+
+    String txnHash = await sendGaslessRequest(
+        collectionId, signature, metaTxAgreementId, request);
+    return txnHash;
+  } catch (e) {
+    print(e);
+    rethrow;
   }
-
-  String txnHash = await sendGaslessRequest(
-      collectionId, signature, metaTxAgreementId, request);
-  return txnHash;
 }
 
 // This code creates a normal transaction.
