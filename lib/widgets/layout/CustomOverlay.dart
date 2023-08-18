@@ -20,7 +20,8 @@ class CustomOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Expanded(
+        child: Stack(
       children: [
         child,
         if (show)
@@ -28,15 +29,16 @@ class CustomOverlay extends StatelessWidget {
             bottom: MediaQuery.of(context).viewInsets.bottom,
             child: IgnorePointer(
               ignoring: dismissible,
-              child: Container(
+              child: Expanded(
+                  child: Container(
                 color: color.withOpacity(opacity),
                 child: Center(
                   child: content,
                 ),
-              ),
+              )),
             ),
           ),
       ],
-    );
+    ));
   }
 }

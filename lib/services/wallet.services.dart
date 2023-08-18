@@ -109,11 +109,6 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
-  String walletLink = walletType.deeplinkUri;
-  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
-  await launchUrlString(walletDeepLink.toString(),
-      mode: LaunchMode.externalApplication);
-
   String signature;
   if (walletType.name == 'Smart Card') {
     String hash = await getGaslessTxHash(request, collectionId);
@@ -122,6 +117,11 @@ Future<String> makeAndSendGaslessTx(
 
     signature = msgSignatureToHex(cardSig!);
   } else {
+    String walletLink = walletType.deeplinkUri;
+    Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+    await launchUrlString(walletDeepLink.toString(),
+        mode: LaunchMode.externalApplication);
+
     signature = await wc!.request(
       topic: wcSession!.topic,
       chainId: 'eip155:1',

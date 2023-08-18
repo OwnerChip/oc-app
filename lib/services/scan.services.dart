@@ -47,6 +47,8 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       ? sessionIdFromServer
       : makeRandomInt().toString();
 
+  NFCOverlay nfcOverlay = NFCOverlay();
+
   //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
 
@@ -54,10 +56,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
   final scanProcess = Sentry.startTransaction('initScanning()', 'task');
 
   if (Platform.isAndroid) {
-    //show NFC popup
-    ScaffoldMessenger.of(context).showSnackBar(
-      showNfcSnackbar(ScaffoldMessenger.of(context)),
-    );
+    nfcOverlay.showNfcOverlay(context, 'Hold your phone close to the NFC chip');
   }
 
   NfcManager.instance.startSession(
@@ -103,6 +102,10 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
             NfcManager.instance.stopSession();
           }
 
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+
           //TOKEN DOES NOT EXIST
           if (config.collectionId == zeroAddress) {
             scanProcess.finish();
@@ -125,12 +128,9 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
             );
           }
           // delay to block NDEF read/popup on Android
-          //if platform is android
           if (Platform.isAndroid) {
-            //delay 2 seconds
             await Future.delayed(const Duration(seconds: 2));
             NfcManager.instance.stopSession();
-            // ScaffoldMessenger.of(context).hideCurrentSnackBar();
           }
         } catch (e, stackTrace) {
           // send Error to analytics
@@ -146,7 +146,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
           //error reading chip
           NfcManager.instance.stopSession();
           if (Platform.isAndroid) {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            nfcOverlay.removeNfcOverlay();
           }
           ScaffoldMessenger.of(context).showSnackBar(
             returnSnackBarWidget(context.loc.errorHeadingSnackBar,
@@ -163,6 +163,8 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
       ? sessionIdFromServer
       : makeRandomInt().toString();
 
+  NFCOverlay nfcOverlay = NFCOverlay();
+
   //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
   //start NFC scan
@@ -170,9 +172,7 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
 
   if (Platform.isAndroid) {
     //show NFC popup
-    ScaffoldMessenger.of(context).showSnackBar(
-      showNfcSnackbar(ScaffoldMessenger.of(context)),
-    );
+    nfcOverlay.showNfcOverlay(context, 'Hold your phone close to the NFC chip');
   }
   NfcManager.instance.startSession(
       alertMessage: 'Hold phone near NFC tag to scan item.',
@@ -210,7 +210,7 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
           }
 
           if (Platform.isAndroid) {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            nfcOverlay.removeNfcOverlay();
           }
 
           //TOKEN DOES NOT EXIST
@@ -251,7 +251,8 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
           );
           //error reading chip
           NfcManager.instance.stopSession();
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+          nfcOverlay.removeNfcOverlay();
 
           ScaffoldMessenger.of(context).showSnackBar(
             returnSnackBarWidget(context.loc.errorHeadingSnackBar,
@@ -304,6 +305,7 @@ Future<void> verifyAuthenticity(
 Future<MsgSignature?> makeCardSignature(
     WidgetRef ref, BuildContext context, msgHashToSign) async {
   MsgSignature? signature;
+  NFCOverlay nfcOverlay = NFCOverlay();
 
   //stop previoud NFC session if existing
   // await NfcManager.instance.stopSession();
@@ -319,9 +321,8 @@ Future<MsgSignature?> makeCardSignature(
   Sentry.startTransaction('makeCardSignature()', 'task');
   try {
     if (Platform.isAndroid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        showNfcSnackbar(ScaffoldMessenger.of(context)),
-      );
+      nfcOverlay.showNfcOverlay(
+          context, 'Hold your phone close to your Smart Card.');
     }
 
     NfcManager.instance.startSession(
@@ -346,7 +347,7 @@ Future<MsgSignature?> makeCardSignature(
           }
 
           if (Platform.isAndroid) {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            nfcOverlay.removeNfcOverlay();
             await Future.delayed(const Duration(milliseconds: 1500));
             NfcManager.instance.stopSession();
           }
@@ -360,7 +361,7 @@ Future<MsgSignature?> makeCardSignature(
     print(e);
     NfcManager.instance.stopSession();
     if (Platform.isAndroid) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      nfcOverlay.removeNfcOverlay();
     }
 
     //show error snackbar
@@ -379,14 +380,13 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
 
   //start NFC scan
   Sentry.startTransaction('authenticateCard()', 'task');
-
+  NFCOverlay nfcOverlay = NFCOverlay();
   try {
-    ScaffoldFeatureController? scaffoldMessenger;
     if (Platform.isAndroid) {
-      scaffoldMessenger = ScaffoldMessenger.of(context).showSnackBar(
-        showNfcSnackbar(ScaffoldMessenger.of(context)),
-      );
+      nfcOverlay.showNfcOverlay(
+          context, 'Hold your phone close to your Smart Card.');
     }
+
     NfcManager.instance.startSession(
         alertMessage: 'Hold phone near Smart Card sign in.',
         onDiscovered: (NfcTag tag) async {
@@ -412,7 +412,7 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
             NfcManager.instance.stopSession();
           }
           if (Platform.isAndroid) {
-            scaffoldMessenger!.close();
+            nfcOverlay.removeNfcOverlay();
           }
 
           await saveBackendSession(
@@ -426,7 +426,7 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
   } catch (e) {
     NfcManager.instance.stopSession();
     if (Platform.isAndroid) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      nfcOverlay.removeNfcOverlay();
     }
     print(e);
   }
