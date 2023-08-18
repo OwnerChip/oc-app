@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -145,9 +146,9 @@ String uint8ListTo32ByteHex(Uint8List uint8List) {
   return hex.padLeft(64, '0');
 }
 
-String convertTokenIdToEthereumAddress(BigInt intToConvert) {
+EthereumAddress convertTokenIdToEthereumAddress(BigInt intToConvert) {
   var hex = intToConvert.toRadixString(16);
-  return "0x${hex.padLeft(40)}";
+  return EthereumAddress.fromHex("0x${hex.padLeft(40, '0')}");
 }
 
 // specific to secora chip response
