@@ -123,8 +123,8 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
           "sessionId": sessionId,
           "walletAddress": userWalletAddress.hex,
           "userWalletSignature": {
-            'r': '0x' + signature.r.toRadixString(16),
-            's': '0x' + signature.s.toRadixString(16),
+            'r': convertSignatureParamToHexString(signature.r),
+            's': convertSignatureParamToHexString(signature.s),
             'v': signature.v
           }
         },
