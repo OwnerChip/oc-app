@@ -234,23 +234,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                               )
                             : Container(),
 
-                        // ...attachments.map(
-                        //   (e) => Column(children: [
-                        //     AttachmentBox(
-                        //       text: e.title,
-                        //       icon: e.type == AttachmentType.url
-                        //           ? Icons.link
-                        //           : Icons.attach_file,
-                        //       isPrivate: e.isPrivate,
-                        //       onTap: () {
-                        //         launchUrl(Uri.parse(e.url),
-                        //             mode: LaunchMode.externalApplication);
-                        //       },
-                        //     ),
-                        //     const SizedBox(height: 10),
-                        //   ]),
-                        // ),
-
                         //if connected wallet is owner
                         nftOwner.when(
                           data: ((data) => data == connectedWallet
