@@ -322,12 +322,12 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
   try {
     if (Platform.isAndroid) {
       nfcOverlay.showNfcOverlay(
-          context, 'Hold your phone close to your Smart Card.');
+          context, 'Hold your phone close to your OwnerCard.');
     }
 
     NfcManager.instance.startSession(
         onError: (error) => toggleLoading != null ? toggleLoading() : null,
-        alertMessage: 'Hold phone near Smart Card to sign transaction.',
+        alertMessage: 'Hold phone near OwnerCard to sign transaction.',
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
@@ -385,11 +385,11 @@ Future<void> authenticateCard(WidgetRef ref, BuildContext context) async {
   try {
     if (Platform.isAndroid) {
       nfcOverlay.showNfcOverlay(
-          context, 'Hold your phone close to your Smart Card.');
+          context, 'Hold your phone close to your OwnerCard.');
     }
 
     NfcManager.instance.startSession(
-        alertMessage: 'Hold phone near Smart Card sign in.',
+        alertMessage: 'Hold phone near OwnerCard sign in.',
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 

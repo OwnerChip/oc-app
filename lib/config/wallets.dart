@@ -1,7 +1,7 @@
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-final WalletType _smartCard = WalletType('Smart Card',
+final WalletType _smartCard = WalletType('OwnerCard',
     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png", '');
 
 final WalletType _metamask = WalletType(

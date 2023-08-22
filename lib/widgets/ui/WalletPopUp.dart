@@ -58,10 +58,10 @@ Future<void> walletPopupBuilder(
               ]),
               const SizedBox(height: 30),
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                // smart card wallet
+                // OwnerCard wallet
                 WalletIcon(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
-                    'Smart Card',
+                    'OwnerCard',
                     () => onCardPress(ref, context)),
                 Container(width: 65)
               ]),

@@ -89,7 +89,7 @@ Future<String> makeAndSendGaslessTx(
     EthereumAddress collectionId,
     SignatureData signatureData,
     EthereumAddress walletAddress,
-    Web3App? wc, //Note: wc and wcSession are null if smart card is used for tx
+    Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
     SessionData? wcSession,
     String metaTxAgreementId,
     WalletType walletType,
@@ -112,7 +112,7 @@ Future<String> makeAndSendGaslessTx(
 
   try {
     String signature;
-    if (walletType.name == 'Smart Card') {
+    if (walletType.name == 'OwnerCard') {
       String hash = await getGaslessTxHash(request, collectionId);
 
       MsgSignature? cardSig =
