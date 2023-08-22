@@ -170,7 +170,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                     title: context.loc.loading, content: null)),
             attachments.isNotEmpty
                 ? DropdownContainer(
-                    title: 'Digital Content' +
+                    title: 'Digital Content ' +
                         '(' +
                         attachments.length.toString() +
                         ')',

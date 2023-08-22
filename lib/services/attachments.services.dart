@@ -165,8 +165,7 @@ Future<dynamic> getPublicAttachmentsFromBackend(
   BigInt tokenId,
 ) async {
   final Dio dio = getBackendClient();
-  final url =
-      '/attachments/${convertTokenIdToEthereumAddress(tokenId)}"}/public';
+  final url = '/attachments/${convertTokenIdToEthereumAddress(tokenId)}/public';
   try {
     final result = await dio.get(
       url,
