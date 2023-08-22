@@ -129,6 +129,8 @@ Future<void> onTapAuth(
   final String jsonBackendSession = jsonEncode(backendSession.toJson());
   storage.setString('backendSession', jsonBackendSession);
 
+  ref.refresh(findAllMinterRolesProvider);
+
   //success snackbar
   ScaffoldMessenger.of(context).showSnackBar(
     returnSnackBarWidget(
