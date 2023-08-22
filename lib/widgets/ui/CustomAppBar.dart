@@ -54,7 +54,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ],
                 )
               : Image.asset(
-                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png',
+                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_appbar.png',
                   fit: BoxFit.contain)),
       title: Text(text ?? '', style: Theme.of(context).textTheme.displaySmall),
       centerTitle: true,
