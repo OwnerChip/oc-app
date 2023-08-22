@@ -28,6 +28,7 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -113,6 +114,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ])
                 : Container(),
+
+            // MIDDLE CONTENT
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -137,17 +140,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             onPressed: () =>
                                 onButtonPress(ref, context, mounted, true),
                           )
-                        : Container(),
-                    loading: () => Text(context.loc.loading),
-                    error: (err, stack) => Container()),
+                        : const SizedBox(height: 40),
+                    loading: () =>
+                        SizedBox(height: 40, child: Text(context.loc.loading)),
+                    error: (err, stack) => const SizedBox(height: 40)),
               ],
             ),
-            const SizedBox(height: 20),
-            CustomOutlinedButton(
-              buttonText: context.loc.more,
-              onPressed: () =>
-                  Navigator.pushNamed(context, MoreInfoScreen.routeName),
-            ),
+
+            //FOOTER CONTENT
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                //if stebo app show additional button
+                dotenv.get('APP_ID') == 'stebo'
+                    ? Column(children: [
+                        CustomOutlinedButton(
+                            buttonText: 'SteboArt',
+                            onPressed: () => launchUrl(
+                                  Uri.parse('https://www.steboart.com'),
+                                )),
+                        const SizedBox(height: 10),
+                      ])
+                    : Container(),
+                CustomOutlinedButton(
+                  buttonText: context.loc.more,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, MoreInfoScreen.routeName),
+                ),
+              ],
+            )
           ]),
     );
   }
