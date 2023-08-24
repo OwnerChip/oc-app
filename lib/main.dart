@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -250,6 +251,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         AddAttachmentScreen.routeName: (context) => const AddAttachmentScreen(),
         ListAttachmentsScreen.routeName: (context) =>
             const ListAttachmentsScreen(),
+        PinScreen.routeName: (context) => const PinScreen(),
       },
     );
   }

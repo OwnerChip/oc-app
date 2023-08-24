@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:flutter/gestures.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/utils.dart';
-import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +43,24 @@ Future<void> walletPopupBuilder(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                // OwnerCard wallet
+                WalletIcon(
+                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
+                    'OwnerCard',
+                    () => onCardPress(ref, context)),
+                WalletIcon(
+                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
+                    'Setup OwnerCard',
+                    () => Navigator.pushNamed(context, PinScreen.routeName)),
+              ]),
+              const SizedBox(height: 20),
+              Container(
+                height: 1,
+                width: 250,
+                color: Theme.of(context).dividerColor,
+              ),
+              const SizedBox(height: 20),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                 // trust wallet
                 WalletIcon(
                     walletConfig['https://trustwallet.com']!.iconUri,
@@ -55,15 +74,6 @@ Future<void> walletPopupBuilder(
                     walletConfig['https://metamask.io/']!.name,
                     () => onWalletPress(context, ref, wc,
                         walletConfig['https://metamask.io/']!)),
-              ]),
-              const SizedBox(height: 30),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                // OwnerCard wallet
-                WalletIcon(
-                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
-                    'OwnerCard',
-                    () => onCardPress(ref, context)),
-                Container(width: 65)
               ]),
               const SizedBox(height: 30),
               Text(

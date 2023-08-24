@@ -1,24 +1,21 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 import '../../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
-Future<void> authPopupBuilder(
-    BuildContext context, WidgetRef ref, Web3App wc) async {
+Future<void> showCustomPopup(
+    BuildContext context, String title, Widget content) async {
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -27,69 +24,17 @@ Future<void> authPopupBuilder(
           //border radius
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
-          title: const Padding(
+          title: Padding(
             padding: EdgeInsets.only(),
             child: Text(
-              'Sign in',
+              title,
               textAlign: TextAlign.center,
             ),
           ),
           titleTextStyle: Theme.of(context).textTheme.displayLarge!,
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Confirm your identity by authenticating your wallet.',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: Colors.green,
-                    size: 36,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Wallet connected',
-                    style: Theme.of(context).textTheme.displaySmall,
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 15,
-              ),
-              Row(
-                children: [
-                  //grey circle icon full, not outlined
-                  const Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: Colors.grey,
-                    size: 36,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    'Wallet authenticated',
-                    style: Theme.of(context).textTheme.displaySmall,
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              CustomRoundedButton(
-                  text: 'Authenticate',
-                  onPressed: () =>
-                      onTapAuth(context, 'insert_session_id', ref)),
-            ],
+            children: [],
           ));
     },
   );
