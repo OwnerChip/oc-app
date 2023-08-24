@@ -213,41 +213,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
               ? urlTextInput
               : null);
 
+      await ref.refresh(fetchAttachmentsProvider.future);
+
       setState(() {
         isLoading = false;
         loadingText = '';
       });
 
-      //set attachment in provider at corresponding index
-      if (type == AttachmentType.url) {
-        //ATTACHMENT IS URL
-        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
-            Attachment(
-          titleTextInput,
-          urlTextInput,
-          type,
-          urlTextInput,
-          attachmentBeingEdited.backendUuid,
-          isPrivate: isPrivate,
-          isFromCreator: attachmentBeingEdited.isFromCreator,
-        );
-      } else {
-        //ATTACHMENT IS FILE
-        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
-            Attachment(
-          titleTextInput,
-          attachmentBeingEdited.fileName,
-          AttachmentType.other,
-          attachmentBeingEdited.url,
-          attachmentBeingEdited.backendUuid,
-          isPrivate: isPrivate,
-          isFromCreator: attachmentBeingEdited.isFromCreator,
-        );
-      }
-
-      //copy state to trigger rebuild
-      ref.read(localAttachmentsProvider.notifier).state =
-          List.from(ref.read(localAttachmentsProvider.notifier).state);
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -306,22 +278,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       var awsResponse =
           await uploadFileToAWS(File(file!.path!), awsUrl, contentType);
 
-      ref.refresh(fetchAttachmentsProvider);
+      var _ = await ref.refresh(fetchAttachmentsProvider.future);
 
       setState(() {
         isLoading = false;
         loadingText = '';
       });
       if (file != null) {
-        bool hasMinterRole = await checkMinterRole(
-            getRPCUrlFromChainId(chainId), collectionId, walletAddress);
-        Attachment attachment = Attachment(
-            titleTextInput, fileName!, AttachmentType.other, awsUrl, fileUuid,
-            isPrivate: isPrivate, isFromCreator: hasMinterRole);
-        ref.read(localAttachmentsProvider.notifier).state = [
-          ...ref.read(localAttachmentsProvider.notifier).state,
-          attachment
-        ];
         Navigator.pop(context, file);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -370,10 +333,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       String fileUuid = result[0];
       String status = result[1];
 
-      final walletAddress = ref.read(userAddressProvider);
-
-      bool hasMinterRole = await checkMinterRole(
-          getRPCUrlFromChainId(chainId), collectionId, walletAddress);
+      await ref.refresh(fetchAttachmentsProvider.future);
 
       setState(() {
         isLoading = false;
@@ -381,13 +341,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
 
       if (status == 'OK') {
-        Attachment attachment = Attachment(titleTextInput, urlTextInput,
-            AttachmentType.url, urlTextInput, fileUuid,
-            isPrivate: isPrivate, isFromCreator: hasMinterRole);
-        ref.read(localAttachmentsProvider.notifier).state = [
-          ...ref.read(localAttachmentsProvider.notifier).state,
-          attachment
-        ];
+        // Attachment attachment = Attachment(titleTextInput, urlTextInput,
+        //     AttachmentType.url, urlTextInput, fileUuid,
+        //     isPrivate: isPrivate, isFromCreator: hasMinterRole);
+        // ref.read(localAttachmentsProvider.notifier).state = [
+        //   ...ref.read(localAttachmentsProvider.notifier).state,
+        //   attachment
+        // ];
         Navigator.pop(context);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -425,6 +385,10 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     BackendSession? backendSession = ref.read(backendSessionProvider);
 
     try {
+      setState(() {
+        isLoading = true;
+        loadingText = 'Deleting attachment';
+      });
       var result = await deleteAttachmentFromBackend(
           backendSession!,
           ref.read(userAddressProvider),
@@ -432,19 +396,27 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           collectionId,
           ref.read(chipInfoProvider).tokenId,
           attachment.backendUuid);
+
+      var _ = await ref.refresh(fetchAttachmentsProvider.future);
+
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
     } catch (e) {
-      //show error snackbar
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorDeletingAttachment, 'error'),
       );
+
       throw Exception(context.loc.errorDeletingAttachment);
     }
 
-    ref.read(localAttachmentsProvider.notifier).state.removeAt(navArgs.index!);
-    ref.read(localAttachmentsProvider.notifier).state = List.from(ref
-        .read(localAttachmentsProvider.notifier)
-        .state); //state has to be copied and set again to trigger rebuild
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.successHeadingSnackbar,
