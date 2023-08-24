@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class WalletIcon extends StatelessWidget {
@@ -32,17 +33,24 @@ class WalletIcon extends StatelessWidget {
                 height: 60,
                 child: Padding(
                   padding: const EdgeInsets.all(7),
-                  child: Image.asset(iconPath, fit: BoxFit.contain),
+                  child:
+                      //if iconpath ends with svg
+                      iconPath.endsWith('.svg')
+                          ? SvgPicture.asset(iconPath, fit: BoxFit.contain)
+                          : Image.asset(iconPath, fit: BoxFit.contain),
                 )),
-            Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  walletName,
-                  style: Theme.of(context)
-                      .textTheme
-                      .displaySmall!
-                      .copyWith(fontSize: 14),
-                ))
+            SizedBox(
+                width: 130,
+                child: Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      walletName,
+                      style: Theme.of(context)
+                          .textTheme
+                          .displaySmall!
+                          .copyWith(fontSize: 14),
+                    )))
           ],
         ));
   }

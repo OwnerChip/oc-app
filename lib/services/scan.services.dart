@@ -6,7 +6,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AndroidNfcPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,9 +31,6 @@ import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
-
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
@@ -453,4 +453,58 @@ Future<void> saveBackendSession(
   final SharedPreferences storage = await SharedPreferences.getInstance();
   final String jsonBackendSession = jsonEncode(backendSession.toJson());
   storage.setString('backendSession', jsonBackendSession);
+}
+
+// PIN CODE
+Future<void> setPinOnCard(BuildContext context, String pin) async {
+//stop previoud NFC session if existing
+  await NfcManager.instance.stopSession();
+
+  //start NFC scan
+  Sentry.startTransaction('setPinOnCard()', 'task');
+  NFCOverlay nfcOverlay = NFCOverlay();
+  try {
+    if (Platform.isAndroid) {
+      nfcOverlay.showNfcOverlay(
+          context, 'Hold your phone close to your OwnerCard.');
+    }
+
+    NfcManager.instance.startSession(
+        alertMessage: 'Hold phone near OwnerCard sign in.',
+        onDiscovered: (NfcTag tag) async {
+          var nfc = NFCPlatform(tag);
+
+          String sessionId = makeRandomInt().toString();
+
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
+
+          //create first key if not existing
+          List result = await createFirstKeypairOnChip(nfc, false, sessionId);
+          EthereumAddress cardWalletAddress = result[0];
+
+          String puk = await setPin(nfc, pin);
+
+          //TODO: show puk
+          showCustomPopup(context, 'Save PUK', PukDisplay(puk: puk));
+
+          if (Platform.isIOS) {
+            NfcManager.instance.stopSession();
+          }
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+
+          if (Platform.isAndroid) {
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
+          }
+        });
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    if (Platform.isAndroid) {
+      nfcOverlay.removeNfcOverlay();
+    }
+    print(e);
+  }
 }
