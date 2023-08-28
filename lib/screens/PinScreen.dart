@@ -63,7 +63,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
         ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
 
     try {
-      var returnValue = navArgs.callback(pin);
+      var returnValue = await navArgs.callback(pin);
       Navigator.pop(context, returnValue);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

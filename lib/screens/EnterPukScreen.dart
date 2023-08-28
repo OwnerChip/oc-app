@@ -54,7 +54,9 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
               ),
             ],
           ),
-          //CustomRounded Button
+          SizedBox(
+            height: 20,
+          ),
           CustomRoundedButton(
             text: 'Reset PIN',
             onPressed: () {

@@ -2,8 +2,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -95,7 +97,7 @@ Future<String> makeAndSendGaslessTx(
     WalletType walletType,
     {EthereumAddress? toAccount,
     String? cid,
-    Function? toggleLoading}) async {
+    required Function toggleLoading}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
     functionSignatureHash: functionSignatureHash,
     chainRpcUrl: getRPCUrlFromChainId(chainId),
@@ -115,13 +117,22 @@ Future<String> makeAndSendGaslessTx(
     if (walletType.name == 'OwnerCard') {
       String hash = await getGaslessTxHash(request, collectionId);
 
-      MsgSignature? cardSig =
-          await makeCardSignature(ref, context, hash, toggleLoading);
+      var cardSignature =
+          await Navigator.pushNamed(context, PinScreen.routeName,
+              arguments: PinScreenArguments(
+                  activeFeature: PinScreenActiveFeature.verifyPinTx,
+                  callback: (String pin) async {
+                    return await makeCardSignature(
+                        ref, context, hash, toggleLoading, pin);
+                  })) as MsgSignature;
 
-      signature = msgSignatureToHex(cardSig!);
+      signature = msgSignatureToHex(cardSignature);
     } else {
       String walletLink = walletType.deeplinkUri;
       Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+
+      //turn off loading while user is in Metamask/Other Wallet
+      toggleLoading();
       await launchUrlString(walletDeepLink.toString(),
           mode: LaunchMode.externalApplication);
 
@@ -133,6 +144,8 @@ Future<String> makeAndSendGaslessTx(
           params: [walletAddress.toString(), json.encode(typedData)],
         ),
       );
+      //turn on loading again, while waiting for gasless tx to be mined
+      toggleLoading();
     }
 
     String txnHash = await sendGaslessRequest(

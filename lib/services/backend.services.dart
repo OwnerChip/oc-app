@@ -1,4 +1,10 @@
+import 'dart:convert';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
@@ -140,4 +146,26 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
     print(e);
     return 0;
   }
+}
+
+Future<void> saveBackendSession(
+    String sessionId,
+    EthereumAddress cardWalletAddress,
+    MsgSignature signature,
+    WidgetRef ref) async {
+  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+  int sessionExpirationDate = await getSessionExpiration(
+      sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
+
+  ref.read(userAddressProvider.notifier).state = cardWalletAddress;
+  ref.read(walletTypeProvider.notifier).state = walletConfig['ocSmartCard'];
+  BackendSession backendSession = BackendSession(sessionId, signature,
+      ref.read(userAddressProvider), sessionExpirationDate);
+
+  ref.read(backendSessionProvider.notifier).state = backendSession;
+
+  //persist session date
+  final SharedPreferences storage = await SharedPreferences.getInstance();
+  final String jsonBackendSession = jsonEncode(backendSession.toJson());
+  storage.setString('backendSession', jsonBackendSession);
 }

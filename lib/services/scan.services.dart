@@ -252,7 +252,9 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
           //error reading chip
           NfcManager.instance.stopSession();
 
-          nfcOverlay.removeNfcOverlay();
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
 
           ScaffoldMessenger.of(context).showSnackBar(
             returnSnackBarWidget(context.loc.errorHeadingSnackBar,
@@ -303,7 +305,7 @@ Future<void> verifyAuthenticity(
 //returns MsgSignature if everything worked correctly
 //returns null if user cancels scan or error occurs
 Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
-    msgHashToSign, Function? toggleLoading) async {
+    msgHashToSign, Function toggleLoading, String pin) async {
   MsgSignature? signature;
   NFCOverlay nfcOverlay = NFCOverlay();
 
@@ -323,7 +325,7 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
     }
 
     NfcManager.instance.startSession(
-        onError: (error) => toggleLoading != null ? toggleLoading() : null,
+        onError: (error) => toggleLoading(),
         alertMessage: 'Hold phone near OwnerCard to sign transaction.',
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
@@ -334,6 +336,9 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
           //create first key if not existing
           List result = await createFirstKeypairOnChip(nfc, false, sessionId);
           EthereumAddress cardWalletAddress = result[0];
+
+          //verify pin
+          bool pinVerified = await verifyPin(nfc, pin);
 
           //get chip signature
           signature = await signHash(
@@ -449,28 +454,6 @@ Future<void> authenticateCard(
           print(e);
         }
       });
-}
-
-Future<void> saveBackendSession(
-    String sessionId,
-    EthereumAddress cardWalletAddress,
-    MsgSignature signature,
-    WidgetRef ref) async {
-  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-  int sessionExpirationDate = await getSessionExpiration(
-      sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
-
-  ref.read(userAddressProvider.notifier).state = cardWalletAddress;
-  ref.read(walletTypeProvider.notifier).state = walletConfig['ocSmartCard'];
-  BackendSession backendSession = BackendSession(sessionId, signature,
-      ref.read(userAddressProvider), sessionExpirationDate);
-
-  ref.read(backendSessionProvider.notifier).state = backendSession;
-
-  //persist session date
-  final SharedPreferences storage = await SharedPreferences.getInstance();
-  final String jsonBackendSession = jsonEncode(backendSession.toJson());
-  storage.setString('backendSession', jsonBackendSession);
 }
 
 // PIN CODE
