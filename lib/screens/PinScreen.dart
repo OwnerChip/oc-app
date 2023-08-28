@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:sentry/sentry.dart';
 
@@ -24,11 +25,54 @@ class PinScreen extends ConsumerStatefulWidget {
 }
 
 class _PinScreen extends ConsumerState<PinScreen> {
-  String text = 'Set up PIN for OwnerCard';
+  String title = 'Set up PIN for OwnerCard';
+  String buttonText = 'Save';
+
   String pin = '';
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
+
+    if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
+      setState(() {
+        title = 'Set up PIN for OwnerCard';
+        buttonText = 'Save';
+      });
+    } else if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinAuth) {
+      setState(() {
+        title = 'Enter PIN to authenticate';
+        buttonText = 'Connect OwnerCard';
+      });
+    } else if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinTx) {
+      setState(() {
+        title = 'Enter PIN to confirm transaction';
+        buttonText = 'Confirm Transaction';
+      });
+    } else {
+      String errorMsg = 'Invalid PinScreenActiveFeature Navigation Argument';
+      Sentry.captureException(errorMsg);
+      throw Exception(errorMsg);
+    }
+  }
+
   Future<void> onSavePress(BuildContext context) async {
-    setPinOnCard(context, pin);
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
+
+    try {
+      var returnValue = navArgs.callback(pin);
+      Navigator.pop(context, returnValue);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorUpdatingData, 'error'),
+      );
+      print(e);
+      Sentry.captureException(e);
+    }
   }
 
   @override
@@ -52,7 +96,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
             alignment: Alignment.center,
             child: Text(
               textAlign: TextAlign.center,
-              text,
+              title,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ),

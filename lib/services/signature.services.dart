@@ -14,9 +14,15 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
 /// sign a hash with the private key of the chip
-Future<MsgSignature> signHash(NFCPlatform nfc, int hexKeyNumber,
-    EthereumAddress chipEthereumAddress, Uint8List hash) async {
-  await nfc.sendCommand(SELECT_APP);
+Future<MsgSignature> signHash(
+    NFCPlatform nfc,
+    int hexKeyNumber,
+    EthereumAddress chipEthereumAddress,
+    Uint8List hash,
+    bool callSelectApp) async {
+  if (callSelectApp)
+    await nfc.sendCommand(
+        SELECT_APP); //selectapp should not be called if a session has already be initiated with a verifyPIN command
 
   final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hash);
   try {

@@ -71,12 +71,14 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                       if (hasMinterRole) {
                         return Column(
                           children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                context.loc.creatorContent,
-                              ),
-                            ),
+                            ownerAttachments.isNotEmpty
+                                ? Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      context.loc.creatorContent,
+                                    ),
+                                  )
+                                : Container(),
                             const SizedBox(height: 10),
                             for (var i = 0; i < creatorAttachments.length; i++)
                               Column(children: [

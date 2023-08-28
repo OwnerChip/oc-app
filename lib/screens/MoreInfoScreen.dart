@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 //import widgets
@@ -63,6 +65,14 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             },
                         width: 250)))
                 .toList(),
+            Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CustomRoundedButton(
+                    text: 'Reset PIN',
+                    onPressed: () => {
+                          Navigator.pushNamed(context, EnterPukScreen.routeName)
+                        },
+                    width: 250)),
             const SizedBox(height: 60),
             CustomOutlinedButton(
                 buttonText: context.loc.support,

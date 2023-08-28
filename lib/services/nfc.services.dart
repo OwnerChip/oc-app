@@ -97,14 +97,14 @@ Uint8List changePinCommand(String oldPin, String newPin) {
   return cmd;
 }
 
-Uint8List unlockPinCommand(String puk) {
+Uint8List unlockPinCommand(Uint8List puk) {
   final Uint8List cmd = Uint8List.fromList([
     0x00,
     0x46,
     0x00,
     0x00,
     0x08,
-    ...puk.codeUnits,
+    ...puk,
   ]);
   return cmd;
 }
@@ -319,24 +319,25 @@ Future<String> setPin(NFCPlatform nfc, String pin) async {
 
   Uint8List cmd = setPinCommand(pin);
   List<dynamic> res = await nfc.sendCommand(cmd);
-  Uint8List response = res[0];
+  Uint8List puk = res[0];
   int responseCode1 = res[1];
   int responseCode2 = res[2];
 
   // ERROR (0x69 0x85)
-  bool success = !(responseCode1 == 0x69 && responseCode2 == 0x85);
+  bool success = (responseCode1 == 0x90 && responseCode2 == 0x00);
 
-  if (success) {
-    Uint8List puk = response.sublist(0, 7);
-    Utf8Decoder decoder = const Utf8Decoder();
-    return decoder.convert(puk);
+  if (success && puk.length == 8) {
+    //puk Uint8List to hex string
+    String pukHex = bytesToHex(puk);
+
+    return pukHex;
   } else {
     throw Exception("Error setting pin");
   }
 }
 
 /// verify PIN, so that commands requiring authentication are allowed
-Future<void> verifyPin(NFCPlatform nfc, String pin) async {
+Future<bool> verifyPin(NFCPlatform nfc, String pin) async {
   if (pin.length != 4) {
     throw Exception("PIN must be 4 characters long.");
   }
@@ -349,7 +350,7 @@ Future<void> verifyPin(NFCPlatform nfc, String pin) async {
 
   // check if SUCCESS (0x90 0x00)
   if (responseCode1 == 144 && responseCode2 == 0) {
-    return;
+    return true;
   } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
     throw Exception("PIN not set");
   } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
@@ -390,13 +391,14 @@ Future<String> changePin(NFCPlatform nfc, String oldPin, String newPin) async {
   }
 }
 
-/// remove PIN by entering a PUK
-Future<void> unlockPin(NFCPlatform nfc, String puk) async {
-  if (puk.length != 8) {
-    throw Exception("PUK must be 8 characters long.");
+/// remove PIN by entering a PUK (8 byte hex string)
+Future<bool> unlockPin(NFCPlatform nfc, String puk) async {
+  if (puk.length != 16) {
+    throw Exception("PUK must be 16 characters / 8 bytes long.");
   }
 
-  Uint8List cmd = unlockPinCommand(puk);
+  Uint8List pukBytes = hexToBytes(puk);
+  Uint8List cmd = unlockPinCommand(pukBytes);
   List<dynamic> res = await nfc.sendCommand(cmd);
   Uint8List response = res[0];
   int responseCode1 = res[1];
@@ -404,7 +406,7 @@ Future<void> unlockPin(NFCPlatform nfc, String puk) async {
 
   // check if SUCCESS (0x90 0x00)
   if (responseCode1 == 144 && responseCode2 == 0) {
-    return;
+    return true;
   } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
     throw Exception("PIN not set");
   } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
