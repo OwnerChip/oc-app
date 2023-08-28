@@ -65,14 +65,14 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             },
                         width: 250)))
                 .toList(),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomRoundedButton(
-                    text: 'Reset PIN',
-                    onPressed: () => {
-                          Navigator.pushNamed(context, EnterPukScreen.routeName)
-                        },
-                    width: 250)),
+            // Padding(
+            //     padding: const EdgeInsets.only(bottom: 10),
+            //     child: CustomRoundedButton(
+            //         text: 'Reset PIN',
+            //         onPressed: () => {
+            //               Navigator.pushNamed(context, EnterPukScreen.routeName)
+            //             },
+            //         width: 250)),
             const SizedBox(height: 60),
             CustomOutlinedButton(
                 buttonText: context.loc.support,

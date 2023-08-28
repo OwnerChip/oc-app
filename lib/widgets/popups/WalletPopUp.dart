@@ -48,39 +48,39 @@ Future<void> walletPopupBuilder(
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                // OwnerCard wallet
-                WalletIcon(
-                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
-                    'OwnerCard', () {
-                  Navigator.pop(context); //remove wallet popup
+              // Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              //   // OwnerCard wallet
+              //   WalletIcon(
+              //       "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
+              //       'OwnerCard', () {
+              //     Navigator.pop(context); //remove wallet popup
 
-                  Navigator.pushNamed(context, PinScreen.routeName,
-                      arguments: PinScreenArguments(
-                          activeFeature: PinScreenActiveFeature.verifyPinAuth,
-                          callback: (String pin) async {
-                            onCardPress(ref, context, pin);
-                          }));
-                }),
-                WalletIcon(
-                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
-                    'Setup OwnerCard', () async {
-                  Navigator.pop(context); //remove wallet popup
-                  var puk =
-                      await Navigator.pushNamed(context, PinScreen.routeName,
-                          arguments: PinScreenArguments(
-                              activeFeature: PinScreenActiveFeature.setPin,
-                              callback: (String pin) async {
-                                onAddCardPress(ref, context, pin);
-                              }));
-                }),
-              ]),
-              const SizedBox(height: 20),
-              Container(
-                height: 1,
-                width: 250,
-                color: Theme.of(context).dividerColor,
-              ),
+              //     Navigator.pushNamed(context, PinScreen.routeName,
+              //         arguments: PinScreenArguments(
+              //             activeFeature: PinScreenActiveFeature.verifyPinAuth,
+              //             callback: (String pin) async {
+              //               onCardPress(ref, context, pin);
+              //             }));
+              //   }),
+              //   WalletIcon(
+              //       "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
+              //       'Setup OwnerCard', () async {
+              //     Navigator.pop(context); //remove wallet popup
+              //     var puk =
+              //         await Navigator.pushNamed(context, PinScreen.routeName,
+              //             arguments: PinScreenArguments(
+              //                 activeFeature: PinScreenActiveFeature.setPin,
+              //                 callback: (String pin) async {
+              //                   onAddCardPress(ref, context, pin);
+              //                 }));
+              //   }),
+              // ]),
+              // const SizedBox(height: 20),
+              // Container(
+              //   height: 1,
+              //   width: 250,
+              //   color: Theme.of(context).dividerColor,
+              // ),
               const SizedBox(height: 20),
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                 // trust wallet

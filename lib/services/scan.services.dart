@@ -252,7 +252,9 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
           //error reading chip
           NfcManager.instance.stopSession();
 
-          nfcOverlay.removeNfcOverlay();
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
 
           ScaffoldMessenger.of(context).showSnackBar(
             returnSnackBarWidget(context.loc.errorHeadingSnackBar,
