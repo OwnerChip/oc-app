@@ -84,7 +84,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
         'connectedWallet': connectedWallet,
-        'tokenId': tokenId.toString()
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
 
       final List response =
@@ -138,7 +139,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         burnProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
           'connectedWallet': connectedWallet,
-          'tokenId': tokenId.toString()
+          'chipWallet': convertTokenIdToEthereumAddress(
+              ref.read(chipInfoProvider).tokenId)
         });
 
         await Future.delayed(const Duration(seconds: 2));
@@ -158,7 +160,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       burnProcess.finish();
       sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
         'connectedWallet': connectedWallet,
-        'tokenId': tokenId.toString()
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -189,7 +192,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
         'connectedWallet': connectedWallet,
-        'tokenId': tokenId.toString()
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
 
       final List response = await checkMetaTx(
@@ -240,7 +244,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         claimProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
           'connectedWallet': connectedWallet,
-          'tokenId': tokenId.toString()
+          'chipWallet': convertTokenIdToEthereumAddress(
+              ref.read(chipInfoProvider).tokenId)
         });
 
         await Future.delayed(const Duration(seconds: 2));
@@ -260,7 +265,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       claimProcess.finish();
       sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
         'connectedWallet': connectedWallet,
-        'tokenId': tokenId.toString()
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
