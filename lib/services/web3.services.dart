@@ -179,8 +179,6 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     gasAmount = "0x${gasAmountEst.toRadixString(16)}";
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
-    //send to sentry
-    sendAnalyticsTrace("$makeRandomInt()", "$e", "ESTIMATE_GAS_AMOUNT_ERROR");
     print("ERROR estimating gas amount: $e");
   }
 

@@ -58,8 +58,13 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     });
   }
 
-  Future<void> approveToken(Web3App wc, BigInt tokenId, EthereumAddress to,
-      SignatureData signatureData, EthereumAddress connectedWallet) async {
+  Future<void> approveToken(
+      Web3App wc,
+      BigInt tokenId,
+      EthereumAddress to,
+      SignatureData signatureData,
+      EthereumAddress connectedWallet,
+      String sessionId) async {
     final wcSession = ref.read(wcSessionProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
@@ -70,8 +75,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         loadingText = context.loc.transferInProgress;
       });
 
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_STARTED");
+      sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
+        'connectedWallet': connectedWallet,
+        'tokenId': tokenId.toString(),
+        'to': to.toString(),
+      });
 
       final List response = await checkMetaTx(
           config.collectionId, gaslessTransferFunctionSignature);
@@ -129,8 +137,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         Navigator.pushNamed(context, UserScanResultsScreen.routeName);
         // send status to analytics
         transferProcess.finish();
-        sendAnalyticsTrace("$connectedWallet-${tokenId.toString()}", txnHash,
-            "TRANSFER_SUCCESS");
+        sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
+          'connectedWallet': connectedWallet,
+          'tokenId': tokenId.toString(),
+          'to': to.toString(),
+        });
       } else {
         throw Exception(context.loc.transferError);
       }
@@ -142,8 +153,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       transferProcess.throwable = e;
       transferProcess.status = const SpanStatus.aborted();
       transferProcess.finish();
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_ERROR");
+      sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
+        'connectedWallet': connectedWallet,
+        'tokenId': tokenId.toString(),
+        'to': to.toString(),
+      });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
@@ -172,6 +186,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
 
     return CustomOverlay(
         show: isLoading,
@@ -212,7 +227,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           alignment: Alignment.center,
                           child: Text(
                             textAlign: TextAlign.center,
-                            "Approve to claim Ownership",
+                            "Transfer Ownership [APPROVE]",
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                         ),
@@ -255,7 +270,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                         EthereumAddress.fromHex(
                                             textInput.trim()),
                                         signatureData,
-                                        connectedWallet))
+                                        connectedWallet,
+                                        sessionId))
                                   }
                               }))
                     ],

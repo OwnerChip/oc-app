@@ -9,7 +9,7 @@ import 'package:crypto/crypto.dart';
 
 // sends attachment metadata to backend; receives amazon s3 link if file, else "OK"
 Future<List> postAttachmentMetadataToBackend(
-    BackendSession backendSession,
+    UserSession userSession,
     EthereumAddress walletAddress,
     int chainId,
     EthereumAddress collectionId,
@@ -26,8 +26,8 @@ Future<List> postAttachmentMetadataToBackend(
   final url = '/attachments';
   final data = {
     'auth': makeAuthObject(
-      backendSession.sessionId,
-      backendSession.signatureData,
+      userSession.sessionId,
+      userSession.signatureData,
       walletAddress,
       chainId,
       collectionId,
@@ -54,7 +54,7 @@ Future<List> postAttachmentMetadataToBackend(
 
 // sends attachment metadata to backend; receives amazon s3 link if file, else "OK"
 Future<String> putAttachmentMetadataToBackend(
-    BackendSession backendSession,
+    UserSession userSession,
     EthereumAddress walletAddress,
     int chainId,
     EthereumAddress collectionId,
@@ -69,8 +69,8 @@ Future<String> putAttachmentMetadataToBackend(
   const String url = '/attachments';
   final data = {
     'auth': makeAuthObject(
-      backendSession.sessionId,
-      backendSession.signatureData,
+      userSession.sessionId,
+      userSession.signatureData,
       walletAddress,
       chainId,
       collectionId,
@@ -109,7 +109,7 @@ Future<dynamic> uploadFileToAWS(
 
 //remove attachment
 Future<dynamic> deleteAttachmentFromBackend(
-  BackendSession backendSession,
+  UserSession userSession,
   EthereumAddress walletAddress,
   int chainId,
   EthereumAddress collectionId,
@@ -122,8 +122,8 @@ Future<dynamic> deleteAttachmentFromBackend(
   try {
     final result = await dio.delete(url,
         data: makeAuthObject(
-          backendSession.sessionId,
-          backendSession.signatureData,
+          userSession.sessionId,
+          userSession.signatureData,
           walletAddress,
           chainId,
           collectionId,
@@ -178,7 +178,7 @@ Future<dynamic> getPublicAttachmentsFromBackend(
 }
 
 Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
-  BackendSession backendSession,
+  UserSession userSession,
   EthereumAddress walletAddress,
   int chainId,
   EthereumAddress collectionId,
@@ -190,8 +190,8 @@ Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
   try {
     final result = await dio.post(url,
         data: makeAuthObject(
-          backendSession.sessionId,
-          backendSession.signatureData,
+          userSession.sessionId,
+          userSession.signatureData,
           walletAddress,
           chainId,
           collectionId,
@@ -206,7 +206,7 @@ Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
 }
 
 Future<dynamic> deleteAllAttachments(
-  BackendSession backendSession,
+  UserSession userSession,
   EthereumAddress walletAddress,
   int chainId,
   EthereumAddress collectionId,
@@ -219,8 +219,8 @@ Future<dynamic> deleteAllAttachments(
   try {
     final result = await dio.delete(url,
         data: makeAuthObject(
-          backendSession.sessionId,
-          backendSession.signatureData,
+          userSession.sessionId,
+          userSession.signatureData,
           walletAddress,
           chainId,
           collectionId,

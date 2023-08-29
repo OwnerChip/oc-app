@@ -72,7 +72,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
-    String sessionId = ref.read(backendSessionProvider)!.sessionId;
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
@@ -130,9 +130,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText = context.loc.burnedSuccess;
         });
 
-        BackendSession? backendSession = ref.read(backendSessionProvider);
+        UserSession? userSession = ref.read(userSessionProvider);
 
-        deleteAllAttachments(backendSession!, connectedWallet, config.chainId,
+        deleteAllAttachments(userSession!, connectedWallet, config.chainId,
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
@@ -173,7 +173,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
-    String sessionId = ref.read(backendSessionProvider)!.sessionId;
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');

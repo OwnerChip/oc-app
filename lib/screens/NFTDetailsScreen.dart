@@ -1,6 +1,7 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -39,6 +40,7 @@ class NFTDetailsScreen extends ConsumerStatefulWidget {
 class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<Map<String, dynamic>> nftMetadata =
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
@@ -124,6 +126,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     throw Exception(
                                         'Could not launch ${link.url}');
                                   }
+                                  sendAnalyticsTrace(session?.sessionId ?? "",
+                                      "", "DESCRIPTION_VIEW",
+                                      tags: {
+                                        'connectedWallet': connectedWallet,
+                                        'tokenId': chipInfo.tokenId,
+                                      });
                                 },
                                 text: data['description'],
                               )
@@ -198,6 +206,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
+                                          sendAnalyticsTrace(
+                                              session?.sessionId ?? "",
+                                              e.backendUuid,
+                                              "ATTACHMENT_VIEW",
+                                              tags: {
+                                                'connectedWallet':
+                                                    connectedWallet,
+                                                'tokenId': chipInfo.tokenId,
+                                              });
                                         },
                                       ),
                                       const SizedBox(height: 10),
@@ -228,6 +245,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
+                                          sendAnalyticsTrace(
+                                              session?.sessionId ?? "",
+                                              e.backendUuid,
+                                              "ATTACHMENT_VIEW",
+                                              tags: {
+                                                'connectedWallet':
+                                                    connectedWallet,
+                                                'tokenId': chipInfo.tokenId,
+                                              });
                                         },
                                       ),
                                       const SizedBox(height: 10),

@@ -130,25 +130,25 @@ class Attachment {
       {this.isPrivate = false, this.isFromCreator});
 }
 
-class BackendSession {
+class UserSession {
   final String sessionId;
   final MsgSignature signatureData;
-  final EthereumAddress userWaleltAddress;
+  final EthereumAddress userWalletAddress;
   final int expiryDate;
 
-  BackendSession(this.sessionId, this.signatureData, this.userWaleltAddress,
+  UserSession(this.sessionId, this.signatureData, this.userWalletAddress,
       this.expiryDate);
 
   Map<String, dynamic> toJson() => {
         'sessionId': sessionId,
         'signatureData': msgSignatureToJson(signatureData),
-        'userWaleltAddress': userWaleltAddress.hex,
+        'userWalletAddress': userWalletAddress.hex,
         'expiryDate': expiryDate.toString(),
       };
 
-  BackendSession.fromJson(Map<String, dynamic> json)
+  UserSession.fromJson(Map<String, dynamic> json)
       : sessionId = json['sessionId'],
         signatureData = msgSignatureFromJson(json['signatureData']),
-        userWaleltAddress = EthereumAddress.fromHex(json['userWaleltAddress']),
+        userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
         expiryDate = int.parse(json['expiryDate']);
 }

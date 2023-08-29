@@ -143,7 +143,7 @@ final findAllMinterRolesProvider =
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
     // if collection is OPEN, add it to the list
-    if (ref.read(backendSessionProvider) != null &&
+    if (ref.read(userSessionProvider) != null &&
         collection.id ==
             EthereumAddress.fromHex(
                 '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
@@ -367,9 +367,9 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   if (!tokenExists || nftOwner == userWalletAddress) {
     SignatureData tokenSignatureData = ref.read(chipSignatureDataProvider);
 
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
     response = await getPublicAndPrivateAttachmentsFromBackend(
-      backendSession!,
+      userSession!,
       userWalletAddress,
       chainId,
       collectionId,
@@ -436,6 +436,6 @@ final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {
   return hasMinterRole;
 });
 
-final backendSessionProvider = StateProvider<BackendSession?>((ref) {
+final userSessionProvider = StateProvider<UserSession?>((ref) {
   return null;
 });

@@ -168,37 +168,36 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final storage = await SharedPreferences.getInstance();
     // storage.remove('session');
     // storage.remove('walletType');
-    // storage.remove('backendSession');
+    // storage.remove('userSession');
     final storedSession = storage.getString('session');
     final storedWalletType = storage.getString('walletType');
-    final storedBackendSession = storage.getString('backendSession');
+    final storedUserSession = storage.getString('userSession');
     //check if a session is stored
     if (storedSession != null &&
         storedWalletType != null &&
-        storedBackendSession != null) {
+        storedUserSession != null) {
       final session = SessionData.fromJson(jsonDecode(storedSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
-      final backendSession =
-          BackendSession.fromJson(jsonDecode(storedBackendSession));
+      final userSession = UserSession.fromJson(jsonDecode(storedUserSession));
       //check if the stored session is expired
       double nowPlusOneHour =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
       if (session.expiry > nowPlusOneHour &&
-          backendSession.expiryDate > nowPlusOneHour) {
+          userSession.expiryDate > nowPlusOneHour) {
         ref.read(wcSessionProvider.notifier).state = session;
         ref.read(walletTypeProvider.notifier).state = walletType;
-        ref.read(backendSessionProvider.notifier).state = backendSession;
+        ref.read(userSessionProvider.notifier).state = userSession;
       } else {
         //remove session and wallet type from storage
         storage.remove('session');
         storage.remove('walletType');
-        storage.remove('backendSession');
+        storage.remove('userSession');
       }
     } else {
       //remove session and wallet type from storage
       storage.remove('session');
       storage.remove('walletType');
-      storage.remove('backendSession');
+      storage.remove('userSession');
     }
   }
 

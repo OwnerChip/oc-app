@@ -119,15 +119,15 @@ Future<void> onTapAuth(
   int sessionExpirationDate = await getSessionExpiration(
       sevenDaysInSeconds, sessionId, userWalletAddress, signature);
 
-  BackendSession backendSession = BackendSession(sessionId, signature,
+  UserSession userSession = UserSession(sessionId, signature,
       ref.read(userAddressProvider), sessionExpirationDate);
 
-  ref.read(backendSessionProvider.notifier).state = backendSession;
+  ref.read(userSessionProvider.notifier).state = userSession;
 
   //persist session date
   final SharedPreferences storage = await SharedPreferences.getInstance();
-  final String jsonBackendSession = jsonEncode(backendSession.toJson());
-  storage.setString('backendSession', jsonBackendSession);
+  final String jsonUserSession = jsonEncode(userSession.toJson());
+  storage.setString('userSession', jsonUserSession);
 
   ref.refresh(findAllMinterRolesProvider);
 

@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 
 //import widgets
@@ -60,7 +62,7 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
           CustomRoundedButton(
             text: 'Reset PIN',
             onPressed: () {
-              resetPinOnCard(context, puk);
+              resetPinOnCard(ref, context, puk);
             },
           )
         ],

@@ -10,6 +10,7 @@ import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChooseFileButton.dart';
@@ -192,7 +193,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
     Attachment attachmentBeingEdited =
         ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
 
     try {
       setState(() {
@@ -200,7 +201,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = 'Uploading...';
       });
       await putAttachmentMetadataToBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -219,6 +220,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         isLoading = false;
         loadingText = '';
       });
+
+      sendAnalyticsTrace(userSession.sessionId,
+          attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider),
+            'tokenId': chipInfo.tokenId.toString(),
+          });
 
       Navigator.pop(context);
 
@@ -252,14 +260,14 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       int fileSize = file!.size;
       String contentType = lookupMimeType(file!.path!)!;
 
-      BackendSession? backendSession = ref.read(backendSessionProvider);
+      UserSession? userSession = ref.read(userSessionProvider);
       EthereumAddress walletAddress = await ref.read(userAddressProvider);
       List chainAndCollectionId = await returnChainAndCollectionId();
       int chainId = chainAndCollectionId[0];
       EthereumAddress collectionId = chainAndCollectionId[1];
 
       List response = await postAttachmentMetadataToBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -285,6 +293,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
       if (file != null) {
+        sendAnalyticsTrace(
+            userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider),
+              'tokenId': ref.read(chipInfoProvider).tokenId.toString(),
+            });
+
         Navigator.pop(context, file);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -316,11 +331,11 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
 
     try {
       List result = await postAttachmentMetadataToBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -348,6 +363,14 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         //   ...ref.read(localAttachmentsProvider.notifier).state,
         //   attachment
         // ];
+
+        sendAnalyticsTrace(
+            userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider),
+              'tokenId': ref.read(chipInfoProvider).tokenId.toString(),
+            });
+
         Navigator.pop(context);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -382,7 +405,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
 
     try {
       setState(() {
@@ -390,7 +413,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = 'Deleting attachment';
       });
       var result = await deleteAttachmentFromBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -427,6 +450,13 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       buttonText = context.loc.chooseFile;
       file = null;
     });
+
+    sendAnalyticsTrace(
+        userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
+        tags: {
+          'connectedWallet': ref.read(userAddressProvider),
+          'tokenId': ref.read(chipInfoProvider).tokenId.toString(),
+        });
   }
 
   Future<List> returnChainAndCollectionId() async {

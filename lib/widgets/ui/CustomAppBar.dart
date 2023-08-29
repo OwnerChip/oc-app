@@ -31,7 +31,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Web3App? wc = ref.watch(wcProvider);
     SessionData? wcSession = ref.watch(wcSessionProvider);
-    BackendSession? backendSession = ref.watch(backendSessionProvider);
+    UserSession? userSession = ref.watch(userSessionProvider);
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
@@ -63,7 +63,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
-                backendSession != null
+                userSession != null
                     ? IconButton(
                         padding: const EdgeInsets.all(0.0),
                         icon: Icon(Icons.logout,
@@ -87,7 +87,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                               zeroAddress; //delete user address from riverpod
                           ref.read(walletTypeProvider.notifier).state =
                               null; //delete wallet type from riverpod
-                          ref.read(backendSessionProvider.notifier).state =
+                          ref.read(userSessionProvider.notifier).state =
                               null; //delete backend session from riverpod
                           Navigator.pushNamedAndRemoveUntil(
                               context, HomeScreen.routeName, (route) => false);
@@ -105,7 +105,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 Align(
                   alignment: const Alignment(0.0, 0.95),
                   child: Text(
-                    backendSession != null
+                    userSession != null
                         ? context.loc.disconnect
                         : context.loc.connect,
                     style: Theme.of(context)

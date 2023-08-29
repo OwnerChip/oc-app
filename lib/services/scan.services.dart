@@ -41,11 +41,8 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 
 Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
-  // this random # is used as analytics trace id, case id and session id
-  String sessionIdFromServer = await getSessionId();
-  String sessionId = sessionIdFromServer != ""
-      ? sessionIdFromServer
-      : makeRandomInt().toString();
+  UserSession? session = ref.read(userSessionProvider);
+  String sessionId = session?.sessionId ?? makeRandomInt().toString();
 
   NFCOverlay nfcOverlay = NFCOverlay();
 
@@ -157,11 +154,8 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
 }
 
 Future<void> scanItem(WidgetRef ref, BuildContext context) async {
-  // this random # is used as analytics trace id, case id and session id
-  String sessionIdFromServer = await getSessionId();
-  String sessionId = sessionIdFromServer != ""
-      ? sessionIdFromServer
-      : makeRandomInt().toString();
+  UserSession? session = ref.read(userSessionProvider);
+  String sessionId = session?.sessionId ?? makeRandomInt().toString();
 
   NFCOverlay nfcOverlay = NFCOverlay();
 
@@ -309,8 +303,8 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
   MsgSignature? signature;
   NFCOverlay nfcOverlay = NFCOverlay();
 
-  String sessionId = ref.read(backendSessionProvider) != null
-      ? ref.read(backendSessionProvider)!.sessionId
+  String sessionId = ref.read(userSessionProvider) != null
+      ? ref.read(userSessionProvider)!.sessionId
       : makeRandomInt().toString();
 
   //create a completer to return a future
@@ -433,8 +427,7 @@ Future<void> authenticateCard(
             nfcOverlay.removeNfcOverlay();
           }
 
-          await saveBackendSession(
-              sessionId, cardWalletAddress, signature, ref);
+          await saveUserSession(sessionId, cardWalletAddress, signature, ref);
 
           if (Platform.isAndroid) {
             await Future.delayed(const Duration(seconds: 2));
@@ -513,9 +506,14 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
   return puk;
 }
 
-Future<void> resetPinOnCard(BuildContext context, String puk) async {
+Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
   //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
+
+  // get user session & connected wallet
+  final session = ref.read(userSessionProvider);
+  String connectedWallet = session?.userWalletAddress.toString() ?? "";
+  String sessionId = session?.sessionId ?? "";
 
   //start NFC scan
   Sentry.startTransaction('setPinOnCard()', 'task');
@@ -555,6 +553,10 @@ Future<void> resetPinOnCard(BuildContext context, String puk) async {
               context.loc.errorHeadingSnackBar,
               'Old PIN removed. Please set a new PIN.',
               'success'));
+          sendAnalyticsTrace(sessionId, "", "RESET_PIN_SUCCESS", tags: {
+            'connectedWallet': connectedWallet,
+            'connectedCard': cardWalletAddress.toString()
+          });
         } catch (e) {
           NfcManager.instance.stopSession();
           if (Platform.isAndroid) {
@@ -565,6 +567,8 @@ Future<void> resetPinOnCard(BuildContext context, String puk) async {
               'Error resetting puk.',
               'error'));
 
+          sendAnalyticsTrace(sessionId, e.toString(), "RESET_PIN_ERROR",
+              tags: {'connectedWallet': connectedWallet});
           print(e);
         }
       });

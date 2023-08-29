@@ -148,7 +148,7 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
   }
 }
 
-Future<void> saveBackendSession(
+Future<void> saveUserSession(
     String sessionId,
     EthereumAddress cardWalletAddress,
     MsgSignature signature,
@@ -159,13 +159,13 @@ Future<void> saveBackendSession(
 
   ref.read(userAddressProvider.notifier).state = cardWalletAddress;
   ref.read(walletTypeProvider.notifier).state = walletConfig['ocSmartCard'];
-  BackendSession backendSession = BackendSession(sessionId, signature,
+  UserSession userSession = UserSession(sessionId, signature,
       ref.read(userAddressProvider), sessionExpirationDate);
 
-  ref.read(backendSessionProvider.notifier).state = backendSession;
+  ref.read(userSessionProvider.notifier).state = userSession;
 
   //persist session date
   final SharedPreferences storage = await SharedPreferences.getInstance();
-  final String jsonBackendSession = jsonEncode(backendSession.toJson());
-  storage.setString('backendSession', jsonBackendSession);
+  final String jsonUserSession = jsonEncode(userSession.toJson());
+  storage.setString('userSession', jsonUserSession);
 }
