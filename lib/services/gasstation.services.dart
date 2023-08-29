@@ -80,7 +80,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     'to': to.hex,
     'value': 0,
     'gas':
-        250000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
+        500000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
     'nonce': nonce.toInt(),
     'data': data,
   };
