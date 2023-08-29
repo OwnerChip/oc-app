@@ -14,7 +14,6 @@ import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 import '../../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 Future<void> authPopupBuilder(
@@ -102,7 +101,9 @@ Future<void> onTapAuth(
   SessionData? session = ref.read(wcSessionProvider);
   WalletType? walletType = ref.read(walletTypeProvider);
 
-  String sessionId = await getSessionId();
+  //get sessionid from backend (only if not already set)
+  final oldUserSession = ref.read(userSessionProvider);
+  String sessionId = oldUserSession?.sessionId ?? await getSessionId();
 
   String message =
       "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
@@ -111,9 +112,6 @@ Future<void> onTapAuth(
       message, userWalletAddress, wc!, session!, walletType!);
 
   MsgSignature signature = hexSignatureToRSV(hexSignature);
-
-  ref.read(userSignatureProvider.notifier).state =
-      signature; //TODO: remove this provider? probably not necessary
 
   int sevenDaysInSeconds = 60 * 60 * 24 * 7;
   int sessionExpirationDate = await getSessionExpiration(
@@ -130,6 +128,11 @@ Future<void> onTapAuth(
   storage.setString('userSession', jsonUserSession);
 
   ref.refresh(findAllMinterRolesProvider);
+
+  sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
+    'connectedWallet': userWalletAddress.toString(),
+    'walletType': walletType.toString(),
+  });
 
   //success snackbar
   ScaffoldMessenger.of(context).showSnackBar(
