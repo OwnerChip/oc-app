@@ -66,13 +66,12 @@ Future<void> walletPopupBuilder(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
                     'Setup OwnerCard', () async {
                   Navigator.pop(context); //remove wallet popup
-                  var puk =
-                      await Navigator.pushNamed(context, PinScreen.routeName,
-                          arguments: PinScreenArguments(
-                              activeFeature: PinScreenActiveFeature.setPin,
-                              callback: (String pin) async {
-                                onAddCardPress(ref, context, pin);
-                              }));
+                  await Navigator.pushNamed(context, PinScreen.routeName,
+                      arguments: PinScreenArguments(
+                          activeFeature: PinScreenActiveFeature.setPin,
+                          callback: (String pin) async {
+                            await onAddCardPress(ref, context, pin);
+                          }));
                 }),
               ]),
               const SizedBox(height: 20),
@@ -168,7 +167,6 @@ Future<void> onCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
   try {
     await authenticateCard(ref, context, pin);
-    // Navigator.pop(context);
   } catch (e) {
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(

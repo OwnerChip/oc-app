@@ -154,8 +154,13 @@ Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
 
 //****NFC HELPERS****
 
-Future<Uint8List> getFirstKey(NFCPlatform nfc) async {
-  Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
+Future<Uint8List> getFirstPubKey(NFCPlatform nfc) async {
+  return await getPubKeyN(nfc, 0x01);
+}
+
+//getKeyN
+Future<Uint8List> getPubKeyN(NFCPlatform nfc, int key) async {
+  Uint8List getKeyInfo = makeGetKeyInfoCommand(key);
   var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
 
   Uint8List getKeyInfoData = responseGetKeyInfo[0];
@@ -199,7 +204,7 @@ Future<List<dynamic>> createFirstKeypairOnChip(
   //empty UintList
   await nfc.sendCommand(SELECT_APP);
 
-  Uint8List chipPubKey = await getFirstKey(nfc);
+  Uint8List chipPubKey = await getFirstPubKey(nfc);
 
   if (chipPubKey.isEmpty) {
     empty = true;
@@ -226,6 +231,32 @@ Future<List<dynamic>> createFirstKeypairOnChip(
   }
 
   return [chipEthereumAddressHex, chipTokenId, empty];
+}
+
+//check if first and second keys already exist, if not, generate keys. Return key info.
+Future<Map<String, EthereumAddress>> createSecondKeypairOnChip(
+    NFCPlatform nfc, String sessionId) async {
+  //empty UintList
+  await nfc.sendCommand(SELECT_APP);
+
+  //create first key if it does not exist
+  List res1 = await createFirstKeypairOnChip(nfc, false, sessionId);
+
+  Uint8List key2 = await getPubKeyN(nfc, 2);
+
+  //create second key if it does not exist
+  if (key2.isEmpty) {
+    key2 = await generatePubAddress(nfc);
+  }
+  //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
+  EthereumAddress key1EthereumAddress = res1[0];
+  EthereumAddress key2EthereumAddress =
+      EthereumAddress.fromHex("0x${bytesToHex(publicKeyToAddress(key2))}");
+
+  return {
+    "key1": key1EthereumAddress,
+    "key2": key2EthereumAddress,
+  };
 }
 
 // initialize NDEF tag

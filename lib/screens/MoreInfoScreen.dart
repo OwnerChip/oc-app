@@ -66,13 +66,17 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             },
                         width: 250)))
                 .toList(),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomRoundedButton(
-                    text: 'Admin init card',
-                    onPressed: () =>
-                        {Navigator.pushNamed(context, AdminInitCard.routeName)},
-                    width: 250)),
+            dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
+                ? Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: CustomRoundedButton(
+                        text: 'Admin Init Card',
+                        onPressed: () => {
+                              Navigator.pushNamed(
+                                  context, AdminInitCard.routeName)
+                            },
+                        width: 250))
+                : Container(),
 
             //TODO: Currently resetting pin with puk breaks the nfc chip. Info from infineon needed.
             // Padding(
