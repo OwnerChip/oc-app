@@ -77,7 +77,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
       sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
         'connectedWallet': connectedWallet,
-        'tokenId': tokenId.toString(),
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
         'to': to.toString(),
       });
 
@@ -139,7 +140,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         transferProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
           'connectedWallet': connectedWallet,
-          'tokenId': tokenId.toString(),
+          'chipWallet': convertTokenIdToEthereumAddress(
+              ref.read(chipInfoProvider).tokenId),
           'to': to.toString(),
         });
       } else {
@@ -155,7 +157,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       transferProcess.finish();
       sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
         'connectedWallet': connectedWallet,
-        'tokenId': tokenId.toString(),
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
         'to': to.toString(),
       });
       await Sentry.captureException(e, stackTrace: s);

@@ -171,7 +171,8 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
   NfcManager.instance.startSession(
       alertMessage: 'Hold phone near NFC tag to scan item.',
       onDiscovered: (NfcTag tag) async {
-        sendAnalyticsTrace(sessionId, "", "SCAN_STARTED");
+        sendAnalyticsTrace(sessionId, "", "SCAN_STARTED",
+            tags: {"connectedWallet": session?.userWalletAddress.toString()});
         try {
           var nfc = NFCPlatform(tag);
 

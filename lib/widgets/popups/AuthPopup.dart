@@ -131,7 +131,7 @@ Future<void> onTapAuth(
 
   sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
     'connectedWallet': userWalletAddress.toString(),
-    'walletType': walletType.toString(),
+    'walletType': walletType.name,
   });
 
   //success snackbar

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -130,7 +131,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                       "", "DESCRIPTION_VIEW",
                                       tags: {
                                         'connectedWallet': connectedWallet,
-                                        'tokenId': chipInfo.tokenId,
+                                        'chipWallet':
+                                            convertTokenIdToEthereumAddress(ref
+                                                .read(chipInfoProvider)
+                                                .tokenId)
                                       });
                                 },
                                 text: data['description'],
@@ -213,7 +217,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                               tags: {
                                                 'connectedWallet':
                                                     connectedWallet,
-                                                'tokenId': chipInfo.tokenId,
+                                                'chipWallet':
+                                                    convertTokenIdToEthereumAddress(
+                                                        ref
+                                                            .read(
+                                                                chipInfoProvider)
+                                                            .tokenId)
                                               });
                                         },
                                       ),
@@ -252,7 +261,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                               tags: {
                                                 'connectedWallet':
                                                     connectedWallet,
-                                                'tokenId': chipInfo.tokenId,
+                                                'chipWallet':
+                                                    convertTokenIdToEthereumAddress(
+                                                        ref
+                                                            .read(
+                                                                chipInfoProvider)
+                                                            .tokenId)
                                               });
                                         },
                                       ),

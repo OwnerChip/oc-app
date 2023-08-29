@@ -225,7 +225,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
           tags: {
             'connectedWallet': ref.read(userAddressProvider),
-            'tokenId': chipInfo.tokenId.toString(),
+            'chipWallet': convertTokenIdToEthereumAddress(chipInfo.tokenId)
           });
 
       Navigator.pop(context);
@@ -297,7 +297,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
             userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider),
-              'tokenId': ref.read(chipInfoProvider).tokenId.toString(),
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
             });
 
         Navigator.pop(context, file);
@@ -368,7 +369,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
             userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider),
-              'tokenId': ref.read(chipInfoProvider).tokenId.toString(),
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
             });
 
         Navigator.pop(context);
@@ -455,7 +457,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
         tags: {
           'connectedWallet': ref.read(userAddressProvider),
-          'tokenId': ref.read(chipInfoProvider).tokenId.toString(),
+          'chipWallet': convertTokenIdToEthereumAddress(
+              ref.read(chipInfoProvider).tokenId),
         });
   }
 
