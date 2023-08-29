@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'CustomCard.dart';
-import 'PopupLoader.dart';
+import '../animations/PopupLoader.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';

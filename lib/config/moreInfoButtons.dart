@@ -26,8 +26,6 @@ class MoreInfoButtons {
         roundedButtons = [
           MoreInfoButton(
               loc.watchTutorial, "http://www.ownerchip.com/tutorial"),
-          MoreInfoButton(
-              loc.viewGallery, "https://www.steboart.com/en/galerie"),
         ];
         outlinedRoundedButtons = [
           MoreInfoButton(

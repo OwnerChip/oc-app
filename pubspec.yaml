@@ -16,7 +16,7 @@ dependencies:
   intl: ^0.18.0
   nfc_manager: ^3.2.0
   web3dart: ^2.4.1
-  http: ^1.1.0
+  http: ^0.13.5
   url_launcher: ^6.1.6
   flutter_dotenv: ^5.0.2
   dio: ^5.0.0
@@ -32,6 +32,7 @@ dependencies:
   flutter_linkify: ^6.0.0
   walletconnect_flutter_v2: ^2.0.8
   file_picker: ^5.3.2
+  pinput: ^3.0.0
 
 dev_dependencies:
   flutter_test:

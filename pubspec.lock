@@ -309,10 +309,10 @@ packages:
     dependency: transitive
     description:
       name: eip1559
-      sha256: c2b81ac85f3e0e71aaf558201dd9a4600f051ece7ebacd0c5d70065c9b458004
+      sha256: de454d6321bd753eb79116e9ec4f8df20895c2e97f9a3839a032f3a728985516
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.2"
+    version: "0.6.1"
   eip55:
     dependency: transitive
     description:
@@ -529,10 +529,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: "759d1a329847dd0f39226c688d3e06a6b8679668e350e2891a6474f8b4bb8525"
+      sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "0.13.6"
   http_multi_server:
     dependency: transitive
     description:
@@ -813,6 +813,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.4.0"
+  pinput:
+    dependency: "direct main"
+    description:
+      name: pinput
+      sha256: "92b60664eec437a53de7cf5472ed3e65edb2dc32d7070875887c4285a9c0a088"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   platform:
     dependency: transitive
     description:
@@ -1058,6 +1066,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  smart_auth:
+    dependency: transitive
+    description:
+      name: smart_auth
+      sha256: a25229b38c02f733d0a4e98d941b42bed91a976cb589e934895e60ccfa674cf6
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   source_gen:
     dependency: transitive
     description:
@@ -1186,6 +1202,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.2"
+  universal_platform:
+    dependency: transitive
+    description:
+      name: universal_platform
+      sha256: d315be0f6641898b280ffa34e2ddb14f3d12b1a37882557869646e0cc363d0cc
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0+1"
   url_launcher:
     dependency: "direct main"
     description:
@@ -1310,10 +1334,10 @@ packages:
     dependency: "direct main"
     description:
       name: walletconnect_flutter_v2
-      sha256: "87295fb305767bb089e6c5a78f273b52e30ade6eaa5fa89c3e103970f0ce6721"
+      sha256: fd82676d335550a99bd706727852289eedbb561c44a586cb20d081b5eb6086a4
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.14"
+    version: "2.1.0"
   watcher:
     dependency: transitive
     description:
@@ -1326,10 +1350,10 @@ packages:
     dependency: "direct main"
     description:
       name: web3dart
-      sha256: eb4302857aec35f8eb51a54c4bcea40f0647f1160683291ec77bfeff6dae6c08
+      sha256: "0b96223a6b284e3146e65dc842ded139eca68a85c4ab79c5ba1a73284927d3cd"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.6.1"
   web_socket_channel:
     dependency: transitive
     description:

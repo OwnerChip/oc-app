@@ -3,6 +3,8 @@ import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:async/async.dart';
@@ -10,7 +12,7 @@ import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 
@@ -18,10 +20,7 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -53,6 +52,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   CancelableOperation? cancellableOperation;
 
+  Future<void> toggleLoading() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
   Future<void> approveToken(Web3App wc, BigInt tokenId, EthereumAddress to,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.read(wcSessionProvider);
@@ -60,10 +65,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         await ref.watch(findTokenProvider(tokenId).future);
     final transferProcess = Sentry.startTransaction('initTransfer()', 'task');
     try {
-      if (wcSession == null) {
-        walletPopupBuilder(context, ref, wc);
-      }
-
       setState(() {
         isLoading = true;
         loadingText = context.loc.transferInProgress;
@@ -80,17 +81,20 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
+            ref,
+            context,
             approveFunctionSignature, // APPROVE
             config.chainId,
             config.collectionId,
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
             ref.read(walletTypeProvider)!,
             toAccount: to,
-            tokenId: tokenId);
+            tokenId: tokenId,
+            toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
             transferFunctionSignature,
@@ -167,7 +171,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final wc = ref.watch(wcProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
-    final SignatureData signatureData = ref.watch(signatureDataProvider);
+    final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
 
     return CustomOverlay(
         show: isLoading,

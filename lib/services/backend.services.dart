@@ -1,3 +1,10 @@
+import 'dart:convert';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
@@ -64,7 +71,7 @@ Future<String> sendGaslessRequest(
 }
 
 // gets the hash that needs to be used to sign a gasless tx request.
-Future<String> getGaslessTxHash(
+Future<String> getEthSignTypedDataSignature(
     EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
   final Dio dio = getBackendClient();
   final String url = '/collection/$collectionId/metatx/hash';
@@ -108,7 +115,8 @@ Future<String> getSessionId() async {
       stackTrace: s,
     );
     print(e);
-    return "";
+    //fallback!
+    return makeRandomInt().toString();
   }
 }
 
@@ -121,8 +129,8 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
           "sessionId": sessionId,
           "walletAddress": userWalletAddress.hex,
           "userWalletSignature": {
-            'r': '0x' + signature.r.toRadixString(16),
-            's': '0x' + signature.s.toRadixString(16),
+            'r': convertSignatureParamToHexString(signature.r),
+            's': convertSignatureParamToHexString(signature.s),
             'v': signature.v
           }
         },
@@ -138,4 +146,26 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
     print(e);
     return 0;
   }
+}
+
+Future<void> saveBackendSession(
+    String sessionId,
+    EthereumAddress cardWalletAddress,
+    MsgSignature signature,
+    WidgetRef ref) async {
+  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+  int sessionExpirationDate = await getSessionExpiration(
+      sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
+
+  ref.read(userAddressProvider.notifier).state = cardWalletAddress;
+  ref.read(walletTypeProvider.notifier).state = walletConfig['ocSmartCard'];
+  BackendSession backendSession = BackendSession(sessionId, signature,
+      ref.read(userAddressProvider), sessionExpirationDate);
+
+  ref.read(backendSessionProvider.notifier).state = backendSession;
+
+  //persist session date
+  final SharedPreferences storage = await SharedPreferences.getInstance();
+  final String jsonBackendSession = jsonEncode(backendSession.toJson());
+  storage.setString('backendSession', jsonBackendSession);
 }

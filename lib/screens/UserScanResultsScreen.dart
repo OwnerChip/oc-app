@@ -1,6 +1,9 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,15 +15,13 @@ import 'package:async/async.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
-import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
-import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 
@@ -30,17 +31,15 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 
 class UserScanResultsScreen extends ConsumerStatefulWidget {
@@ -63,19 +62,21 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
+  Future<void> toggleLoading() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
   Future<void> burnToken(Web3App wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
-    String sessionId = ref.read(sessionIdProvider);
+    String sessionId = ref.read(backendSessionProvider)!.sessionId;
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
-      if (wcSession == null || walletType == null) {
-        walletPopupBuilder(context, ref, wc);
-      }
-
       setState(() {
         isLoading = true;
         loadingText = context.loc.burning;
@@ -95,15 +96,18 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
+            ref,
+            context,
             burnFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
-            walletType!);
+            walletType!,
+            toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
@@ -169,7 +173,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
-    String sessionId = ref.read(sessionIdProvider);
+    String sessionId = ref.read(backendSessionProvider)!.sessionId;
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
@@ -197,6 +201,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
+            ref,
+            context,
             transferToCardFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -206,7 +212,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             wcSession!,
             metaTxAgreementId,
             walletType!,
-            tokenId: tokenId);
+            tokenId: tokenId,
+            toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
@@ -295,7 +302,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
-    final SignatureData signatureData = ref.watch(signatureDataProvider);
+    final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
 
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
@@ -421,7 +428,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //OWNERSHIP CHECK ICON
                                   nftOwner.when(
-                                    data: ((data) => wcSession == null
+                                    data: ((data) => connectedWallet ==
+                                            zeroAddress
                                         ?
                                         //NFT owner exists and wallet is NOT connected
                                         SvgPicture.asset(
@@ -448,7 +456,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: nftOwner.when(
-                                      data: (data) => wcSession == null
+                                      data: (data) => connectedWallet ==
+                                              zeroAddress
                                           ?
                                           //NFT owner exists and wallet is NOT connected
                                           Column(
@@ -615,19 +624,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               //if token does not exists
               tokenInfo.when(
                   data: (data) => data.collectionId == zeroAddress &&
-                          wcSession != null &&
+                          connectedWallet != zeroAddress &&
                           relevantCollections.value!.collections.isNotEmpty
                       ? CustomRoundedButton(
                           text: context.loc.initializeChip,
-                          onPressed: () {
+                          onPressed: () async {
                             if (mounted) {
-                              Navigator.pushNamed(
-                                  context, ScanningScreen.routeName,
-                                  arguments: ScanningScreenArguments(
-                                      ChainSelectorScreen.routeName));
-                              //remove route UserScanresultsscreen with removeRoute
-                              Navigator.of(context)
-                                  .removeRoute(ModalRoute.of(context)!);
+                              await initializeItem(ref, context);
                             }
                           })
                       : data.collectionId == zeroAddress

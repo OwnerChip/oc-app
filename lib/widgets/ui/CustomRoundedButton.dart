@@ -15,6 +15,7 @@ class CustomRoundedButton extends StatelessWidget {
     this.textStyle,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.showShadow = true,
   });
 
   final String text;
@@ -27,6 +28,7 @@ class CustomRoundedButton extends StatelessWidget {
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
   TextStyle? textStyle;
+  final bool? showShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +43,9 @@ class CustomRoundedButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
+            shadowColor: showShadow != null && showShadow!
+                ? CustomColors(dotenv.get('APP_ID')).shadowColor
+                : Colors.transparent,
           ),
           child: Row(
             mainAxisAlignment: mainAxisAlignment,

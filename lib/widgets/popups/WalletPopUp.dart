@@ -1,23 +1,24 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:flutter/gestures.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/credentials.dart';
 import '../../utils/utils.dart';
-import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
@@ -48,6 +49,40 @@ Future<void> walletPopupBuilder(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                // OwnerCard wallet
+                WalletIcon(
+                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
+                    'OwnerCard', () {
+                  Navigator.pop(context); //remove wallet popup
+
+                  Navigator.pushNamed(context, PinScreen.routeName,
+                      arguments: PinScreenArguments(
+                          activeFeature: PinScreenActiveFeature.verifyPinAuth,
+                          callback: (String pin) async {
+                            onCardPress(ref, context, pin);
+                          }));
+                }),
+                WalletIcon(
+                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
+                    'Setup OwnerCard', () async {
+                  Navigator.pop(context); //remove wallet popup
+                  var puk =
+                      await Navigator.pushNamed(context, PinScreen.routeName,
+                          arguments: PinScreenArguments(
+                              activeFeature: PinScreenActiveFeature.setPin,
+                              callback: (String pin) async {
+                                onAddCardPress(ref, context, pin);
+                              }));
+                }),
+              ]),
+              const SizedBox(height: 20),
+              Container(
+                height: 1,
+                width: 250,
+                color: Theme.of(context).dividerColor,
+              ),
+              const SizedBox(height: 20),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                 // trust wallet
                 WalletIcon(
                     walletConfig['https://trustwallet.com']!.iconUri,
@@ -61,15 +96,6 @@ Future<void> walletPopupBuilder(
                     walletConfig['https://metamask.io/']!.name,
                     () => onWalletPress(context, ref, wc,
                         walletConfig['https://metamask.io/']!)),
-              ]),
-              const SizedBox(height: 30),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                // smart card wallet
-                WalletIcon(
-                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
-                    'Smart Card',
-                    () => onCardPress(context)),
-                Container(width: 65)
               ]),
               const SizedBox(height: 30),
               Text(
@@ -131,17 +157,37 @@ Future<void> onWalletPress(
     authPopupBuilder(context, ref, wc);
     Navigator.pop(context);
   } catch (e) {
-    //show error snackbar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
-        context.loc.errorNoInternetConnection,
+        'User denied connection request.',
         'error'));
   }
 }
 
-void onCardPress(BuildContext context) {
-  //get current navigation route
-  //Navigate to ScanningScreen
-  Navigator.pushNamed(context, ScanningScreen.routeName,
-      arguments: ScanningScreenArguments('', scanCard: true));
+Future<void> onCardPress(
+    WidgetRef ref, BuildContext context, String pin) async {
+  try {
+    await authenticateCard(ref, context, pin);
+    // Navigator.pop(context);
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        'Error connecting OwnerCard.',
+        'error'));
+  }
+}
+
+Future<void> onAddCardPress(
+    WidgetRef ref, BuildContext context, String pin) async {
+  try {
+    String? puk = await setPinOnCard(context, pin);
+    // Navigator.pop(context, puk);
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        'Error connecting OwnerCard.',
+        'error'));
+  }
 }

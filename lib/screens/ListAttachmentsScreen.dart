@@ -13,7 +13,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
-import '../utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import '../widgets/ui/AttachmentBox.dart';
 import '../widgets/ui/AttachmentUploadButton.dart';
 import 'AddAttachmentScreen.dart';
@@ -71,12 +71,14 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                       if (hasMinterRole) {
                         return Column(
                           children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                context.loc.creatorContent,
-                              ),
-                            ),
+                            ownerAttachments.isNotEmpty
+                                ? Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      context.loc.creatorContent,
+                                    ),
+                                  )
+                                : Container(),
                             const SizedBox(height: 10),
                             for (var i = 0; i < creatorAttachments.length; i++)
                               Column(children: [

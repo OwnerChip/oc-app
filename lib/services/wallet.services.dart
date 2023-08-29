@@ -2,6 +2,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +22,7 @@ import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
-import '../widgets/ui/AuthPopup.dart';
+import '../widgets/popups/AuthPopup.dart';
 
 // This function starts a wallet connection with the WalletConnect connector.
 Future<ConnectResponse> startWalletConnection(
@@ -79,18 +84,21 @@ Uri convertToWcLink({
 // It then sends the gasless transaction request to the backend and returns the txnHash.
 
 Future<String> makeAndSendGaslessTx(
+    WidgetRef ref,
+    BuildContext context,
     String functionSignatureHash,
     int chainId,
     EthereumAddress collectionId,
     SignatureData signatureData,
     EthereumAddress walletAddress,
-    Web3App wc,
-    SessionData wcSession,
+    Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
+    SessionData? wcSession,
     String metaTxAgreementId,
     WalletType walletType,
     {EthereumAddress? toAccount,
     String? cid,
-    BigInt? tokenId}) async {
+    BigInt? tokenId,
+    required Function toggleLoading}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,
       chainRpcUrl: getRPCUrlFromChainId(chainId),
@@ -105,23 +113,49 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
-  String walletLink = walletType.deeplinkUri;
-  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
-  await launchUrlString(walletDeepLink.toString(),
-      mode: LaunchMode.externalApplication);
+  try {
+    String signature;
+    if (walletType.name == 'OwnerCard') {
+      String hash = await getGaslessTxHash(request, collectionId);
 
-  String signature = await wc.request(
-    topic: wcSession.topic,
-    chainId: 'eip155:1',
-    request: SessionRequestParams(
-      method: 'eth_signTypedData_v4',
-      params: [walletAddress.toString(), json.encode(typedData)],
-    ),
-  );
+      var cardSignature =
+          await Navigator.pushNamed(context, PinScreen.routeName,
+              arguments: PinScreenArguments(
+                  activeFeature: PinScreenActiveFeature.verifyPinTx,
+                  callback: (String pin) async {
+                    return await makeCardSignature(
+                        ref, context, hash, toggleLoading, pin);
+                  })) as MsgSignature;
 
-  String txnHash = await sendGaslessRequest(
-      collectionId, signature, metaTxAgreementId, request);
-  return txnHash;
+      signature = msgSignatureToHex(cardSignature);
+    } else {
+      String walletLink = walletType.deeplinkUri;
+      Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+
+      //turn off loading while user is in Metamask/Other Wallet
+      toggleLoading();
+      await launchUrlString(walletDeepLink.toString(),
+          mode: LaunchMode.externalApplication);
+
+      signature = await wc!.request(
+        topic: wcSession!.topic,
+        chainId: 'eip155:1',
+        request: SessionRequestParams(
+          method: 'eth_signTypedData_v4',
+          params: [walletAddress.toString(), json.encode(typedData)],
+        ),
+      );
+      //turn on loading again, while waiting for gasless tx to be mined
+      toggleLoading();
+    }
+
+    String txnHash = await sendGaslessRequest(
+        collectionId, signature, metaTxAgreementId, request);
+    return txnHash;
+  } catch (e) {
+    print(e);
+    rethrow;
+  }
 }
 
 // This code creates a normal transaction.
@@ -194,4 +228,10 @@ Future<String> sendPersonalSignRequest(
   );
 
   return signature;
+}
+
+Future<String> getGaslessTxHash(request, collectionId) async {
+  String hash = await getEthSignTypedDataSignature(collectionId, request);
+
+  return hash;
 }

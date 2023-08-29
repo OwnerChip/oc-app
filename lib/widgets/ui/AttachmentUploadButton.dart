@@ -3,7 +3,7 @@ import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import '../../domain/classDefinition.dart';
 
 import '../../utils/localization.helper.dart';
@@ -22,6 +22,13 @@ class AttachmentUploadButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<int>(
+      constraints: const BoxConstraints(minWidth: double.infinity),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(
+              color: CustomColors(dotenv.get('APP_ID')).primaryColorLight)),
+      padding: EdgeInsets.all(0),
+      position: PopupMenuPosition.under,
       initialValue: null,
       onSelected: (int value) {
         if (value == 0) {
@@ -38,15 +45,22 @@ class AttachmentUploadButton extends StatelessWidget {
           value: 0,
           child: Container(
               alignment: Alignment.center,
-              width: 300,
-              child: Text(context.loc.addFile)),
+              width: double.infinity,
+              child: Text(context.loc.addFile,
+                  style: TextStyle(
+                      color: CustomColors(dotenv.get('APP_ID')).primaryColor))),
         ),
+        const PopupMenuDivider(),
         PopupMenuItem<int>(
           value: 1,
           child: Container(
               alignment: Alignment.center,
-              width: 300,
-              child: Text(context.loc.addUrl)),
+              width: double.infinity,
+              child: Text(
+                context.loc.addUrl,
+                style: TextStyle(
+                    color: CustomColors(dotenv.get('APP_ID')).primaryColor),
+              )),
         ),
       ],
       child: Container(

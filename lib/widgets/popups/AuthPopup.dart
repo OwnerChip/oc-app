@@ -5,7 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -27,19 +28,63 @@ Future<void> authPopupBuilder(
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
           title: const Padding(
-            padding: EdgeInsets.only(top: 20, bottom: 10),
+            padding: EdgeInsets.only(),
             child: Text(
-              'Authenticate your wallet plz.',
+              'Sign in',
               textAlign: TextAlign.center,
             ),
           ),
-          titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-              fontSize: CustomFonts(dotenv.get('APP_ID')).metadataNameFontSize,
-              fontWeight:
-                  CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
+          titleTextStyle: Theme.of(context).textTheme.displayLarge!,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                'Confirm your identity by authenticating your wallet.',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline_rounded,
+                    color: Colors.green,
+                    size: 36,
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    'Wallet connected',
+                    style: Theme.of(context).textTheme.displaySmall,
+                  )
+                ],
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Row(
+                children: [
+                  //grey circle icon full, not outlined
+                  const Icon(
+                    Icons.check_circle_outline_rounded,
+                    color: Colors.grey,
+                    size: 36,
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    'Wallet authenticated',
+                    style: Theme.of(context).textTheme.displaySmall,
+                  )
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
               CustomRoundedButton(
                   text: 'Authenticate',
                   onPressed: () =>
@@ -83,6 +128,14 @@ Future<void> onTapAuth(
   final SharedPreferences storage = await SharedPreferences.getInstance();
   final String jsonBackendSession = jsonEncode(backendSession.toJson());
   storage.setString('backendSession', jsonBackendSession);
+
+  ref.refresh(findAllMinterRolesProvider);
+
+  //success snackbar
+  ScaffoldMessenger.of(context).showSnackBar(
+    returnSnackBarWidget(
+        context.loc.successHeadingSnackbar, 'Connected wallet.', 'success'),
+  );
 
   //navigate back
   Navigator.pop(context);

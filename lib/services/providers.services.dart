@@ -56,7 +56,7 @@ class SignatureDataNotifier extends StateNotifier<SignatureData> {
   }
 }
 
-final signatureDataProvider =
+final chipSignatureDataProvider =
     StateNotifierProvider<SignatureDataNotifier, SignatureData>((ref) {
   return SignatureDataNotifier();
 });
@@ -143,8 +143,7 @@ final findAllMinterRolesProvider =
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
     // if collection is OPEN, add it to the list
-    if (wc != null &&
-        wcSession != null &&
+    if (ref.read(backendSessionProvider) != null &&
         collection.id ==
             EthereumAddress.fromHex(
                 '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
@@ -205,8 +204,10 @@ final findTokenProvider = FutureProvider.autoDispose
     return TokenInfoObject(chainId, collectionId, tokenId);
   }));
 
-  return result.firstWhere((element) => element.collectionId != zeroAddress,
+  TokenInfoObject tokenInfo = result.firstWhere(
+      (element) => element.collectionId != zeroAddress,
       orElse: () => TokenInfoObject(0, zeroAddress, tokenId));
+  return tokenInfo;
 });
 
 //****NFT OWNER ****
@@ -319,10 +320,6 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   return Uri.parse(raribleUrl);
 });
 
-final sessionIdProvider = StateProvider<String>((ref) {
-  return '';
-});
-
 //this provider fetches all attachments from backend, and saves them to localAttachmentsProvider!
 //This is necessary to edit attachments locally!
 final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
@@ -335,7 +332,8 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   EthereumAddress nftOwner = zeroAddress;
   try {
     //check if connected wallet is nft owner
-    final EthereumAddress nftOwner = await ref.watch(nftOwnerProvider.future);
+    nftOwner = await ref.read(nftOwnerProvider.future);
+    print('nftOwner: $nftOwner');
   } catch (e) {
     print(e);
     if (e == 'No owner found.') {
@@ -367,7 +365,7 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   //if token does not exist, the creator can fetch all attachments. This is
   //necessary to show all previously uploaded attachments in MetadataInputScreens
   if (!tokenExists || nftOwner == userWalletAddress) {
-    SignatureData tokenSignatureData = ref.read(signatureDataProvider);
+    SignatureData tokenSignatureData = ref.read(chipSignatureDataProvider);
 
     BackendSession? backendSession = ref.read(backendSessionProvider);
     response = await getPublicAndPrivateAttachmentsFromBackend(

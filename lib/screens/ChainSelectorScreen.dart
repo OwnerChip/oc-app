@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
 
 //import widgets
@@ -11,19 +12,18 @@ import 'package:ownerchip_whitelabel/widgets/ui/ChainDropdown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 //import dotenv
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 //import svg

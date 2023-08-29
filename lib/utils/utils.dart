@@ -6,8 +6,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
@@ -148,6 +148,11 @@ String uint8ListTo32ByteHex(Uint8List uint8List) {
 String convertTokenIdToEthereumAddress(BigInt intToConvert) {
   var hex = intToConvert.toRadixString(16);
   return "0x${hex.padLeft(40, '0')}";
+}
+
+String convertSignatureParamToHexString(BigInt intToConvert) {
+  var hex = intToConvert.toRadixString(16);
+  return "0x${hex.padLeft(64, '0')}";
 }
 
 // specific to secora chip response

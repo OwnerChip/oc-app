@@ -170,7 +170,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                     title: context.loc.loading, content: null)),
             attachments.isNotEmpty
                 ? DropdownContainer(
-                    title: 'Digital Content',
+                    title: 'Digital Content ' +
+                        '(' +
+                        attachments.length.toString() +
+                        ')',
                     content: Column(
                       children: [
                         creatorAttachments.isNotEmpty
@@ -233,23 +236,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                 ],
                               )
                             : Container(),
-
-                        // ...attachments.map(
-                        //   (e) => Column(children: [
-                        //     AttachmentBox(
-                        //       text: e.title,
-                        //       icon: e.type == AttachmentType.url
-                        //           ? Icons.link
-                        //           : Icons.attach_file,
-                        //       isPrivate: e.isPrivate,
-                        //       onTap: () {
-                        //         launchUrl(Uri.parse(e.url),
-                        //             mode: LaunchMode.externalApplication);
-                        //       },
-                        //     ),
-                        //     const SizedBox(height: 10),
-                        //   ]),
-                        // ),
 
                         //if connected wallet is owner
                         nftOwner.when(

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'dart:io';
@@ -146,14 +147,14 @@ Map<String, dynamic> makeAuthObject(
   BigInt tokenId,
 ) {
   return {
-    'sessionId': sessionId, //TODO: insert real session id
-    'tokenId': "0x" + tokenId.toRadixString(16),
+    'sessionId': sessionId,
+    'tokenId': convertTokenIdToEthereumAddress(tokenId),
     'collectionId': collectionId.toString(),
     'chainId': chainId,
     'walletAddress': walletAddress.toString(),
     'userWalletSignature': {
-      'r': '0x' + userSignature.r.toRadixString(16),
-      's': '0x' + userSignature.s.toRadixString(16),
+      'r': convertSignatureParamToHexString(userSignature.r),
+      's': convertSignatureParamToHexString(userSignature.s),
       'v': userSignature.v
     },
   };
@@ -164,7 +165,7 @@ Future<dynamic> getPublicAttachmentsFromBackend(
   BigInt tokenId,
 ) async {
   final Dio dio = getBackendClient();
-  final url = '/attachments/${"0x${tokenId.toRadixString(16)}"}/public';
+  final url = '/attachments/${convertTokenIdToEthereumAddress(tokenId)}/public';
   try {
     final result = await dio.get(
       url,

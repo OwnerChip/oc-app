@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -10,9 +14,15 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
 /// sign a hash with the private key of the chip
-Future<MsgSignature> signHash(NFCPlatform nfc, int hexKeyNumber,
-    EthereumAddress chipEthereumAddress, Uint8List hash) async {
-  await nfc.sendCommand(SELECT_APP);
+Future<MsgSignature> signHash(
+    NFCPlatform nfc,
+    int hexKeyNumber,
+    EthereumAddress chipEthereumAddress,
+    Uint8List hash,
+    bool callSelectApp) async {
+  if (callSelectApp)
+    await nfc.sendCommand(
+        SELECT_APP); //selectapp should not be called if a session has already be initiated with a verifyPIN command
 
   final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hash);
   try {
@@ -206,6 +216,14 @@ Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
     's': signature.s.toString(),
     'v': signature.v,
   };
+}
+
+//convert MsgSignature to hex
+String msgSignatureToHex(MsgSignature signature) {
+  String r = signature.r.toRadixString(16);
+  String s = signature.s.toRadixString(16);
+  String v = signature.v.toRadixString(16);
+  return "0x$r$s$v";
 }
 
 /// convert json to MsgSignature
