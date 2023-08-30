@@ -53,20 +53,18 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     EthereumAddress to,
     EthereumAddress? toAccount,
     String? tokenURI,
-    BigInt? tokenId) async {
+    BigInt? tokenId,
+    bool? enableRecovery) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
-  if (functionSignatureHash == gaslessMintFunctionSignature) {
+  if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!);
-  } else if (functionSignatureHash == gaslessBurnFunctionSignature) {
+  } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
-  } else if (functionSignatureHash == gaslessTransferFunctionSignature) {
-    data = makeTransferData(
-        functionSignatureHash, randomValueHash, signature, toAccount!);
-  } else if (functionSignatureHash == transferToCardFunctionSignature) {
-    data = makeTransferToCardData(
-        functionSignatureHash, randomValueHash, signature);
+  } else if (functionSignatureHash == transferFromFunctionSignature) {
+    data = makeTransferFromData(
+        functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
   } else {
@@ -108,7 +106,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     required EthereumAddress to,
     EthereumAddress? toAccount,
     String? tokenURI,
-    BigInt? tokenId}) async {
+    BigInt? tokenId,
+    bool? enableRecovery}) async {
   final request = await buildTypedV4Request(
       functionSignatureHash,
       chainRpcUrl,
@@ -119,7 +118,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
       to,
       toAccount,
       tokenURI,
-      tokenId);
+      tokenId,
+      enableRecovery);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

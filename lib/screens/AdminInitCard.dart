@@ -44,7 +44,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
           CustomRoundedButton(
             text: 'Init second card slot',
             onPressed: () {
-              smartCardAdminInit(context, setChipAddresses);
+              ownerCardAdminInit(context, setChipAddresses);
             },
           ),
           SizedBox(

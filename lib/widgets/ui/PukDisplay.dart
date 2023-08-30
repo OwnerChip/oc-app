@@ -22,7 +22,7 @@ class PukDisplay extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$puk', style: Theme.of(context).textTheme.headlineMedium),
+              Text(puk, style: Theme.of(context).textTheme.headlineMedium),
               SizedBox(
                 width: 10,
               ),

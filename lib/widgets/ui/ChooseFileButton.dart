@@ -46,7 +46,7 @@ class ChooseFileButton extends StatelessWidget {
           child: Container(
               alignment: Alignment.center,
               width: double.infinity,
-              child: Text('Open File Explorer',
+              child: Text(context.loc.chooseFile,
                   style: TextStyle(
                       color: CustomColors(dotenv.get('APP_ID')).primaryColor))),
         ),
@@ -56,7 +56,7 @@ class ChooseFileButton extends StatelessWidget {
           child: Container(
               alignment: Alignment.center,
               width: double.infinity,
-              child: Text('Open Gallery',
+              child: Text(context.loc.viewGallery,
                   style: TextStyle(
                       color: CustomColors(dotenv.get('APP_ID')).primaryColor))),
         ),

@@ -590,7 +590,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                               ListTile(
                                 contentPadding: const EdgeInsets.all(0),
                                 horizontalTitleGap: 7,
-                                title: Text('Public',
+                                title: Text(context.loc.public,
                                     style: TextStyle(
                                       color: CustomColors(dotenv.get('APP_ID'))
                                           .primaryColor,
@@ -616,7 +616,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                               ListTile(
                                 contentPadding: const EdgeInsets.all(0),
                                 horizontalTitleGap: 7,
-                                title: Text('Private',
+                                title: Text(context.loc.private,
                                     style: TextStyle(
                                       color: CustomColors(dotenv.get('APP_ID'))
                                           .primaryColor,

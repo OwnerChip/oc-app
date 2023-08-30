@@ -26,10 +26,10 @@ Future<void> authPopupBuilder(
           //border radius
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
-          title: const Padding(
+          title: Padding(
             padding: EdgeInsets.only(),
             child: Text(
-              'Sign in',
+              context.loc.login,
               textAlign: TextAlign.center,
             ),
           ),
@@ -56,7 +56,7 @@ Future<void> authPopupBuilder(
                     width: 10,
                   ),
                   Text(
-                    'Wallet connected',
+                    context.loc.walletConnected,
                     style: Theme.of(context).textTheme.displaySmall,
                   )
                 ],
@@ -76,7 +76,7 @@ Future<void> authPopupBuilder(
                     width: 10,
                   ),
                   Text(
-                    'Wallet authenticated',
+                    context.loc.walletAuthenticated,
                     style: Theme.of(context).textTheme.displaySmall,
                   )
                 ],
@@ -85,7 +85,7 @@ Future<void> authPopupBuilder(
                 height: 20,
               ),
               CustomRoundedButton(
-                  text: 'Authenticate',
+                  text: context.loc.authenticate,
                   onPressed: () =>
                       onTapAuth(context, 'insert_session_id', ref)),
             ],
@@ -104,6 +104,7 @@ Future<void> onTapAuth(
   //get sessionid from backend (only if not already set)
   final oldUserSession = ref.read(userSessionProvider);
   String sessionId = oldUserSession?.sessionId ?? await getSessionId();
+  bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
 
   String message =
       "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
@@ -118,7 +119,7 @@ Future<void> onTapAuth(
       sevenDaysInSeconds, sessionId, userWalletAddress, signature);
 
   UserSession userSession = UserSession(sessionId, signature,
-      ref.read(userAddressProvider), sessionExpirationDate);
+      ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
 
   ref.read(userSessionProvider.notifier).state = userSession;
 
@@ -136,8 +137,8 @@ Future<void> onTapAuth(
 
   //success snackbar
   ScaffoldMessenger.of(context).showSnackBar(
-    returnSnackBarWidget(
-        context.loc.successHeadingSnackbar, 'Connected wallet.', 'success'),
+    returnSnackBarWidget(context.loc.successHeadingSnackbar,
+        context.loc.walletIsConnected, 'success'),
   );
 
   //navigate back

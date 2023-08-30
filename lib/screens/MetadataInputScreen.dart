@@ -156,7 +156,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //check if user is allowed to use gas station
       final List response =
-          await checkMetaTx(collectionId, gaslessMintFunctionSignature);
+          await checkMetaTx(collectionId, mintFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -177,7 +177,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             context,
-            gaslessMintFunctionSignature,
+            mintFunctionSignature,
             chainId,
             collectionId,
             signatureData,

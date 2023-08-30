@@ -98,6 +98,7 @@ Future<String> makeAndSendGaslessTx(
     {EthereumAddress? toAccount,
     String? cid,
     BigInt? tokenId,
+    bool? enableRecovery,
     required Function toggleLoading}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,
@@ -109,7 +110,8 @@ Future<String> makeAndSendGaslessTx(
       to: collectionId,
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null,
-      tokenId: tokenId);
+      tokenId: tokenId,
+      enableRecovery: enableRecovery);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
@@ -182,7 +184,8 @@ Future<String> makeAndSendNormalTx(
       signatureData.hashedMsg,
       signatureData.signature,
       toAccount: toAccount,
-      tokenURI: cid != null ? "ipfs://$cid" : null);
+      tokenURI: cid != null ? "ipfs://$cid" : null,
+      enableRecovery: false);
 
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");

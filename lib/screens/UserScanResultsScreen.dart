@@ -89,7 +89,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, gaslessBurnFunctionSignature);
+          await checkMetaTx(config.collectionId, burnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -196,8 +196,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
 
-      final List response = await checkMetaTx(
-          config.collectionId, transferToCardFunctionSignature);
+      final List response =
+          await checkMetaTx(config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -207,7 +207,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             context,
-            transferToCardFunctionSignature,
+            transferFromFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
@@ -220,7 +220,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
-            burnFunctionSignature,
+            transferFromFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
@@ -534,9 +534,26 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                   hasMinterRole:
                                                                       false);
                                                           return collection
-                                                                  .hasMinterRole!
+                                                                      .hasMinterRole! &&
+                                                                  approval.value ==
+                                                                      zeroAddress
+                                                              // show transfer / burn Token buttons only if user is minter and token is not approved
                                                               ? Column(
                                                                   children: [
+                                                                      // TRANSFER BUTTON
+                                                                      CustomRoundedButton(
+                                                                          text: context
+                                                                              .loc
+                                                                              .transferToken,
+                                                                          onPressed: (() =>
+                                                                              {
+                                                                                //navigate to transfer screen
+                                                                                Navigator.pushNamed(context, TransferScreen.routeName)
+                                                                              })),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              10),
+                                                                      // BURN BUTTON
                                                                       CustomOutlinedButton(
                                                                           width: double
                                                                               .infinity,
@@ -548,7 +565,41 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                 fromCancelable(burnToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
                                                                               })),
                                                                     ])
-                                                              : Container();
+                                                              // if the token was already approved, show hint
+                                                              : Column(
+                                                                  children: [
+                                                                    Text(
+                                                                        context
+                                                                            .loc
+                                                                            .tokenWasTransferred,
+                                                                        textAlign:
+                                                                            TextAlign
+                                                                                .left,
+                                                                        style: Theme.of(context)
+                                                                            .textTheme
+                                                                            .bodyMedium),
+                                                                    Text(
+                                                                        approval
+                                                                            .value
+                                                                            .toString(),
+                                                                        textAlign:
+                                                                            TextAlign
+                                                                                .left,
+                                                                        style: Theme.of(context)
+                                                                            .textTheme
+                                                                            .bodyMedium),
+                                                                    Text(
+                                                                        context
+                                                                            .loc
+                                                                            .tokenNotYetClaimed,
+                                                                        textAlign:
+                                                                            TextAlign
+                                                                                .left,
+                                                                        style: Theme.of(context)
+                                                                            .textTheme
+                                                                            .bodyMedium)
+                                                                  ],
+                                                                );
                                                         },
                                                         error: (e, s) =>
                                                             Container(),
@@ -582,8 +633,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                 CustomRoundedButton(
                                                                     width: double
                                                                         .infinity,
-                                                                    text:
-                                                                        "Claim Ownership",
+                                                                    text: context
+                                                                        .loc
+                                                                        .claimOwnership,
                                                                     onPressed:
                                                                         (() => {
                                                                               fromCancelable(claimToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))

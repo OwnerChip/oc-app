@@ -148,6 +148,7 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
   }
 }
 
+/// save a userSession of a OwnerCard
 Future<void> saveUserSession(
     String sessionId,
     EthereumAddress cardWalletAddress,
@@ -158,9 +159,10 @@ Future<void> saveUserSession(
       sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
 
   ref.read(userAddressProvider.notifier).state = cardWalletAddress;
-  ref.read(walletTypeProvider.notifier).state = walletConfig['ocSmartCard'];
+  ref.read(walletTypeProvider.notifier).state = walletConfig['ownerCard'];
+  final isOwnerCard = true;
   UserSession userSession = UserSession(sessionId, signature,
-      ref.read(userAddressProvider), sessionExpirationDate);
+      ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
 
   ref.read(userSessionProvider.notifier).state = userSession;
 

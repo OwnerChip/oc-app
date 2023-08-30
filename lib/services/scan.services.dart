@@ -472,7 +472,7 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
 
   try {
     NfcManager.instance.startSession(
-        alertMessage: 'Hold phone near OwnerCard.',
+        alertMessage: context.loc.holdPhoneToCard,
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
@@ -488,7 +488,7 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
           //check if second pubkey exists; if does not exist, throw error (chip is not smart card)
           Uint8List key2 = await getPubKeyN(nfc, 2);
           if (key2.isEmpty) {
-            throw Exception('Chip is not a smart card.');
+            throw Exception(context.loc.chipIsNoCard);
           }
 
           puk = await setPin(nfc, pin);
@@ -536,10 +536,10 @@ Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
   Sentry.startTransaction('setPinOnCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, 'Hold your phone near OwnerCard.');
+    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
   }
   NfcManager.instance.startSession(
-      alertMessage: 'Hold phone near OwnerCard.',
+      alertMessage: context.loc.holdPhoneToCard,
       onDiscovered: (NfcTag tag) async {
         try {
           var nfc = NFCPlatform(tag);
@@ -581,7 +581,7 @@ Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
           }
           ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
               context.loc.errorHeadingSnackBar,
-              'Error resetting pin.',
+              context.loc.errorSettingPin,
               'error'));
 
           sendAnalyticsTrace(sessionId, e.toString(), "RESET_PIN_ERROR",
@@ -592,21 +592,20 @@ Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
 }
 
 // this function creates two slots on OwnerCard, to distinguish Smart Cards from normal NFC chips in objects
-Future<void> smartCardAdminInit(
+Future<void> ownerCardAdminInit(
     BuildContext context, Function setStateCallback) async {
 //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
 
   //start NFC scan
-  Sentry.startTransaction('smartCardAdminInit()', 'task');
+  Sentry.startTransaction('ownerCardAdminInit()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context,
-        'Hold your phone close to the OwnerCard you want to initialize.');
+    nfcOverlay.showNfcOverlay(
+        context, context.loc.holdPhoneCloseToOwnerCardToInit);
   }
   NfcManager.instance.startSession(
-      alertMessage:
-          'Hold your phone close to the OwnerCard you want to initialize.',
+      alertMessage: context.loc.holdPhoneCloseToOwnerCardToInit,
       onDiscovered: (NfcTag tag) async {
         try {
           var nfc = NFCPlatform(tag);
@@ -637,7 +636,7 @@ Future<void> smartCardAdminInit(
 
           ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
               context.loc.errorHeadingSnackBar,
-              'First two public keys initialized.',
+              context.loc.twoSlotsInitSuccess,
               'success'));
         } catch (e) {
           NfcManager.instance.stopSession();
@@ -646,7 +645,7 @@ Future<void> smartCardAdminInit(
           }
           ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
               context.loc.errorHeadingSnackBar,
-              'Error first two public key slots.',
+              context.loc.twoSlotsInitError,
               'error'));
           print(e);
         }

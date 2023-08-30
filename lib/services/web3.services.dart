@@ -158,6 +158,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   EthereumAddress? toAccount,
   String? tokenURI,
   String? gasPrice,
+  bool? enableRecovery,
 }) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -165,9 +166,9 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         functionSignatureHash, randomValueHash, signature, tokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
-  } else if (functionSignatureHash == transferFunctionSignature) {
-    data = makeTransferData(
-        functionSignatureHash, randomValueHash, signature, toAccount!);
+  } else if (functionSignatureHash == transferFromFunctionSignature) {
+    data = makeTransferFromData(
+        functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -215,24 +216,15 @@ String makeBurnData(
   return data;
 }
 
-String makeTransferData(String functionSignatureHash, Uint8List hash,
-    MsgSignature signature, EthereumAddress to) {
-  String data = functionSignatureHash +
-      to.toString().substring(2).padLeft(64, '0') +
-      uint8ListTo32ByteHex(hash) +
-      signature.r.toRadixString(16).padLeft(64, '0') +
-      signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0');
-  return data;
-}
-
-String makeTransferToCardData(
-    String functionSignatureHash, Uint8List hash, MsgSignature signature) {
+String makeTransferFromData(String functionSignatureHash, Uint8List hash,
+    MsgSignature signature, bool? enableRecovery) {
+  final recovery = enableRecovery ?? false;
   String data = functionSignatureHash +
       uint8ListTo32ByteHex(hash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0');
+      signature.v.toRadixString(16).padLeft(64, '0') +
+      (recovery ? "01".padLeft(64, "0") : "00".padLeft(64, "0"));
   return data;
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:web3dart/web3dart.dart';
 
 class ChipInfo extends StatelessWidget {
@@ -46,9 +47,9 @@ class ChipInfo extends StatelessWidget {
                               Clipboard.setData(
                                   ClipboardData(text: tokenId.toString()));
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          'Token ID copied to clipboard')));
+                                  SnackBar(
+                                      content: Text(context
+                                          .loc.tokenIdCopiedToClipboard)));
                             },
                             icon: const Icon(Icons.copy))
                       ],
@@ -72,8 +73,8 @@ class ChipInfo extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(
                           ClipboardData(text: walletAddress.toString()));
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Wallet address copied to clipboard')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(context.loc.addressCopied)));
                     },
                     icon: const Icon(Icons.copy))
               ],

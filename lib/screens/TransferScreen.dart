@@ -68,7 +68,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final wcSession = ref.read(wcSessionProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
-    final transferProcess = Sentry.startTransaction('initTransfer()', 'task');
+    final userSession = ref.watch(userSessionProvider);
+    final isOwnerCard = userSession?.isOwnerCard;
+    final transferProcess = Sentry.startTransaction('initApprove()', 'task');
     try {
       setState(() {
         isLoading = true;
@@ -82,8 +84,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         'to': to.toString(),
       });
 
-      final List response = await checkMetaTx(
-          config.collectionId, gaslessTransferFunctionSignature);
+      final List response =
+          await checkMetaTx(config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -103,10 +105,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             ref.read(walletTypeProvider)!,
             toAccount: to,
             tokenId: tokenId,
+            enableRecovery: isOwnerCard,
             toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
-            transferFunctionSignature,
+            approveFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
@@ -229,8 +232,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         child: Align(
                           alignment: Alignment.center,
                           child: Text(
+                            context.loc.transferOwnership,
                             textAlign: TextAlign.center,
-                            "Transfer Ownership [APPROVE]",
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                         ),
