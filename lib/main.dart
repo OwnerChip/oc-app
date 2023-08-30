@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/domain/eip155.dart';
+import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
@@ -253,6 +254,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
             const ListAttachmentsScreen(),
         PinScreen.routeName: (context) => const PinScreen(),
         EnterPukScreen.routeName: (context) => const EnterPukScreen(),
+        AdminInitCard.routeName: (context) => const AdminInitCard(),
       },
     );
   }

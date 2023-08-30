@@ -33,7 +33,7 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
-  static const routeName = '/login';
+  static const routeName = '/home';
 
   @override
   _HomeScreenState createState() => _HomeScreenState();

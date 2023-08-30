@@ -6,8 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SuccessPinSetup.dart';
 import 'package:sentry/sentry.dart';
 
 //import widgets
@@ -63,8 +66,13 @@ class _PinScreen extends ConsumerState<PinScreen> {
         ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
 
     try {
+      if (navArgs.activeFeature != PinScreenActiveFeature.setPin) {
+        Navigator.pop(context);
+      }
       var returnValue = await navArgs.callback(pin);
-      Navigator.pop(context, returnValue);
+      if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
+        showCustomPopup(context, 'Successfully set up PIN', SuccessPinSetup());
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,

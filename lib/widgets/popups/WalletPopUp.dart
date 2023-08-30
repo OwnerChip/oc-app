@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SuccessPinSetup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -52,10 +53,10 @@ Future<void> walletPopupBuilder(
                 // OwnerCard wallet
                 WalletIcon(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
-                    'OwnerCard', () {
+                    'OwnerCard', () async {
                   Navigator.pop(context); //remove wallet popup
 
-                  Navigator.pushNamed(context, PinScreen.routeName,
+                  await Navigator.pushNamed(context, PinScreen.routeName,
                       arguments: PinScreenArguments(
                           activeFeature: PinScreenActiveFeature.verifyPinAuth,
                           callback: (String pin) async {
@@ -66,13 +67,12 @@ Future<void> walletPopupBuilder(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
                     'Setup OwnerCard', () async {
                   Navigator.pop(context); //remove wallet popup
-                  var puk =
-                      await Navigator.pushNamed(context, PinScreen.routeName,
-                          arguments: PinScreenArguments(
-                              activeFeature: PinScreenActiveFeature.setPin,
-                              callback: (String pin) async {
-                                onAddCardPress(ref, context, pin);
-                              }));
+                  await Navigator.pushNamed(context, PinScreen.routeName,
+                      arguments: PinScreenArguments(
+                          activeFeature: PinScreenActiveFeature.setPin,
+                          callback: (String pin) async {
+                            await onAddCardPress(ref, context, pin);
+                          }));
                 }),
               ]),
               const SizedBox(height: 20),
@@ -168,7 +168,6 @@ Future<void> onCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
   try {
     await authenticateCard(ref, context, pin);
-    // Navigator.pop(context);
   } catch (e) {
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
@@ -182,7 +181,6 @@ Future<void> onAddCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
   try {
     String? puk = await setPinOnCard(context, pin);
-    // Navigator.pop(context, puk);
   } catch (e) {
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(

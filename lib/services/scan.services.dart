@@ -377,6 +377,8 @@ Future<void> authenticateCard(
 //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
 
+  Completer<void> completer = Completer();
+
   //start NFC scan
   Sentry.startTransaction('authenticateCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
@@ -385,21 +387,21 @@ Future<void> authenticateCard(
         context, 'Hold your phone close to your OwnerCard.');
   }
 
-  NfcManager.instance.startSession(
-      onError: (error) async {
-        if (Platform.isAndroid) {
-          nfcOverlay.removeNfcOverlay();
-        }
-        //show error snackbar
-        ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar,
-            'Error authenticating card.',
-            'error'));
-        print(error);
-      },
-      alertMessage: 'Hold phone near OwnerCard sign in.',
-      onDiscovered: (NfcTag tag) async {
-        try {
+  try {
+    NfcManager.instance.startSession(
+        onError: (error) async {
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+          //show error snackbar
+          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar,
+              'Error authenticating card.',
+              'error'));
+          print(error);
+        },
+        alertMessage: 'Hold phone near OwnerCard sign in.',
+        onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
           String sessionId = await getSessionId();
@@ -434,26 +436,32 @@ Future<void> authenticateCard(
             await Future.delayed(const Duration(seconds: 2));
             NfcManager.instance.stopSession();
           }
-        } catch (e) {
-          NfcManager.instance.stopSession();
-          if (Platform.isAndroid) {
-            nfcOverlay.removeNfcOverlay();
-          }
-          //show error snackbar
-          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-              context.loc.errorHeadingSnackBar,
-              'Error authenticating card.',
-              'error'));
 
-          print(e);
-        }
-      });
+          completer.complete(null);
+        });
+    return completer.future;
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    if (Platform.isAndroid) {
+      nfcOverlay.removeNfcOverlay();
+    }
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        'Error setting authenticating OwnerCard.',
+        'error'));
+    print(e);
+
+    completer.complete(null);
+    return completer.future;
+  }
 }
 
 // PIN CODE
 Future<String?> setPinOnCard(BuildContext context, String pin) async {
 //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
+
+  Completer<String?> completer = Completer();
 
   //start NFC scan
   Sentry.startTransaction('setPinOnCard()', 'task');
@@ -463,10 +471,11 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
         context, 'Hold your phone close to your OwnerCard.');
   }
   String? puk;
-  NfcManager.instance.startSession(
-      alertMessage: 'Hold phone near OwnerCard sign in.',
-      onDiscovered: (NfcTag tag) async {
-        try {
+
+  try {
+    NfcManager.instance.startSession(
+        alertMessage: 'Hold phone near OwnerCard.',
+        onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
           String sessionId = makeRandomInt().toString();
@@ -477,6 +486,12 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
           //create first key if not existing
           List result = await createFirstKeypairOnChip(nfc, false, sessionId);
           EthereumAddress cardWalletAddress = result[0];
+
+          //check if second pubkey exists; if does not exist, throw error (chip is not smart card)
+          Uint8List key2 = await getPubKeyN(nfc, 2);
+          if (key2.isEmpty) {
+            throw Exception('Chip is not a smart card.');
+          }
 
           puk = await setPin(nfc, pin);
 
@@ -491,20 +506,23 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
             await Future.delayed(const Duration(seconds: 2));
             NfcManager.instance.stopSession();
           }
-          showCustomPopup(context, 'Save your PUK', PukDisplay(puk: '1234'));
-        } catch (e) {
-          NfcManager.instance.stopSession();
-          if (Platform.isAndroid) {
-            nfcOverlay.removeNfcOverlay();
-          }
-          // ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-          //     context.loc.errorHeadingSnackBar,
-          //     'Error setting card pin.',
-          //     'error'));
-          print(e);
-        }
-      });
-  return puk;
+          completer.complete(puk);
+        });
+    return completer.future;
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    if (Platform.isAndroid) {
+      nfcOverlay.removeNfcOverlay();
+    }
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        'Error setting OwnerCard pin.',
+        'error'));
+    print(e);
+
+    completer.complete(null);
+    return completer.future;
+  }
 }
 
 Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
@@ -565,11 +583,73 @@ Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
           }
           ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
               context.loc.errorHeadingSnackBar,
-              'Error resetting puk.',
+              'Error resetting pin.',
               'error'));
 
           sendAnalyticsTrace(sessionId, e.toString(), "RESET_PIN_ERROR",
               tags: {'connectedWallet': connectedWallet});
+          print(e);
+        }
+      });
+}
+
+// this function creates two slots on OwnerCard, to distinguish Smart Cards from normal NFC chips in objects
+Future<void> smartCardAdminInit(
+    BuildContext context, Function setStateCallback) async {
+//stop previoud NFC session if existing
+  await NfcManager.instance.stopSession();
+
+  //start NFC scan
+  Sentry.startTransaction('smartCardAdminInit()', 'task');
+  NFCOverlay nfcOverlay = NFCOverlay();
+  if (Platform.isAndroid) {
+    nfcOverlay.showNfcOverlay(context,
+        'Hold your phone close to the OwnerCard you want to initialize.');
+  }
+  NfcManager.instance.startSession(
+      alertMessage:
+          'Hold your phone close to the OwnerCard you want to initialize.',
+      onDiscovered: (NfcTag tag) async {
+        try {
+          var nfc = NFCPlatform(tag);
+
+          String sessionId = makeRandomInt().toString();
+
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
+
+          //create first two keys if not existing; else return them
+          Map result = await createSecondKeypairOnChip(nfc, sessionId);
+          EthereumAddress cardWalletAddress1 = result['key1'];
+          EthereumAddress cardWalletAddress2 = result['key2'];
+
+          setStateCallback(cardWalletAddress1, cardWalletAddress2);
+
+          if (Platform.isIOS) {
+            NfcManager.instance.stopSession();
+          }
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+
+          if (Platform.isAndroid) {
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar,
+              'First two public keys initialized.',
+              'success'));
+        } catch (e) {
+          NfcManager.instance.stopSession();
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar,
+              'Error first two public key slots.',
+              'error'));
           print(e);
         }
       });
