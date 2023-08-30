@@ -65,7 +65,7 @@ Future<void> walletPopupBuilder(
                 }),
                 WalletIcon(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
-                    'Setup OwnerCard', () async {
+                    context.loc.setUpOwnerCard, () async {
                   Navigator.pop(context); //remove wallet popup
                   await Navigator.pushNamed(context, PinScreen.routeName,
                       arguments: PinScreenArguments(

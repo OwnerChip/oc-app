@@ -53,12 +53,11 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
   final scanProcess = Sentry.startTransaction('initScanning()', 'task');
 
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, 'Hold your phone close to the NFC chip');
+    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToNfcChip);
   }
 
   NfcManager.instance.startSession(
-      alertMessage:
-          'Hold phone near NFC chip to start creation of digital twin.',
+      alertMessage: context.loc.holdPhoneToNfcChip,
       onDiscovered: (NfcTag tag) async {
         sendAnalyticsTrace(sessionId, "", "INITIALIZE_SCAN_STARTED");
         try {
@@ -166,10 +165,10 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
 
   if (Platform.isAndroid) {
     //show NFC popup
-    nfcOverlay.showNfcOverlay(context, 'Hold your phone close to the NFC chip');
+    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToNfcChip);
   }
   NfcManager.instance.startSession(
-      alertMessage: 'Hold phone near NFC tag to scan item.',
+      alertMessage: context.loc.holdPhoneToNfcChip,
       onDiscovered: (NfcTag tag) async {
         sendAnalyticsTrace(sessionId, "", "SCAN_STARTED",
             tags: {"connectedWallet": session?.userWalletAddress.toString()});
@@ -315,13 +314,12 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
   Sentry.startTransaction('makeCardSignature()', 'task');
   try {
     if (Platform.isAndroid) {
-      nfcOverlay.showNfcOverlay(
-          context, 'Hold your phone close to your OwnerCard.');
+      nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
     }
 
     NfcManager.instance.startSession(
         onError: (error) => toggleLoading(),
-        alertMessage: 'Hold phone near OwnerCard to sign transaction.',
+        alertMessage: context.loc.holdPhoneToCard,
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
@@ -364,7 +362,9 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
 
     //show error snackbar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar, 'Error making signature.', 'error'));
+        context.loc.errorHeadingSnackBar,
+        context.loc.errorMakingSignature,
+        'error'));
 
     //complete the future with null
     completer.complete(null);
@@ -383,8 +383,7 @@ Future<void> authenticateCard(
   Sentry.startTransaction('authenticateCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(
-        context, 'Hold your phone close to your OwnerCard.');
+    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
   }
 
   try {
@@ -396,11 +395,11 @@ Future<void> authenticateCard(
           //show error snackbar
           ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
               context.loc.errorHeadingSnackBar,
-              'Error authenticating card.',
+              context.loc.errorAuthenticatingCard,
               'error'));
           print(error);
         },
-        alertMessage: 'Hold phone near OwnerCard sign in.',
+        alertMessage: context.loc.holdPhoneToCard,
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
@@ -447,7 +446,7 @@ Future<void> authenticateCard(
     }
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
-        'Error setting authenticating OwnerCard.',
+        context.loc.errorAuthenticatingCard,
         'error'));
     print(e);
 
@@ -467,8 +466,7 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
   Sentry.startTransaction('setPinOnCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(
-        context, 'Hold your phone close to your OwnerCard.');
+    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
   }
   String? puk;
 
@@ -516,7 +514,7 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
     }
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
-        'Error setting OwnerCard pin.',
+        context.loc.errorSettingPin,
         'error'));
     print(e);
 

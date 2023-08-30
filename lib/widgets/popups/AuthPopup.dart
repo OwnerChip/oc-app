@@ -38,7 +38,7 @@ Future<void> authPopupBuilder(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Confirm your identity by authenticating your wallet.',
+                context.loc.confirmYourIdentity,
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),

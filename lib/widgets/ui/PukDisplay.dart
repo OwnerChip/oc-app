@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 class PukDisplay extends StatelessWidget {
   PukDisplay({super.key, required this.puk});
@@ -13,7 +14,7 @@ class PukDisplay extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'You can use this code in case you forget your PIN code.',
+            context.loc.youCanUseThisPukToResetYourPin,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
@@ -32,8 +33,8 @@ class PukDisplay extends StatelessWidget {
                   iconSize: 25,
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: puk));
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('PUK copied to clipboard')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(context.loc.pukCopied)));
                   },
                   icon: const Icon(Icons.copy))
             ],

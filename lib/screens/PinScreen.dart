@@ -41,18 +41,18 @@ class _PinScreen extends ConsumerState<PinScreen> {
 
     if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
       setState(() {
-        title = 'Set up PIN for OwnerCard';
-        buttonText = 'Save';
+        title = context.loc.setUpPin;
+        buttonText = context.loc.save;
       });
     } else if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinAuth) {
       setState(() {
-        title = 'Enter PIN to authenticate';
-        buttonText = 'Connect OwnerCard';
+        title = context.loc.enterPinToAuth;
+        buttonText = context.loc.connectOwnerCard;
       });
     } else if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinTx) {
       setState(() {
-        title = 'Enter PIN to confirm transaction';
-        buttonText = 'Confirm Transaction';
+        title = context.loc.enterPinToConfirmTx;
+        buttonText = context.loc.confirmTx;
       });
     } else {
       String errorMsg = 'Invalid PinScreenActiveFeature Navigation Argument';
@@ -71,7 +71,8 @@ class _PinScreen extends ConsumerState<PinScreen> {
       }
       var returnValue = await navArgs.callback(pin);
       if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
-        showCustomPopup(context, 'Successfully set up PIN', SuccessPinSetup());
+        showCustomPopup(
+            context, context.loc.successfullySetUpPin, SuccessPinSetup());
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -120,7 +121,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
           ),
           const SizedBox(height: 40),
           CustomRoundedButton(
-              text: 'Save',
+              text: context.loc.save,
               onPressed: () {
                 onSavePress(context);
               })

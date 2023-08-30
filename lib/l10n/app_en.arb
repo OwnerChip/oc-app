@@ -157,5 +157,22 @@
     "urlAttached": "URL attached.",
     "errorSavingUrl": "Error saving URL.",
     "errorDeletingAttachment": "Error deleting attachment.",
-    "attachmentDeleted": "Attachment deleted."
+    "attachmentDeleted": "Attachment deleted.",
+    "pressConnectToSignIn": "Press connect to sign in with your OwnerCard.",
+    "youCanUseThisPukToResetYourPin": "You can use this code in case you forget your PIN code.",
+    "pukCopied": "PUK copied to clipboard",
+    "setUpOwnerCard": "Setup OwnerCard",
+    "confirmYourIdentity": "Confirm your identity by authenticating your wallet.",
+    "errorSettingPin": "Error setting OwnerCard pin.",
+    "holdPhoneToCard": "Hold your phone close to your OwnerCard.",
+    "errorAuthenticatingCard": "Error setting authenticating OwnerCard.",
+    "errorMakingSignature": "Error making signature.",
+    "holdPhoneToNfcChip": "Hold your phone close to the NFC chip",
+    "setUpPin": "Set up PIN for OwnerCard",
+    "enterPinToAuth": "Enter PIN to authenticate",
+    "connectOwnerCard": "Connect OwnerCard",
+    "enterPinToConfirmTx": "Enter PIN to confirm transaction",
+    "confirmTx": "Confirm Transaction",
+    "enterPuk": "Enter PUK",
+    "successfullySetUpPin": "Successfully set up PIN"
 }
