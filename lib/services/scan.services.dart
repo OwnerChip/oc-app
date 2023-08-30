@@ -382,6 +382,8 @@ Future<void> authenticateCard(
 //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
 
+  Completer<void> completer = Completer();
+
   //start NFC scan
   Sentry.startTransaction('authenticateCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
@@ -390,21 +392,21 @@ Future<void> authenticateCard(
         context, 'Hold your phone close to your OwnerCard.');
   }
 
-  NfcManager.instance.startSession(
-      onError: (error) async {
-        if (Platform.isAndroid) {
-          nfcOverlay.removeNfcOverlay();
-        }
-        //show error snackbar
-        ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar,
-            'Error authenticating card.',
-            'error'));
-        print(error);
-      },
-      alertMessage: 'Hold phone near OwnerCard sign in.',
-      onDiscovered: (NfcTag tag) async {
-        try {
+  try {
+    NfcManager.instance.startSession(
+        onError: (error) async {
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+          //show error snackbar
+          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar,
+              'Error authenticating card.',
+              'error'));
+          print(error);
+        },
+        alertMessage: 'Hold phone near OwnerCard sign in.',
+        onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
           String sessionId = await getSessionId();
@@ -440,26 +442,32 @@ Future<void> authenticateCard(
             await Future.delayed(const Duration(seconds: 2));
             NfcManager.instance.stopSession();
           }
-        } catch (e) {
-          NfcManager.instance.stopSession();
-          if (Platform.isAndroid) {
-            nfcOverlay.removeNfcOverlay();
-          }
-          //show error snackbar
-          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-              context.loc.errorHeadingSnackBar,
-              'Error authenticating card.',
-              'error'));
 
-          print(e);
-        }
-      });
+          completer.complete(null);
+        });
+    return completer.future;
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    if (Platform.isAndroid) {
+      nfcOverlay.removeNfcOverlay();
+    }
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        'Error setting authenticating OwnerCard.',
+        'error'));
+    print(e);
+
+    completer.complete(null);
+    return completer.future;
+  }
 }
 
 // PIN CODE
 Future<String?> setPinOnCard(BuildContext context, String pin) async {
 //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
+
+  Completer<String?> completer = Completer();
 
   //start NFC scan
   Sentry.startTransaction('setPinOnCard()', 'task');
@@ -469,10 +477,11 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
         context, 'Hold your phone close to your OwnerCard.');
   }
   String? puk;
-  await NfcManager.instance.startSession(
-      alertMessage: 'Hold phone near OwnerCard.',
-      onDiscovered: (NfcTag tag) async {
-        try {
+
+  try {
+    NfcManager.instance.startSession(
+        alertMessage: 'Hold phone near OwnerCard.',
+        onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
           String sessionId = makeRandomInt().toString();
@@ -490,7 +499,7 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
             throw Exception('Chip is not a smart card.');
           }
 
-          //puk = await setPin(nfc, pin);
+          puk = await setPin(nfc, pin);
 
           if (Platform.isIOS) {
             NfcManager.instance.stopSession();
@@ -503,19 +512,23 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
             await Future.delayed(const Duration(seconds: 2));
             NfcManager.instance.stopSession();
           }
-        } catch (e) {
-          NfcManager.instance.stopSession();
-          if (Platform.isAndroid) {
-            nfcOverlay.removeNfcOverlay();
-          }
-          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-              context.loc.errorHeadingSnackBar,
-              'Error setting OwnerCard pin.',
-              'error'));
-          print(e);
-        }
-      });
-  return puk;
+          completer.complete(puk);
+        });
+    return completer.future;
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    if (Platform.isAndroid) {
+      nfcOverlay.removeNfcOverlay();
+    }
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        'Error setting OwnerCard pin.',
+        'error'));
+    print(e);
+
+    completer.complete(null);
+    return completer.future;
+  }
 }
 
 Future<void> resetPinOnCard(BuildContext context, String puk) async {

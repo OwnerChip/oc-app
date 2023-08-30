@@ -38,12 +38,10 @@ class SuccessPinSetup extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
           CustomRoundedButton(
-              text: context.loc.connectWallet,
+              text: 'Done',
               onPressed: (() => {
-                    //pushNameReplacement to HomeScreen
                     Navigator.pushNamedAndRemoveUntil(
                         context, HomeScreen.routeName, (route) => false),
-                    walletPopupBuilder(context, ref, wc!)
                   }))
         ]);
   }

@@ -66,11 +66,13 @@ class _PinScreen extends ConsumerState<PinScreen> {
         ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
 
     try {
+      if (navArgs.activeFeature != PinScreenActiveFeature.setPin) {
+        Navigator.pop(context);
+      }
       var returnValue = await navArgs.callback(pin);
-
-      //TODO: Currently Resetting with puk does not work. Need feedback from Infineon.
-      // await Future.delayed(const Duration(seconds: 5), () {});
-      showCustomPopup(context, 'Successfully set up PIN', SuccessPinSetup());
+      if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
+        showCustomPopup(context, 'Successfully set up PIN', SuccessPinSetup());
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
