@@ -29,7 +29,7 @@ class ChooseFileButton extends StatelessWidget {
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
           side: BorderSide(
-              color: CustomColors(dotenv.get('APP_ID')).primaryColorLight)),
+              color: CustomColors(dotenv.get('APP_ID')).accentColor)),
       padding: EdgeInsets.all(0),
       position: PopupMenuPosition.under,
       initialValue: null,
@@ -65,7 +65,7 @@ class ChooseFileButton extends StatelessWidget {
         padding:
             const EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
         decoration: BoxDecoration(
-            color: CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor,
+            color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
             borderRadius: const BorderRadius.all(Radius.circular(10)),
             boxShadow: [
               BoxShadow(

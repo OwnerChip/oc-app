@@ -517,6 +517,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                           //URL FORM FIELD
                           navArgs != null && navArgs.type == AttachmentType.url
                               ? TextFormField(
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                   controller: _urlInputController,
                                   onChanged: (text) => setState(() {
                                         urlTextInput = text;

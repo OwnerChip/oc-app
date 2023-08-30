@@ -252,7 +252,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         //AUTHENTICITY CHECK
                         CustomCard(
                             color: CustomColors(dotenv.get('APP_ID'))
-                                .scaffoldBackgroundColor,
+                                .secondaryColor,
                             children: [
                               Row(
                                 mainAxisAlignment:
@@ -312,7 +312,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         //OWNERSHIP CHECK
                         CustomCard(
                             color: CustomColors(dotenv.get('APP_ID'))
-                                .scaffoldBackgroundColor,
+                                .secondaryColor,
                             children: [
                               Row(
                                 mainAxisAlignment:
