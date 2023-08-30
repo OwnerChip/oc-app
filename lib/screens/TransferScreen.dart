@@ -129,8 +129,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = context.loc.transferSuccess;
         });
-        //refresh provider state to update nft owner for next screen
-        AsyncValue<EthereumAddress> owner = ref.refresh(nftOwnerProvider);
+        //refresh provider state to update nft owner & approval for next screen
+        await ref.refresh(nftOwnerProvider.future);
+        await ref.refresh(nftApprovalProvider.future);
 
         //wait for 1 second to show success icon
         await Future.delayed(const Duration(seconds: 1));

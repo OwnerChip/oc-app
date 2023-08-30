@@ -248,10 +248,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               ref.read(chipInfoProvider).tokenId)
         });
 
-        await Future.delayed(const Duration(seconds: 2));
+        // update providers
+        await ref.refresh(nftApprovalProvider.future);
+        await ref.refresh(nftOwnerProvider.future);
 
-        Navigator.pushNamedAndRemoveUntil(
-            context, HomeScreen.routeName, (route) => false);
+        await Future.delayed(const Duration(seconds: 2));
+        setState(() {
+          isLoading = false;
+        });
       } else {
         throw Exception(context.loc.transferError);
       }
@@ -290,9 +294,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ref.watch(fetchAttachmentsProvider
-    //     .future); //Trigger loading of attachments, but don't use it here
-
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
@@ -302,14 +303,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
     final AsyncValue<TokenInfoObject> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
-
-    final wc = ref.watch(wcProvider);
-    final wcSession = ref.watch(wcSessionProvider);
-    AsyncValue<BlockchainCollectionList> relevantCollections =
+    final AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
-
+    final wc = ref.watch(wcProvider);
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
     );
@@ -443,11 +441,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                         : connectedWallet == data
                                             ?
                                             //NFT owner exists and wallet is connected and wallet is owner
-                                            SvgPicture.asset(
-                                                "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
-                                            :
+                                            approval.value == zeroAddress
+                                                ? SvgPicture.asset(
+                                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
+                                                // NFT owner has approved another wallet
+                                                : SvgPicture.asset(
+                                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+
                                             //NFT owner exists and wallet is connected and wallet is NOT owner
-                                            SvgPicture.asset(
+                                            : SvgPicture.asset(
                                                 "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")),
                                     error: (e, s) => SvgPicture.asset(
                                         "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
@@ -490,123 +492,112 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               ],
                                             )
                                           : connectedWallet == data
-                                              ?
                                               //NFT owner exists and wallet is connected and wallet is owner
-                                              Column(
-                                                  children: [
-                                                    Align(
-                                                        alignment: Alignment
-                                                            .centerLeft,
-                                                        child: Text(
+                                              ? approval.value == zeroAddress
+                                                  // show transfer / burn Token buttons only if token is not approved
+                                                  ? Column(
+                                                      children: [
+                                                        // YOU ARE THE OWNER TEXT
+                                                        Align(
+                                                            alignment: Alignment
+                                                                .centerLeft,
+                                                            child: Text(
+                                                                context.loc
+                                                                    .youAreNftOwner,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .left,
+                                                                style: Theme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .bodyMedium)),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        // TRANSFER BUTTON
+                                                        CustomRoundedButton(
+                                                            text: context.loc
+                                                                .transferToken,
+                                                            onPressed: (() => {
+                                                                  //navigate to transfer screen
+                                                                  Navigator.pushNamed(
+                                                                      context,
+                                                                      TransferScreen
+                                                                          .routeName)
+                                                                })),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        // BURN BUTTON
+                                                        relevantCollections
+                                                            .when(
+                                                                data: (data) {
+                                                                  //get collection where user is minter
+                                                                  Collection collection = data.collections[tokenInfo.value!.chainId] !=
+                                                                          null
+                                                                      ? data.collections[tokenInfo.value!.chainId]!.firstWhere((element) => element.hasMinterRole!,
+                                                                          orElse: () => Collection(
+                                                                              zeroAddress,
+                                                                              '',
+                                                                              hasMinterRole:
+                                                                                  false))
+                                                                      : Collection(
+                                                                          zeroAddress,
+                                                                          '',
+                                                                          hasMinterRole:
+                                                                              false);
+                                                                  return collection
+                                                                          .hasMinterRole!
+                                                                      ? Column(
+                                                                          children: [
+                                                                              // BURN BUTTON
+                                                                              CustomOutlinedButton(
+                                                                                  width: double
+                                                                                      .infinity,
+                                                                                  buttonText: context
+                                                                                      .loc.burnToken,
+                                                                                  onPressed: (() => {
+                                                                                        fromCancelable(burnToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                      })),
+                                                                            ])
+                                                                      : Container();
+                                                                },
+                                                                error: (e, s) =>
+                                                                    Container(),
+                                                                loading: () =>
+                                                                    Container())
+                                                      ],
+                                                    )
+                                                  // if token is already approved, show hint
+                                                  : Column(
+                                                      children: [
+                                                        Text(
                                                             context.loc
-                                                                .youAreNftOwner,
+                                                                .tokenWasTransferred,
                                                             textAlign:
                                                                 TextAlign.left,
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
-                                                                .bodyMedium)),
-                                                    const SizedBox(height: 10),
-                                                    CustomRoundedButton(
-                                                        text: context
-                                                            .loc.transferToken,
-                                                        onPressed: (() => {
-                                                              //navigate to transfer screen
-                                                              Navigator.pushNamed(
-                                                                  context,
-                                                                  TransferScreen
-                                                                      .routeName)
-                                                            })),
-                                                    const SizedBox(height: 10),
-                                                    relevantCollections.when(
-                                                        data: (data) {
-                                                          //get collection where user is minter
-                                                          Collection collection = data.collections[tokenInfo.value!.chainId] != null
-                                                              ? data.collections[tokenInfo.value!.chainId]!.firstWhere(
-                                                                  (element) => element
-                                                                      .hasMinterRole!,
-                                                                  orElse: () => Collection(
-                                                                      zeroAddress, '',
-                                                                      hasMinterRole:
-                                                                          false))
-                                                              : Collection(
-                                                                  zeroAddress, '',
-                                                                  hasMinterRole:
-                                                                      false);
-                                                          return collection
-                                                                      .hasMinterRole! &&
-                                                                  approval.value ==
-                                                                      zeroAddress
-                                                              // show transfer / burn Token buttons only if user is minter and token is not approved
-                                                              ? Column(
-                                                                  children: [
-                                                                      // TRANSFER BUTTON
-                                                                      CustomRoundedButton(
-                                                                          text: context
-                                                                              .loc
-                                                                              .transferToken,
-                                                                          onPressed: (() =>
-                                                                              {
-                                                                                //navigate to transfer screen
-                                                                                Navigator.pushNamed(context, TransferScreen.routeName)
-                                                                              })),
-                                                                      const SizedBox(
-                                                                          height:
-                                                                              10),
-                                                                      // BURN BUTTON
-                                                                      CustomOutlinedButton(
-                                                                          width: double
-                                                                              .infinity,
-                                                                          buttonText: context
-                                                                              .loc
-                                                                              .burnToken,
-                                                                          onPressed: (() =>
-                                                                              {
-                                                                                fromCancelable(burnToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                              })),
-                                                                    ])
-                                                              // if the token was already approved, show hint
-                                                              : Column(
-                                                                  children: [
-                                                                    Text(
-                                                                        context
-                                                                            .loc
-                                                                            .tokenWasTransferred,
-                                                                        textAlign:
-                                                                            TextAlign
-                                                                                .left,
-                                                                        style: Theme.of(context)
-                                                                            .textTheme
-                                                                            .bodyMedium),
-                                                                    Text(
-                                                                        approval
-                                                                            .value
-                                                                            .toString(),
-                                                                        textAlign:
-                                                                            TextAlign
-                                                                                .left,
-                                                                        style: Theme.of(context)
-                                                                            .textTheme
-                                                                            .bodyMedium),
-                                                                    Text(
-                                                                        context
-                                                                            .loc
-                                                                            .tokenNotYetClaimed,
-                                                                        textAlign:
-                                                                            TextAlign
-                                                                                .left,
-                                                                        style: Theme.of(context)
-                                                                            .textTheme
-                                                                            .bodyMedium)
-                                                                  ],
-                                                                );
-                                                        },
-                                                        error: (e, s) =>
-                                                            Container(),
-                                                        loading: () =>
-                                                            Container())
-                                                  ],
-                                                )
+                                                                .bodyMedium),
+                                                        Text(
+                                                            approval.value
+                                                                .toString(),
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyMedium),
+                                                        Text(
+                                                            context.loc
+                                                                .tokenNotYetClaimed,
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyMedium)
+                                                      ],
+                                                    )
                                               :
                                               //NFT owner exists and wallet is connected and wallet is NOT owner
                                               Column(children: [

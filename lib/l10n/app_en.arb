@@ -186,7 +186,7 @@
     "claimOwnership": "Claim Ownership",
     "claimingOwnership": "Ownership is being claimed",
     "tokenWasTransferred": "Ownership was transferred to",
-    "tokenNotYetClaimed": "but was not claimed yet.",
+    "tokenNotYetClaimed": "but has not yet been claimed.",
     "holdPhoneCloseToOwnerCardToInit": "Hold your phone close to the OwnerCard you want to initialize.",
     "chipIsNoCard": "Chip is not an OwnerCard.",
     "twoSlotsInitSuccess": "First two public keys initialized.",
