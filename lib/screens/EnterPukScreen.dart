@@ -63,7 +63,7 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
           CustomRoundedButton(
             text: 'Reset PIN',
             onPressed: () {
-              resetPinOnCard(context, puk);
+              resetPinOnCard(context, ref, puk);
             },
           )
         ],

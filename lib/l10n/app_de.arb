@@ -191,5 +191,6 @@
     "chipIsNoCard": "Chip ist KEINE OwnerCard.",
     "twoSlotsInitSuccess": "2 Public Keys gesetzt.",
     "twoSlotsInitError": "'Fehler beim initialisieren der 2 Slots.",
-    "tokenIdCopiedToClipboard": "Token ID kopiert!"
+    "tokenIdCopiedToClipboard": "Token ID kopiert!",
+    "isNotOwnerCard": "NFC chip ist keine OwnerCard."
 }

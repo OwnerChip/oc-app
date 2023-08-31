@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
@@ -66,18 +67,14 @@ class _PinScreen extends ConsumerState<PinScreen> {
         ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
 
     try {
-      if (navArgs.activeFeature != PinScreenActiveFeature.setPin) {
-        Navigator.pop(context);
-      }
-      var returnValue = await navArgs.callback(pin);
-      if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
-        showCustomPopup(
-            context, context.loc.successfullySetUpPin, SuccessPinSetup());
+      var value = await navArgs.callback(pin);
+      if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinTx) {
+        Navigator.pop(context, value);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorUpdatingData, 'error'),
+            'An error occurred. Please try again later.', 'error'),
       );
       print(e);
       Sentry.captureException(e);

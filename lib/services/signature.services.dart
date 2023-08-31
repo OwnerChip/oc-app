@@ -220,8 +220,8 @@ Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
 
 //convert MsgSignature to hex
 String msgSignatureToHex(MsgSignature signature) {
-  String r = signature.r.toRadixString(16);
-  String s = signature.s.toRadixString(16);
+  String r = signature.r.toRadixString(16).padLeft(64, '0');
+  String s = signature.s.toRadixString(16).padLeft(64, '0');
   String v = signature.v.toRadixString(16);
   return "0x$r$s$v";
 }

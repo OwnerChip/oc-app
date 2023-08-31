@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:web3dart/credentials.dart';
@@ -44,7 +46,18 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
           CustomRoundedButton(
             text: 'Init second card slot',
             onPressed: () {
-              ownerCardAdminInit(context, setChipAddresses);
+              try {
+                ownerCardAdminInit(context, ref, setChipAddresses);
+                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+                    context.loc.errorHeadingSnackBar,
+                    'Second card slot written.',
+                    'success'));
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+                    context.loc.errorHeadingSnackBar,
+                    'Error writing second card slot.',
+                    'error'));
+              }
             },
           ),
           SizedBox(

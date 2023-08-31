@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:flutter/gestures.dart';
@@ -54,7 +55,7 @@ Future<void> walletPopupBuilder(
                 WalletIcon(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
                     'OwnerCard', () async {
-                  Navigator.pop(context); //remove wallet popup
+                  // Navigator.pop(context); //remove wallet popup
 
                   await Navigator.pushNamed(context, PinScreen.routeName,
                       arguments: PinScreenArguments(
@@ -66,7 +67,7 @@ Future<void> walletPopupBuilder(
                 WalletIcon(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
                     context.loc.setUpOwnerCard, () async {
-                  Navigator.pop(context); //remove wallet popup
+                  // Navigator.pop(context); //remove wallet popup
                   await Navigator.pushNamed(context, PinScreen.routeName,
                       arguments: PinScreenArguments(
                           activeFeature: PinScreenActiveFeature.setPin,
@@ -168,6 +169,8 @@ Future<void> onCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
   try {
     await authenticateCard(ref, context, pin);
+    Navigator.pushNamedAndRemoveUntil(
+        context, HomeScreen.routeName, (route) => false);
   } catch (e) {
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
@@ -180,12 +183,14 @@ Future<void> onCardPress(
 Future<void> onAddCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
   try {
-    String? puk = await setPinOnCard(context, pin);
+    String? puk = await setPinOnCard(context, ref, pin);
+    showCustomPopup(
+        context, context.loc.successfullySetUpPin, SuccessPinSetup(pin: pin));
   } catch (e) {
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
-        'Error connecting OwnerCard.',
+        context.loc.errorSettingPin,
         'error'));
   }
 }

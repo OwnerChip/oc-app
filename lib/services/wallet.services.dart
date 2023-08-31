@@ -121,6 +121,7 @@ Future<String> makeAndSendGaslessTx(
       String hash = await getGaslessTxHash(request, collectionId);
 
       var cardSignature =
+          // ignore: use_build_context_synchronously
           await Navigator.pushNamed(context, PinScreen.routeName,
               arguments: PinScreenArguments(
                   activeFeature: PinScreenActiveFeature.verifyPinTx,
