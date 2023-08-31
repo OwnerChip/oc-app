@@ -176,15 +176,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
+    UserSession userSession = ref.read(userSessionProvider)!;
     String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
     try {
-      if (wcSession == null || walletType == null) {
-        walletPopupBuilder(context, ref, wc);
-      }
-
       setState(() {
         isLoading = true;
         loadingText = context.loc.transferInProgress;
@@ -213,7 +210,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
             walletType!,
             tokenId: tokenId,
