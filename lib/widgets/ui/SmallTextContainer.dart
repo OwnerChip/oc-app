@@ -28,8 +28,7 @@ class SmallTextContainer extends StatelessWidget {
             text.toString(),
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                 fontSize: 12.0,
-                color:
-                    CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor),
+                color: CustomColors(dotenv.get('APP_ID')).secondaryColor),
             textAlign: TextAlign.left,
           ),
         ));

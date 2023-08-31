@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 //the environment variable APP_ID as to be passed to the constructor of this class
 class CustomColors {
   late Color primaryColor;
-  late Color primaryColorLight;
+  late Color accentColor;
   late Color shadowColor;
   late Color cardColor;
-  late Color scaffoldBackgroundColor;
+  late Color secondaryColor;
   late Color headline1Color;
   late Color headline2Color;
   late Color headline3Color;
@@ -34,18 +34,18 @@ class CustomColors {
       case 'ownerchip':
         // ownerchip colors
         primaryColor = const Color.fromARGB(255, 25, 35, 90);
-        primaryColorLight = const Color.fromARGB(255, 77, 122, 255);
+        accentColor = const Color.fromARGB(255, 77, 122, 255);
         shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
-        scaffoldBackgroundColor = const Color.fromARGB(255, 240, 241, 246);
+        secondaryColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
-        headline1Color = primaryColorLight;
+        headline1Color = accentColor;
         headline2Color = primaryColor;
         headline3Color = primaryColor;
         headline4Color = primaryColor;
         headline5Color = primaryColor;
-        headline6Color = primaryColorLight;
-        bodyText1Color = primaryColorLight;
+        headline6Color = accentColor;
+        bodyText1Color = accentColor;
         bodyText2Color = primaryColor;
         bodySmallColor = primaryColor;
         borderColor = const Color.fromARGB(255, 249, 247, 247);
@@ -56,47 +56,17 @@ class CustomColors {
         boxDecorationColor = const Color.fromARGB(210, 160, 160, 160);
         black = Colors.black;
         metadataImagePickerIconsColor = Colors.white;
-        customRoundedButtonColor = scaffoldBackgroundColor;
-        customHomeScreenButtonShadowColor = shadowColor;
-        chainDropdownTextColor = Colors.black;
-
-        break;
-      case 'ownerchip_infineon':
-        // ownerchip colors
-        primaryColor = const Color.fromARGB(255, 25, 35, 90);
-        primaryColorLight = const Color.fromARGB(255, 77, 122, 255);
-        shadowColor = const Color.fromARGB(70, 0, 0, 77);
-        cardColor = Colors.white;
-        scaffoldBackgroundColor = const Color.fromARGB(255, 240, 241, 246);
-        warningColor = Colors.orange;
-        headline1Color = primaryColorLight;
-        headline2Color = primaryColor;
-        headline3Color = primaryColor;
-        headline4Color = primaryColor;
-        headline5Color = primaryColor;
-        headline6Color = primaryColorLight;
-        bodyText1Color = primaryColorLight;
-        bodyText2Color = primaryColor;
-        bodySmallColor = primaryColor;
-
-        borderColor = const Color.fromARGB(255, 249, 247, 247);
-        successColor = Colors.green;
-        errorColor = const Color(0xFFC72C41);
-        progressBarColor = primaryColor;
-        secondaryShadowColor = const Color.fromARGB(50, 0, 0, 21);
-        boxDecorationColor = const Color.fromARGB(210, 160, 160, 160);
-        black = Colors.black;
-        metadataImagePickerIconsColor = Colors.white;
-        customRoundedButtonColor = scaffoldBackgroundColor;
+        customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.black;
         break;
-      case 'stebo':
-        primaryColor = const Color(0xffe0ca81);
-        primaryColorLight = const Color(0xFFb5a365);
+
+      case 'stilami':
+        primaryColor = const Color(0xffc4bbaf);
+        accentColor = const Color(0xffffffff);
         shadowColor = const Color(0x002E2E2E);
         cardColor = const Color(0xFF2E2E2E);
-        scaffoldBackgroundColor = const Color(0xFF1B1B1B);
+        secondaryColor = const Color(0xFF000000);
         warningColor = Colors.orange;
         headline1Color = primaryColor;
         headline2Color = primaryColor;
@@ -115,26 +85,26 @@ class CustomColors {
         secondaryShadowColor = const Color(0xFF2E2E2E);
         boxDecorationColor = const Color(0xFFFFFFFF);
         black = Colors.black;
-        metadataImagePickerIconsColor = scaffoldBackgroundColor;
-        customRoundedButtonColor = scaffoldBackgroundColor;
+        metadataImagePickerIconsColor = secondaryColor;
+        customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.white;
-
         break;
-      default:
+      case 'ownerchip_infineon':
+        // ownerchip colors
         primaryColor = const Color.fromARGB(255, 25, 35, 90);
-        primaryColorLight = const Color.fromARGB(255, 77, 122, 255);
+        accentColor = const Color.fromARGB(255, 77, 122, 255);
         shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
-        scaffoldBackgroundColor = const Color.fromARGB(255, 240, 241, 246);
+        secondaryColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
-        headline1Color = primaryColorLight;
+        headline1Color = accentColor;
         headline2Color = primaryColor;
         headline3Color = primaryColor;
         headline4Color = primaryColor;
         headline5Color = primaryColor;
-        headline6Color = primaryColorLight;
-        bodyText1Color = primaryColorLight;
+        headline6Color = accentColor;
+        bodyText1Color = accentColor;
         bodyText2Color = primaryColor;
         bodySmallColor = primaryColor;
 
@@ -146,7 +116,66 @@ class CustomColors {
         boxDecorationColor = const Color.fromARGB(210, 160, 160, 160);
         black = Colors.black;
         metadataImagePickerIconsColor = Colors.white;
-        customRoundedButtonColor = scaffoldBackgroundColor;
+        customRoundedButtonColor = secondaryColor;
+        customHomeScreenButtonShadowColor = shadowColor;
+        chainDropdownTextColor = Colors.black;
+        break;
+      case 'stebo':
+        primaryColor = const Color(0xffe0ca81);
+        accentColor = const Color(0xFFb5a365);
+        shadowColor = const Color(0x002E2E2E);
+        cardColor = const Color(0xFF2E2E2E);
+        secondaryColor = const Color(0xFF1B1B1B);
+        warningColor = Colors.orange;
+        headline1Color = primaryColor;
+        headline2Color = primaryColor;
+        headline3Color = primaryColor;
+        headline4Color = const Color(0xFFFFFFFF);
+        headline5Color = const Color(0xFFFFFFFF);
+        headline6Color = const Color(0xFFFFFFFF);
+        bodyText1Color = const Color(0xFFFFFFFF);
+        bodyText2Color = const Color(0xFFFFFFFF);
+        bodySmallColor = const Color(0xFFFFFFFF);
+
+        borderColor = const Color(0xFF2E2E2E);
+        successColor = Colors.green;
+        errorColor = const Color(0xFFC72C41);
+        progressBarColor = primaryColor;
+        secondaryShadowColor = const Color(0xFF2E2E2E);
+        boxDecorationColor = const Color(0xFFFFFFFF);
+        black = Colors.black;
+        metadataImagePickerIconsColor = secondaryColor;
+        customRoundedButtonColor = secondaryColor;
+        customHomeScreenButtonShadowColor = shadowColor;
+        chainDropdownTextColor = Colors.white;
+
+        break;
+      default:
+        primaryColor = const Color.fromARGB(255, 25, 35, 90);
+        accentColor = const Color.fromARGB(255, 77, 122, 255);
+        shadowColor = const Color.fromARGB(70, 0, 0, 77);
+        cardColor = Colors.white;
+        secondaryColor = const Color.fromARGB(255, 240, 241, 246);
+        warningColor = Colors.orange;
+        headline1Color = accentColor;
+        headline2Color = primaryColor;
+        headline3Color = primaryColor;
+        headline4Color = primaryColor;
+        headline5Color = primaryColor;
+        headline6Color = accentColor;
+        bodyText1Color = accentColor;
+        bodyText2Color = primaryColor;
+        bodySmallColor = primaryColor;
+
+        borderColor = const Color.fromARGB(255, 249, 247, 247);
+        successColor = Colors.green;
+        errorColor = const Color(0xFFC72C41);
+        progressBarColor = primaryColor;
+        secondaryShadowColor = const Color.fromARGB(50, 0, 0, 21);
+        boxDecorationColor = const Color.fromARGB(210, 160, 160, 160);
+        black = Colors.black;
+        metadataImagePickerIconsColor = Colors.white;
+        customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.black;
 
