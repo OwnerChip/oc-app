@@ -31,12 +31,13 @@ class SuccessPinSetup extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
           CustomRoundedButton(
-              text: 'Done',
-              onPressed: (() => {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, HomeScreen.routeName, (route) => false),
-                    // authenticateCard(ref, context, pin)
-                  }))
+              text: 'Connect OwnerCard',
+              onPressed: (() async {
+                await authenticateCard(ref, context, pin);
+
+                Navigator.pushNamedAndRemoveUntil(
+                    context, HomeScreen.routeName, (route) => false);
+              }))
         ]);
   }
 }
