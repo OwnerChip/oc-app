@@ -3,6 +3,8 @@ import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -47,7 +49,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   String loadingSvgPath =
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
-
   String textInput = '';
 
   CancelableOperation? cancellableOperation;
@@ -216,7 +217,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         ),
         child: Scaffold(
           extendBodyBehindAppBar: true,
-          appBar: const CustomAppBar(
+          appBar: CustomAppBar(
+            text: context.loc.transferOwnership,
             showBackButton: true,
           ),
           body: ScreenBodyLayout(
@@ -227,19 +229,45 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                   key: _formKey,
                   child: Column(
                     children: <Widget>[
-                      const SizedBox(height: 40),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            context.loc.transferOwnership,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                        ),
-                      ),
+                      // const SizedBox(height: 40),
+                      // SizedBox(
+                      //   width: MediaQuery.of(context).size.width * 0.8,
+                      //   child: Align(
+                      //     alignment: Alignment.center,
+                      //     child: Text(
+                      //       context.loc.transferOwnership,
+                      //       textAlign: TextAlign.center,
+                      //       style: Theme.of(context).textTheme.headlineMedium,
+                      //     ),
+                      //   ),
+                      // ),
                       const SizedBox(height: 60),
+                      Icon(
+                        Icons.credit_card,
+                        size: 40,
+                        color: CustomColors(dotenv.get('APP_ID')).primaryColor,
+                      ),
+                      const SizedBox(height: 10),
+                      CustomRoundedButton(
+                          text: "Transfer to OwnerCard",
+                          onPressed: (() async {
+                            EthereumAddress chipWalletAddress =
+                                await getChipWalletAddress(context, ref);
+
+                            fromCancelable(approveToken(
+                                wc!,
+                                chipInfo.tokenId,
+                                chipWalletAddress,
+                                signatureData,
+                                connectedWallet,
+                                sessionId));
+                          })),
+                      const SizedBox(height: 30),
+                      Text(
+                        'or',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 30),
                       TextFormField(
                         controller: _inputController,
                         onChanged: (text) => setState(() {

@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -202,13 +201,11 @@ Future<String?> setPinOnCard(
     BuildContext context, WidgetRef ref, String pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    // return await setPin(nfc, pin);
-    //return future .delayed with some string
-    return await Future.delayed(const Duration(seconds: 1), () => "123456");
+    return await setPin(nfc, pin);
   }
 
-  return await scanClosure(
-      context, ref, callback, "setPinOnCard", context.loc.holdPhoneToCard);
+  return await scanClosure(context, ref, callback, "setPinOnCard",
+      context.loc.holdPhoneCloseToOwnerCardToInit);
 }
 
 Future<void> resetPinOnCard(
@@ -236,6 +233,17 @@ Future<void> ownerCardAdminInit(
   }
 
   scanClosure(context, ref, callback, "ownerCardAdminInit",
+      context.loc.holdPhoneToCard);
+}
+
+Future<dynamic> getChipWalletAddress(
+    BuildContext context, WidgetRef ref) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    return createFirstKeyChipResponse[0];
+  }
+
+  return await scanClosure(context, ref, callback, "getChipWalletAddress",
       context.loc.holdPhoneToCard);
 }
 
