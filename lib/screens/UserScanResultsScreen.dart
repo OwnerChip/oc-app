@@ -80,6 +80,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = true;
         loadingText = context.loc.burning;
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
       sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
