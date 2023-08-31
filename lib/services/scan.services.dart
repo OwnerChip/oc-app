@@ -2,23 +2,15 @@
 
 //import packages
 import 'dart:async';
-import 'dart:convert';
-
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/credentials.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:web3dart/crypto.dart';
-import 'dart:io' show Platform;
 import 'package:sentry/sentry.dart';
 
 //import services
@@ -28,7 +20,6 @@ import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
 //import screens
-import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 
@@ -38,11 +29,13 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/config/wallets.dart';
 
 Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
-  UserSession? session = ref.read(userSessionProvider);
-  String sessionId = session?.sessionId ?? makeRandomInt().toString();
+  // this random # is used as analytics trace id, case id and session id
+  String sessionIdFromServer = await getSessionId();
+  String sessionId = sessionIdFromServer != ""
+      ? sessionIdFromServer
+      : makeRandomInt().toString();
 
   NFCOverlay nfcOverlay = NFCOverlay();
 
@@ -53,11 +46,12 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
   final scanProcess = Sentry.startTransaction('initScanning()', 'task');
 
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToNfcChip);
+    nfcOverlay.showNfcOverlay(context, 'Hold your phone close to the NFC chip');
   }
 
   NfcManager.instance.startSession(
-      alertMessage: context.loc.holdPhoneToNfcChip,
+      alertMessage:
+          'Hold phone near NFC chip to start creation of digital twin.',
       onDiscovered: (NfcTag tag) async {
         sendAnalyticsTrace(sessionId, "", "INITIALIZE_SCAN_STARTED");
         try {
@@ -153,8 +147,11 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
 }
 
 Future<void> scanItem(WidgetRef ref, BuildContext context) async {
-  UserSession? session = ref.read(userSessionProvider);
-  String sessionId = session?.sessionId ?? makeRandomInt().toString();
+  // this random # is used as analytics trace id, case id and session id
+  String sessionIdFromServer = await getSessionId();
+  String sessionId = sessionIdFromServer != ""
+      ? sessionIdFromServer
+      : makeRandomInt().toString();
 
   NFCOverlay nfcOverlay = NFCOverlay();
 
@@ -165,13 +162,12 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
 
   if (Platform.isAndroid) {
     //show NFC popup
-    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToNfcChip);
+    nfcOverlay.showNfcOverlay(context, 'Hold your phone close to the NFC chip');
   }
   NfcManager.instance.startSession(
-      alertMessage: context.loc.holdPhoneToNfcChip,
+      alertMessage: 'Hold phone near NFC tag to scan item.',
       onDiscovered: (NfcTag tag) async {
-        sendAnalyticsTrace(sessionId, "", "SCAN_STARTED",
-            tags: {"connectedWallet": session?.userWalletAddress.toString()});
+        sendAnalyticsTrace(sessionId, "", "SCAN_STARTED");
         try {
           var nfc = NFCPlatform(tag);
 
@@ -314,12 +310,13 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
   Sentry.startTransaction('makeCardSignature()', 'task');
   try {
     if (Platform.isAndroid) {
-      nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
+      nfcOverlay.showNfcOverlay(
+          context, 'Hold your phone close to your OwnerCard.');
     }
 
     NfcManager.instance.startSession(
         onError: (error) => toggleLoading(),
-        alertMessage: context.loc.holdPhoneToCard,
+        alertMessage: 'Hold phone near OwnerCard to sign transaction.',
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
@@ -362,9 +359,7 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
 
     //show error snackbar
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        context.loc.errorMakingSignature,
-        'error'));
+        context.loc.errorHeadingSnackBar, 'Error making signature.', 'error'));
 
     //complete the future with null
     completer.complete(null);
@@ -383,7 +378,8 @@ Future<void> authenticateCard(
   Sentry.startTransaction('authenticateCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
+    nfcOverlay.showNfcOverlay(
+        context, 'Hold your phone close to your OwnerCard.');
   }
 
   try {
@@ -395,11 +391,11 @@ Future<void> authenticateCard(
           //show error snackbar
           ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
               context.loc.errorHeadingSnackBar,
-              context.loc.errorAuthenticatingCard,
+              'Error authenticating card.',
               'error'));
           print(error);
         },
-        alertMessage: context.loc.holdPhoneToCard,
+        alertMessage: 'Hold phone near OwnerCard sign in.',
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
@@ -446,7 +442,7 @@ Future<void> authenticateCard(
     }
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
-        context.loc.errorAuthenticatingCard,
+        'Error setting authenticating OwnerCard.',
         'error'));
     print(e);
 
@@ -466,13 +462,14 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
   Sentry.startTransaction('setPinOnCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
+    nfcOverlay.showNfcOverlay(
+        context, 'Hold your phone close to your OwnerCard.');
   }
   String? puk;
 
   try {
     NfcManager.instance.startSession(
-        alertMessage: context.loc.holdPhoneToCard,
+        alertMessage: 'Hold phone near OwnerCard.',
         onDiscovered: (NfcTag tag) async {
           var nfc = NFCPlatform(tag);
 
@@ -488,7 +485,7 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
           //check if second pubkey exists; if does not exist, throw error (chip is not smart card)
           Uint8List key2 = await getPubKeyN(nfc, 2);
           if (key2.isEmpty) {
-            throw Exception(context.loc.chipIsNoCard);
+            throw Exception('Chip is not a smart card.');
           }
 
           puk = await setPin(nfc, pin);
@@ -514,7 +511,7 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
     }
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar,
-        context.loc.errorSettingPin,
+        'Error setting OwnerCard pin.',
         'error'));
     print(e);
 
@@ -523,23 +520,18 @@ Future<String?> setPinOnCard(BuildContext context, String pin) async {
   }
 }
 
-Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
+Future<void> resetPinOnCard(BuildContext context, String puk) async {
   //stop previoud NFC session if existing
   await NfcManager.instance.stopSession();
-
-  // get user session & connected wallet
-  final session = ref.read(userSessionProvider);
-  String connectedWallet = session?.userWalletAddress.toString() ?? "";
-  String sessionId = session?.sessionId ?? "";
 
   //start NFC scan
   Sentry.startTransaction('setPinOnCard()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, context.loc.holdPhoneToCard);
+    nfcOverlay.showNfcOverlay(context, 'Hold your phone near OwnerCard.');
   }
   NfcManager.instance.startSession(
-      alertMessage: context.loc.holdPhoneToCard,
+      alertMessage: 'Hold phone near OwnerCard.',
       onDiscovered: (NfcTag tag) async {
         try {
           var nfc = NFCPlatform(tag);
@@ -570,10 +562,6 @@ Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
               context.loc.errorHeadingSnackBar,
               'Old PIN removed. Please set a new PIN.',
               'success'));
-          sendAnalyticsTrace(sessionId, "", "RESET_PIN_SUCCESS", tags: {
-            'connectedWallet': connectedWallet,
-            'connectedCard': cardWalletAddress.toString()
-          });
         } catch (e) {
           NfcManager.instance.stopSession();
           if (Platform.isAndroid) {
@@ -581,11 +569,71 @@ Future<void> resetPinOnCard(WidgetRef ref, context, String puk) async {
           }
           ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
               context.loc.errorHeadingSnackBar,
-              context.loc.errorSettingPin,
+              'Error resetting pin.',
               'error'));
 
-          sendAnalyticsTrace(sessionId, e.toString(), "RESET_PIN_ERROR",
-              tags: {'connectedWallet': connectedWallet});
+          print(e);
+        }
+      });
+}
+
+// this function creates two slots on OwnerCard, to distinguish Smart Cards from normal NFC chips in objects
+Future<void> smartCardAdminInit(
+    BuildContext context, Function setStateCallback) async {
+//stop previoud NFC session if existing
+  await NfcManager.instance.stopSession();
+
+  //start NFC scan
+  Sentry.startTransaction('smartCardAdminInit()', 'task');
+  NFCOverlay nfcOverlay = NFCOverlay();
+  if (Platform.isAndroid) {
+    nfcOverlay.showNfcOverlay(context,
+        'Hold your phone close to the OwnerCard you want to initialize.');
+  }
+  NfcManager.instance.startSession(
+      alertMessage:
+          'Hold your phone close to the OwnerCard you want to initialize.',
+      onDiscovered: (NfcTag tag) async {
+        try {
+          var nfc = NFCPlatform(tag);
+
+          String sessionId = makeRandomInt().toString();
+
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
+
+          //create first two keys if not existing; else return them
+          Map result = await createSecondKeypairOnChip(nfc, sessionId);
+          EthereumAddress cardWalletAddress1 = result['key1'];
+          EthereumAddress cardWalletAddress2 = result['key2'];
+
+          setStateCallback(cardWalletAddress1, cardWalletAddress2);
+
+          if (Platform.isIOS) {
+            NfcManager.instance.stopSession();
+          }
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+
+          if (Platform.isAndroid) {
+            await Future.delayed(const Duration(seconds: 2));
+            NfcManager.instance.stopSession();
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar,
+              'First two public keys initialized.',
+              'success'));
+        } catch (e) {
+          NfcManager.instance.stopSession();
+          if (Platform.isAndroid) {
+            nfcOverlay.removeNfcOverlay();
+          }
+          ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+              context.loc.errorHeadingSnackBar,
+              'Error first two public key slots.',
+              'error'));
           print(e);
         }
       });
