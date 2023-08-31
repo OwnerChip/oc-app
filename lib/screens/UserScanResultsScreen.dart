@@ -571,31 +571,36 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                       children: [
                                                         Text(
                                                             context.loc
-                                                                .tokenWasTransferred,
+                                                                    .tokenWasTransferred +
+                                                                getEthAddressSubstring(
+                                                                    approval
+                                                                        .value!) +
+                                                                context.loc
+                                                                    .tokenNotYetClaimed,
                                                             textAlign:
                                                                 TextAlign.left,
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
                                                                 .bodyMedium),
-                                                        Text(
-                                                            approval.value
-                                                                .toString(),
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodyMedium),
-                                                        Text(
-                                                            context.loc
-                                                                .tokenNotYetClaimed,
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodyMedium)
+                                                        // Text(
+                                                        //     approval.value
+                                                        //         .toString(),
+                                                        //     textAlign:
+                                                        //         TextAlign.left,
+                                                        //     style: Theme.of(
+                                                        //             context)
+                                                        //         .textTheme
+                                                        //         .bodyMedium),
+                                                        // Text(
+                                                        //     context.loc
+                                                        //         .tokenNotYetClaimed,
+                                                        //     textAlign:
+                                                        //         TextAlign.left,
+                                                        //     style: Theme.of(
+                                                        //             context)
+                                                        //         .textTheme
+                                                        //         .bodyMedium)
                                                       ],
                                                     )
                                               :

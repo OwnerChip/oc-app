@@ -13,6 +13,7 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:crypto/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 //validate ethereum address
 bool validateEthAddress(String? hex) {
@@ -185,6 +186,10 @@ String getFileNameSubstring(String fileName) {
   return fileName.substring(0, 5) +
       '...' +
       fileName.substring(fileName.length - 9);
+}
+
+String getEthAddressSubstring(EthereumAddress address) {
+  return '${address.hex.substring(0, 5)}...';
 }
 
 //function that takes file as input and returns sha256 hash as hex string
