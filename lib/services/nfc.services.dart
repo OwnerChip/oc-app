@@ -175,15 +175,16 @@ Future<Uint8List> getPubKeyN(NFCPlatform nfc, int key) async {
     Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
     return chipPubKey;
   } else {
-    return Uint8List(0);
+    return Uint8List.fromList([]);
   }
 }
 
 Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
   //create new key
   var responseGenerateKey = await nfc.sendCommand(GENERATE_KEY);
-  //get first key info after generating new key
-  Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
+  int keySlot = responseGenerateKey[0][0];
+  //get key info after generating new key
+  Uint8List getKeyInfo = makeGetKeyInfoCommand(keySlot);
   var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
   Uint8List getKeyInfoData = responseGetKeyInfo[0];
   int getKeyInfoResponseCode1 = responseGetKeyInfo[1];
@@ -192,7 +193,8 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
   if (!(getKeyInfoResponseCode1 == 144 && getKeyInfoResponseCode2 == 00)) {
     throw Exception("Error while generating key");
   }
-  Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
+  Uint8List chipPubKey =
+      getPublicKeyFromChipResponse(getKeyInfoData); //takes first 20 bytes
 
   return chipPubKey;
 }
