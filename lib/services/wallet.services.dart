@@ -36,6 +36,9 @@ Future<ConnectResponse> startWalletConnection(
     case 'Trust Wallet':
       chains = ['eip155:1', 'eip155:137'];
       break;
+    case '1inch Wallet':
+      chains = ['eip155:1', 'eip:137'];
+      break;
     default:
       chains = ['eip155:1', 'eip155:137', 'eip155:80001'];
       break;

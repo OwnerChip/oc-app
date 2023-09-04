@@ -225,6 +225,9 @@ Future<void> resetPinOnCard(
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     bool success = await unlockPin(nfc, puk);
+    // if (success) {
+    //   await setPin(nfc, pin);
+    // }
   }
 
   scanClosure(context, ref, callback, "ownerCardAdminInit",

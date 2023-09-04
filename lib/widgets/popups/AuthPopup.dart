@@ -88,6 +88,12 @@ Future<void> authPopupBuilder(
                   text: context.loc.authenticate,
                   onPressed: () =>
                       onTapAuth(context, 'insert_session_id', ref)),
+              const SizedBox(height: 30),
+              Text(
+                context.loc.whenSigningInWithMetamask,
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
             ],
           ));
     },

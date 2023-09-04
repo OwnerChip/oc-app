@@ -29,6 +29,11 @@ final WalletType _zengoWallet = WalletType(
     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/zengowallet.webp",
     'zengo://get.zengo.com');
 
+final WalletType _1inch = WalletType(
+    "1inch Wallet",
+    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/1inch.png",
+    'http://wallet.1inch.io');
+
 final Map<String, WalletType> walletConfig = {
   'ownerCard': _ownerCard,
   'https://trustwallet.com': _trustWallet,
@@ -36,4 +41,5 @@ final Map<String, WalletType> walletConfig = {
   'https://zerion.io': _zerionWallet,
   'https://rainbow.me': _rainbowWallet,
   'https://zengo.com': _zengoWallet,
+  'https://1inch.io/': _1inch,
 };

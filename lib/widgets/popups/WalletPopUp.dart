@@ -64,17 +64,6 @@ Future<void> walletPopupBuilder(
                             onCardPress(ref, context, pin);
                           }));
                 }),
-                // WalletIcon(
-                //     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
-                //     context.loc.setUpOwnerCard, () async {
-                //   // Navigator.pop(context); //remove wallet popup
-                //   await Navigator.pushNamed(context, PinScreen.routeName,
-                //       arguments: PinScreenArguments(
-                //           activeFeature: PinScreenActiveFeature.setPin,
-                //           callback: (String pin) async {
-                //             await onAddCardPress(ref, context, pin);
-                //           }));
-                // }),
               ]),
               const SizedBox(height: 20),
               Container(
@@ -83,7 +72,7 @@ Future<void> walletPopupBuilder(
                 color: Theme.of(context).dividerColor,
               ),
               const SizedBox(height: 20),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // trust wallet
                 WalletIcon(
                     walletConfig['https://trustwallet.com']!.iconUri,
@@ -98,11 +87,17 @@ Future<void> walletPopupBuilder(
                     () => onWalletPress(context, ref, wc,
                         walletConfig['https://metamask.io/']!)),
               ]),
-              const SizedBox(height: 30),
-              Text(
-                'When signing in via Metamask make sure to connect with Ethereum Mainnet.',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // 1inch
+                  WalletIcon(
+                      walletConfig['https://1inch.io/']!.iconUri,
+                      walletConfig['https://1inch.io/']!.name,
+                      () => onWalletPress(context, ref, wc,
+                          walletConfig['https://1inch.io/']!)),
+                ],
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 30),

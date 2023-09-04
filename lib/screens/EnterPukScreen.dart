@@ -23,6 +23,7 @@ class EnterPukScreen extends ConsumerStatefulWidget {
 
 class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
   String puk = '';
+  String pin = '';
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +64,7 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
           CustomRoundedButton(
             text: 'Reset PIN',
             onPressed: () {
+              // resetPinOnCard(context, ref, puk pin);
               resetPinOnCard(context, ref, puk);
             },
           )
