@@ -50,7 +50,7 @@ Future<void> walletPopupBuilder(
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // OwnerCard wallet
                 WalletIcon(
                     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
@@ -64,17 +64,17 @@ Future<void> walletPopupBuilder(
                             onCardPress(ref, context, pin);
                           }));
                 }),
-                WalletIcon(
-                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
-                    context.loc.setUpOwnerCard, () async {
-                  // Navigator.pop(context); //remove wallet popup
-                  await Navigator.pushNamed(context, PinScreen.routeName,
-                      arguments: PinScreenArguments(
-                          activeFeature: PinScreenActiveFeature.setPin,
-                          callback: (String pin) async {
-                            await onAddCardPress(ref, context, pin);
-                          }));
-                }),
+                // WalletIcon(
+                //     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/add_ownercard.svg",
+                //     context.loc.setUpOwnerCard, () async {
+                //   // Navigator.pop(context); //remove wallet popup
+                //   await Navigator.pushNamed(context, PinScreen.routeName,
+                //       arguments: PinScreenArguments(
+                //           activeFeature: PinScreenActiveFeature.setPin,
+                //           callback: (String pin) async {
+                //             await onAddCardPress(ref, context, pin);
+                //           }));
+                // }),
               ]),
               const SizedBox(height: 20),
               Container(

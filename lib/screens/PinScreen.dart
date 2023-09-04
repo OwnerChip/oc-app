@@ -8,7 +8,9 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SuccessPinSetup.dart';
@@ -83,6 +85,8 @@ class _PinScreen extends ConsumerState<PinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final navArgs =
+        ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
     return Scaffold(
       appBar: CustomAppBar(
         text: 'Enter PIN',
@@ -121,7 +125,25 @@ class _PinScreen extends ConsumerState<PinScreen> {
               text: context.loc.save,
               onPressed: () {
                 onSavePress(context);
-              })
+              }),
+          SizedBox(
+            height: 40,
+          ),
+          navArgs.activeFeature == PinScreenActiveFeature.verifyPinAuth
+              ? CustomOutlinedButton(
+                  buttonText: context.loc.setUpOwnerCard,
+                  onPressed: () {
+                    Navigator.pushNamed(context, PinScreen.routeName,
+                        arguments: PinScreenArguments(
+                            activeFeature: PinScreenActiveFeature.setPin,
+                            callback: (String pin) async {
+                              await onAddCardPress(ref, context, pin);
+                            }));
+                  },
+                  // color: Colors.red,
+                  width: double.infinity,
+                )
+              : Container(),
         ],
       ),
     );
