@@ -180,7 +180,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 error: (e, s) => Container(),
                 loading: () => DropdownContainer(
                     title: context.loc.loading, content: null)),
-            attachments.isNotEmpty
+            //if attachments are not empty --> show dropdown container
+            //if attachments are empty, but the connected wallet is the owner --> show dropdown container (so NFT owner can add documents)
+            (attachments.isNotEmpty ||
+                    (nftOwner.hasValue && connectedWallet == nftOwner.value))
                 ? DropdownContainer(
                     title: 'Digital Content ' +
                         '(' +
