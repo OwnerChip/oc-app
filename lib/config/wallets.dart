@@ -32,7 +32,7 @@ final WalletType _zengoWallet = WalletType(
 final WalletType _1inch = WalletType(
     "1inch Wallet",
     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/1inch.png",
-    'http://wallet.1inch.io');
+    'https://wallet.1inch.io');
 
 final Map<String, WalletType> walletConfig = {
   'ownerCard': _ownerCard,
