@@ -17,7 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
 Future<void> authPopupBuilder(
-    BuildContext context, WidgetRef ref, Web3App wc) async {
+    BuildContext context, WidgetRef ref, Web3App wc, String walletName) async {
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -81,7 +81,7 @@ Future<void> authPopupBuilder(
                   )
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               CustomRoundedButton(
@@ -89,11 +89,12 @@ Future<void> authPopupBuilder(
                   onPressed: () =>
                       onTapAuth(context, 'insert_session_id', ref)),
               const SizedBox(height: 30),
-              Text(
-                context.loc.whenSigningInWithMetamask,
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
+              if (walletName == 'Metamask')
+                Text(
+                  context.loc.whenSigningInWithMetamask,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
             ],
           ));
     },
@@ -105,7 +106,7 @@ Future<void> onTapAuth(
   Web3App? wc = ref.read(wcProvider);
   EthereumAddress userWalletAddress = ref.read(userAddressProvider);
   SessionData? session = ref.read(wcSessionProvider);
-  WalletType? walletType = ref.read(walletTypeProvider);
+  WalletType? walletType = ref.watch(walletTypeProvider);
 
   //get sessionid from backend (only if not already set)
   final oldUserSession = ref.read(userSessionProvider);

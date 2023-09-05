@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -28,6 +30,13 @@ import '../widgets/popups/AuthPopup.dart';
 Future<ConnectResponse> startWalletConnection(
     BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
   List<String> chains = [];
+
+  // store walletType
+  ref.read(walletTypeProvider.notifier).state = wallet;
+  final storage = SharedPreferences.getInstance();
+  storage.then(
+      (value) => value.setString('walletType', jsonEncode(wallet.toJson())));
+
   //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
   switch (wallet.name) {
     case 'Metamask':
@@ -37,7 +46,7 @@ Future<ConnectResponse> startWalletConnection(
       chains = ['eip155:1', 'eip155:137'];
       break;
     case '1inch Wallet':
-      chains = ['eip155:1', 'eip:137'];
+      chains = ['eip155:1'];
       break;
     default:
       chains = ['eip155:1', 'eip155:137', 'eip155:80001'];
@@ -48,7 +57,6 @@ Future<ConnectResponse> startWalletConnection(
         chains: chains,
         methods: [
           'eth_sendTransaction',
-          'eth_signTypedData',
           'eth_signTypedData_v4',
           'personal_sign'
         ],
@@ -61,7 +69,7 @@ Future<ConnectResponse> startWalletConnection(
       mode: LaunchMode.externalApplication);
   SessionData session = await wcResp.session.future;
   Navigator.pop(context);
-  authPopupBuilder(context, ref, wc);
+  authPopupBuilder(context, ref, wc, wallet.name);
 
   return wcResp;
 }
@@ -216,8 +224,9 @@ Future<String> sendPersonalSignRequest(
   SessionData wcSession,
   WalletType walletType,
 ) async {
-  String walletLink = walletType.deeplinkUri;
-  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+  Uri walletDeepLink =
+      convertToWcLink(appLink: walletType.deeplinkUri, wcUri: "wc:");
+
   await launchUrlString(walletDeepLink.toString(),
       mode: LaunchMode.externalApplication);
 

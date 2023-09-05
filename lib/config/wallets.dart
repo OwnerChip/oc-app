@@ -41,5 +41,5 @@ final Map<String, WalletType> walletConfig = {
   'https://zerion.io': _zerionWallet,
   'https://rainbow.me': _rainbowWallet,
   'https://zengo.com': _zengoWallet,
-  'https://1inch.io/': _1inch,
+  'https://1inch.io/wallet/': _1inch,
 };

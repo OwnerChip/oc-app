@@ -93,10 +93,10 @@ Future<void> walletPopupBuilder(
                 children: [
                   // 1inch
                   WalletIcon(
-                      walletConfig['https://1inch.io/']!.iconUri,
-                      walletConfig['https://1inch.io/']!.name,
+                      walletConfig['https://1inch.io/wallet/']!.iconUri,
+                      walletConfig['https://1inch.io/wallet/']!.name,
                       () => onWalletPress(context, ref, wc,
-                          walletConfig['https://1inch.io/']!)),
+                          walletConfig['https://1inch.io/wallet/']!)),
                 ],
               ),
               Padding(
@@ -150,7 +150,7 @@ Future<void> onWalletPress(
     ConnectResponse response =
         await startWalletConnection(context, ref, wc, wallet);
     var futureRes = await response.session.future;
-    authPopupBuilder(context, ref, wc);
+    authPopupBuilder(context, ref, wc, wallet.name);
     Navigator.pop(context);
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
