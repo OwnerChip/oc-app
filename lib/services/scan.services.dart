@@ -220,21 +220,21 @@ Future<String?> setPinOnCard(
       context.loc.holdPhoneCloseToOwnerCardToInit);
 }
 
-Future<void> resetPinOnCard(
-    BuildContext context, WidgetRef ref, String puk) async {
+Future<String?> resetPinOnCard(
+    BuildContext context, WidgetRef ref, String puk, String pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     bool success = await unlockPin(nfc, puk);
-    // if (success) {
-    //   await setPin(nfc, pin);
-    // }
+    if (success) {
+      return await setPin(nfc, pin);
+    }
   }
 
-  scanClosure(context, ref, callback, "ownerCardAdminInit",
+  return await scanClosure(context, ref, callback, "ownerCardAdminInit",
       context.loc.holdPhoneToCard);
 }
 
-// this function creates two slots on OwnerCard, to distinguish Smart Cards from normal NFC chips in objects
+//this function creates two slots on OwnerCard, to distinguish Smart Cards from normal NFC chips in objects
 Future<void> ownerCardAdminInit(
     BuildContext context, WidgetRef ref, Function setStateCallback) async {
   Future callback(NFCPlatform nfc, String sessionId,

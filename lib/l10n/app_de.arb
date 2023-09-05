@@ -193,5 +193,9 @@
     "twoSlotsInitError": "'Fehler beim initialisieren der 2 Slots.",
     "tokenIdCopiedToClipboard": "Token ID kopiert!",
     "isNotOwnerCard": "NFC chip ist keine OwnerCard.",
-    "whenSigningInWithMetamask": "Falls Sie Metamask verwenden, müssen Sie mit Ethereum Mainnet verbunden sein."
+    "whenSigningInWithMetamask": "Falls Sie Metamask verwenden, müssen Sie mit Ethereum Mainnet verbunden sein.",
+    "pinResetSuccess": "PIN zurückgesetzt. PUK bitte speichern!",
+    "enterFourDigitPin": "4-stelligen PIN eingeben",
+    "enterPUK": "PUK eingeben",
+    "done": "Fertig"
 }

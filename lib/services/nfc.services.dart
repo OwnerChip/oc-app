@@ -361,7 +361,7 @@ Future<String> setPin(NFCPlatform nfc, String pin) async {
 
   if (success && puk.length == 8) {
     //puk Uint8List to hex string
-    String pukHex = bytesToHex(puk);
+    String pukHex = bytesToHex(puk, padToEvenLength: true);
 
     return pukHex;
   } else {

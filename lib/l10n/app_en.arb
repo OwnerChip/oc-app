@@ -193,5 +193,10 @@
     "twoSlotsInitError": "'Error initializing first two public key slots.",
     "tokenIdCopiedToClipboard": "Token ID copied to clipboard",
     "isNotOwnerCard": "NFC chip is not an OwnerCard.",
-    "whenSigningInWithMetamask": "When signing in via Metamask make sure to connect with Ethereum Mainnet."
+    "whenSigningInWithMetamask": "When signing in via Metamask make sure to connect with Ethereum Mainnet.",
+    "pinResetSuccess": "PIN reset. Save your new PUK!",
+    "enterFourDigitPin": "Enter new 4 digit PIN",
+    "enterPUK": "Enter PUK",
+    "done": "Done"
+
 }

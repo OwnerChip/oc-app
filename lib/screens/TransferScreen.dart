@@ -274,7 +274,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           textInput = text;
                         }),
                         validator: (value) {
-                          if (!validateEthAddress(value)) {
+                          if (value == null || !validateEthAddress(value)) {
                             return context.loc.pleaseEnterValidWalletAddress;
                           } else {
                             return null;
@@ -295,20 +295,22 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       const SizedBox(height: 20),
                       CustomRoundedButton(
                           text: "Approve",
-                          onPressed: (() => {
-                                if (_formKey.currentState!.validate())
-                                  {
-                                    FocusScope.of(context).unfocus(),
-                                    fromCancelable(approveToken(
-                                        wc!,
-                                        chipInfo.tokenId,
-                                        EthereumAddress.fromHex(
-                                            textInput.trim()),
-                                        signatureData,
-                                        connectedWallet,
-                                        sessionId))
-                                  }
-                              }))
+                          onPressed: (textInput.isEmpty
+                              ? null
+                              : () => {
+                                    if (_formKey.currentState!.validate())
+                                      {
+                                        FocusScope.of(context).unfocus(),
+                                        fromCancelable(approveToken(
+                                            wc!,
+                                            chipInfo.tokenId,
+                                            EthereumAddress.fromHex(
+                                                textInput.trim()),
+                                            signatureData,
+                                            connectedWallet,
+                                            sessionId))
+                                      }
+                                  }))
                     ],
                   ),
                 ),

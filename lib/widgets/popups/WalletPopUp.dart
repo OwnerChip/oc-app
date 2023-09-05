@@ -179,8 +179,11 @@ Future<void> onAddCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
   try {
     String? puk = await setPinOnCard(context, ref, pin);
-    showCustomPopup(
-        context, context.loc.successfullySetUpPin, SuccessPinSetup(pin: pin));
+    if (puk == null) {
+      throw Exception("Error setting pin");
+    }
+    showCustomPopup(context, context.loc.successfullySetUpPin,
+        PukDisplay(pin: pin, puk: puk));
   } catch (e) {
     NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(

@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 
-class PukDisplay extends StatelessWidget {
-  PukDisplay({super.key, required this.puk});
+class PukDisplay extends ConsumerWidget {
+  const PukDisplay({super.key, required this.puk, this.pin});
 
-  String puk;
+  final String puk;
+  final String? pin;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
@@ -23,7 +28,7 @@ class PukDisplay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(puk, style: Theme.of(context).textTheme.headlineMedium),
-              SizedBox(
+              const SizedBox(
                 width: 10,
               ),
               IconButton(
@@ -36,9 +41,25 @@ class PukDisplay extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(context.loc.pukCopied)));
                   },
-                  icon: const Icon(Icons.copy))
+                  icon: const Icon(Icons.copy)),
             ],
-          )
+          ),
+          const SizedBox(height: 40),
+          pin != null
+              ? CustomRoundedButton(
+                  text: 'Connect OwnerCard',
+                  onPressed: (() async {
+                    await authenticateCard(ref, context, pin!);
+
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, HomeScreen.routeName, (route) => false);
+                  }))
+              : CustomRoundedButton(
+                  text: context.loc.done,
+                  onPressed: (() async {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, HomeScreen.routeName, (route) => false);
+                  }))
         ]);
   }
 }

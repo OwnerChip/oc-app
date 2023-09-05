@@ -16,30 +16,30 @@ import 'package:crypto/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 //validate ethereum address
-bool validateEthAddress(String? hex) {
-  //TODO: fix this function
-  return true;
-  // bool result = true;
+bool validateEthAddress(String hex) {
+  //validate if hex is a valid ethereum address
 
-  // if (hex == null) {
-  //   return false;
-  // }
+  bool result = true;
 
-  // if (hex.length != 42 || !hex.startsWith('0x')) {
-  //   return false;
-  // }
+  if (hex == null) {
+    return false;
+  }
 
-  // final address = strip0x(hex);
-  // final hash = bytesToHex(keccakAscii(address.toLowerCase()));
-  // for (var i = 0; i < 40; i++) {
-  //   // the nth letter should be uppercase if the nth digit of casemap is 1
-  //   final hashedPos = int.parse(hash[i], radix: 16);
-  //   if ((hashedPos > 7 && address[i].toUpperCase() != address[i]) ||
-  //       (hashedPos <= 7 && address[i].toLowerCase() != address[i])) {
-  //     result = false;
-  //   }
-  // }
-  // return result;
+  if (hex.length != 42 || !hex.startsWith('0x')) {
+    return false;
+  }
+
+  final address = strip0x(hex);
+  final hash = bytesToHex(keccakAscii(address.toLowerCase()));
+  for (var i = 0; i < 40; i++) {
+    // the nth letter should be uppercase if the nth digit of casemap is 1
+    final hashedPos = int.parse(hash[i], radix: 16);
+    if ((hashedPos > 7 && address[i].toUpperCase() != address[i]) ||
+        (hashedPos <= 7 && address[i].toLowerCase() != address[i])) {
+      result = false;
+    }
+  }
+  return result;
 }
 
 String getNdefUrl() {
