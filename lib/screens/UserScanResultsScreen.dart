@@ -187,7 +187,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     try {
       setState(() {
         isLoading = true;
-        loadingText = context.loc.transferInProgress;
+        loadingText = context.loc.receivingToken;
       });
 
       sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {

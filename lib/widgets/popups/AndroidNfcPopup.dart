@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/animations/NfcAnimation.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 
@@ -54,13 +55,12 @@ class NFCOverlay {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 30),
-                      // An InkWell widget to make the button clickable
                       Padding(
                           padding: const EdgeInsets.only(left: 10, right: 10),
                           child: CustomRoundedButton(
                               showShadow: false,
                               backgroundColor: Colors.black26,
-                              text: 'Cancel',
+                              text: context.loc.cancel,
                               onPressed: () {
                                 // Dismiss the snackbar when the user taps the button
                                 removeNfcOverlay();

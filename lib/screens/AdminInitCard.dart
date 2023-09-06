@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
@@ -25,6 +26,7 @@ class AdminInitCard extends ConsumerStatefulWidget {
 class _AdminInitCard extends ConsumerState<AdminInitCard> {
   EthereumAddress? chipAddress1;
   EthereumAddress? chipAddress2;
+  List<EthereumAddress> allChipAddresses = [];
 
   void setChipAddresses(chipAddress1, chipAddress2) {
     setState(() {
@@ -41,23 +43,44 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
-        withScrollView: false,
+        withScrollView: true,
         children: [
           CustomRoundedButton(
             text: 'Init second card slot',
-            onPressed: () {
+            onPressed: () async {
               try {
-                ownerCardAdminInit(context, ref, setChipAddresses);
+                setState(() {
+                  allChipAddresses = [];
+                });
+                await ownerCardAdminInit(context, ref, setChipAddresses);
                 ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-                    context.loc.errorHeadingSnackBar,
-                    'Second card slot written.',
+                    context.loc.successHeadingSnackbar,
+                    'First two key slots created.',
                     'success'));
               } catch (e) {
+                NfcManager.instance.stopSession();
                 ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
                     context.loc.errorHeadingSnackBar,
-                    'Error writing second card slot.',
+                    'Error writing/reading first two key slots.',
                     'error'));
               }
+            },
+          ),
+          SizedBox(height: 20),
+          CustomRoundedButton(
+            text: 'List all chip addresses',
+            onPressed: () async {
+              try {
+                setState(() {
+                  chipAddress1 = null;
+                  chipAddress2 = null;
+                });
+                List<EthereumAddress> result =
+                    await getAllChipWalletAddresses(context, ref);
+                setState(() {
+                  allChipAddresses = result;
+                });
+              } catch (e) {}
             },
           ),
           SizedBox(
@@ -109,6 +132,23 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                                       'Chip address 2 copied to clipboard')));
                         },
                         icon: const Icon(Icons.copy)),
+                  ],
+                )
+              : Container(),
+
+          allChipAddresses.isNotEmpty
+              ? Column(
+                  children: [
+                    Text('Number of addresses: ${allChipAddresses.length}'),
+                    Text('All chip addresses: '),
+                    for (var address in allChipAddresses)
+                      Column(
+                        children: [
+                          Text(
+                              '${address.hex}'), // show the index before the address
+                          SizedBox(height: 15.0), // add 10px spacing
+                        ],
+                      )
                   ],
                 )
               : Container(),

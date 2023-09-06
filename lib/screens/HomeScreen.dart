@@ -1,4 +1,5 @@
 //import packages
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -46,20 +47,7 @@ Future<void> onButtonPress(WidgetRef ref, BuildContext context, bool mounted,
     if (!await checkInternetConnection()) {
       throw Exception("No internet connection");
     }
-
-    //check if NFC is deactivated
-    if (!await checkNfcReader()) {
-      throw CustomException("NFC Reader is not activated");
-    }
-
-    if (mounted) {
-      if (isInitialize) {
-        await initializeItem(ref, context);
-      } else {
-        await scanItem(ref, context);
-      }
-    }
-  } on CustomException catch (e, s) {
+  } catch (e, s) {
     await Sentry.captureException(
       e,
       stackTrace: s,
@@ -68,6 +56,13 @@ Future<void> onButtonPress(WidgetRef ref, BuildContext context, bool mounted,
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoNfcReader, 'error'),
     );
+  }
+
+  try {
+    //check if NFC is deactivated
+    if (!await checkNfcReader()) {
+      throw CustomException("NFC Reader is not activated");
+    }
   } catch (e, s) {
     await Sentry.captureException(
       e,
@@ -76,6 +71,22 @@ Future<void> onButtonPress(WidgetRef ref, BuildContext context, bool mounted,
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoInternetConnection, 'error'),
+    );
+  }
+
+  try {
+    if (mounted) {
+      if (isInitialize) {
+        await initializeItem(ref, context);
+      } else {
+        await scanItem(ref, context);
+      }
+    }
+  } catch (e) {
+    NfcManager.instance.stopSession();
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(
+          context.loc.errorHeadingSnackBar, 'Error reading chip.', 'error'),
     );
   }
 }

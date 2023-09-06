@@ -32,7 +32,7 @@ class PinScreen extends ConsumerStatefulWidget {
 
 class _PinScreen extends ConsumerState<PinScreen> {
   String title = 'Set up PIN for OwnerCard';
-  String buttonText = 'Save';
+  String buttonText = 'Submit';
 
   String pin = '';
 
@@ -45,7 +45,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
     if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
       setState(() {
         title = context.loc.setUpPin;
-        buttonText = context.loc.save;
+        buttonText = context.loc.submit;
       });
     } else if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinAuth) {
       setState(() {

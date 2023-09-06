@@ -1,12 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -28,10 +23,18 @@ Future<MsgSignature> signHash(
   try {
     final List responseGetSignature = await nfc.sendCommand(getSigCmd);
     final Uint8List chipSignatureData = responseGetSignature[0];
+    final int responseCode1 = responseGetSignature[1];
+    final int responseCode2 = responseGetSignature[2];
 
-    //neccassary for V parameter calculation
-    final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
-    return extractSignature(signer, hash, chipSignatureData);
+    if (responseCode1 == 0x90 && responseCode2 == 0x00) {
+      //neccassary for V parameter calculation
+      final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
+      return extractSignature(signer, hash, chipSignatureData);
+    } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
+      throw ("Error: Chip is PIN code locked.");
+    } else {
+      throw ("Error: Unable to get chip signature.");
+    }
   } catch (e) {
     print(e);
     throw ("ERROR: SIGNATURE FAILED");
@@ -48,22 +51,26 @@ Future<List> verifySignatureAuthenticity(NFCPlatform nfc, String sessionId,
   final Uint8List hashedMsg = keccakUtf8(sessionId);
   final Uint8List getSigCmd = makeSignatureCommand(0x01, hashedMsg);
   final List responseGetSignature = await nfc.sendCommand(getSigCmd);
-  final Uint8List chipSignatureData = responseGetSignature[0];
+  final int responseCode1 = responseGetSignature[1];
+  final int responseCode2 = responseGetSignature[2];
+  if (responseCode1 == 0x90 && responseCode2 == 0x00) {
+    final Uint8List chipSignatureData = responseGetSignature[0];
 
-  //success would be 0x90, 0x00 for status words
-  //final int chipSignatureStatusWord1 = responseGetSignature[1];
-  //final int chipSignatureStatusWord2 = responseGetSignature[2];
+    final MsgSignature signature =
+        extractSignature(chipTokenId, hashedMsg, chipSignatureData);
 
-  final MsgSignature signature =
-      extractSignature(chipTokenId, hashedMsg, chipSignatureData);
-
-  // only if true, is the tokenId corresponding to the chip!
-  bool verificationResult =
-      verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
-  if (!verificationResult) {
-    throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
+    // only if true, is the tokenId corresponding to the chip!
+    bool verificationResult =
+        verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
+    if (!verificationResult) {
+      throw ("Error: Verifying chip signature failed.");
+    }
+    return [hashedMsg, signature];
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
+    throw ("Error: Chip is PIN code locked.");
+  } else {
+    throw ("Error: Please try again.");
   }
-  return [hashedMsg, signature];
 }
 
 /// verify the signature of the chip on the smart contract

@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -262,6 +263,26 @@ Future<dynamic> getChipWalletAddress(
       context.loc.holdPhoneToCard);
 }
 
+Future<dynamic> getAllChipWalletAddresses(
+    BuildContext context, WidgetRef ref) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    List<EthereumAddress> pubKeys = [];
+    for (int i = 1; i < 256; i++) {
+      Uint8List pubKey = await getPubKeyN(nfc, i);
+      if (pubKey.isEmpty) {
+        break;
+      }
+      Uint8List addr = publicKeyToAddress(pubKey);
+      pubKeys.add(EthereumAddress(addr));
+    }
+    return pubKeys;
+  }
+
+  return await scanClosure(context, ref, callback, "getAllChipWalletAddresses",
+      context.loc.holdPhoneToNfcChip);
+}
+
 //scan closure abstraction
 Future<dynamic> scanClosure(
     BuildContext context,
@@ -282,13 +303,11 @@ Future<dynamic> scanClosure(
   final scanProcess = Sentry.startTransaction('$functionName()', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(
-        context, context.loc.holdPhoneCloseToOwnerCardToInit);
+    nfcOverlay.showNfcOverlay(context, alertMessage);
   }
 
   NfcManager.instance.startSession(
       onError: (error) async {
-        stopNfcOniOSAndAndroid(nfcOverlay);
         completer.completeError(error);
       },
       alertMessage: alertMessage,
@@ -312,7 +331,17 @@ Future<dynamic> scanClosure(
         } catch (e, stackTrace) {
           NfcManager.instance.stopSession(
               errorMessage: e.toString()); //the error is passed to onError here
-
+          stopNfcOniOSAndAndroid(nfcOverlay);
+          if (Platform.isAndroid) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              returnSnackBarWidget(
+                  context.loc.errorHeadingSnackBar,
+                  e.toString().length > 40
+                      ? e.toString().substring(0, 40) + '...'
+                      : e.toString(),
+                  'error'),
+            );
+          }
           //LOG ERROR
           print(e);
           sendAnalyticsTrace(sessionId, "$e", "INIALIZE_SCAN_ERROR");
@@ -323,6 +352,7 @@ Future<dynamic> scanClosure(
             e,
             stackTrace: stackTrace,
           );
+          rethrow;
         }
       });
 
@@ -338,6 +368,7 @@ Future<void> stopNfcOniOSAndAndroid(NFCOverlay nfcOverlay) async {
     nfcOverlay.removeNfcOverlay();
   }
 
+  //delay stopping nfc session, to avoid reading the same tag twice
   if (Platform.isAndroid) {
     await Future.delayed(const Duration(seconds: 2));
     NfcManager.instance.stopSession();

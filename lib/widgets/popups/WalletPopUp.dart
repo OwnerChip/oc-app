@@ -164,6 +164,10 @@ Future<void> onCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
   try {
     await authenticateCard(ref, context, pin);
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        context.loc.successCardLogin,
+        'success'));
     Navigator.pushNamedAndRemoveUntil(
         context, HomeScreen.routeName, (route) => false);
   } catch (e) {

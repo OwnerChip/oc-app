@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 
 class PukDisplay extends ConsumerWidget {
@@ -49,10 +51,19 @@ class PukDisplay extends ConsumerWidget {
               ? CustomRoundedButton(
                   text: 'Connect OwnerCard',
                   onPressed: (() async {
-                    await authenticateCard(ref, context, pin!);
-
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, HomeScreen.routeName, (route) => false);
+                    try {
+                      await authenticateCard(ref, context, pin!);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                              context.loc.successCardLogin, 'success'));
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, HomeScreen.routeName, (route) => false);
+                    } catch (e) {
+                      NfcManager.instance.stopSession();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                              context.loc.errorAuthenticatingCard, 'error'));
+                    }
                   }))
               : CustomRoundedButton(
                   text: context.loc.done,

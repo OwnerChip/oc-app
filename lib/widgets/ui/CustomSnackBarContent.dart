@@ -19,7 +19,7 @@ class CustomSnackBarContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         padding: const EdgeInsets.all(16.0),
-        height: 70,
+        height: 75,
         decoration: BoxDecoration(
             color: alertType == 'success'
                 ? CustomColors(dotenv.get('APP_ID')).successColor
@@ -35,6 +35,7 @@ class CustomSnackBarContent extends StatelessWidget {
                     color: Theme.of(context).cardColor)),
             Expanded(
               child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(heading,

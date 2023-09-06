@@ -287,7 +287,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   children: [
                                     const SizedBox(height: 10),
                                     CustomRoundedButton(
-                                        text: 'Edit',
+                                        text: context.loc.edit,
                                         onPressed: () => {
                                               Navigator.pushNamed(
                                                   context,

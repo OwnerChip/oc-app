@@ -173,6 +173,9 @@ Future<Uint8List> getPubKeyN(NFCPlatform nfc, int key) async {
 
   if (keyExists) {
     Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
+
+    // Uint8List chipPubKey =
+    //     publicKeyToAddress(getPublicKeyFromChipResponse(getKeyInfoData));
     return chipPubKey;
   } else {
     return Uint8List.fromList([]);

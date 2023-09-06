@@ -294,7 +294,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       ),
                       const SizedBox(height: 20),
                       CustomRoundedButton(
-                          text: "Approve",
+                          text: context.loc.transferToAddress,
                           onPressed: (textInput.isEmpty
                               ? null
                               : () => {
