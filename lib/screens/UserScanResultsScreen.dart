@@ -249,11 +249,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               ref.read(chipInfoProvider).tokenId)
         });
 
+        //wait for 2 seconds, to make sure corrrect data is fetched by providers
+        await Future.delayed(const Duration(seconds: 2));
+
         // update providers
         await ref.refresh(nftApprovalProvider.future);
         await ref.refresh(nftOwnerProvider.future);
 
-        await Future.delayed(const Duration(seconds: 2));
         setState(() {
           isLoading = false;
         });
