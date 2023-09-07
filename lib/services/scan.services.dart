@@ -256,6 +256,11 @@ Future<dynamic> getChipWalletAddress(
     BuildContext context, WidgetRef ref) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
+    //get second key
+    Uint8List cardWalletAddress2 = await getPubKeyN(nfc, 2);
+    if (cardWalletAddress2.isEmpty) {
+      throw context.loc.transferOnlyToOwnerCard;
+    }
     return createFirstKeyChipResponse[0];
   }
 

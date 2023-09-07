@@ -210,5 +210,6 @@
     "scanToTriggerCardLost": "Chip scannen, um Prozess für neue OwnerCard zu starten.",
     "tokenDoesNotExist": "Token existiert nicht.",
     "pleaseEnterValidEmailAddress": "Bitte geben Sie eine korrekte Email Adresse ein.",
-    "chipAddress": "Chip Adresse"
+    "chipAddress": "Chip Adresse",
+    "transferOnlyToOwnerCard": "Transfer only possible to initialized OwnerCard."
 }
