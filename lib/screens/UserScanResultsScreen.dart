@@ -1,5 +1,6 @@
 //import packages
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -697,6 +698,38 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               }),
                   error: (e, s) => Container(),
                   loading: () => Container()),
+
+              //show chip address in light grey text
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${context.loc.chipAddress}: ${getEthAddressSubstring(chipInfo.chipEthereumAddress)}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .copyWith(color: Colors.black26),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  IconButton(
+                      color: Colors.black26,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      iconSize: 25,
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(
+                            text: chipInfo.chipEthereumAddress.hex));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text(context.loc.addressCopied)));
+                      },
+                      icon: const Icon(Icons.copy)),
+                ],
+              )
             ])));
   }
 }

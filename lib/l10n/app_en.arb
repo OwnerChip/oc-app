@@ -209,6 +209,6 @@
     "cardLostContacted": "You will be contacted to receive a new OwnerCard",
     "scanToTriggerCardLost": "Scan chip to trigger process for receiving a new OwnerCard.",
     "tokenDoesNotExist": "Token does not exist.",
-    "pleaseEnterValidEmailAddress": "Please enter valid email address."
-
+    "pleaseEnterValidEmailAddress": "Please enter valid email address.",
+    "chipAddress": "Chip address"
 }
