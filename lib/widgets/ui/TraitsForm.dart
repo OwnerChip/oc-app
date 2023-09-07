@@ -41,10 +41,17 @@ class TraitsFormState extends State<TraitsForm> {
   }
 
   void addTraitInput() {
+    //new focus node
+    FocusNode focusNode = FocusNode();
     setState(() {
       traitsArray.add({"trait_type": "", "value": ""});
-      traitsTextFields.add(TraitTextInput(index: traitsTextFields.length));
+      traitsTextFields.add(TraitTextInput(
+        index: traitsTextFields.length,
+        focusNode: focusNode,
+      ));
     });
+    //focus focusNode
+    focusNode.requestFocus();
   }
 
   void removeTraitInput() {
@@ -129,10 +136,12 @@ class TraitsFormState extends State<TraitsForm> {
 }
 
 class TraitTextInput extends StatefulWidget {
-  const TraitTextInput({super.key, required this.index, this.initialText});
+  const TraitTextInput(
+      {super.key, required this.index, this.focusNode, this.initialText});
 
   final int index;
   final List<String>? initialText;
+  final FocusNode? focusNode;
 
   @override
   _TraitTextInput createState() => _TraitTextInput();
@@ -165,6 +174,8 @@ class _TraitTextInput extends State<TraitTextInput> {
           flex: 4,
           child: TextFormField(
             style: Theme.of(context).textTheme.bodyMedium,
+            autofocus: true,
+            focusNode: widget.focusNode,
             controller: _keyController,
             decoration: InputDecoration(
               enabledBorder: UnderlineInputBorder(
