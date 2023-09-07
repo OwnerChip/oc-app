@@ -48,22 +48,10 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
           CustomRoundedButton(
             text: 'Init second card slot',
             onPressed: () async {
-              try {
-                setState(() {
-                  allChipAddresses = [];
-                });
-                await ownerCardAdminInit(context, ref, setChipAddresses);
-                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-                    context.loc.successHeadingSnackbar,
-                    'First two key slots created.',
-                    'success'));
-              } catch (e) {
-                NfcManager.instance.stopSession();
-                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-                    context.loc.errorHeadingSnackBar,
-                    'Error writing/reading first two key slots.',
-                    'error'));
-              }
+              setState(() {
+                allChipAddresses = [];
+              });
+              await ownerCardAdminInit(context, ref, setChipAddresses);
             },
           ),
           SizedBox(height: 20),

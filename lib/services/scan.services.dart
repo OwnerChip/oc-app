@@ -328,17 +328,27 @@ Future<dynamic> scanClosure(
           completer.complete(result);
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
+          sendAnalyticsTrace(
+              sessionId,
+              'Scanned chip addr: ${createFirstKeyChipResponse[0]}',
+              functionName);
         } catch (e, stackTrace) {
+          String errorMessage = e.toString();
+          print(errorMessage);
+          //if errorMessage contains string 'tag was lost' set errorMessage to 'tag was lost'
+          if (errorMessage.contains('Tag was lost')) {
+            errorMessage = 'Please hold phone to chip a bit longer.';
+          }
           NfcManager.instance.stopSession(
-              errorMessage: e.toString()); //the error is passed to onError here
+              errorMessage: errorMessage); //the error is passed to onError here
           stopNfcOniOSAndAndroid(nfcOverlay);
           if (Platform.isAndroid) {
             ScaffoldMessenger.of(context).showSnackBar(
               returnSnackBarWidget(
                   context.loc.errorHeadingSnackBar,
-                  e.toString().length > 40
-                      ? e.toString().substring(0, 40) + '...'
-                      : e.toString(),
+                  errorMessage.length > 40
+                      ? errorMessage.substring(0, 40) + '...'
+                      : errorMessage,
                   'error'),
             );
           }

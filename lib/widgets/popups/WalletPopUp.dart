@@ -162,37 +162,21 @@ Future<void> onWalletPress(
 
 Future<void> onCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
-  try {
-    await authenticateCard(ref, context, pin);
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        context.loc.successCardLogin,
-        'success'));
-    Navigator.pushNamedAndRemoveUntil(
-        context, HomeScreen.routeName, (route) => false);
-  } catch (e) {
-    NfcManager.instance.stopSession();
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        'Error connecting OwnerCard.',
-        'error'));
-  }
+  await authenticateCard(ref, context, pin);
+  ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+      context.loc.successHeadingSnackbar,
+      context.loc.successCardLogin,
+      'success'));
+  Navigator.pushNamedAndRemoveUntil(
+      context, HomeScreen.routeName, (route) => false);
 }
 
 Future<void> onAddCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
-  try {
-    String? puk = await setPinOnCard(context, ref, pin);
-    if (puk == null) {
-      throw Exception("Error setting pin");
-    }
-    showCustomPopup(context, context.loc.successfullySetUpPin,
-        PukDisplay(pin: pin, puk: puk));
-  } catch (e) {
-    NfcManager.instance.stopSession();
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        context.loc.errorSettingPin,
-        'error'));
+  String? puk = await setPinOnCard(context, ref, pin);
+  if (puk == null) {
+    throw Exception("Error setting pin");
   }
+  showCustomPopup(context, context.loc.successfullySetUpPin,
+      PukDisplay(pin: pin, puk: puk));
 }

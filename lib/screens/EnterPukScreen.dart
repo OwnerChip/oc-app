@@ -92,20 +92,12 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
             text: 'Reset PIN',
             onPressed: () async {
               FocusScope.of(context).unfocus();
-              try {
-                String? newPuk = await resetPinOnCard(context, ref, puk, pin);
-                if (newPuk == null) {
-                  throw Exception("Error setting pin");
-                }
-                showCustomPopup(context, context.loc.pinResetSuccess,
-                    PukDisplay(puk: newPuk));
-              } catch (e) {
-                NfcManager.instance.stopSession();
-                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-                    context.loc.errorHeadingSnackBar,
-                    context.loc.errorSettingPin,
-                    'error'));
+              String? newPuk = await resetPinOnCard(context, ref, puk, pin);
+              if (newPuk == null) {
+                throw Exception("Error setting pin");
               }
+              showCustomPopup(context, context.loc.pinResetSuccess,
+                  PukDisplay(puk: newPuk));
             },
           )
         ],

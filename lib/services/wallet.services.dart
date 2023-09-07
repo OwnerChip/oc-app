@@ -140,15 +140,8 @@ Future<String> makeAndSendGaslessTx(
               arguments: PinScreenArguments(
                   activeFeature: PinScreenActiveFeature.verifyPinTx,
                   callback: (String pin) async {
-                    try {
-                      return await makeCardSignature(
-                          ref, context, hash, toggleLoading, pin);
-                    } catch (e) {
-                      NfcManager.instance.stopSession();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                              context.loc.errorSigningTx, 'error'));
-                    }
+                    return await makeCardSignature(
+                        ref, context, hash, toggleLoading, pin);
                   })) as MsgSignature;
 
       signature = msgSignatureToHex(cardSignature);

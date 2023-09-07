@@ -159,7 +159,7 @@ String convertSignatureParamToHexString(BigInt intToConvert) {
 }
 
 // specific to secora chip response
-Uint8List getPublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
+Uint8List makePublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
   return responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
 }
 
