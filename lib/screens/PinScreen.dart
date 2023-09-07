@@ -122,7 +122,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
           ),
           const SizedBox(height: 40),
           CustomRoundedButton(
-              text: context.loc.save,
+              text: buttonText,
               onPressed: () {
                 onSavePress(context);
               }),

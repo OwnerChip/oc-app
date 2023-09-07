@@ -204,6 +204,11 @@
     "errorSigningTx": "Error signing transaction.",
     "errorReadingChip": "Error reading chip.",
     "receivingToken": "Receiving token",
-    "transferToAddress": "Transfer to address"
+    "transferToAddress": "Transfer to address",
+    "cardLost": "OwnerCard Lost",
+    "cardLostContacted": "You will be contacted to receive a new OwnerCard",
+    "scanToTriggerCardLost": "Scan chip to trigger process for receiving a new OwnerCard.",
+    "tokenDoesNotExist": "Token does not exist.",
+    "pleaseEnterValidEmailAddress": "Please enter valid email address."
 
 }

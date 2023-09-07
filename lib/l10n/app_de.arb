@@ -204,5 +204,10 @@
     "errorSigningTx": "Fehler beim Bestätigen der Transaktion.",
     "errorReadingChip": "Fehler beim Lesen des Chips.",
     "receivingToken": "Token empfangen",
-    "transferToAddress": "An Adresse schicken"
+    "transferToAddress": "An Adresse schicken",
+    "cardLost": "OwnerCard verloren",
+    "cardLostContacted": "Sie werden kontaktiert, um eine neue OwnerCard zu erhalten.",
+    "scanToTriggerCardLost": "Chip scannen, um Prozess für neue OwnerCard zu starten.",
+    "tokenDoesNotExist": "Token existiert nicht.",
+    "pleaseEnterValidEmailAddress": "Bitte geben Sie eine korrekte Email Adresse ein."
 }

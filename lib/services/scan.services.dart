@@ -283,6 +283,45 @@ Future<dynamic> getAllChipWalletAddresses(
       context.loc.holdPhoneToNfcChip);
 }
 
+Future<bool> triggerCardLost(
+    BuildContext context, WidgetRef ref, String email) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    EthereumAddress chipEthereumAddress = createFirstKeyChipResponse[0];
+    String chipWalletAddress = chipEthereumAddress.toString();
+    BigInt chipTokenId = createFirstKeyChipResponse[1];
+    bool ndefTagInitialized = createFirstKeyChipResponse[2];
+    if (ndefTagInitialized) {
+      sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+    }
+
+    //set chip info data in provider
+    setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
+
+    //verify signature
+    List verificationResult = await verifySignatureAuthenticity(
+        nfc, sessionId, chipEthereumAddress, chipTokenId);
+    Uint8List hashedMsg = verificationResult[0];
+    MsgSignature signature = verificationResult[1];
+    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
+        SignatureData(hashedMsg: hashedMsg, signature: signature));
+
+    final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+    final TokenInfoObject tokenInfo =
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+    SignatureData chipSignature = ref.read(chipSignatureDataProvider);
+    if (tokenInfo.collectionId != zeroAddress) {
+      return await sendCardLostToBackend(createFirstKeyChipResponse[0],
+          tokenInfo.collectionId, chipSignature, sessionId, email);
+    } else {
+      throw context.loc.tokenDoesNotExist;
+    }
+  }
+
+  return await scanClosure(context, ref, callback, "triggerCardLost",
+      context.loc.scanToTriggerCardLost);
+}
+
 //scan closure abstraction
 Future<dynamic> scanClosure(
     BuildContext context,

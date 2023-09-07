@@ -561,7 +561,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                       return context.loc.enterValidUrl;
                                     }
 
-                                    if (value!.isEmpty) {
+                                    if (value.isEmpty) {
                                       return context.loc.urlCannotBeEmpty;
                                     }
                                     if (attachmentList.length >= 10) {

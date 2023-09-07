@@ -167,8 +167,10 @@ Future<void> onCardPress(
       context.loc.successHeadingSnackbar,
       context.loc.successCardLogin,
       'success'));
-  Navigator.pushNamedAndRemoveUntil(
-      context, HomeScreen.routeName, (route) => false);
+  //navigate to previous screen
+  Navigator.pop(context);
+  //remove wallet popup
+  Navigator.pop(context);
 }
 
 Future<void> onAddCardPress(

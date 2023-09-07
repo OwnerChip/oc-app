@@ -171,3 +171,33 @@ Future<void> saveUserSession(
   final String jsonUserSession = jsonEncode(userSession.toJson());
   storage.setString('userSession', jsonUserSession);
 }
+
+Future<bool> sendCardLostToBackend(
+    EthereumAddress chipAddress,
+    EthereumAddress collectionAddress,
+    SignatureData chipSignature,
+    String sessionId,
+    String email) async {
+  final Dio dio = getBackendClient();
+  final String url = '/collection/${collectionAddress.hex}/recovery';
+  try {
+    await dio.post(url, data: {
+      'sessionId': sessionId,
+      'email': email,
+      'chipAddress': chipAddress.hex,
+      'chipSignature': {
+        'r': convertSignatureParamToHexString(chipSignature.signature.r),
+        's': convertSignatureParamToHexString(chipSignature.signature.s),
+        'v': chipSignature.signature.v,
+      }
+    });
+    return true;
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+    return false;
+  }
+}

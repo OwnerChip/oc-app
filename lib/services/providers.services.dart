@@ -206,7 +206,8 @@ final findTokenProvider = FutureProvider.autoDispose
 
   TokenInfoObject tokenInfo = result.firstWhere(
       (element) => element.collectionId != zeroAddress,
-      orElse: () => TokenInfoObject(0, zeroAddress, tokenId));
+      orElse: () => TokenInfoObject(0, zeroAddress,
+          tokenId)); //if token does not exist, zero address is returned as collection
   return tokenInfo;
 });
 
