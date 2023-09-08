@@ -213,7 +213,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           'gasStation': canUseGasStation
         });
 
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 2));
         //fetch metadata and image to update provider before navigating to next screen
         final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
         TokenInfoObject tokenInfo =
