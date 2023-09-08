@@ -53,7 +53,7 @@ Future<void> walletPopupBuilder(
               Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // OwnerCard wallet
                 WalletIcon(
-                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
+                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
                     'OwnerCard', () async {
                   // Navigator.pop(context); //remove wallet popup
 
