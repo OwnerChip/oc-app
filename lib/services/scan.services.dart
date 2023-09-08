@@ -372,10 +372,10 @@ Future<dynamic> scanClosure(
           completer.complete(result);
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
-          sendAnalyticsTrace(
-              sessionId,
-              'Scanned chip addr: ${createFirstKeyChipResponse[0]}',
-              functionName);
+          // sendAnalyticsTrace(
+          //     sessionId,
+          //     'Scanned chip addr: ${createFirstKeyChipResponse[0]}',
+          //     functionName);
         } catch (e, stackTrace) {
           String errorMessage = e.toString();
           print(errorMessage);
