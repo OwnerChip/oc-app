@@ -1,8 +1,6 @@
 import 'dart:io';
 
-void main(List<String> arguments) async {
-  // Get the file names from the command line arguments
-  var args = List<String>.from(arguments);
+void main(List<String> args) async {
   if (args.length != 2) {
     print('Usage: dart replace_file.dart source_file target_file');
     exit(1);

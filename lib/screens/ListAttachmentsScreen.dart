@@ -71,7 +71,7 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
                       if (hasMinterRole) {
                         return Column(
                           children: [
-                            ownerAttachments.isNotEmpty
+                            creatorAttachments.isNotEmpty
                                 ? Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
