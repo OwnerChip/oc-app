@@ -265,7 +265,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           })),
                       const SizedBox(height: 30),
                       Text(
-                        'or',
+                        context.loc.or,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 30),

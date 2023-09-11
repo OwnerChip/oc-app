@@ -64,41 +64,42 @@ Future<void> walletPopupBuilder(
                             onCardPress(ref, context, pin);
                           }));
                 }),
-              ]),
-              const SizedBox(height: 20),
-              Container(
-                height: 1,
-                width: 250,
-                color: Theme.of(context).dividerColor,
-              ),
-              const SizedBox(height: 20),
-              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // trust wallet
                 WalletIcon(
                     walletConfig['https://trustwallet.com']!.iconUri,
                     walletConfig['https://trustwallet.com']!.name,
                     () => onWalletPress(context, ref, wc,
                         walletConfig['https://trustwallet.com']!)),
+              ]),
+              const SizedBox(height: 20),
 
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // metamask
                 WalletIcon(
                     walletConfig['https://metamask.io/']!.iconUri,
                     walletConfig['https://metamask.io/']!.name,
                     () => onWalletPress(context, ref, wc,
                         walletConfig['https://metamask.io/']!)),
+
+                //1inch
+                WalletIcon(
+                    walletConfig['https://1inch.io/wallet/']!.iconUri,
+                    walletConfig['https://1inch.io/wallet/']!.name,
+                    () => onWalletPress(context, ref, wc,
+                        walletConfig['https://1inch.io/wallet/']!)),
               ]),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  // 1inch
-                  WalletIcon(
-                      walletConfig['https://1inch.io/wallet/']!.iconUri,
-                      walletConfig['https://1inch.io/wallet/']!.name,
-                      () => onWalletPress(context, ref, wc,
-                          walletConfig['https://1inch.io/wallet/']!)),
-                ],
-              ),
+              // const SizedBox(height: 20),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.start,
+              //   children: [
+              //     // 1inch
+              //     WalletIcon(
+              //         walletConfig['https://1inch.io/wallet/']!.iconUri,
+              //         walletConfig['https://1inch.io/wallet/']!.name,
+              //         () => onWalletPress(context, ref, wc,
+              //             walletConfig['https://1inch.io/wallet/']!)),
+              //   ],
+              // ),
               Padding(
                 padding: const EdgeInsets.only(top: 30),
                 child: RichText(

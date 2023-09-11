@@ -214,5 +214,6 @@
     "chipAddress": "Chip Adresse",
     "transferOnlyToOwnerCard": "Transfer nur zu initialisierter OwnerCard möglich.",
     "digitalContentWillBeTransferred": "Öffentlicher und privater Digital Content wird gemeinsam mit dem Token transferiert.",
-    "ownercard": "Identity Card"
+    "ownercard": "Identity Card",
+    "or": "oder"
 }
