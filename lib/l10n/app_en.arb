@@ -213,5 +213,6 @@
     "pleaseEnterValidEmailAddress": "Please enter valid email address.",
     "chipAddress": "Chip address",
     "transferOnlyToOwnerCard": "Transfer only possible to initialized OwnerCard.",
-    "digitalContentWillBeTransferred": "Public and private Digital Content will be transferred together with the token."
+    "digitalContentWillBeTransferred": "Public and private Digital Content will be transferred together with the token",
+    "ownercard": "OwnerCard"
 }
