@@ -1,11 +1,13 @@
 //import packages
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 //import widgets
@@ -45,11 +47,25 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
               Container(
                 margin: EdgeInsets.only(top: 20),
                 child: TextFormField(
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  cursorColor:
+                      CustomColors(dotenv.get('APP_ID').toString()).accentColor,
                   decoration: InputDecoration(
                     labelText: context.loc.enterPUK,
                     labelStyle: Theme.of(context).textTheme.bodyMedium,
-                    border: OutlineInputBorder(
+                    enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // normal border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // focused border color
                     ),
                   ),
                   keyboardType: TextInputType.text,
@@ -67,11 +83,25 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
               Container(
                 margin: EdgeInsets.only(top: 20),
                 child: TextFormField(
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  cursorColor:
+                      CustomColors(dotenv.get('APP_ID').toString()).accentColor,
                   decoration: InputDecoration(
                     labelText: context.loc.enterFourDigitPin,
                     labelStyle: Theme.of(context).textTheme.bodyMedium,
-                    border: OutlineInputBorder(
+                    enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // normal border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // focused border color
                     ),
                   ),
                   keyboardType: TextInputType.number,

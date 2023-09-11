@@ -115,7 +115,9 @@ class _PinScreen extends ConsumerState<PinScreen> {
             defaultPinTheme: defaultPinTheme,
             focusedPinTheme: focusedPinTheme,
             submittedPinTheme: submittedPinTheme,
-            obscureText: true,
+            obscureText: navArgs.activeFeature == PinScreenActiveFeature.setPin
+                ? false
+                : true,
             onCompleted: (pin) => setState(() {
               this.pin = pin;
             }),
