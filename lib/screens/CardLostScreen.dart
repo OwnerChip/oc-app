@@ -45,6 +45,11 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
               key: _formKey,
               child: Column(
                 children: [
+                  const SizedBox(height: 40),
+                  Text('Enter email to trigger process for receiving new card',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineMedium),
+                  const SizedBox(height: 40),
                   Container(
                     margin: EdgeInsets.only(top: 20),
                     child: TextFormField(

@@ -1,4 +1,5 @@
 //import packages
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -310,7 +311,32 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                             connectedWallet,
                                             sessionId))
                                       }
-                                  }))
+                                  })),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        children: [
+                          //warning icon
+                          const SizedBox(width: 20),
+                          SvgPicture.asset(
+                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+                          SizedBox(width: 10),
+                          //Text
+                          Expanded(
+                            child: Text(
+                              context.loc.digitalContentWillBeTransferred,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          //TODO: show a hint if metamask is connected that the correct CHAIN must be selected in metamask
+                        ],
+                      )
                     ],
                   ),
                 ),

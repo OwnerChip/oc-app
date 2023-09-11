@@ -208,8 +208,10 @@
     "cardLost": "OwnerCard verloren",
     "cardLostContacted": "Sie werden kontaktiert, um eine neue OwnerCard zu erhalten.",
     "scanToTriggerCardLost": "Chip scannen, um Prozess für neue OwnerCard zu starten.",
+    "enterEmailToTriggerCardLost": "Email Adresse eingeben, um Prozess für neue OwnerCard zu starten.",
     "tokenDoesNotExist": "Token existiert nicht.",
     "pleaseEnterValidEmailAddress": "Bitte geben Sie eine korrekte Email Adresse ein.",
     "chipAddress": "Chip Adresse",
-    "transferOnlyToOwnerCard": "Transfer only possible to initialized OwnerCard."
+    "transferOnlyToOwnerCard": "Transfer nur zu initialisierter OwnerCard möglich.",
+    "digitalContentWillBeTransferred": "Öffentlicher und privater Digital Content wird gemeinsam mit dem Token transferiert."
 }
