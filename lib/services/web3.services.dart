@@ -158,6 +158,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   EthereumAddress? toAccount,
   String? tokenURI,
   String? gasPrice,
+  bool? enableRecovery,
 }) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -165,9 +166,9 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         functionSignatureHash, randomValueHash, signature, tokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
-  } else if (functionSignatureHash == transferFunctionSignature) {
-    data = makeTransferData(
-        functionSignatureHash, randomValueHash, signature, toAccount!);
+  } else if (functionSignatureHash == transferFromFunctionSignature) {
+    data = makeTransferFromData(
+        functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -179,8 +180,6 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     gasAmount = "0x${gasAmountEst.toRadixString(16)}";
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
-    //send to sentry
-    sendAnalyticsTrace("$makeRandomInt()", "$e", "ESTIMATE_GAS_AMOUNT_ERROR");
     print("ERROR estimating gas amount: $e");
   }
 
@@ -217,14 +216,23 @@ String makeBurnData(
   return data;
 }
 
-String makeTransferData(String functionSignatureHash, Uint8List hash,
-    MsgSignature signature, EthereumAddress to) {
+String makeTransferFromData(String functionSignatureHash, Uint8List hash,
+    MsgSignature signature, bool? enableRecovery) {
+  final recovery = enableRecovery ?? false;
   String data = functionSignatureHash +
-      to.toString().substring(2).padLeft(64, '0') +
       uint8ListTo32ByteHex(hash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0');
+      signature.v.toRadixString(16).padLeft(64, '0') +
+      (recovery ? "01".padLeft(64, "0") : "00".padLeft(64, "0"));
+  return data;
+}
+
+String makeApproveData(
+    String functionSignatureHash, BigInt tokenId, EthereumAddress to) {
+  String data = functionSignatureHash +
+      to.toString().substring(2).padLeft(64, '0') +
+      tokenId.toRadixString(16).padLeft(64, '0');
   return data;
 }
 
@@ -238,6 +246,20 @@ Future<dynamic> getOwner(
     return owner[0];
   } catch (e) {
     print('Error while fetching owner of tokenId $tokenId: $e');
+    return e;
+  }
+}
+
+Future<dynamic> getApproved(
+    String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
+  print('checking owner of tokenId $tokenId on chain $chainRpcUrl');
+  try {
+    var approval = await queryCollectionContract(
+        chainRpcUrl, collectionId, "getApproved", [tokenId]);
+    print('result: ${approval[0]}');
+    return approval[0];
+  } catch (e) {
+    print('Error while fetching approval of tokenId $tokenId: $e');
     return e;
   }
 }

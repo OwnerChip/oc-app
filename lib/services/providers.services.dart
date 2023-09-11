@@ -56,7 +56,7 @@ class SignatureDataNotifier extends StateNotifier<SignatureData> {
   }
 }
 
-final signatureDataProvider =
+final chipSignatureDataProvider =
     StateNotifierProvider<SignatureDataNotifier, SignatureData>((ref) {
   return SignatureDataNotifier();
 });
@@ -143,8 +143,7 @@ final findAllMinterRolesProvider =
   Map<int, List<Collection>> filteredCollections = {};
   for (Collection collection in res) {
     // if collection is OPEN, add it to the list
-    if (wc != null &&
-        wcSession != null &&
+    if (ref.read(userSessionProvider) != null &&
         collection.id ==
             EthereumAddress.fromHex(
                 '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
@@ -207,7 +206,8 @@ final findTokenProvider = FutureProvider.autoDispose
 
   TokenInfoObject tokenInfo = result.firstWhere(
       (element) => element.collectionId != zeroAddress,
-      orElse: () => TokenInfoObject(0, zeroAddress, tokenId));
+      orElse: () => TokenInfoObject(0, zeroAddress,
+          tokenId)); //if token does not exist, zero address is returned as collection
   return tokenInfo;
 });
 
@@ -230,6 +230,25 @@ final nftOwnerProvider =
       chipInfo.tokenId);
 
   return nftOwner;
+});
+
+//**NFT APPROVAL CHECKER */
+final nftApprovalProvider =
+    FutureProvider.autoDispose<EthereumAddress>((ref) async {
+  // watch chipInfoProvider
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenInfoObject config =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  // ERROR HANDLING
+  if (config.chainId == 0 || config.collectionId == zeroAddress) {
+    return Future.error('No approval found.');
+  }
+  EthereumAddress nftApproval = await getApproved(
+      getRPCUrlFromChainId(config.chainId),
+      config.collectionId,
+      chipInfo.tokenId);
+
+  return nftApproval;
 });
 
 //****NFT METADATA****
@@ -302,10 +321,6 @@ final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   return Uri.parse(raribleUrl);
 });
 
-final sessionIdProvider = StateProvider<String>((ref) {
-  return '';
-});
-
 //this provider fetches all attachments from backend, and saves them to localAttachmentsProvider!
 //This is necessary to edit attachments locally!
 final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
@@ -351,11 +366,11 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   //if token does not exist, the creator can fetch all attachments. This is
   //necessary to show all previously uploaded attachments in MetadataInputScreens
   if (!tokenExists || nftOwner == userWalletAddress) {
-    SignatureData tokenSignatureData = ref.read(signatureDataProvider);
+    SignatureData tokenSignatureData = ref.read(chipSignatureDataProvider);
 
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
     response = await getPublicAndPrivateAttachmentsFromBackend(
-      backendSession!,
+      userSession!,
       userWalletAddress,
       chainId,
       collectionId,
@@ -422,6 +437,6 @@ final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {
   return hasMinterRole;
 });
 
-final backendSessionProvider = StateProvider<BackendSession?>((ref) {
+final userSessionProvider = StateProvider<UserSession?>((ref) {
   return null;
 });

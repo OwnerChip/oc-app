@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="90.159" height="139.214" viewBox="0 0 90.159 139.214">
+  <g id="chip_DRAK_BLUE" data-name="chip DRAK BLUE" transform="translate(-101.05 -84.387)">
+    <path id="Path_61" data-name="Path 61" d="M175.465,221.1H116.793c-12.254-.012-13.243-5.96-13.243-13.243V100.17a13.283,13.283,0,0,1,13.243-13.243h58.672c11.932-.62,13.243,5.96,13.243,13.243V207.858C188.709,215.141,187.075,221.089,175.465,221.1Z" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+    <path id="Path_62" data-name="Path 62" d="M144.05,99.27v13.148h5.793v20.741h-5.078v69.948h8.344" transform="translate(7.777 2.378)" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+    <path id="Path_63" data-name="Path 63" d="M136.642,99.22v13.16h-5.7v20.729h4.971v69.96H127.32" transform="translate(4.565 2.368)" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+    <line id="Line_19" data-name="Line 19" x1="24.294" transform="translate(115.566 152.715)" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+    <line id="Line_20" data-name="Line 20" x2="24.294" transform="translate(152.542 152.715)" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+    <line id="Line_21" data-name="Line 21" x1="24.294" transform="translate(115.566 163.24)" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+    <line id="Line_22" data-name="Line 22" x2="24.294" transform="translate(152.542 163.24)" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+    <circle id="Ellipse_3" data-name="Ellipse 3" cx="1.454" cy="1.454" r="1.454" transform="translate(119.189 102.006)" fill="none" stroke="#c4bbaf" stroke-linecap="square" stroke-miterlimit="10" stroke-width="5"/>
+  </g>
+</svg>

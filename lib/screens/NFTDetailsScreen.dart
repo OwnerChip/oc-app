@@ -1,7 +1,9 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,6 +41,7 @@ class NFTDetailsScreen extends ConsumerStatefulWidget {
 class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<Map<String, dynamic>> nftMetadata =
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
@@ -124,6 +127,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     throw Exception(
                                         'Could not launch ${link.url}');
                                   }
+                                  sendAnalyticsTrace(session?.sessionId ?? "",
+                                      "", "DESCRIPTION_VIEW",
+                                      tags: {
+                                        'connectedWallet': connectedWallet,
+                                        'chipWallet':
+                                            convertTokenIdToEthereumAddress(ref
+                                                .read(chipInfoProvider)
+                                                .tokenId)
+                                      });
                                 },
                                 text: data['description'],
                               )
@@ -168,9 +180,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                 error: (e, s) => Container(),
                 loading: () => DropdownContainer(
                     title: context.loc.loading, content: null)),
-            attachments.isNotEmpty
+            //if attachments are not empty --> show dropdown container
+            //if attachments are empty, but the connected wallet is the owner --> show dropdown container (so NFT owner can add documents)
+            (attachments.isNotEmpty ||
+                    (nftOwner.hasValue && connectedWallet == nftOwner.value))
                 ? DropdownContainer(
-                    title: 'Digital Content',
+                    title: 'Digital Content ' +
+                        '(' +
+                        attachments.length.toString() +
+                        ')',
                     content: Column(
                       children: [
                         creatorAttachments.isNotEmpty
@@ -195,6 +213,20 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
+                                          sendAnalyticsTrace(
+                                              session?.sessionId ?? "",
+                                              e.backendUuid,
+                                              "ATTACHMENT_VIEW",
+                                              tags: {
+                                                'connectedWallet':
+                                                    connectedWallet,
+                                                'chipWallet':
+                                                    convertTokenIdToEthereumAddress(
+                                                        ref
+                                                            .read(
+                                                                chipInfoProvider)
+                                                            .tokenId)
+                                              });
                                         },
                                       ),
                                       const SizedBox(height: 10),
@@ -225,6 +257,20 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
+                                          sendAnalyticsTrace(
+                                              session?.sessionId ?? "",
+                                              e.backendUuid,
+                                              "ATTACHMENT_VIEW",
+                                              tags: {
+                                                'connectedWallet':
+                                                    connectedWallet,
+                                                'chipWallet':
+                                                    convertTokenIdToEthereumAddress(
+                                                        ref
+                                                            .read(
+                                                                chipInfoProvider)
+                                                            .tokenId)
+                                              });
                                         },
                                       ),
                                       const SizedBox(height: 10),
@@ -234,23 +280,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                               )
                             : Container(),
 
-                        // ...attachments.map(
-                        //   (e) => Column(children: [
-                        //     AttachmentBox(
-                        //       text: e.title,
-                        //       icon: e.type == AttachmentType.url
-                        //           ? Icons.link
-                        //           : Icons.attach_file,
-                        //       isPrivate: e.isPrivate,
-                        //       onTap: () {
-                        //         launchUrl(Uri.parse(e.url),
-                        //             mode: LaunchMode.externalApplication);
-                        //       },
-                        //     ),
-                        //     const SizedBox(height: 10),
-                        //   ]),
-                        // ),
-
                         //if connected wallet is owner
                         nftOwner.when(
                           data: ((data) => data == connectedWallet
@@ -258,7 +287,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   children: [
                                     const SizedBox(height: 10),
                                     CustomRoundedButton(
-                                        text: 'Edit',
+                                        text: context.loc.edit,
                                         onPressed: () => {
                                               Navigator.pushNamed(
                                                   context,

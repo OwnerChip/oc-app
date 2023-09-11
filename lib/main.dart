@@ -8,10 +8,13 @@ import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/domain/eip155.dart';
+import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
+import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
+import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AuthPopup.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -19,8 +22,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/web3dart.dart';
 
 //import screens
+import 'config/constants.dart';
 import 'screens/HomeScreen.dart';
-import 'screens/ScanningScreen.dart';
 import 'screens/UserScanResultsScreen.dart';
 import 'screens/MetadataInputScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
@@ -118,21 +121,19 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 
   void _onSessionConnect(SessionConnect? args) {
-    WalletType? walletType = walletConfig[args?.session.peer.metadata.url];
-    ref.read(walletTypeProvider.notifier).state = walletType;
+    // WalletType? walletType = walletConfig[args?.session.peer.metadata.url];
+    // ref.read(walletTypeProvider.notifier).state = walletType;
     ref.read(wcSessionProvider.notifier).state = args?.session;
     final storage = SharedPreferences.getInstance();
     final session = jsonEncode(args?.session);
     //store session
     storage.then((value) => value.setString('session', session));
     //store wallet type (e.g. trust wallet, metamask, etc.)
-    storage.then((value) =>
-        value.setString('walletType', jsonEncode(walletType!.toJson())));
+    // storage.then((value) =>
+    //     value.setString('walletType', jsonEncode(walletType!.toJson())));
   }
 
   void _onSessionDisconnect(SessionDelete? args) {
-    ref.watch(wcSessionProvider.notifier).state = null;
-    ref.watch(walletTypeProvider.notifier).state = null;
     //remove session and wallet type
     final storage = SharedPreferences.getInstance();
     storage.then((value) => value.remove('session'));
@@ -169,37 +170,36 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final storage = await SharedPreferences.getInstance();
     // storage.remove('session');
     // storage.remove('walletType');
-    // storage.remove('backendSession');
+    // storage.remove('userSession');
     final storedSession = storage.getString('session');
     final storedWalletType = storage.getString('walletType');
-    final storedBackendSession = storage.getString('backendSession');
+    final storedUserSession = storage.getString('userSession');
     //check if a session is stored
     if (storedSession != null &&
         storedWalletType != null &&
-        storedBackendSession != null) {
+        storedUserSession != null) {
       final session = SessionData.fromJson(jsonDecode(storedSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
-      final backendSession =
-          BackendSession.fromJson(jsonDecode(storedBackendSession));
+      final userSession = UserSession.fromJson(jsonDecode(storedUserSession));
       //check if the stored session is expired
       double nowPlusOneHour =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
       if (session.expiry > nowPlusOneHour &&
-          backendSession.expiryDate > nowPlusOneHour) {
+          userSession.expiryDate > nowPlusOneHour) {
         ref.read(wcSessionProvider.notifier).state = session;
         ref.read(walletTypeProvider.notifier).state = walletType;
-        ref.read(backendSessionProvider.notifier).state = backendSession;
+        ref.read(userSessionProvider.notifier).state = userSession;
       } else {
         //remove session and wallet type from storage
         storage.remove('session');
         storage.remove('walletType');
-        storage.remove('backendSession');
+        storage.remove('userSession');
       }
     } else {
       //remove session and wallet type from storage
       storage.remove('session');
       storage.remove('walletType');
-      storage.remove('backendSession');
+      storage.remove('userSession');
     }
   }
 
@@ -243,7 +243,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       //register all routes
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
-        ScanningScreen.routeName: (context) => const ScanningScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),
         UserScanResultsScreen.routeName: (context) =>
             const UserScanResultsScreen(),
@@ -254,6 +253,10 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         AddAttachmentScreen.routeName: (context) => const AddAttachmentScreen(),
         ListAttachmentsScreen.routeName: (context) =>
             const ListAttachmentsScreen(),
+        PinScreen.routeName: (context) => const PinScreen(),
+        EnterPukScreen.routeName: (context) => const EnterPukScreen(),
+        AdminInitCard.routeName: (context) => const AdminInitCard(),
+        CardLostScreen.routeName: (context) => const CardLostScreen(),
       },
     );
   }

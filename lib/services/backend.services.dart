@@ -1,3 +1,10 @@
+import 'dart:convert';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
@@ -63,6 +70,16 @@ Future<String> sendGaslessRequest(
   return response.data; //txId
 }
 
+// gets the hash that needs to be used to sign a gasless tx request.
+Future<String> getEthSignTypedDataSignature(
+    EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
+  final Dio dio = getBackendClient();
+  final String url = '/collection/$collectionId/metatx/hash';
+  //make post request with dio
+  final response = await dio.post(url, data: txRequest);
+  return response.data; //hash
+}
+
 // This function will post a user action to the analytics backend.
 Future<void> sendAnalyticsTrace(String caseId, String description, String type,
     {Map<String, dynamic>? tags}) async {
@@ -98,7 +115,8 @@ Future<String> getSessionId() async {
       stackTrace: s,
     );
     print(e);
-    return "";
+    //fallback!
+    return makeRandomInt().toString();
   }
 }
 
@@ -111,8 +129,8 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
           "sessionId": sessionId,
           "walletAddress": userWalletAddress.hex,
           "userWalletSignature": {
-            'r': '0x' + signature.r.toRadixString(16),
-            's': '0x' + signature.s.toRadixString(16),
+            'r': convertSignatureParamToHexString(signature.r),
+            's': convertSignatureParamToHexString(signature.s),
             'v': signature.v
           }
         },
@@ -127,5 +145,59 @@ Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
     );
     print(e);
     return 0;
+  }
+}
+
+/// save a userSession of a OwnerCard
+Future<void> saveUserSession(
+    String sessionId,
+    EthereumAddress cardWalletAddress,
+    MsgSignature signature,
+    WidgetRef ref) async {
+  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+  int sessionExpirationDate = await getSessionExpiration(
+      sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
+
+  ref.read(userAddressProvider.notifier).state = cardWalletAddress;
+  ref.read(walletTypeProvider.notifier).state = walletConfig['ownerCard'];
+  const isOwnerCard = true;
+  UserSession userSession = UserSession(sessionId, signature,
+      ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
+
+  ref.read(userSessionProvider.notifier).state = userSession;
+
+  //persist session date
+  final SharedPreferences storage = await SharedPreferences.getInstance();
+  final String jsonUserSession = jsonEncode(userSession.toJson());
+  storage.setString('userSession', jsonUserSession);
+}
+
+Future<bool> sendCardLostToBackend(
+    EthereumAddress chipAddress,
+    EthereumAddress collectionAddress,
+    SignatureData chipSignature,
+    String sessionId,
+    String email) async {
+  final Dio dio = getBackendClient();
+  final String url = '/collection/${collectionAddress.hex}/recovery';
+  try {
+    await dio.post(url, data: {
+      'sessionId': sessionId,
+      'email': email,
+      'chipAddress': chipAddress.hex,
+      'chipSignature': {
+        'r': convertSignatureParamToHexString(chipSignature.signature.r),
+        's': convertSignatureParamToHexString(chipSignature.signature.s),
+        'v': chipSignature.signature.v,
+      }
+    });
+    return true;
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+    return false;
   }
 }

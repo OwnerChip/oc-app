@@ -64,7 +64,7 @@ class _DropdownContainerState extends State<DropdownContainer>
         ),
         padding: const EdgeInsets.only(
             top: 5.0, bottom: 10.0, left: 10.0, right: 10.0),
-        color: CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor,
+        color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
         children: [
           GestureDetector(
               behavior: HitTestBehavior.translucent,

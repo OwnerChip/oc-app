@@ -1,8 +1,11 @@
 //import packages
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
 
 //import services
@@ -13,11 +16,9 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 //import screens
-import 'package:ownerchip_whitelabel/screens/ScanningScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
@@ -25,36 +26,28 @@ import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
-  static const routeName = '/login';
+  static const routeName = '/home';
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-void onScanButtonPress(BuildContext context, mounted) async {
+Future<void> onButtonPress(WidgetRef ref, BuildContext context, bool mounted,
+    bool isInitialize) async {
   try {
     //check if there is internet connections
     if (!await checkInternetConnection()) {
       throw Exception("No internet connection");
     }
-
-    //check if NFC is deactivated
-    if (!await checkNfcReader()) {
-      throw CustomException("NFC Reader is not activated");
-    }
-
-    if (mounted) {
-      Navigator.pushNamed(context, ScanningScreen.routeName,
-          arguments: ScanningScreenArguments(UserScanResultsScreen.routeName));
-    }
-  } on CustomException catch (e, s) {
+  } catch (e, s) {
     await Sentry.captureException(
       e,
       stackTrace: s,
@@ -63,6 +56,13 @@ void onScanButtonPress(BuildContext context, mounted) async {
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoNfcReader, 'error'),
     );
+  }
+
+  try {
+    //check if NFC is deactivated
+    if (!await checkNfcReader()) {
+      throw CustomException("NFC Reader is not activated");
+    }
   } catch (e, s) {
     await Sentry.captureException(
       e,
@@ -73,41 +73,20 @@ void onScanButtonPress(BuildContext context, mounted) async {
           context.loc.errorNoInternetConnection, 'error'),
     );
   }
-}
 
-void onInitializeButtonPress(BuildContext context, Web3App wc, mounted) async {
   try {
-    //check if there is internet connections
-    if (!await checkInternetConnection()) {
-      throw Exception("No internet connection");
-    }
-
-    //check if NFC is deactivated
-    if (!await checkNfcReader()) {
-      throw CustomException("NFC Reader is not activated");
-    }
-
     if (mounted) {
-      Navigator.pushNamed(context, ScanningScreen.routeName,
-          arguments: ScanningScreenArguments(ChainSelectorScreen.routeName));
+      if (isInitialize) {
+        await initializeItem(ref, context);
+      } else {
+        await scanItem(ref, context);
+      }
     }
-  } on CustomException catch (e, s) {
-    await Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
+  } catch (e) {
+    NfcManager.instance.stopSession();
     ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-          context.loc.errorNoNfcReader, 'error'),
-    );
-  } catch (e, s) {
-    await Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-          context.loc.errorNoInternetConnection, 'error'),
+      returnSnackBarWidget(
+          context.loc.errorHeadingSnackBar, 'Error reading chip.', 'error'),
     );
   }
 }
@@ -145,6 +124,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ])
                 : Container(),
+
+            // MIDDLE CONTENT
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -152,35 +133,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     text: context.loc.scanning,
                     svgPath:
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                    onTap: () => onScanButtonPress(context, mounted)),
+                    onTap: () => onButtonPress(ref, context, mounted, false)),
                 const SizedBox(height: 40),
                 CustomRoundedButton(
                   width: 250,
                   text: context.loc.scanNow,
-                  onPressed: () => onScanButtonPress(context, mounted),
+                  onPressed: () => onButtonPress(ref, context, mounted, false),
                 ),
                 const SizedBox(height: 20),
                 relevantCollections.when(
                     data: (data) => data.hasAnyMinterRole! &&
-                            wc != null &&
-                            wc!.getActiveSessions().isNotEmpty
+                            ref.read(userSessionProvider) != null
                         ? CustomRoundedButton(
                             width: 250,
                             text: context.loc.initializeChip,
                             onPressed: () =>
-                                onInitializeButtonPress(context, wc, mounted),
+                                onButtonPress(ref, context, mounted, true),
                           )
-                        : Container(),
-                    loading: () => Text(context.loc.loading),
-                    error: (err, stack) => Container()),
+                        : const SizedBox(height: 40),
+                    loading: () =>
+                        SizedBox(height: 40, child: Text(context.loc.loading)),
+                    error: (err, stack) => const SizedBox(height: 40)),
               ],
             ),
-            const SizedBox(height: 20),
-            CustomOutlinedButton(
-              buttonText: context.loc.more,
-              onPressed: () =>
-                  Navigator.pushNamed(context, MoreInfoScreen.routeName),
-            ),
+
+            //FOOTER CONTENT
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                //if stebo app show additional button
+                dotenv.get('APP_ID') == 'stebo'
+                    ? Column(children: [
+                        CustomOutlinedButton(
+                            buttonText: 'SteboArt',
+                            onPressed: () => launchUrl(
+                                  Uri.parse('https://www.steboart.com'),
+                                )),
+                        const SizedBox(height: 10),
+                      ])
+                    : Container(),
+                CustomOutlinedButton(
+                  buttonText: context.loc.more,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, MoreInfoScreen.routeName),
+                ),
+              ],
+            )
           ]),
     );
   }

@@ -32,6 +32,7 @@ dependencies:
   flutter_linkify: ^6.0.0
   walletconnect_flutter_v2: ^2.0.8
   file_picker: ^5.3.2
+  pinput: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -62,7 +63,7 @@ flutter:
     - assets/images/ownerchip/
     - assets/images/stebo/
     - assets/images/ownerchip_infineon/
-    - assets/images/ownerchip_user/
+    - assets/images/stilami/
     - assets/contracts/collection.abi.json
     - assets/contracts/registry.abi.json
     - assets/contracts/forwarder.abi.json

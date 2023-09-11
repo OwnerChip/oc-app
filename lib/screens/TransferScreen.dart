@@ -1,8 +1,13 @@
 //import packages
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:async/async.dart';
@@ -10,7 +15,7 @@ import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 
@@ -18,10 +23,7 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -48,51 +50,68 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   String loadingSvgPath =
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
-
   String textInput = '';
 
   CancelableOperation? cancellableOperation;
 
-  Future<void> transferToken(Web3App wc, BigInt tokenId, EthereumAddress to,
-      SignatureData signatureData, EthereumAddress connectedWallet) async {
+  Future<void> toggleLoading() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
+  Future<void> approveToken(
+      Web3App wc,
+      BigInt tokenId,
+      EthereumAddress to,
+      SignatureData signatureData,
+      EthereumAddress connectedWallet,
+      String sessionId) async {
     final wcSession = ref.read(wcSessionProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
-    final transferProcess = Sentry.startTransaction('initTransfer()', 'task');
+    final userSession = ref.watch(userSessionProvider);
+    final isOwnerCard = userSession?.isOwnerCard;
+    final transferProcess = Sentry.startTransaction('initApprove()', 'task');
     try {
-      if (wcSession == null) {
-        walletPopupBuilder(context, ref, wc);
-      }
-
       setState(() {
         isLoading = true;
         loadingText = context.loc.transferInProgress;
       });
 
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_STARTED");
+      sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
+        'connectedWallet': connectedWallet,
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
+        'to': to.toString(),
+      });
 
-      final List response = await checkMetaTx(
-          config.collectionId, gaslessTransferFunctionSignature);
+      final List response =
+          await checkMetaTx(config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
-            gaslessTransferFunctionSignature,
+            ref,
+            context,
+            approveFunctionSignature, // APPROVE
             config.chainId,
             config.collectionId,
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
             ref.read(walletTypeProvider)!,
-            toAccount: to);
+            toAccount: to,
+            tokenId: tokenId,
+            enableRecovery: isOwnerCard,
+            toggleLoading: toggleLoading);
       } else {
         txnHash = await makeAndSendNormalTx(
-            transferFunctionSignature,
+            approveFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
@@ -112,8 +131,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = context.loc.transferSuccess;
         });
-        //refresh provider state to update nft owner for next screen
-        AsyncValue<EthereumAddress> owner = ref.refresh(nftOwnerProvider);
+        //refresh provider state to update nft owner & approval for next screen
+        await ref.refresh(nftOwnerProvider.future);
+        await ref.refresh(nftApprovalProvider.future);
 
         //wait for 1 second to show success icon
         await Future.delayed(const Duration(seconds: 1));
@@ -124,8 +144,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         Navigator.pushNamed(context, UserScanResultsScreen.routeName);
         // send status to analytics
         transferProcess.finish();
-        sendAnalyticsTrace("$connectedWallet-${tokenId.toString()}", txnHash,
-            "TRANSFER_SUCCESS");
+        sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
+          'connectedWallet': connectedWallet,
+          'chipWallet': convertTokenIdToEthereumAddress(
+              ref.read(chipInfoProvider).tokenId),
+          'to': to.toString(),
+        });
       } else {
         throw Exception(context.loc.transferError);
       }
@@ -137,8 +161,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       transferProcess.throwable = e;
       transferProcess.status = const SpanStatus.aborted();
       transferProcess.finish();
-      sendAnalyticsTrace(
-          "$connectedWallet-${tokenId.toString()}", "", "TRANSFER_ERROR");
+      sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
+        'connectedWallet': connectedWallet,
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
+        'to': to.toString(),
+      });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
@@ -166,7 +194,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final wc = ref.watch(wcProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
-    final SignatureData signatureData = ref.watch(signatureDataProvider);
+    final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
 
     return CustomOverlay(
         show: isLoading,
@@ -189,7 +218,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         ),
         child: Scaffold(
           extendBodyBehindAppBar: true,
-          appBar: const CustomAppBar(
+          appBar: CustomAppBar(
+            text: context.loc.transferOwnership,
             showBackButton: true,
           ),
           body: ScreenBodyLayout(
@@ -200,26 +230,52 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                   key: _formKey,
                   child: Column(
                     children: <Widget>[
-                      const SizedBox(height: 40),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            context.loc.transferScreenText,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                        ),
-                      ),
+                      // const SizedBox(height: 40),
+                      // SizedBox(
+                      //   width: MediaQuery.of(context).size.width * 0.8,
+                      //   child: Align(
+                      //     alignment: Alignment.center,
+                      //     child: Text(
+                      //       context.loc.transferOwnership,
+                      //       textAlign: TextAlign.center,
+                      //       style: Theme.of(context).textTheme.headlineMedium,
+                      //     ),
+                      //   ),
+                      // ),
                       const SizedBox(height: 60),
+                      Icon(
+                        Icons.credit_card,
+                        size: 40,
+                        color: CustomColors(dotenv.get('APP_ID')).primaryColor,
+                      ),
+                      const SizedBox(height: 10),
+                      CustomRoundedButton(
+                          text: "Transfer to OwnerCard",
+                          onPressed: (() async {
+                            EthereumAddress chipWalletAddress =
+                                await getChipWalletAddress(context, ref);
+
+                            fromCancelable(approveToken(
+                                wc!,
+                                chipInfo.tokenId,
+                                chipWalletAddress,
+                                signatureData,
+                                connectedWallet,
+                                sessionId));
+                          })),
+                      const SizedBox(height: 30),
+                      Text(
+                        context.loc.or,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 30),
                       TextFormField(
                         controller: _inputController,
                         onChanged: (text) => setState(() {
                           textInput = text;
                         }),
                         validator: (value) {
-                          if (!validateEthAddress(value)) {
+                          if (value == null || !validateEthAddress(value)) {
                             return context.loc.pleaseEnterValidWalletAddress;
                           } else {
                             return null;
@@ -239,20 +295,48 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       ),
                       const SizedBox(height: 20),
                       CustomRoundedButton(
-                          text: context.loc.transferToken,
-                          onPressed: (() => {
-                                if (_formKey.currentState!.validate())
-                                  {
-                                    FocusScope.of(context).unfocus(),
-                                    fromCancelable(transferToken(
-                                        wc!,
-                                        chipInfo.tokenId,
-                                        EthereumAddress.fromHex(
-                                            textInput.trim()),
-                                        signatureData,
-                                        connectedWallet))
-                                  }
-                              }))
+                          text: context.loc.transferToAddress,
+                          onPressed: (textInput.isEmpty
+                              ? null
+                              : () => {
+                                    if (_formKey.currentState!.validate())
+                                      {
+                                        FocusScope.of(context).unfocus(),
+                                        fromCancelable(approveToken(
+                                            wc!,
+                                            chipInfo.tokenId,
+                                            EthereumAddress.fromHex(
+                                                textInput.trim()),
+                                            signatureData,
+                                            connectedWallet,
+                                            sessionId))
+                                      }
+                                  })),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        children: [
+                          //warning icon
+                          const SizedBox(width: 20),
+                          SvgPicture.asset(
+                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+                          SizedBox(width: 10),
+                          //Text
+                          Expanded(
+                            child: Text(
+                              context.loc.digitalContentWillBeTransferred,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          //TODO: show a hint if metamask is connected that the correct CHAIN must be selected in metamask
+                        ],
+                      )
                     ],
                   ),
                 ),

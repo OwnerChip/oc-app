@@ -3,18 +3,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/utils.dart';
-import 'returnSnackBarWidget.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/WalletPopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -31,7 +31,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Web3App? wc = ref.watch(wcProvider);
     SessionData? wcSession = ref.watch(wcSessionProvider);
-    BackendSession? backendSession = ref.watch(backendSessionProvider);
+    UserSession? userSession = ref.watch(userSessionProvider);
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton
@@ -53,7 +53,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   ],
                 )
               : Image.asset(
-                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo.png',
+                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_appbar.png',
                   fit: BoxFit.contain)),
       title: Text(text ?? '', style: Theme.of(context).textTheme.displaySmall),
       centerTitle: true,
@@ -63,7 +63,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
-                wcSession != null && backendSession != null
+                userSession != null
                     ? IconButton(
                         padding: const EdgeInsets.all(0.0),
                         icon: Icon(Icons.logout,
@@ -72,13 +72,22 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () {
-                          wc!.disconnectSession(
-                              topic: wcSession.topic,
-                              reason: const WalletConnectError(
-                                  code: 6000,
-                                  message:
-                                      'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
-                          ref.read(backendSessionProvider.notifier).state =
+                          //only delete wc session if user is connected via wallet connect
+                          if (wc != null && wcSession != null) {
+                            wc.disconnectSession(
+                                topic: wcSession.topic,
+                                reason: const WalletConnectError(
+                                    code: 6000,
+                                    message:
+                                        'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+                          }
+
+                          //reset providers
+                          ref.read(userAddressProvider.notifier).state =
+                              zeroAddress; //delete user address from riverpod
+                          ref.read(walletTypeProvider.notifier).state =
+                              null; //delete wallet type from riverpod
+                          ref.read(userSessionProvider.notifier).state =
                               null; //delete backend session from riverpod
                           Navigator.pushNamedAndRemoveUntil(
                               context, HomeScreen.routeName, (route) => false);
@@ -96,7 +105,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 Align(
                   alignment: const Alignment(0.0, 0.95),
                   child: Text(
-                    wcSession != null && backendSession != null
+                    userSession != null
                         ? context.loc.disconnect
                         : context.loc.connect,
                     style: Theme.of(context)

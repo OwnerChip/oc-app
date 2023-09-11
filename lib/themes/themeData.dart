@@ -8,10 +8,10 @@ class CustomThemeData {
     return ThemeData(
       unselectedWidgetColor: CustomColors(dotenv.get('APP_ID')).primaryColor,
       primaryColor: CustomColors(dotenv.get('APP_ID')).primaryColor,
-      primaryColorLight: CustomColors(dotenv.get('APP_ID')).primaryColorLight,
+      primaryColorLight: CustomColors(dotenv.get('APP_ID')).accentColor,
       shadowColor: CustomColors(dotenv.get('APP_ID')).shadowColor,
       scaffoldBackgroundColor:
-          CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor,
+          CustomColors(dotenv.get('APP_ID')).secondaryColor,
       cardColor: CustomColors(dotenv.get('APP_ID')).cardColor,
       textTheme: TextTheme(
         displayLarge: TextStyle(

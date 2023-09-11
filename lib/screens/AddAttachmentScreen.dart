@@ -10,6 +10,9 @@ import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChooseFileButton.dart';
 import 'package:sentry/sentry.dart';
 import 'package:crypto/crypto.dart';
@@ -23,11 +26,9 @@ import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -35,7 +36,7 @@ import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
 //import services
@@ -192,7 +193,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
     Attachment attachmentBeingEdited =
         ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
 
     try {
       setState(() {
@@ -200,7 +201,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = 'Uploading...';
       });
       await putAttachmentMetadataToBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -213,41 +214,20 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
               ? urlTextInput
               : null);
 
+      await ref.refresh(fetchAttachmentsProvider.future);
+
       setState(() {
         isLoading = false;
         loadingText = '';
       });
 
-      //set attachment in provider at corresponding index
-      if (type == AttachmentType.url) {
-        //ATTACHMENT IS URL
-        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
-            Attachment(
-          titleTextInput,
-          urlTextInput,
-          type,
-          urlTextInput,
-          attachmentBeingEdited.backendUuid,
-          isPrivate: isPrivate,
-          isFromCreator: attachmentBeingEdited.isFromCreator,
-        );
-      } else {
-        //ATTACHMENT IS FILE
-        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!] =
-            Attachment(
-          titleTextInput,
-          attachmentBeingEdited.fileName,
-          AttachmentType.other,
-          attachmentBeingEdited.url,
-          attachmentBeingEdited.backendUuid,
-          isPrivate: isPrivate,
-          isFromCreator: attachmentBeingEdited.isFromCreator,
-        );
-      }
+      sendAnalyticsTrace(userSession.sessionId,
+          attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider),
+            'chipWallet': convertTokenIdToEthereumAddress(chipInfo.tokenId)
+          });
 
-      //copy state to trigger rebuild
-      ref.read(localAttachmentsProvider.notifier).state =
-          List.from(ref.read(localAttachmentsProvider.notifier).state);
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -280,14 +260,14 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       int fileSize = file!.size;
       String contentType = lookupMimeType(file!.path!)!;
 
-      BackendSession? backendSession = ref.read(backendSessionProvider);
+      UserSession? userSession = ref.read(userSessionProvider);
       EthereumAddress walletAddress = await ref.read(userAddressProvider);
       List chainAndCollectionId = await returnChainAndCollectionId();
       int chainId = chainAndCollectionId[0];
       EthereumAddress collectionId = chainAndCollectionId[1];
 
       List response = await postAttachmentMetadataToBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -306,22 +286,21 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       var awsResponse =
           await uploadFileToAWS(File(file!.path!), awsUrl, contentType);
 
-      ref.refresh(fetchAttachmentsProvider);
+      var _ = await ref.refresh(fetchAttachmentsProvider.future);
 
       setState(() {
         isLoading = false;
         loadingText = '';
       });
       if (file != null) {
-        bool hasMinterRole = await checkMinterRole(
-            getRPCUrlFromChainId(chainId), collectionId, walletAddress);
-        Attachment attachment = Attachment(
-            titleTextInput, fileName!, AttachmentType.other, awsUrl, fileUuid,
-            isPrivate: isPrivate, isFromCreator: hasMinterRole);
-        ref.read(localAttachmentsProvider.notifier).state = [
-          ...ref.read(localAttachmentsProvider.notifier).state,
-          attachment
-        ];
+        sendAnalyticsTrace(
+            userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider),
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
         Navigator.pop(context, file);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -353,11 +332,11 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
 
     try {
       List result = await postAttachmentMetadataToBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
@@ -370,10 +349,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       String fileUuid = result[0];
       String status = result[1];
 
-      final walletAddress = ref.read(userAddressProvider);
-
-      bool hasMinterRole = await checkMinterRole(
-          getRPCUrlFromChainId(chainId), collectionId, walletAddress);
+      await ref.refresh(fetchAttachmentsProvider.future);
 
       setState(() {
         isLoading = false;
@@ -381,13 +357,22 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
 
       if (status == 'OK') {
-        Attachment attachment = Attachment(titleTextInput, urlTextInput,
-            AttachmentType.url, urlTextInput, fileUuid,
-            isPrivate: isPrivate, isFromCreator: hasMinterRole);
-        ref.read(localAttachmentsProvider.notifier).state = [
-          ...ref.read(localAttachmentsProvider.notifier).state,
-          attachment
-        ];
+        // Attachment attachment = Attachment(titleTextInput, urlTextInput,
+        //     AttachmentType.url, urlTextInput, fileUuid,
+        //     isPrivate: isPrivate, isFromCreator: hasMinterRole);
+        // ref.read(localAttachmentsProvider.notifier).state = [
+        //   ...ref.read(localAttachmentsProvider.notifier).state,
+        //   attachment
+        // ];
+
+        sendAnalyticsTrace(
+            userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider),
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
         Navigator.pop(context);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -422,29 +407,41 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     int chainId = chainAndCollectionId[0];
     EthereumAddress collectionId = chainAndCollectionId[1];
 
-    BackendSession? backendSession = ref.read(backendSessionProvider);
+    UserSession? userSession = ref.read(userSessionProvider);
 
     try {
+      setState(() {
+        isLoading = true;
+        loadingText = 'Deleting attachment';
+      });
       var result = await deleteAttachmentFromBackend(
-          backendSession!,
+          userSession!,
           ref.read(userAddressProvider),
           chainId,
           collectionId,
           ref.read(chipInfoProvider).tokenId,
           attachment.backendUuid);
+
+      var _ = await ref.refresh(fetchAttachmentsProvider.future);
+
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
     } catch (e) {
-      //show error snackbar
+      setState(() {
+        isLoading = false;
+        loadingText = '';
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorDeletingAttachment, 'error'),
       );
+
       throw Exception(context.loc.errorDeletingAttachment);
     }
 
-    ref.read(localAttachmentsProvider.notifier).state.removeAt(navArgs.index!);
-    ref.read(localAttachmentsProvider.notifier).state = List.from(ref
-        .read(localAttachmentsProvider.notifier)
-        .state); //state has to be copied and set again to trigger rebuild
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.successHeadingSnackbar,
@@ -455,6 +452,14 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       buttonText = context.loc.chooseFile;
       file = null;
     });
+
+    sendAnalyticsTrace(
+        userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
+        tags: {
+          'connectedWallet': ref.read(userAddressProvider),
+          'chipWallet': convertTokenIdToEthereumAddress(
+              ref.read(chipInfoProvider).tokenId),
+        });
   }
 
   Future<List> returnChainAndCollectionId() async {
@@ -545,6 +550,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                           //URL FORM FIELD
                           navArgs != null && navArgs.type == AttachmentType.url
                               ? TextFormField(
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                   controller: _urlInputController,
                                   onChanged: (text) => setState(() {
                                         urlTextInput = text;
@@ -555,7 +561,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                       return context.loc.enterValidUrl;
                                     }
 
-                                    if (value!.isEmpty) {
+                                    if (value.isEmpty) {
                                       return context.loc.urlCannotBeEmpty;
                                     }
                                     if (attachmentList.length >= 10) {
@@ -585,7 +591,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                               ListTile(
                                 contentPadding: const EdgeInsets.all(0),
                                 horizontalTitleGap: 7,
-                                title: Text('Public',
+                                title: Text(context.loc.public,
                                     style: TextStyle(
                                       color: CustomColors(dotenv.get('APP_ID'))
                                           .primaryColor,
@@ -611,7 +617,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                               ListTile(
                                 contentPadding: const EdgeInsets.all(0),
                                 horizontalTitleGap: 7,
-                                title: Text('Private',
+                                title: Text(context.loc.private,
                                     style: TextStyle(
                                       color: CustomColors(dotenv.get('APP_ID'))
                                           .primaryColor,

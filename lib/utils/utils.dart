@@ -6,17 +6,19 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:web3dart/credentials.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:crypto/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 //validate ethereum address
-bool validateEthAddress(String? hex) {
+bool validateEthAddress(String hex) {
+  //validate if hex is a valid ethereum address
+
   bool result = true;
 
   if (hex == null) {
@@ -146,13 +148,18 @@ String uint8ListTo32ByteHex(Uint8List uint8List) {
   return hex.padLeft(64, '0');
 }
 
-EthereumAddress convertTokenIdToEthereumAddress(BigInt intToConvert) {
+String convertTokenIdToEthereumAddress(BigInt intToConvert) {
   var hex = intToConvert.toRadixString(16);
-  return EthereumAddress.fromHex("0x${hex.padLeft(40, '0')}");
+  return "0x${hex.padLeft(40, '0')}";
+}
+
+String convertSignatureParamToHexString(BigInt intToConvert) {
+  var hex = intToConvert.toRadixString(16);
+  return "0x${hex.padLeft(64, '0')}";
 }
 
 // specific to secora chip response
-Uint8List getPublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
+Uint8List makePublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
   return responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
 }
 
@@ -179,6 +186,10 @@ String getFileNameSubstring(String fileName) {
   return fileName.substring(0, 5) +
       '...' +
       fileName.substring(fileName.length - 9);
+}
+
+String getEthAddressSubstring(EthereumAddress address) {
+  return '${address.hex.substring(0, 5)}...';
 }
 
 //function that takes file as input and returns sha256 hash as hex string

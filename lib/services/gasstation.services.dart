@@ -52,17 +52,21 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     EthereumAddress from,
     EthereumAddress to,
     EthereumAddress? toAccount,
-    String? tokenURI) async {
+    String? tokenURI,
+    BigInt? tokenId,
+    bool? enableRecovery) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
-  String data;
-  if (functionSignatureHash == gaslessMintFunctionSignature) {
+  final String data;
+  if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!);
-  } else if (functionSignatureHash == gaslessBurnFunctionSignature) {
+  } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
-  } else if (functionSignatureHash == gaslessTransferFunctionSignature) {
-    data = makeTransferData(
-        functionSignatureHash, randomValueHash, signature, toAccount!);
+  } else if (functionSignatureHash == transferFromFunctionSignature) {
+    data = makeTransferFromData(
+        functionSignatureHash, randomValueHash, signature, enableRecovery);
+  } else if (functionSignatureHash == approveFunctionSignature) {
+    data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -74,7 +78,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     'to': to.hex,
     'value': 0,
     'gas':
-        250000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
+        300000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
     'nonce': nonce.toInt(),
     'data': data,
   };
@@ -92,19 +96,30 @@ Future<Map<String, dynamic>> buildTypedData(int chainId, request) async {
 // which is then signed by the user's wallet to create a signature.
 // This request is then passed to the smart contract as a gasless transaction.
 
-Future<List<Map<String, dynamic>>> makeGaslessParams({
-  required String functionSignatureHash,
-  required String chainRpcUrl,
-  required int chainId,
-  required Uint8List randomValueHash,
-  required MsgSignature signature,
-  required EthereumAddress from,
-  required EthereumAddress to,
-  EthereumAddress? toAccount,
-  String? tokenURI,
-}) async {
-  final request = await buildTypedV4Request(functionSignatureHash, chainRpcUrl,
-      chainId, randomValueHash, signature, from, to, toAccount, tokenURI);
+Future<List<Map<String, dynamic>>> makeGaslessParams(
+    {required String functionSignatureHash,
+    required String chainRpcUrl,
+    required int chainId,
+    required Uint8List randomValueHash,
+    required MsgSignature signature,
+    required EthereumAddress from,
+    required EthereumAddress to,
+    EthereumAddress? toAccount,
+    String? tokenURI,
+    BigInt? tokenId,
+    bool? enableRecovery}) async {
+  final request = await buildTypedV4Request(
+      functionSignatureHash,
+      chainRpcUrl,
+      chainId,
+      randomValueHash,
+      signature,
+      from,
+      to,
+      toAccount,
+      tokenURI,
+      tokenId,
+      enableRecovery);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

@@ -1,9 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:flutter/foundation.dart';
@@ -26,7 +27,8 @@ class NFCPlatform {
     }
   }
 
-  Future<List> sendCommand(Uint8List data) async {
+  /// sends an APDU commands and returns the response List<Uint8List, int, int>
+  Future<List<dynamic>> sendCommand(Uint8List data) async {
     if (Platform.isIOS) {
       Iso7816ResponseApdu res = await nfc.sendCommandRaw(data);
       return [res.payload, res.statusWord1, res.statusWord2];
@@ -52,6 +54,59 @@ Uint8List makeGetKeyInfoCommand(hexKeyNumber) {
     0x00,
     0x00,
   ]);
+}
+
+Uint8List setPinCommand(String pin) {
+  final Uint8List cmd = Uint8List.fromList([
+    0x00,
+    0x40,
+    0x00,
+    0x00,
+    pin.length, // Length of the PIN in bytes (between 4 and 62 bytes)
+    ...pin.codeUnits,
+    0x08 // Expected length of answer
+  ]);
+  return cmd;
+}
+
+Uint8List verifyPinCommand(String pin) {
+  final Uint8List cmd = Uint8List.fromList([
+    0x00,
+    0x44,
+    0x00,
+    0x00,
+    pin.length, // Length of the PIN in bytes (between 4 and 62 bytes)
+    ...pin.codeUnits
+  ]);
+  return cmd;
+}
+
+Uint8List changePinCommand(String oldPin, String newPin) {
+  final Uint8List cmd = Uint8List.fromList([
+    0x00,
+    0x42,
+    0x00,
+    0x00,
+    oldPin.length + newPin.length + 2,
+    oldPin.length,
+    ...oldPin.codeUnits,
+    newPin.length,
+    ...newPin.codeUnits,
+    0x08 // Expected length of answer
+  ]);
+  return cmd;
+}
+
+Uint8List unlockPinCommand(Uint8List puk) {
+  final Uint8List cmd = Uint8List.fromList([
+    0x00,
+    0x46,
+    0x00,
+    0x00,
+    0x08,
+    ...puk,
+  ]);
+  return cmd;
 }
 
 Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
@@ -99,8 +154,13 @@ Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
 
 //****NFC HELPERS****
 
-Future<Uint8List> getFirstKey(NFCPlatform nfc) async {
-  Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
+Future<Uint8List> getFirstPubKey(NFCPlatform nfc) async {
+  return await getPubKeyN(nfc, 0x01);
+}
+
+//getKeyN
+Future<Uint8List> getPubKeyN(NFCPlatform nfc, int key) async {
+  Uint8List getKeyInfo = makeGetKeyInfoCommand(key);
   var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
 
   Uint8List getKeyInfoData = responseGetKeyInfo[0];
@@ -112,18 +172,19 @@ Future<Uint8List> getFirstKey(NFCPlatform nfc) async {
       !(getKeyInfoResponseCode1 == 106 && getKeyInfoResponseCode2 == 136);
 
   if (keyExists) {
-    Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
+    Uint8List chipPubKey = makePublicKeyFromChipResponse(getKeyInfoData);
     return chipPubKey;
   } else {
-    return Uint8List(0);
+    return Uint8List.fromList([]);
   }
 }
 
 Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
   //create new key
   var responseGenerateKey = await nfc.sendCommand(GENERATE_KEY);
-  //get first key info after generating new key
-  Uint8List getKeyInfo = makeGetKeyInfoCommand(0x01);
+  int keySlot = responseGenerateKey[0][0];
+  //get key info after generating new key
+  Uint8List getKeyInfo = makeGetKeyInfoCommand(keySlot);
   var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
   Uint8List getKeyInfoData = responseGetKeyInfo[0];
   int getKeyInfoResponseCode1 = responseGetKeyInfo[1];
@@ -132,19 +193,20 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
   if (!(getKeyInfoResponseCode1 == 144 && getKeyInfoResponseCode2 == 00)) {
     throw Exception("Error while generating key");
   }
-  Uint8List chipPubKey = getPublicKeyFromChipResponse(getKeyInfoData);
+  Uint8List chipPubKey =
+      makePublicKeyFromChipResponse(getKeyInfoData); //takes first 20 bytes
 
   return chipPubKey;
 }
 
 //check if first key already exists, if not, generate key. Return key info.
-Future<List<dynamic>> initializeChip(
+Future<List<dynamic>> createFirstKeypairOnChip(
     NFCPlatform nfc, bool initializeNdef, String sessionId) async {
   bool empty = false;
   //empty UintList
   await nfc.sendCommand(SELECT_APP);
 
-  Uint8List chipPubKey = await getFirstKey(nfc);
+  Uint8List chipPubKey = await getFirstPubKey(nfc);
 
   if (chipPubKey.isEmpty) {
     empty = true;
@@ -171,6 +233,32 @@ Future<List<dynamic>> initializeChip(
   }
 
   return [chipEthereumAddressHex, chipTokenId, empty];
+}
+
+//check if first and second keys already exist, if not, generate keys. Return key info.
+Future<Map<String, EthereumAddress>> createSecondKeypairOnChip(
+    NFCPlatform nfc, String sessionId) async {
+  //empty UintList
+  await nfc.sendCommand(SELECT_APP);
+
+  //create first key if it does not exist
+  List res1 = await createFirstKeypairOnChip(nfc, false, sessionId);
+
+  Uint8List key2 = await getPubKeyN(nfc, 2);
+
+  //create second key if it does not exist
+  if (key2.isEmpty) {
+    key2 = await generatePubAddress(nfc);
+  }
+  //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
+  EthereumAddress key1EthereumAddress = res1[0];
+  EthereumAddress key2EthereumAddress =
+      EthereumAddress.fromHex("0x${bytesToHex(publicKeyToAddress(key2))}");
+
+  return {
+    "key1": key1EthereumAddress,
+    "key2": key2EthereumAddress,
+  };
 }
 
 // initialize NDEF tag
@@ -253,5 +341,110 @@ Future<void> nfcPlatformCheck(
     await Future.delayed(const Duration(seconds: 1));
     Navigator.pop(context);
     throw Exception('Tag is not ISO-DEP.');
+  }
+}
+
+/// returns PUK value (8 byte) or throws exception
+Future<String> setPin(NFCPlatform nfc, String pin) async {
+  if (pin.length != 4) {
+    throw Exception("PIN must be 4 characters long.");
+  }
+
+  Uint8List cmd = setPinCommand(pin);
+  List<dynamic> res = await nfc.sendCommand(cmd);
+  Uint8List puk = res[0];
+  int responseCode1 = res[1];
+  int responseCode2 = res[2];
+
+  // ERROR (0x69 0x85)
+  bool success = (responseCode1 == 0x90 && responseCode2 == 0x00);
+
+  if (success && puk.length == 8) {
+    //puk Uint8List to hex string
+    String pukHex = bytesToHex(puk, padToEvenLength: true);
+
+    return pukHex;
+  } else {
+    throw Exception("Error setting pin");
+  }
+}
+
+/// verify PIN, so that commands requiring authentication are allowed
+Future<bool> verifyPin(NFCPlatform nfc, String pin) async {
+  if (pin.length != 4) {
+    throw Exception("PIN must be 4 characters long.");
+  }
+
+  Uint8List cmd = verifyPinCommand(pin);
+  List<dynamic> res = await nfc.sendCommand(cmd);
+  Uint8List response = res[0];
+  int responseCode1 = res[1];
+  int responseCode2 = res[2];
+
+  // check if SUCCESS (0x90 0x00)
+  if (responseCode1 == 144 && responseCode2 == 0) {
+    return true;
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
+    throw Exception("PIN not set");
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
+    throw Exception("PIN blocked. Please use PUK to unblock.");
+  } else {
+    throw Exception("Invalid PIN");
+  }
+}
+
+/// change PIN, returns PUK value (8 byte) or throws exception
+Future<String> changePin(NFCPlatform nfc, String oldPin, String newPin) async {
+  if (oldPin.length != 4) {
+    throw Exception("Old PIN must be 4 characters long.");
+  }
+  if (newPin.length != 4) {
+    throw Exception("New PIN must be 4 characters long.");
+  }
+
+  Uint8List cmd = changePinCommand(oldPin, newPin);
+  List<dynamic> res = await nfc.sendCommand(cmd);
+  Uint8List response = res[0];
+  int responseCode1 = res[1];
+  int responseCode2 = res[2];
+
+  // check if SUCCESS (0x90 0x00)
+  if (responseCode1 == 144 && responseCode2 == 0) {
+    Uint8List puk = response.sublist(0, 7);
+    Utf8Decoder decoder = const Utf8Decoder();
+    return decoder.convert(puk);
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
+    throw Exception("PIN not set");
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
+    throw Exception("PIN blocked. Please use PUK to unblock.");
+  } else if (responseCode1 == 0x6A && responseCode2 == 0x80) {
+    throw Exception("Invalid new PIN");
+  } else {
+    throw Exception("Invalid old PIN");
+  }
+}
+
+/// remove PIN by entering a PUK (8 byte hex string)
+Future<bool> unlockPin(NFCPlatform nfc, String puk) async {
+  if (puk.length != 16) {
+    throw Exception("PUK must be 16 characters / 8 bytes long.");
+  }
+
+  Uint8List pukBytes = hexToBytes(puk);
+  Uint8List cmd = unlockPinCommand(pukBytes);
+  List<dynamic> res = await nfc.sendCommand(cmd);
+  Uint8List response = res[0];
+  int responseCode1 = res[1];
+  int responseCode2 = res[2];
+
+  // check if SUCCESS (0x90 0x00)
+  if (responseCode1 == 144 && responseCode2 == 0) {
+    return true;
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
+    throw Exception("PIN not set");
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
+    throw Exception("PUK blocked.");
+  } else {
+    throw Exception("Invalid PUK");
   }
 }

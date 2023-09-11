@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -5,29 +7,39 @@ import 'package:test/test.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
 void main() {
+  group("command helper", () {
+    test("return a valid set pin command", () {
+      final res = setPinCommand("1234");
+      expect(res, [0x00, 0x40, 0x00, 0x00, 0x04, 49, 50, 51, 52, 0x08]);
+    });
+  });
+
   group('data format helpers', () {
     test('should re-order the collections by chainId', () {
       // arrange
-      List<Collection> rawData = [
-        Collection(
-            EthereumAddress.fromHex(
-                '0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e'),
-            "test",
-            chainId: 137),
+      List<dynamic> rawData = [
+        {
+          "address": "0x1787f9469238E2113CdF83e15F169FBA15F884f5",
+          "name": "OC Demo Collection",
+          "symbol": "DEMO",
+          "created_at": "2023-03-02",
+          "chainId": 137
+        }
       ];
 
       // act
-      Map<int, List<Collection>> data = groupCollectionsByChainId(rawData);
+      final data = groupCollectionsByChainId(rawData);
 
       // assert
       expect(data, {
         137: [
           Collection(
               EthereumAddress.fromHex(
-                  '0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e'),
-              "test")
+                  '0x1787f9469238E2113CdF83e15F169FBA15F884f5'),
+              "OC Demo Collection")
         ]
       });
     });
@@ -110,6 +122,26 @@ void main() {
       // assert
       expect(tokenId.toString(),
           "643025298622660478098289384378752240690720980366");
+    });
+
+    test(
+        'should transform a hex with a leading 0 to a valid BigInt and back to hexString',
+        () {
+      //arrange
+      String ethAddress = "0x0ae7a580a3101f78bade64da3257abb20ad309af";
+
+      //act 1
+      BigInt tokenId = hexToBigInt(hexToBytes(ethAddress));
+
+      //assert 1
+      expect(tokenId.toString(),
+          "62255797149168553891434335013600620774643927471");
+
+      //act 2
+      String ethAddress2 = convertTokenIdToEthereumAddress(tokenId);
+
+      //assert 2
+      expect(ethAddress2, ethAddress);
     });
 
     test('should transform a BigInt number to a hexString', () {

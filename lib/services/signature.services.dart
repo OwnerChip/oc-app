@@ -4,13 +4,46 @@ import 'package:flutter/foundation.dart';
 import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import 'dart:io';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
+/// sign a hash with the private key of the chip
+Future<MsgSignature> signHash(
+    NFCPlatform nfc,
+    int hexKeyNumber,
+    EthereumAddress chipEthereumAddress,
+    Uint8List hash,
+    bool callSelectApp) async {
+  if (callSelectApp)
+    await nfc.sendCommand(
+        SELECT_APP); //selectapp should not be called if a session has already be initiated with a verifyPIN command
+
+  final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hash);
+  try {
+    final List responseGetSignature = await nfc.sendCommand(getSigCmd);
+    final Uint8List chipSignatureData = responseGetSignature[0];
+    final int responseCode1 = responseGetSignature[1];
+    final int responseCode2 = responseGetSignature[2];
+
+    if (responseCode1 == 0x90 && responseCode2 == 0x00) {
+      //neccassary for V parameter calculation
+      final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
+      return extractSignature(signer, hash, chipSignatureData);
+    } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
+      throw ("Error: Chip is PIN code locked.");
+    } else {
+      throw ("Error: Unable to get chip signature.");
+    }
+  } catch (e) {
+    print(e);
+    throw ("ERROR: SIGNATURE FAILED");
+  }
+}
+
+/// sign a hash with the private key of the chip and verify the signature locally
 Future<List> verifySignatureAuthenticity(NFCPlatform nfc, String sessionId,
-    EthereumAddress chipEthereumAddress, chipTokenId, selectApp) async {
+    EthereumAddress chipEthereumAddress, chipTokenId) async {
   // select app if necessary
   await nfc.sendCommand(SELECT_APP);
 
@@ -18,24 +51,29 @@ Future<List> verifySignatureAuthenticity(NFCPlatform nfc, String sessionId,
   final Uint8List hashedMsg = keccakUtf8(sessionId);
   final Uint8List getSigCmd = makeSignatureCommand(0x01, hashedMsg);
   final List responseGetSignature = await nfc.sendCommand(getSigCmd);
-  final Uint8List chipSignatureData = responseGetSignature[0];
+  final int responseCode1 = responseGetSignature[1];
+  final int responseCode2 = responseGetSignature[2];
+  if (responseCode1 == 0x90 && responseCode2 == 0x00) {
+    final Uint8List chipSignatureData = responseGetSignature[0];
 
-  //success would be 0x90, 0x00 for status words
-  //final int chipSignatureStatusWord1 = responseGetSignature[1];
-  //final int chipSignatureStatusWord2 = responseGetSignature[2];
+    final MsgSignature signature =
+        extractSignature(chipTokenId, hashedMsg, chipSignatureData);
 
-  final MsgSignature signature =
-      extractSignature(chipTokenId, hashedMsg, chipSignatureData);
-
-  // only if true, is the tokenId corresponding to the chip!
-  bool verificationResult =
-      verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
-  if (!verificationResult) {
-    throw ("ERROR: INVALID CHIP! It is not related to tokenId: $chipTokenId");
+    // only if true, is the tokenId corresponding to the chip!
+    bool verificationResult =
+        verifySignature(chipTokenId, hashedMsg, signature.r, signature.s);
+    if (!verificationResult) {
+      throw ("Error: Verifying chip signature failed.");
+    }
+    return [hashedMsg, signature];
+  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
+    throw ("Error: Chip is PIN code locked.");
+  } else {
+    throw ("Error: Please try again.");
   }
-  return [hashedMsg, signature];
 }
 
+/// verify the signature of the chip on the smart contract
 Future<bool> verifyTokenAuthenticity(
     String chainRpcUrl,
     EthereumAddress collectionId,
@@ -52,22 +90,36 @@ Future<bool> verifyTokenAuthenticity(
   }
 }
 
-// calculate msg digest (with addded prefix for compliance with personal_sign)
-Uint8List prepareMsgForSignature(String hexString) {
-  var hashedMsg = keccakUtf8(hexString);
+/// calculate msg digest (with added prefix for compliance with personal_sign EIP-191)
+// Uint8List prepareMsgForPersonalSignature(String string) {
+//   var bytes = BytesBuilder();
+//   bytes.add(utf8.encode("\x19Ethereum Signed Message:\n32"));
+//   bytes.add(keccakUtf8(hexString));
+//   return bytes.toBytes();
+// }
 
-  var prefix = utf8.encode("\x19Ethereum Signed Message:\n32");
-  var bytes = BytesBuilder();
-  bytes.add(prefix);
-  bytes.add(hashedMsg);
-  Uint8List prefixedHashedMsg = bytes.toBytes();
+Uint8List prepareMsgForPersonalSignature(String message) {
+  // Convert the message to hex of utf8 code units
+  List<int> utf8CodeUnits = utf8.encode(message);
+  String hexUtf8EncodedMessage =
+      utf8CodeUnits.map((e) => e.toRadixString(16)).join();
 
-  // hash prepended msg
-  Uint8List res = keccak256(prefixedHashedMsg);
-  return res;
+  // get message length
+  String messageLength = utf8CodeUnits.length.toString();
+
+  // Prepend the Ethereum prefix and the message length to the message bytes
+  String prependedMessage =
+      "\x19Ethereum Signed Message:\n" + messageLength + hexUtf8EncodedMessage;
+
+  List<int> fullMessageUtf8 = utf8.encode(prependedMessage);
+  String fullmessageHex =
+      '0x' + fullMessageUtf8.map((e) => e.toRadixString(16)).join();
+
+  // Hash the prepended message using keccakUtf8
+  return keccakUtf8(fullmessageHex);
 }
 
-// extract & verify signature out of signatureResponse
+/// extract & verify signature out of signatureResponse
 MsgSignature extractSignature(
     BigInt tokenId, Uint8List hashedMsg, Uint8List signatureResp) {
   String signature = hex.encode(signatureResp);
@@ -105,6 +157,7 @@ MsgSignature extractSignature(
   return MsgSignature(r, s, v);
 }
 
+/// helper function to calculate v parameter for signature
 int calculateV(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   int vResult = 27;
   bool res = false;
@@ -122,7 +175,7 @@ int calculateV(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   return vResult;
 }
 
-// verify that the tokenId corresponds to the signer
+/// verify that the tokenId corresponds to the signer
 bool verifySignature(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   bool res = false;
   var vValues = [27, 28];
@@ -139,6 +192,7 @@ bool verifySignature(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
   return res;
 }
 
+/// split signature into signature parameters (r, s, v)
 MsgSignature hexSignatureToRSV(String hexSignature) {
   //if signature length is not 132 throw error
   if (hexSignature.length != 132) {
@@ -162,7 +216,7 @@ MsgSignature hexSignatureToRSV(String hexSignature) {
   return MsgSignature(r, s, v);
 }
 
-//MsgSignature to json
+/// convert MsgSignature to json
 Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
   return {
     'r': signature.r.toString(),
@@ -171,7 +225,15 @@ Map<String, dynamic> msgSignatureToJson(MsgSignature signature) {
   };
 }
 
-//json to MsgSignature
+//convert MsgSignature to hex
+String msgSignatureToHex(MsgSignature signature) {
+  String r = signature.r.toRadixString(16).padLeft(64, '0');
+  String s = signature.s.toRadixString(16).padLeft(64, '0');
+  String v = signature.v.toRadixString(16);
+  return "0x$r$s$v";
+}
+
+/// convert json to MsgSignature
 MsgSignature msgSignatureFromJson(Map<String, dynamic> json) {
   return MsgSignature(
     BigInt.parse(json['r']),
