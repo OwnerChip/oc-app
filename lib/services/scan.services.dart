@@ -279,7 +279,7 @@ Future<dynamic> getAllChipWalletAddresses(
 }
 
 Future<bool> triggerCardLost(
-    BuildContext context, WidgetRef ref, String email) async {
+    BuildContext context, WidgetRef ref, String email, String name) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     EthereumAddress chipEthereumAddress = createFirstKeyChipResponse[0];
@@ -307,7 +307,7 @@ Future<bool> triggerCardLost(
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
     if (tokenInfo.collectionId != zeroAddress) {
       return await sendCardLostToBackend(createFirstKeyChipResponse[0],
-          tokenInfo.collectionId, chipSignature, sessionId, email);
+          tokenInfo.collectionId, chipSignature, sessionId, email, name);
     } else {
       throw context.loc.tokenDoesNotExist;
     }

@@ -177,13 +177,15 @@ Future<bool> sendCardLostToBackend(
     EthereumAddress collectionAddress,
     SignatureData chipSignature,
     String sessionId,
-    String email) async {
+    String email,
+    String name) async {
   final Dio dio = getBackendClient();
   final String url = '/collection/${collectionAddress.hex}/recovery';
   try {
     await dio.post(url, data: {
-      'sessionId': sessionId,
+      'name': name,
       'email': email,
+      'sessionId': sessionId,
       'chipAddress': chipAddress.hex,
       'chipSignature': {
         'r': convertSignatureParamToHexString(chipSignature.signature.r),

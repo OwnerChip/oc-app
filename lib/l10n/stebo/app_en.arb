@@ -206,7 +206,7 @@
     "receivingToken": "Receiving token",
     "transferToAddress": "Transfer to address",
     "cardLost": "OwnerCard Lost",
-    "cardLostContacted": "You will be contacted to receive a new OwnerCard",
+    "cardLostContacted": "You will be contacted within a few days.",
     "scanToTriggerCardLost": "Scan chip to trigger process for receiving a new OwnerCard.",
     "enterEmailToTriggerCardLost": "Enter email to trigger process for receiving new card.",
     "tokenDoesNotExist": "Token does not exist.",

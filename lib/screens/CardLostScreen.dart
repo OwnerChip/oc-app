@@ -151,8 +151,8 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                             print(
                                 'form key validate: ${_formKey.currentState!.validate()}');
                             if (_formKey.currentState!.validate()) {
-                              bool success =
-                                  await triggerCardLost(context, ref, email);
+                              bool success = await triggerCardLost(
+                                  context, ref, email, name);
                               if (success) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     returnSnackBarWidget(

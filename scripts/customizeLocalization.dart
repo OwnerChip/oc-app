@@ -16,5 +16,5 @@ void main(List<String> args) async {
 
   // Print a confirmation message
   print(
-      'The content of $sourceFile has been replaced with the content of $targetFile.');
+      'The content of $targetFile has been replaced with the content of $sourceFile.');
 }
