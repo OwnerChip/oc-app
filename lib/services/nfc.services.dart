@@ -311,9 +311,6 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
   } else {
     print("---- ... initializing NDEF ----");
 
-    //TODO: remove this line, was just for testing
-    Uint8List _ = makeWriteNdefUrl(chipEthereumAddressHex);
-
     //select NDEF file
     var selectNdefFileRes = await nfc.sendCommand(SELECT_NDEF_FILE);
     int selectNdefFileResCode1 = selectNdefFileRes[1];

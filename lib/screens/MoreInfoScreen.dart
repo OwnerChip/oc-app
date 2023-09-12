@@ -81,7 +81,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                 child: CustomRoundedButton(
                     text: context.loc.cardLost,
                     onPressed: () async {
-                      //TODO: navigate to cardlost screen
                       Navigator.pushNamed(context, CardLostScreen.routeName);
                     },
                     width: 250)),

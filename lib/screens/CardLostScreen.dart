@@ -3,21 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SuccessPinSetup.dart';
 
 class CardLostScreen extends ConsumerStatefulWidget {
   const CardLostScreen({Key? key}) : super(key: key);
@@ -32,6 +26,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
   final _formKey = GlobalKey<FormState>();
 
   String email = '';
+  String name = '';
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +43,54 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 40),
-                  Text('Enter email to trigger process for receiving new card',
+                  Text(
+                      'Enter name and email to trigger process for receiving new card',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 40),
+                  Container(
+                    margin: EdgeInsets.only(top: 20),
+                    child: TextFormField(
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      cursorColor: CustomColors(dotenv.get('APP_ID').toString())
+                          .accentColor,
+                      decoration: InputDecoration(
+                        labelText: 'Name',
+                        labelStyle: Theme.of(context).textTheme.bodyMedium,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                              color:
+                                  CustomColors(dotenv.get('APP_ID').toString())
+                                      .primaryColor,
+                              width: 2.0), // normal border color
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                              color:
+                                  CustomColors(dotenv.get('APP_ID').toString())
+                                      .primaryColor,
+                              width: 2.0), // focused border color
+                        ),
+                      ),
+                      keyboardType: TextInputType.text,
+                      obscureText: false,
+                      onChanged: (value) {
+                        setState(() {
+                          name = value;
+                        });
+                      },
+                      validator: (value) {
+                        //validate if value is email
+                        if (value != null && value.isNotEmpty) {
+                          return null;
+                        } else {
+                          return 'Please enter valid name.';
+                        }
+                      },
+                    ),
+                  ),
                   Container(
                     margin: EdgeInsets.only(top: 20),
                     child: TextFormField(

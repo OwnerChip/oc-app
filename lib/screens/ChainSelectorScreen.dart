@@ -170,7 +170,6 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                       .copyWith(fontSize: 15, fontWeight: FontWeight.w500),
                 ),
               ),
-              //TODO: show a hint if metamask is connected that the correct CHAIN must be selected in metamask
             ],
           )
         ],

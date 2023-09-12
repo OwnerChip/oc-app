@@ -281,12 +281,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                             return null;
                           }
                         },
+                        cursorColor: Theme.of(context).primaryColorDark,
+                        style: Theme.of(context).textTheme.bodyMedium,
                         decoration: InputDecoration(
                           focusColor: Theme.of(context).primaryColorDark,
                           hintText: context.loc.enterWalletAddress,
                           hintStyle: Theme.of(context).textTheme.bodyMedium,
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor:
+                              CustomColors(dotenv.get('APP_ID')).cardColor,
                           border: OutlineInputBorder(
                             borderSide: BorderSide.none,
                             borderRadius: BorderRadius.circular(13),
@@ -334,7 +337,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                       fontWeight: FontWeight.w500),
                             ),
                           ),
-                          //TODO: show a hint if metamask is connected that the correct CHAIN must be selected in metamask
                         ],
                       )
                     ],
