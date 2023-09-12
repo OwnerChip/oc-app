@@ -215,5 +215,6 @@
     "transferOnlyToOwnerCard": "Transfer only possible to initialized OwnerCard.",
     "digitalContentWillBeTransferred": "Public and private Digital Content will be transferred together with the token.",
     "ownercard": "OwnerCard",
-    "or": "or"
+    "or": "or",
+    "cardNotInitializedByAdmin": "OwnerCard not yet initialized by admin."
 }

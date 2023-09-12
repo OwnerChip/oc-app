@@ -215,5 +215,6 @@
     "transferOnlyToOwnerCard": "Transfer nur zu initialisierter OwnerCard möglich.",
     "digitalContentWillBeTransferred": "Öffentlicher und privater Digital Content wird gemeinsam mit dem Token transferiert.",
     "ownercard": "OwnerCard",
-    "or": "oder"
+    "or": "oder",
+    "cardNotInitializedByAdmin": "OwnerCard noch nicht von Admin initialisiert."
 }
