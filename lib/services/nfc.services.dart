@@ -126,7 +126,10 @@ Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
 }
 
 Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
-  String url = getNdefUrl() + chipEthereumAddressHex.toString();
+  String url = getNdefUrl() +
+      chipEthereumAddressHex.toString() +
+      '?appId=' +
+      dotenv.get('APP_ID');
 
   // byte content
   Uint8List typeName = Uint8List.fromList([0x55]);
@@ -283,6 +286,9 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
     }
   } else {
     print("---- ... initializing NDEF ----");
+
+    //TODO: remove this line, was just for testing
+    Uint8List _ = makeWriteNdefUrl(chipEthereumAddressHex);
 
     //select NDEF file
     var selectNdefFileRes = await nfc.sendCommand(SELECT_NDEF_FILE);

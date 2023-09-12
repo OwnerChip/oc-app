@@ -364,7 +364,7 @@ Future<dynamic> scanClosure(
 
           //create first key if not existing
           List createFirstKeyChipResponse =
-              await createFirstKeypairOnChip(nfc, false, sessionId);
+              await createFirstKeypairOnChip(nfc, true, sessionId);
 
           final result =
               await callback(nfc, sessionId, createFirstKeyChipResponse);
