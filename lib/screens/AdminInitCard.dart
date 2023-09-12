@@ -24,14 +24,12 @@ class AdminInitCard extends ConsumerStatefulWidget {
 }
 
 class _AdminInitCard extends ConsumerState<AdminInitCard> {
-  EthereumAddress? chipAddress1;
-  EthereumAddress? chipAddress2;
+  EthereumAddress? chipAddress0;
   List<EthereumAddress> allChipAddresses = [];
 
-  void setChipAddresses(chipAddress1, chipAddress2) {
+  void setChipAddressZero(EthereumAddress chipAddress0) {
     setState(() {
-      this.chipAddress1 = chipAddress1;
-      this.chipAddress2 = chipAddress2;
+      this.chipAddress0 = chipAddress0;
     });
   }
 
@@ -39,19 +37,22 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        text: 'Init second card slot',
+        text: 'Init OwnerCards slot',
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
         withScrollView: true,
         children: [
+          Text(
+              'ATTENTION: Key slot 0 can only be set on OwnerCards that are not yet PIN code locked. '),
+          SizedBox(height: 20),
           CustomRoundedButton(
-            text: 'Init second card slot',
+            text: 'Init OwnerCard slot 0',
             onPressed: () async {
               setState(() {
                 allChipAddresses = [];
               });
-              await ownerCardAdminInit(context, ref, setChipAddresses);
+              await importKeyToSlotZero(context, ref, setChipAddressZero);
             },
           ),
           SizedBox(height: 20),
@@ -60,8 +61,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
             onPressed: () async {
               try {
                 setState(() {
-                  chipAddress1 = null;
-                  chipAddress2 = null;
+                  chipAddress0 = null;
                 });
                 List<EthereumAddress> result =
                     await getAllChipWalletAddresses(context, ref);
@@ -75,11 +75,11 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
             height: 30,
           ),
           //if chip addresses are not null display them
-          chipAddress1 != null
+          chipAddress0 != null
               ? Column(
                   children: [
-                    Text('Chip address 1: '),
-                    Text('${chipAddress1!.hex}'),
+                    Text('Chip address 0: '),
+                    Text('${chipAddress0!.hex}'),
                     IconButton(
                         color: Theme.of(context).primaryColor,
                         padding: EdgeInsets.zero,
@@ -87,39 +87,16 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                         iconSize: 25,
                         onPressed: () {
                           Clipboard.setData(
-                              ClipboardData(text: chipAddress1.toString()));
+                              ClipboardData(text: chipAddress0.toString()));
                           ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text(
-                                      'Chip address 1 copied to clipboard')));
+                                      'Chip address 0 copied to clipboard')));
                         },
                         icon: const Icon(Icons.copy)),
                     SizedBox(
                       height: 50,
                     ),
-                  ],
-                )
-              : Container(),
-
-          chipAddress2 != null
-              ? Column(
-                  children: [
-                    Text('Chip address 2: '),
-                    Text('${chipAddress2!.hex}'),
-                    IconButton(
-                        color: Theme.of(context).primaryColor,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        iconSize: 25,
-                        onPressed: () {
-                          Clipboard.setData(
-                              ClipboardData(text: chipAddress2.toString()));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Chip address 2 copied to clipboard')));
-                        },
-                        icon: const Icon(Icons.copy)),
                   ],
                 )
               : Container(),

@@ -125,6 +125,18 @@ Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
   return res;
 }
 
+Uint8List importKeyCommand(Uint8List seed) {
+  final Uint8List cmd = Uint8List.fromList([
+    0x00,
+    0x20,
+    0x00,
+    0x00,
+    0x10,
+    ...seed,
+  ]);
+  return cmd;
+}
+
 Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
   String url = getNdefUrl() +
       chipEthereumAddressHex.toString() +
@@ -159,6 +171,18 @@ Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
 
 Future<Uint8List> getFirstPubKey(NFCPlatform nfc) async {
   return await getPubKeyN(nfc, 0x01);
+}
+
+//write key to slot zero
+Future<void> writeKeyToSlotZero(NFCPlatform nfc, Uint8List seed) async {
+  Uint8List importKey = importKeyCommand(seed);
+  var responseImportKey = await nfc.sendCommand(importKey);
+  int responseCode1 = responseImportKey[1];
+  int responseCode2 = responseImportKey[2];
+
+  if (!(responseCode1 == 144 && responseCode2 == 00)) {
+    throw Exception("Error while importing key");
+  }
 }
 
 //getKeyN

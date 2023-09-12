@@ -214,7 +214,12 @@ Future<String?> setPinOnCard(
     BuildContext context, WidgetRef ref, String pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    return await setPin(nfc, pin);
+    Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+    if (pubKeyZero.isNotEmpty) {
+      return await setPin(nfc, pin);
+    } else {
+      throw context.loc.cardNotInitializedByAdmin;
+    }
   }
 
   return await scanClosure(context, ref, callback, "setPinOnCard",
@@ -231,25 +236,8 @@ Future<String?> resetPinOnCard(
     }
   }
 
-  return await scanClosure(context, ref, callback, "ownerCardAdminInit",
-      context.loc.holdPhoneToCard);
-}
-
-//this function creates two slots on OwnerCard, to distinguish Smart Cards from normal NFC chips in objects
-Future<void> ownerCardAdminInit(
-    BuildContext context, WidgetRef ref, Function setStateCallback) async {
-  Future callback(NFCPlatform nfc, String sessionId,
-      List createFirstKeyChipResponse) async {
-    //create or read first two keys if not existing; return them
-    Map result = await createSecondKeypairOnChip(nfc, sessionId);
-    EthereumAddress cardWalletAddress1 = result['key1'];
-    EthereumAddress cardWalletAddress2 = result['key2'];
-
-    setStateCallback(cardWalletAddress1, cardWalletAddress2);
-  }
-
-  scanClosure(context, ref, callback, "ownerCardAdminInit",
-      context.loc.holdPhoneToCard);
+  return await scanClosure(
+      context, ref, callback, "resetPinOnCard", context.loc.holdPhoneToCard);
 }
 
 Future<dynamic> getChipWalletAddress(
@@ -273,8 +261,12 @@ Future<dynamic> getAllChipWalletAddresses(
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     List<EthereumAddress> pubKeys = [];
-    for (int i = 1; i < 256; i++) {
+    for (int i = 0; i < 256; i++) {
       Uint8List pubKey = await getPubKeyN(nfc, i);
+      if (pubKey.isEmpty && i == 0) {
+        //ignore if slot 0 is not initialized
+        continue;
+      }
       if (pubKey.isEmpty) {
         break;
       }
@@ -325,6 +317,44 @@ Future<bool> triggerCardLost(
 
   return await scanClosure(context, ref, callback, "triggerCardLost",
       context.loc.scanToTriggerCardLost);
+}
+
+Future<dynamic> importKeyToSlotZero(
+    BuildContext context, WidgetRef ref, Function setStateCallback) async {
+  Uint8List seed = Uint8List.fromList([
+    0x00,
+    0x01,
+    0x02,
+    0x03,
+    0x04,
+    0x05,
+    0x06,
+    0x07,
+    0x08,
+    0x09,
+    0x0a,
+    0x0b,
+    0x0c,
+    0x0d,
+    0x0e,
+    0x0f,
+  ]);
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    var pubKey;
+    pubKey = await getPubKeyN(nfc, 0x00);
+    if (pubKey.isEmpty) {
+      await writeKeyToSlotZero(nfc, seed);
+      pubKey = await getPubKeyN(nfc, 0x00);
+    }
+    EthereumAddress cardWalletAddress =
+        EthereumAddress.fromHex("0x${bytesToHex(publicKeyToAddress(pubKey))}");
+
+    setStateCallback(cardWalletAddress);
+  }
+
+  return await scanClosure(context, ref, callback, "importKeyToSlotZero",
+      context.loc.holdPhoneToCard);
 }
 
 //scan closure abstraction
