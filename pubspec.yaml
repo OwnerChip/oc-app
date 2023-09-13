@@ -80,3 +80,6 @@ flutter:
     - family: Poppins
       fonts:
         - asset: assets/fonts/Poppins-Regular.otf
+    - family: Panton
+      fonts:
+        - asset: assets/fonts/Panton-Regular.ttf

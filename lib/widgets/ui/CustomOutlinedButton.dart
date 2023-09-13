@@ -38,7 +38,7 @@ class CustomOutlinedButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           buttonText,
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: color != null
                   ? color!
                   : CustomColors(dotenv.get('APP_ID')).primaryColor),
