@@ -108,7 +108,7 @@ Future<void> sendAnalyticsTrace(String caseId, String description, String type,
       "case_id": caseId,
       "description": description,
       "type": type,
-      "tags": tags.toString()
+      "tags": jsonEncode(tags)
     });
   } catch (e, s) {
     await Sentry.captureException(

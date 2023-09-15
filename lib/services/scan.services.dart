@@ -402,8 +402,8 @@ Future<dynamic> scanClosure(
           completer.complete(result);
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
-          sendAnalyticsTrace(sessionId, 'from scan closure', analyticsType,
-              tags: {"chipWallet": createFirstKeyChipResponse[0]});
+          sendAnalyticsTrace(sessionId, '', analyticsType,
+              tags: {"chipWallet": createFirstKeyChipResponse[0].hex});
         } catch (e, stackTrace) {
           String errorMessage = e.toString();
           print(errorMessage);
