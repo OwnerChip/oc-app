@@ -711,13 +711,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall!
-                        .copyWith(color: Colors.black26),
+                        .copyWith(color: Color.fromARGB(255, 143, 143, 143)),
                   ),
                   const SizedBox(
                     width: 10,
                   ),
                   IconButton(
-                      color: Colors.black26,
+                      color: Color.fromARGB(255, 143, 143, 143),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       iconSize: 25,
@@ -725,9 +725,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         Clipboard.setData(ClipboardData(
                             text: chipInfo.chipEthereumAddress.hex));
                         ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content:
-                                    Text(context.loc.addressCopied)));
+                            SnackBar(content: Text(context.loc.addressCopied)));
                       },
                       icon: const Icon(Icons.copy)),
                 ],
