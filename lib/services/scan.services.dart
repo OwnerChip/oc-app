@@ -86,8 +86,8 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
     }
   }
 
-  return await scanClosure(
-      context, ref, callback, "initializeItem", context.loc.holdPhoneToNfcChip);
+  return await scanClosure(context, ref, callback, "INITIALIZE_ITEM",
+      context.loc.holdPhoneToNfcChip);
 }
 
 Future<void> scanItem(WidgetRef ref, BuildContext context) async {
@@ -133,7 +133,7 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
   }
 
   return await scanClosure(
-      context, ref, callback, "scanItem", context.loc.holdPhoneToNfcChip);
+      context, ref, callback, "SCAN_ITEM", context.loc.holdPhoneToNfcChip);
 }
 
 void setChipInfoProvider(
@@ -185,8 +185,8 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
     return signature;
   }
 
-  return await scanClosure(
-      context, ref, callback, "makeCardSignature", context.loc.holdPhoneToCard);
+  return await scanClosure(context, ref, callback, "MAKE_CARD_SIGNATURE",
+      context.loc.holdPhoneToCard);
 }
 
 Future<void> authenticateCard(
@@ -204,7 +204,7 @@ Future<void> authenticateCard(
   }
 
   return await scanClosure(
-      context, ref, callback, "authenticateCard", context.loc.holdPhoneToCard);
+      context, ref, callback, "AUTHENTICATE_CARD", context.loc.holdPhoneToCard);
 }
 
 // PIN CODE
@@ -220,7 +220,7 @@ Future<String?> setPinOnCard(
     }
   }
 
-  return await scanClosure(context, ref, callback, "setPinOnCard",
+  return await scanClosure(context, ref, callback, "SET_PIN_ON_CARD",
       context.loc.holdPhoneCloseToOwnerCardToInit);
 }
 
@@ -235,22 +235,22 @@ Future<String?> resetPinOnCard(
   }
 
   return await scanClosure(
-      context, ref, callback, "resetPinOnCard", context.loc.holdPhoneToCard);
+      context, ref, callback, "RESET_PIN_ON_CARD", context.loc.holdPhoneToCard);
 }
 
-Future<dynamic> getChipWalletAddress(
+Future<dynamic> getFirstChipQWalletAddress(
     BuildContext context, WidgetRef ref) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    //get second key
-    Uint8List cardWalletAddress2 = await getPubKeyN(nfc, 2);
-    if (cardWalletAddress2.isEmpty) {
-      throw context.loc.transferOnlyToOwnerCard;
-    }
+    // //get 0th key to check if it exists, so user can only send token to owner card
+    // Uint8List cardWalletAddress0 = await getPubKeyN(nfc, 0);
+    // if (cardWalletAddress0.isEmpty) {
+    //   throw context.loc.transferOnlyToOwnerCard;
+    // }
     return createFirstKeyChipResponse[0];
   }
 
-  return await scanClosure(context, ref, callback, "getChipWalletAddress",
+  return await scanClosure(context, ref, callback, "GET_CHIP_ADDR_FOR_TRANSFER",
       context.loc.holdPhoneToCard);
 }
 
@@ -274,7 +274,7 @@ Future<dynamic> getAllChipWalletAddresses(
     return pubKeys;
   }
 
-  return await scanClosure(context, ref, callback, "getAllChipWalletAddresses",
+  return await scanClosure(context, ref, callback, "GET_CHIP_WALLET_ADDRESSES",
       context.loc.holdPhoneToNfcChip);
 }
 
@@ -313,8 +313,8 @@ Future<bool> triggerCardLost(
     }
   }
 
-  return await scanClosure(context, ref, callback, "triggerCardLost",
-      context.loc.scanToTriggerCardLost);
+  return await scanClosure(
+      context, ref, callback, "CARD_LOST", context.loc.scanToTriggerCardLost);
 }
 
 Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
@@ -362,7 +362,7 @@ Future<dynamic> scanClosure(
     BuildContext context,
     WidgetRef ref,
     Future<dynamic> Function(NFCPlatform, String, List) callback,
-    String functionName,
+    String analyticsType,
     String alertMessage) async {
   await NfcManager.instance.stopSession();
 
@@ -374,7 +374,7 @@ Future<dynamic> scanClosure(
       : await getSessionId();
 
   //start NFC scan
-  final scanProcess = Sentry.startTransaction('$functionName()', 'task');
+  final scanProcess = Sentry.startTransaction('$analyticsType', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
     nfcOverlay.showNfcOverlay(context, alertMessage);
@@ -402,10 +402,8 @@ Future<dynamic> scanClosure(
           completer.complete(result);
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
-          sendAnalyticsTrace(
-              sessionId,
-              'Scanned chip addr: ${createFirstKeyChipResponse[0]}',
-              functionName);
+          sendAnalyticsTrace(sessionId, 'from scan closure', analyticsType,
+              tags: {"chipWallet": createFirstKeyChipResponse[0]});
         } catch (e, stackTrace) {
           String errorMessage = e.toString();
           print(errorMessage);
@@ -428,7 +426,7 @@ Future<dynamic> scanClosure(
           }
           //LOG ERROR
           print(e);
-          sendAnalyticsTrace(sessionId, "$e", "INIALIZE_SCAN_ERROR");
+          sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
           scanProcess.throwable = e;
           scanProcess.status = const SpanStatus.deadlineExceeded();
           scanProcess.finish();

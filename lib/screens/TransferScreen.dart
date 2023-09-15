@@ -253,7 +253,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           text: "Transfer to OwnerCard",
                           onPressed: (() async {
                             EthereumAddress chipWalletAddress =
-                                await getChipWalletAddress(context, ref);
+                                await getFirstChipQWalletAddress(context, ref);
 
                             fromCancelable(approveToken(
                                 wc!,
