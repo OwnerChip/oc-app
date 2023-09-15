@@ -317,8 +317,8 @@ Future<bool> triggerCardLost(
       context.loc.scanToTriggerCardLost);
 }
 
-Future<dynamic> importKeyToSlotZero(
-    BuildContext context, WidgetRef ref, Function setStateCallback) async {
+Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
+    Function setStateCallback, String customerId) async {
   Uint8List seed = Uint8List.fromList([
     0x00,
     0x01,
@@ -339,19 +339,21 @@ Future<dynamic> importKeyToSlotZero(
   ]);
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    var pubKey;
-    pubKey = await getPubKeyN(nfc, 0x00);
-    if (pubKey.isEmpty) {
+    var pubKeyZero;
+    pubKeyZero = await getPubKeyN(nfc, 0x00);
+    if (pubKeyZero.isEmpty) {
       await writeKeyToSlotZero(nfc, seed);
-      pubKey = await getPubKeyN(nfc, 0x00);
+      pubKeyZero = await getPubKeyN(nfc, 0x00);
     }
-    EthereumAddress cardWalletAddress =
-        EthereumAddress.fromHex("0x${bytesToHex(publicKeyToAddress(pubKey))}");
+    sendCardInitToBackend(customerId, createFirstKeyChipResponse[0]);
+
+    EthereumAddress cardWalletAddress = EthereumAddress.fromHex(
+        "0x${bytesToHex(publicKeyToAddress(pubKeyZero))}");
 
     setStateCallback(cardWalletAddress);
   }
 
-  return await scanClosure(context, ref, callback, "importKeyToSlotZero",
+  return await scanClosure(context, ref, callback, "IMPORT_KEY_TO_SLOT_ZERO",
       context.loc.holdPhoneToCard);
 }
 

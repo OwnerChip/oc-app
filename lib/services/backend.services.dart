@@ -24,6 +24,23 @@ Dio getBackendClient() {
   return client;
 }
 
+Future<void> sendCardInitToBackend(
+    String customerId, EthereumAddress chipAddress) async {
+  final Dio dio = getBackendClient();
+  final String url = '/customer/$customerId/ownercard';
+  try {
+    final _ = await dio.post(url, data: {
+      'id': chipAddress.hex,
+    });
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+  }
+}
+
 /// get a list of all collections associated with a specific app
 Future<List<dynamic>> getAppCollections() async {
   final Dio dio = getBackendClient();

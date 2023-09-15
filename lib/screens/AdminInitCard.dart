@@ -2,9 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 //import widgets
@@ -26,6 +28,7 @@ class AdminInitCard extends ConsumerStatefulWidget {
 class _AdminInitCard extends ConsumerState<AdminInitCard> {
   EthereumAddress? chipAddress0;
   List<EthereumAddress> allChipAddresses = [];
+  String customerId = '';
 
   void setChipAddressZero(EthereumAddress chipAddress0) {
     setState(() {
@@ -36,42 +39,78 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         text: 'Init OwnerCards slot',
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
         withScrollView: true,
         children: [
-          Text(
+          const Text(
               'ATTENTION: Key slot 0 can only be set on OwnerCards that are not yet PIN code locked. '),
-          SizedBox(height: 20),
+          const SizedBox(height: 10),
+          const Text('OwnerChip: 100'),
+          const Text('Stebo: 101'),
+          const Text('Infineon: 102'),
+          const Text('Stilami: 103'),
+          const SizedBox(height: 20),
+          //text input field for the customer id
+          TextFormField(
+            style: Theme.of(context).textTheme.bodyMedium,
+            cursorColor:
+                CustomColors(dotenv.get('APP_ID').toString()).accentColor,
+            decoration: InputDecoration(
+              labelText: 'Customer ID',
+              labelStyle: Theme.of(context).textTheme.bodyMedium,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                    color: CustomColors(dotenv.get('APP_ID').toString())
+                        .primaryColor,
+                    width: 2.0), // normal border color
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                    color: CustomColors(dotenv.get('APP_ID').toString())
+                        .primaryColor,
+                    width: 2.0), // focused border color
+              ),
+            ),
+            keyboardType: TextInputType.text,
+            obscureText: false,
+            onChanged: (value) {
+              setState(() {
+                customerId = value;
+              });
+            },
+          ),
+          const SizedBox(height: 20),
           CustomRoundedButton(
             text: 'Init OwnerCard slot 0',
             onPressed: () async {
               setState(() {
                 allChipAddresses = [];
               });
-              await importKeyToSlotZero(context, ref, setChipAddressZero);
+              await importKeyToSlotZero(
+                  context, ref, setChipAddressZero, customerId);
             },
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           CustomRoundedButton(
             text: 'List all chip addresses',
             onPressed: () async {
-              try {
-                setState(() {
-                  chipAddress0 = null;
-                });
-                List<EthereumAddress> result =
-                    await getAllChipWalletAddresses(context, ref);
-                setState(() {
-                  allChipAddresses = result;
-                });
-              } catch (e) {}
+              setState(() {
+                chipAddress0 = null;
+              });
+              List<EthereumAddress> result =
+                  await getAllChipWalletAddresses(context, ref);
+              setState(() {
+                allChipAddresses = result;
+              });
             },
           ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
           //if chip addresses are not null display them

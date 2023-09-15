@@ -150,7 +150,7 @@ void main() {
           BigInt.parse("643025298622660478098289384378752240690720980366");
 
       // act
-      String ethAddress = convertTokenIdToEthereumAddress(tokenId).hex;
+      String ethAddress = convertTokenIdToEthereumAddress(tokenId);
 
       // assert
       expect(ethAddress, "0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e");
