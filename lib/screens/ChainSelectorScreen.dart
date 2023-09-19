@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -15,8 +16,8 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';

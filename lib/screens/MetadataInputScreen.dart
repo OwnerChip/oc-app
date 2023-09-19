@@ -12,6 +12,8 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry/sentry.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -21,6 +23,8 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 
 //screen imports
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
@@ -44,7 +48,6 @@ import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/images.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //theme imports

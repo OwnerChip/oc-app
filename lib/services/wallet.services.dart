@@ -2,19 +2,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:flutter/services.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';

@@ -17,7 +17,9 @@ import 'package:sentry/sentry.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';

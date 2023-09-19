@@ -15,12 +15,16 @@ import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChooseFileButton.dart';
 import 'package:sentry/sentry.dart';
-import 'package:crypto/crypto.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -37,10 +41,6 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
-
-//import services
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
 
 import '../services/images.services.dart';
 import '../services/web3.services.dart';

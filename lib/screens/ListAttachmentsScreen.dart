@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
