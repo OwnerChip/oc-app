@@ -13,7 +13,6 @@ import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SuccessPinSetup.dart';
 import 'package:sentry/sentry.dart';
 
 //import widgets
