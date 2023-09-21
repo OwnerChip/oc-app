@@ -237,6 +237,29 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     ref.refresh(findAllMinterRolesProvider);
     return MaterialApp(
       theme: CustomThemeData.getThemeData(),
+      localeListResolutionCallback: (locales, supportedLocales) {
+        print('device locales=$locales supported locales=$supportedLocales');
+        print(locales.runtimeType);
+        print(supportedLocales.runtimeType);
+
+        if (locales == null) {
+          return const Locale('en');
+        }
+
+        for (Locale locale in locales) {
+          // if device language is supported by the app,
+          // just return it to set it as current app language
+          for (Locale supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale.languageCode) {
+              return locale;
+            }
+          }
+        }
+
+        // if device language is not supported by the app,
+        // the app will set it to english but return this to set to Bahasa instead
+        return const Locale('en');
+      },
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
