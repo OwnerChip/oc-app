@@ -155,3 +155,18 @@ class UserSession {
         isOwnerCard = json['isOwnerCard'],
         expiryDate = int.parse(json['expiryDate']);
 }
+
+class CreatorData {
+  final String name;
+  final String affiliation;
+  final String email;
+  final EthereumAddress walletAddress;
+  final DateTime createdAt;
+
+  const CreatorData(
+      {required this.name,
+      required this.affiliation,
+      required this.email,
+      required this.walletAddress,
+      required this.createdAt});
+}

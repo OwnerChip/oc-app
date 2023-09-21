@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -107,4 +108,14 @@ final nftImageProvider =
   String cid = getCidFromIpfsLink(nftMetadata['image']);
   String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
   return imageUri;
+});
+
+//**** CREATOR DATA ****
+
+final creatorDataProvider =
+    FutureProvider.autoDispose<CreatorData>((ref) async {
+  ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final CreatorData creatorData =
+      await getCreatorData(chipInfo.chipEthereumAddress);
+  return creatorData;
 });

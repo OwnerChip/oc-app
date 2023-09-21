@@ -25,8 +25,6 @@ import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
-
-
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
@@ -317,6 +315,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final wc = ref.watch(wcProvider);
+    final AsyncValue<CreatorData> creatorData = ref.watch(creatorDataProvider);
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
     );

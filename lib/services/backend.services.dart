@@ -42,7 +42,7 @@ Future<void> sendCardInitToBackend(
   }
 }
 
-/// get a list of all collections associated with a specific app
+// get a list of all collections associated with a specific app
 Future<List<dynamic>> getAppCollections() async {
   final Dio dio = getBackendClient();
   final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
@@ -220,4 +220,17 @@ Future<bool> sendCardLostToBackend(
     print(e);
     return false;
   }
+}
+
+//get creator info
+Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
+  final Dio dio = getBackendClient();
+  final Response response = await dio.get('/creator/${tokenId.hex}');
+  final Map creatorData = response.data;
+  return CreatorData(
+      name: creatorData['name'],
+      affiliation: creatorData['affiliation'],
+      email: creatorData['email'],
+      walletAddress: EthereumAddress.fromHex(creatorData['address']),
+      createdAt: DateTime.parse(creatorData['created_at']));
 }
