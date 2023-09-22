@@ -147,8 +147,8 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     });
   }
 
-  Future<void> pickGalleryImage() async {
-    XFile? imageFile = await getImageFromGallery();
+  Future<void> pickMedia() async {
+    XFile? imageFile = await getMediaFromGallery();
     //change XFile to File
     if (imageFile != null) {
       Uint8List bytes = await imageFile.readAsBytes();
@@ -670,7 +670,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                             ChooseFileButton(
                               text: context.loc.chooseFile,
                               openFileExplorerFunction: pickFile,
-                              openGalleryFunction: pickGalleryImage,
+                              openGalleryFunction: pickMedia,
                             )
                           else
                             CustomRoundedButton(

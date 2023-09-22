@@ -19,3 +19,9 @@ Future<XFile?> getImageFromGallery() async {
       maxWidth: 900);
   return image;
 }
+
+Future<XFile?> getMediaFromGallery() async {
+  final ImagePicker picker = ImagePicker();
+  final XFile? media = await picker.pickMedia();
+  return media;
+}
