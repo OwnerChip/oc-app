@@ -111,7 +111,7 @@ Future<void> walletPopupBuilder(
                         recognizer: TapGestureRecognizer()
                           ..onTap = () async {
                             await launchUrl(
-                                Uri.parse(dotenv.get('TERMS_PAGE_URL')));
+                                Uri.parse(context.loc.termsAndConditionsUrl));
                           },
                       ),
                       TextSpan(

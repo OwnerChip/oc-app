@@ -1,5 +1,10 @@
 {
-    "appTitle": "OwnerChip Demo App",
+    "termsAndConditionsUrl": "https://ownerchip.com/en/general-terms.html",
+    "tutorialUrl": "http://www.ownerchip.com/tutorial",
+    "projectsUrl": "http://www.ownerchip.com/projects",
+    "orderChipsUrl": "http://www.ownerchip.com/orderchips",
+    "supportUrl": "https://www.ownerchip.com/en/support.html",
+    "legalUrl": "https://www.ownerchip.com/en/app-support-legal-information.html",
     "initializeChip": "Chip initialisieren",
     "checkOwner": "Eigentümer prüfen",
     "youAreOwner": "Sie sind der Eigentümer",

@@ -1,5 +1,11 @@
 {
-    "appTitle": "OwnerChip Demo App",
+    "termsAndConditionsUrl": "https://www.stilami.com/de/AGB",
+    "stilamiIdentityUrl": "https://www.stilami.com/de/identity/about",
+    "collectionsUrl": "https://www.stilami.com/de/jewellery-collection/show-all",
+    "supportUrl": "https://www.stilami.com/de/identity/app/support",
+    "legalUrl": "https://www.stilami.com/de/AGB",
+    "collectionsButtonText": "Kollektionen",
+    "stilamiIdentityButtonText": "Stilami Identity",
     "initializeChip": "Chip initialisieren",
     "checkOwner": "Eigentümer prüfen",
     "youAreOwner": "Sie sind der Eigentümer",
