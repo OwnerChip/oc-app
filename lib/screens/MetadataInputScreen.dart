@@ -137,7 +137,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     try {
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
       sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
-          tags: {'connectedWallet': connectedWallet});
+          tags: {'connectedWallet': connectedWallet.hex});
       //upload image to ipfs
       String imageCid;
       String cid = '';
@@ -154,7 +154,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       if (cid != '') {
         ipfsProcess.finish();
         sendAnalyticsTrace(sessionId, cid, "IPFS_UPLOAD_FINISHED",
-            tags: {'connectedWallet': connectedWallet, 'cid': cid});
+            tags: {'connectedWallet': connectedWallet.hex, 'cid': cid});
       }
 
       //check if user is allowed to use gas station
@@ -171,7 +171,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       });
 
       sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'gasStation': canUseGasStation
       });
 
@@ -212,7 +212,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       if (txnReceipt?.status) {
         mintProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
-          'connectedWallet': '$connectedWallet',
+          'connectedWallet': connectedWallet.hex,
           'gasStation': canUseGasStation
         });
 
@@ -246,7 +246,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
       sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
-          tags: {'connectedWallet': '$connectedWallet'});
+          tags: {'connectedWallet': connectedWallet.hex});
       mintProcess.throwable = e;
       mintProcess.status = const SpanStatus.aborted();
       mintProcess.finish();

@@ -139,7 +139,7 @@ Future<void> onTapAuth(
   ref.refresh(findAllMinterRolesProvider);
 
   sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
-    'connectedWallet': userWalletAddress.toString(),
+    'connectedWallet': userWalletAddress.hex,
     'walletType': walletType.name,
   });
 

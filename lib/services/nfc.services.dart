@@ -276,7 +276,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
           "$sessionId",
           "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
           "INITIALIZE_NDEF_NO_APPLET",
-          tags: {"chipWallet": chipEthereumAddressHex.toString()});
+          tags: {"chipWallet": chipEthereumAddressHex.hex});
       print("---- No NDEF applet installed! ----");
     } else {
       throw Exception(
@@ -305,7 +305,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
             "$sessionId",
             "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
             "INITIALIZE_NDEF_WRONG_STATE",
-            tags: {"chipWallet": chipEthereumAddressHex.toString()});
+            tags: {"chipWallet": chipEthereumAddressHex.hex});
         print(
             "---- NDEF is locked or NFC chip is not in correct state to write ----");
       } else {

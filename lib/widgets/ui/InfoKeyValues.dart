@@ -14,7 +14,6 @@ class InfoKeyValues extends StatelessWidget {
         String val = entry.value;
 
         return Row(
-          //space between
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

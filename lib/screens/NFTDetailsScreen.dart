@@ -135,7 +135,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   sendAnalyticsTrace(session?.sessionId ?? "",
                                       "", "DESCRIPTION_VIEW",
                                       tags: {
-                                        'connectedWallet': connectedWallet,
+                                        'connectedWallet': connectedWallet.hex,
                                         'chipWallet':
                                             convertTokenIdToEthereumAddress(ref
                                                 .read(chipInfoProvider)
@@ -224,7 +224,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                               "ATTACHMENT_VIEW",
                                               tags: {
                                                 'connectedWallet':
-                                                    connectedWallet,
+                                                    connectedWallet.hex,
                                                 'chipWallet':
                                                     convertTokenIdToEthereumAddress(
                                                         ref
@@ -268,7 +268,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                               "ATTACHMENT_VIEW",
                                               tags: {
                                                 'connectedWallet':
-                                                    connectedWallet,
+                                                    connectedWallet.hex,
                                                 'chipWallet':
                                                     convertTokenIdToEthereumAddress(
                                                         ref

@@ -91,7 +91,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
@@ -146,7 +146,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         // send status to analytics
         burnProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
-          'connectedWallet': connectedWallet,
+          'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId)
         });
@@ -167,7 +167,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
       sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
@@ -196,7 +196,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
@@ -248,7 +248,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         // send status to analytics
         claimProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
-          'connectedWallet': connectedWallet,
+          'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId)
         });
@@ -275,7 +275,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       claimProcess.status = const SpanStatus.aborted();
       claimProcess.finish();
       sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });

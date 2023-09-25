@@ -224,7 +224,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       sendAnalyticsTrace(userSession.sessionId,
           attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
           tags: {
-            'connectedWallet': ref.read(userAddressProvider),
+            'connectedWallet': ref.read(userAddressProvider).hex,
             'chipWallet': convertTokenIdToEthereumAddress(chipInfo.tokenId)
           });
 
@@ -296,7 +296,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
             tags: {
-              'connectedWallet': ref.read(userAddressProvider),
+              'connectedWallet': ref.read(userAddressProvider).hex,
               'chipWallet': convertTokenIdToEthereumAddress(
                   ref.read(chipInfoProvider).tokenId),
             });
@@ -368,7 +368,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {
-              'connectedWallet': ref.read(userAddressProvider),
+              'connectedWallet': ref.read(userAddressProvider).hex,
               'chipWallet': convertTokenIdToEthereumAddress(
                   ref.read(chipInfoProvider).tokenId),
             });
@@ -456,7 +456,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     sendAnalyticsTrace(
         userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
         tags: {
-          'connectedWallet': ref.read(userAddressProvider),
+          'connectedWallet': ref.read(userAddressProvider).hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId),
         });

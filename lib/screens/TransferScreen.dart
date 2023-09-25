@@ -83,7 +83,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       });
 
       sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
         'to': to.toString(),
@@ -148,7 +148,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         // send status to analytics
         transferProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
-          'connectedWallet': connectedWallet,
+          'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId),
           'to': to.toString(),
@@ -165,7 +165,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       transferProcess.status = const SpanStatus.aborted();
       transferProcess.finish();
       sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
         'to': to.toString(),
