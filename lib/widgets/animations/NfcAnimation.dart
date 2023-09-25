@@ -72,7 +72,8 @@ class _NFCAnimationState extends State<NFCAnimation>
                   shape: BoxShape.circle,
                   color: Colors.white,
                   border: Border.all(
-                    color: CustomColors(dotenv.get('APP_ID')).accentColor,
+                    color: CustomColors(dotenv.get('APP_ID'))
+                        .androidNfcAnimationColor,
                     width: 4.0,
                   ),
                 ),
@@ -95,7 +96,8 @@ class _NFCAnimationState extends State<NFCAnimation>
                       key: ValueKey(
                           showPhone), // Use a ValueKey to distinguish between different icons
                       size: 96,
-                      color: CustomColors(dotenv.get('APP_ID')).accentColor,
+                      color: CustomColors(dotenv.get('APP_ID'))
+                          .androidNfcAnimationColor,
                     ),
                   ),
                 ),

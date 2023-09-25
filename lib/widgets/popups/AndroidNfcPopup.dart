@@ -52,7 +52,10 @@ class NFCOverlay {
                       Text(
                         message,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              color: CustomColors(dotenv.get('APP_ID'))
+                                  .primaryColor,
+                            ),
                       ),
                       const SizedBox(height: 30),
                       Padding(

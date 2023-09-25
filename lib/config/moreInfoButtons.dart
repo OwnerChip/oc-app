@@ -30,8 +30,8 @@ class MoreInfoButtons {
         break;
       case 'stilami':
         roundedButtons = [
-          MoreInfoButton('', loc.stilamiIdentityUrl),
-          MoreInfoButton('', loc.collectionsUrl),
+          MoreInfoButton(loc.stilamiIdentityButtonText, loc.stilamiIdentityUrl),
+          MoreInfoButton(loc.collectionsButtonText, loc.collectionsUrl),
         ];
         outlinedRoundedButtons = [
           MoreInfoButton(loc.support, loc.supportUrl),

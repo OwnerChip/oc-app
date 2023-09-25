@@ -6,6 +6,7 @@ class CustomColors {
   late Color accentColor;
   late Color shadowColor;
   late Color cardColor;
+  late Color androidNfcAnimationColor;
   late Color secondaryColor;
   late Color headline1Color;
   late Color headline2Color;
@@ -32,11 +33,11 @@ class CustomColors {
   CustomColors(appEnvironment) {
     switch (appEnvironment) {
       case 'ownerchip':
-        // ownerchip colors
         primaryColor = const Color.fromARGB(255, 25, 35, 90);
         accentColor = const Color.fromARGB(255, 77, 122, 255);
         shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
+        androidNfcAnimationColor = accentColor;
         secondaryColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
         headline1Color = accentColor;
@@ -66,6 +67,7 @@ class CustomColors {
         accentColor = const Color(0xffffffff);
         shadowColor = const Color(0x002E2E2E);
         cardColor = const Color(0xFF2E2E2E);
+        androidNfcAnimationColor = const Color(0xff000000);
         secondaryColor = const Color(0xFF000000);
         warningColor = Colors.orange;
         headline1Color = primaryColor;
@@ -77,7 +79,6 @@ class CustomColors {
         bodyText1Color = const Color(0xFFFFFFFF);
         bodyText2Color = const Color(0xFFFFFFFF);
         bodySmallColor = const Color(0xFFFFFFFF);
-
         borderColor = const Color(0xFF2E2E2E);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);
@@ -90,12 +91,13 @@ class CustomColors {
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.white;
         break;
+
       case 'ownerchip_infineon':
-        // ownerchip colors
         primaryColor = const Color.fromARGB(255, 25, 35, 90);
         accentColor = const Color.fromARGB(255, 77, 122, 255);
         shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
+        androidNfcAnimationColor = accentColor;
         secondaryColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
         headline1Color = accentColor;
@@ -107,7 +109,6 @@ class CustomColors {
         bodyText1Color = accentColor;
         bodyText2Color = primaryColor;
         bodySmallColor = primaryColor;
-
         borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);
@@ -120,11 +121,13 @@ class CustomColors {
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.black;
         break;
+
       case 'stebo':
         primaryColor = const Color(0xffe0ca81);
         accentColor = const Color(0xFFb5a365);
         shadowColor = const Color(0x002E2E2E);
         cardColor = const Color(0xFF2E2E2E);
+        androidNfcAnimationColor = accentColor;
         secondaryColor = const Color(0xFF1B1B1B);
         warningColor = Colors.orange;
         headline1Color = primaryColor;
@@ -136,7 +139,6 @@ class CustomColors {
         bodyText1Color = const Color(0xFFFFFFFF);
         bodyText2Color = const Color(0xFFFFFFFF);
         bodySmallColor = const Color(0xFFFFFFFF);
-
         borderColor = const Color(0xFF2E2E2E);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);
@@ -148,13 +150,14 @@ class CustomColors {
         customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.white;
-
         break;
+
       default:
         primaryColor = const Color.fromARGB(255, 25, 35, 90);
         accentColor = const Color.fromARGB(255, 77, 122, 255);
         shadowColor = const Color.fromARGB(70, 0, 0, 77);
         cardColor = Colors.white;
+        androidNfcAnimationColor = accentColor;
         secondaryColor = const Color.fromARGB(255, 240, 241, 246);
         warningColor = Colors.orange;
         headline1Color = accentColor;
@@ -166,7 +169,6 @@ class CustomColors {
         bodyText1Color = accentColor;
         bodyText2Color = primaryColor;
         bodySmallColor = primaryColor;
-
         borderColor = const Color.fromARGB(255, 249, 247, 247);
         successColor = Colors.green;
         errorColor = const Color(0xFFC72C41);
