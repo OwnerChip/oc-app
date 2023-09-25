@@ -135,7 +135,7 @@
     "pleaseEnterValidWalletAddress": "Bitte korrekte Wallet Adresse eingeben.",
     "creationOfTwin": "Digitalen Zwilling erstellen (NFT)",
     "warningChainSelector": "Alle eingegebenen NFT Daten \nsind öffentlich.",
-    "infoScreenText": "Überprüfe Echtheit und Eigentum von Objekten mit deinem Smartphone.",
+    "infoScreenText": "Die Stilami Identity App verifiziert die Echtheit und das Eigentum Ihres Schmuckstücks.",
     "transferScreenText": "Sende den Token an eine andere Wallet.",
     "chooseWallet": "Login Methode Auswählen",
     "agreeToWhenConnecting": "Beim Verbinden Ihrer Wallet stimmen Sie unseren",
