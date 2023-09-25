@@ -221,5 +221,8 @@
     "digitalContentWillBeTransferred": "Public and private Digital Content will be transferred together with the token.",
     "ownercard": "OwnerCard",
     "or": "or",
-    "cardNotInitializedByAdmin": "OwnerCard not yet initialized by admin."
+    "cardNotInitializedByAdmin": "OwnerCard not yet initialized by admin.",
+    "deletingAttachment": "Deleting attachment",
+    "enterPIN": "Enter PIN",
+    "transferToOwnerCard": "Transfer to OwnerCard"
 }

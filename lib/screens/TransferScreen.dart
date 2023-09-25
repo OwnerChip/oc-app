@@ -253,7 +253,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       ),
                       const SizedBox(height: 10),
                       CustomRoundedButton(
-                          text: "Transfer to OwnerCard",
+                          text: context.loc.transferToOwnerCard,
                           onPressed: (() async {
                             EthereumAddress chipWalletAddress =
                                 await getFirstChipQWalletAddress(context, ref);

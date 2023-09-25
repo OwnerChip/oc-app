@@ -412,7 +412,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     try {
       setState(() {
         isLoading = true;
-        loadingText = 'Deleting attachment';
+        loadingText = context.loc.deletingAttachment;
       });
       var result = await deleteAttachmentFromBackend(
           userSession!,

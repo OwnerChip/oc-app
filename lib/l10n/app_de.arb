@@ -222,5 +222,8 @@
     "digitalContentWillBeTransferred": "Öffentlicher und privater Digital Content wird gemeinsam mit dem Token transferiert.",
     "ownercard": "Identity Card",
     "or": "oder",
-    "cardNotInitializedByAdmin": "Identity Card noch nicht von Admin initialisiert."
+    "cardNotInitializedByAdmin": "Identity Card noch nicht von Admin initialisiert.",
+    "deletingAttachment": "Anhang löschen",
+    "enterPIN": "PIN eingeben",
+    "transferToOwnerCard": "An Identity Card transferieren"
 }
