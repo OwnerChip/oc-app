@@ -13,22 +13,42 @@ class InfoKeyValues extends StatelessWidget {
         int idx = entry.key;
         String val = entry.value;
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        return Column(
           children: [
-            Text('$val: ', style: Theme.of(context).textTheme.bodyMedium),
-            SizedBox(
-              width: 150,
-              child: Flex(
-                direction: Axis.horizontal,
-                children: [
-                  Flexible(
-                      child: Text(values[idx].toString(),
-                          style: Theme.of(context).textTheme.headlineSmall))
-                ],
-              ),
-            )
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 135,
+                  child: Flex(
+                    direction: Axis.horizontal,
+                    children: [
+                      Flexible(
+                        child: Text('$val: ',
+                            style: Theme.of(context).textTheme.bodyMedium),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                SizedBox(
+                  width: 135,
+                  child: Flex(
+                    direction: Axis.horizontal,
+                    children: [
+                      Flexible(
+                          child: Text(values[idx].toString(),
+                              style: Theme.of(context).textTheme.headlineSmall))
+                    ],
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 5)
           ],
         );
       }).toList()
