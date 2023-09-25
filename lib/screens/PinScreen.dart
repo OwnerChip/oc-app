@@ -88,7 +88,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
         ModalRoute.of(context)!.settings.arguments as PinScreenArguments;
     return Scaffold(
       appBar: CustomAppBar(
-        text: context.loc.enterPin,
+        text: context.loc.enterPIN,
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
