@@ -198,7 +198,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     try {
       setState(() {
         isLoading = true;
-        loadingText = 'Uploading...';
+        loadingText = context.loc.uploadingAttachment;
       });
       await putAttachmentMetadataToBackend(
           userSession!,

@@ -7,7 +7,6 @@
     "legalUrl": "https://www.ownerchip.com/en/app-support-legal-information.html",
     "privacyUrl": "https://www.ownerchip.com/en/app-support-legal-information.html",
     "initializeChip": "Initialize Chip",
-    "checkOwner": "Ownership check",
     "walletAddress": "wallet Address",
     "getWalletAddress": "Get Wallet Address",
     "youAreOwner": "You are the owner",
@@ -86,7 +85,7 @@
     "errorNoInternetConnection": "No internet connection.",
     "errorNoNfcReader": "NFC Reader is not activated",
     "congrats": "Congrats!",
-    "ownershipCheck": "Ownership check",
+    "ownershipCheck": "Ownership Check",
     "authenticityNftFound": "Token exists on blockchain.",
     "authenticityNftNotFound": "Token does not exist on blockchain.",
     "authenticityCheck": "Authenticity Check",
@@ -175,7 +174,7 @@
     "pressConnectToSignIn": "Press connect to sign in with your OwnerCard.",
     "youCanUseThisPukToResetYourPin": "You can use the PUK in case you forget your PIN code.",
     "pukCopied": "PUK copied to clipboard",
-    "setUpOwnerCard": "Set Up New OwnerCard",
+    "setUpOwnerCard": "Set up new OwnerCard",
     "confirmYourIdentity": "Confirm your identity by authenticating your wallet.",
     "errorSettingPin": "Error setting OwnerCard pin.",
     "holdPhoneToCard": "Hold your phone close to your OwnerCard.",
@@ -228,5 +227,6 @@
     "transferToOwnerCard": "Transfer to OwnerCard",
     "resetPIN": "Reset PIN",
     "ownerCardLost": "OwnerCard Lost",
-    "toRequestNewCard": "To request a new card, please enter your contact details below."
+    "toRequestNewCard": "To request a new card, please enter your contact details below.",
+    "uploadingAttachment": "Uploading attachment..."
 }

@@ -8,7 +8,6 @@
     "collectionsButtonText": "Kollektionen",
     "stilamiIdentityButtonText": "Stilami Identity",
     "initializeChip": "Chip initialisieren",
-    "checkOwner": "Eigentümer prüfen",
     "youAreOwner": "Sie sind der Eigentümer",
     "youAreNftOwner": "Sie sind der Token Eigentümer",
     "theOwnerIs": "Der Eigentümer ist",
@@ -229,5 +228,6 @@
     "transferToOwnerCard": "An Identity Card transferieren",
     "resetPIN": "PIN zurücksetzen",
     "ownerCardLost": "Identity Card verloren",
-    "toRequestNewCard": "Um eine neue Karte anzufordern, geben Sie bitte unten Ihre Kontaktdaten ein."
+    "toRequestNewCard": "Um eine neue Karte anzufordern, geben Sie bitte unten Ihre Kontaktdaten ein.",
+    "uploadingAttachment": "Anhang hochladen..."
 }

@@ -8,7 +8,6 @@
     "collectionsButtonText": "Collections",
     "stilamiIdentityButtonText": "Stilami Identity",
     "initializeChip": "Initialize Chip",
-    "checkOwner": "Ownership check",
     "walletAddress": "wallet Address",
     "getWalletAddress": "Get Wallet Address",
     "youAreOwner": "You are the owner",
@@ -87,7 +86,7 @@
     "errorNoInternetConnection": "No internet connection.",
     "errorNoNfcReader": "NFC Reader is not activated",
     "congrats": "Congrats!",
-    "ownershipCheck": "Ownership check",
+    "ownershipCheck": "Ownership Check",
     "authenticityNftFound": "Token exists on blockchain.",
     "authenticityNftNotFound": "Token does not exist on blockchain.",
     "authenticityCheck": "Authenticity Check",
@@ -176,7 +175,7 @@
     "pressConnectToSignIn": "Press connect to sign in with your Identity Card.",
     "youCanUseThisPukToResetYourPin": "You can use the PUK in case you forget your PIN code.",
     "pukCopied": "PUK copied to clipboard",
-    "setUpOwnerCard": "Set Up New Identity Card",
+    "setUpOwnerCard": "Set up new Identity Card",
     "confirmYourIdentity": "Confirm your identity by authenticating your wallet.",
     "errorSettingPin": "Error setting Identity Card pin.",
     "holdPhoneToCard": "Hold your phone close to your Identity Card.",
@@ -229,5 +228,6 @@
     "transferToOwnerCard": "Transfer to Identity Card",
     "resetPIN": "Reset PIN",
     "ownerCardLost": "Identity Card Lost",
-    "toRequestNewCard": "To request a new card, please enter your contact details below."
+    "toRequestNewCard": "To request a new card, please enter your contact details below.",
+    "uploadingAttachment": "Uploading attachment..."
 }
