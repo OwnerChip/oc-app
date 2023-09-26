@@ -211,7 +211,7 @@
     "errorReadingChip": "Error reading chip.",
     "receivingToken": "Receiving token",
     "transferToAddress": "Transfer to address",
-    "cardLost": "Identity Card Lost",
+    "cardLost": "Identity Card lost",
     "cardLostContacted": "You will be contacted within a few days.",
     "scanToTriggerCardLost": "Scan chip to trigger process for receiving a new Identity Card.",
     "enterEmailToTriggerCardLost": "Enter email to trigger process for receiving new card.",
@@ -227,7 +227,6 @@
     "enterPIN": "Enter PIN",
     "transferToOwnerCard": "Transfer to Identity Card",
     "resetPIN": "Reset PIN",
-    "ownerCardLost": "Identity Card Lost",
     "toRequestNewCard": "To request a new card, please enter your contact details below.",
     "uploadingAttachment": "Uploading attachment..."
 }

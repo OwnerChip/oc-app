@@ -210,7 +210,7 @@
     "errorReadingChip": "Error reading chip.",
     "receivingToken": "Receiving token",
     "transferToAddress": "Transfer to address",
-    "cardLost": "OwnerCard Lost",
+    "cardLost": "OwnerCard lost",
     "cardLostContacted": "You will be contacted within a few days.",
     "scanToTriggerCardLost": "Scan chip to trigger process for receiving a new OwnerCard.",
     "enterEmailToTriggerCardLost": "Enter email to trigger process for receiving new card.",
@@ -226,7 +226,6 @@
     "enterPIN": "Enter PIN",
     "transferToOwnerCard": "Transfer to OwnerCard",
     "resetPIN": "Reset PIN",
-    "ownerCardLost": "OwnerCard Lost",
     "toRequestNewCard": "To request a new card, please enter your contact details below.",
     "uploadingAttachment": "Uploading attachment..."
 }
