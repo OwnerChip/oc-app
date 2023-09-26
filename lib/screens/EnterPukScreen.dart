@@ -116,7 +116,7 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
             height: 20,
           ),
           CustomRoundedButton(
-            text: 'Reset PIN',
+            text: context.loc.resetPIN,
             onPressed: () async {
               FocusScope.of(context).unfocus();
               String? newPuk = await resetPinOnCard(context, ref, puk, pin);

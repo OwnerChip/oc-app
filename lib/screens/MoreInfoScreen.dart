@@ -71,7 +71,7 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: CustomRoundedButton(
-                    text: 'Reset PIN',
+                    text: context.loc.resetPIN,
                     onPressed: () => {
                           Navigator.pushNamed(context, EnterPukScreen.routeName)
                         },
@@ -96,19 +96,18 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                         width: 250))
                 : Container(),
             const SizedBox(height: 60),
-            CustomOutlinedButton(
-                buttonText: context.loc.support,
-                onPressed: () => {
-                      launchUrl(Uri.parse(dotenv.get('SUPPORT_PAGE_URL')),
-                          mode: LaunchMode.externalApplication)
-                    }),
-            const SizedBox(height: 10),
-            CustomOutlinedButton(
-                buttonText: context.loc.legal,
-                onPressed: () => {
-                      launchUrl(Uri.parse(dotenv.get('LEGAL_PAGE_URL')),
-                          mode: LaunchMode.externalApplication)
-                    }),
+            ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
+                .outlinedRoundedButtons
+                .map((button) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: CustomRoundedButton(
+                        text: button.text,
+                        onPressed: () => {
+                              launchUrl(Uri.parse(button.url),
+                                  mode: LaunchMode.externalApplication)
+                            },
+                        width: 250)))
+                .toList(),
             const SizedBox(height: 20),
             Text('Version: ${dotenv.get('VERSION_NUMBER')}',
                 style: Theme.of(context).textTheme.bodySmall),

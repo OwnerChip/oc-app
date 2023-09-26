@@ -122,8 +122,7 @@ Future<void> walletPopupBuilder(
                         style: const TextStyle(color: Colors.blue),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () async {
-                            await launchUrl(
-                                Uri.parse(dotenv.get('LEGAL_PAGE_URL')));
+                            await launchUrl(Uri.parse(context.loc.privacyUrl));
                           },
                       ),
                       TextSpan(

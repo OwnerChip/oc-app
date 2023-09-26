@@ -5,6 +5,7 @@
     "orderChipsUrl": "http://www.ownerchip.com/orderchips",
     "supportUrl": "https://www.ownerchip.com/en/support.html",
     "legalUrl": "https://www.ownerchip.com/en/app-support-legal-information.html",
+    "privacyUrl": "https://www.ownerchip.com/en/app-support-legal-information.html",
     "initializeChip": "Chip initialisieren",
     "checkOwner": "Eigentümer prüfen",
     "youAreOwner": "Sie sind der Eigentümer",
@@ -136,8 +137,8 @@
     "warningChainSelector": "Alle eingegebenen NFT Daten \nsind öffentlich.",
     "infoScreenText": "Überprüfe Echtheit und Eigentum von Objekten mit deinem Smartphone.",
     "transferScreenText": "Sende den Token an eine andere Wallet.",
-    "chooseWallet": "Login Methode Auswählen",
-    "agreeToWhenConnecting": "Beim Verbinden Ihrer Wallet stimmen Sie unseren",
+    "chooseWallet": "Login Methode auswählen",
+    "agreeToWhenConnecting": "Beim Verbinden Ihrer Wallet stimmen Sie unseren ",
     "generalTerms": "AGB",
     "and": "und",
     "privacyPolicy": "Datenschutzbestimmungen",
@@ -224,5 +225,8 @@
     "cardNotInitializedByAdmin": "OwnerCard noch nicht von Admin initialisiert.",
     "deletingAttachment": "Anhang löschen",
     "enterPIN": "PIN eingeben",
-    "transferToOwnerCard": "An OwnerCard transferieren"
+    "transferToOwnerCard": "An OwnerCard transferieren",
+    "resetPIN": "PIN zurücksetzen",
+    "ownerCardLost": "OwnerCard verloren",
+    "toRequestNewCard": "Um eine neue Karte anzufordern, geben Sie bitte unten Ihre Kontaktdaten ein."
 }

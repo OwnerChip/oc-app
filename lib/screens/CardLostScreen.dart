@@ -43,8 +43,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 40),
-                  Text(
-                      'Enter name and email to trigger process for receiving new card',
+                  Text(context.loc.toRequestNewCard,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 40),

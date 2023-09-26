@@ -5,6 +5,7 @@
     "orderChipsUrl": "http://www.ownerchip.com/orderchips",
     "supportUrl": "https://www.ownerchip.com/en/support.html",
     "legalUrl": "https://www.ownerchip.com/en/app-support-legal-information.html",
+    "privacyUrl": "https://www.ownerchip.com/en/app-support-legal-information.html",
     "initializeChip": "Initialize Chip",
     "checkOwner": "Ownership check",
     "walletAddress": "wallet Address",
@@ -136,10 +137,10 @@
     "warningChainSelector": "All data that is entered on next screen \nwill be publicly visible.",
     "infoScreenText": "Check items for authenticity and ownership using your smartphone.",
     "transferScreenText": "Transfer your token to another wallet.",
-    "chooseWallet": "Choose Login Method",
+    "chooseWallet": "Select login method",
     "agreeToWhenConnecting": "By connecting you agree to our ",
     "generalTerms": "general terms",
-    "and": " and ",
+    "and": "and",
     "privacyPolicy": "privacy policy",
     "zu": "",
     "step": "Step",
@@ -224,5 +225,8 @@
     "cardNotInitializedByAdmin": "OwnerCard not yet initialized by admin.",
     "deletingAttachment": "Deleting attachment",
     "enterPIN": "Enter PIN",
-    "transferToOwnerCard": "Transfer to OwnerCard"
+    "transferToOwnerCard": "Transfer to OwnerCard",
+    "resetPIN": "Reset PIN",
+    "ownerCardLost": "OwnerCard Lost",
+    "toRequestNewCard": "To request a new card, please enter your contact details below."
 }

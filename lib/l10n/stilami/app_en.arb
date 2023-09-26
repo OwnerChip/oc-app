@@ -4,6 +4,7 @@
     "collectionsUrl": "https://www.stilami.com/en/jewellery-collection/show-all",
     "supportUrl": "https://www.stilami.com/en/identity/app/support",
     "legalUrl": "https://www.stilami.com/en/terms-and-conditions",
+    "privacyUrl": "https://www.stilami.com/datenschutzerklarung.html ",
     "collectionsButtonText": "Collections",
     "stilamiIdentityButtonText": "Stilami Identity",
     "initializeChip": "Initialize Chip",
@@ -137,10 +138,10 @@
     "warningChainSelector": "All data that is entered on next screen \nwill be publicly visible.",
     "infoScreenText": "The Stilami Identity App verifies the authenticity and ownership of your jewelry piece.",
     "transferScreenText": "Transfer your token to another wallet.",
-    "chooseWallet": "Choose Login Method",
+    "chooseWallet": "Select login method",
     "agreeToWhenConnecting": "By connecting you agree to our ",
     "generalTerms": "general terms",
-    "and": " and ",
+    "and": "and",
     "privacyPolicy": "privacy policy",
     "zu": "",
     "step": "Step",
@@ -225,5 +226,8 @@
     "cardNotInitializedByAdmin": "Identity Card not yet initialized by admin.",
     "deletingAttachment": "Deleting attachment",
     "enterPIN": "Enter PIN",
-    "transferToOwnerCard": "Transfer to Identity Card"
+    "transferToOwnerCard": "Transfer to Identity Card",
+    "resetPIN": "Reset PIN",
+    "ownerCardLost": "Identity Card Lost",
+    "toRequestNewCard": "To request a new card, please enter your contact details below."
 }
