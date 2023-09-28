@@ -176,6 +176,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       });
 
       String txnHash;
+      // if (canUseGasStation) {
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AuthenticityBoxContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -402,17 +403,25 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   child: tokenInfo.when(
                                       data: (data) => data.collectionId ==
                                               zeroAddress
-                                          ? Text(context.loc.authenticityNftNotFound,
+                                          // NFT DOES NOT EXIST
+                                          ? Text(
+                                              context
+                                                  .loc.authenticityNftNotFound,
                                               textAlign: TextAlign.left,
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodyMedium)
-                                          : Text(
-                                              context.loc.authenticityNftFound,
-                                              textAlign: TextAlign.left,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium),
+                                          // NFT EXISTS
+                                          : 
+
+                                          AuthenticityBoxContent(),
+                                          // Text(
+                                          //     context.loc.authenticityNftFound,
+                                          //     textAlign: TextAlign.left,
+                                          //     style: Theme.of(context)
+                                          //         .textTheme
+                                          //         .bodyMedium),
+                                                  
                                       error: (e, s) => Text(
                                           context.loc.authenticityNftNotFound,
                                           textAlign: TextAlign.left,

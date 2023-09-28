@@ -100,8 +100,8 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                 .outlinedRoundedButtons
                 .map((button) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: CustomRoundedButton(
-                        text: button.text,
+                    child: CustomOutlinedButton(
+                        buttonText: button.text,
                         onPressed: () => {
                               launchUrl(Uri.parse(button.url),
                                   mode: LaunchMode.externalApplication)
