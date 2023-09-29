@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 
 class InfoKeyValues extends StatelessWidget {
-  const InfoKeyValues({super.key, required this.keys, required this.values});
+  InfoKeyValues(
+      {super.key,
+      required this.keys,
+      required this.values,
+      this.keyWidth = 135,
+      this.valueWidth = 135});
 
   final List<String> keys;
   final List<String> values;
+  final double keyWidth;
+  final double valueWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,7 @@ class InfoKeyValues extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 135,
+                  width: keyWidth,
                   child: Flex(
                     direction: Axis.horizontal,
                     children: [
@@ -36,7 +43,7 @@ class InfoKeyValues extends StatelessWidget {
                   width: 10,
                 ),
                 SizedBox(
-                  width: 135,
+                  width: valueWidth,
                   child: Flex(
                     direction: Axis.horizontal,
                     children: [
