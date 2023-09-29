@@ -401,27 +401,38 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: tokenInfo.when(
-                                      data: (data) => data.collectionId ==
-                                              zeroAddress
-                                          // NFT DOES NOT EXIST
-                                          ? Text(
-                                              context
-                                                  .loc.authenticityNftNotFound,
-                                              textAlign: TextAlign.left,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium)
-                                          // NFT EXISTS
-                                          : 
+                                      data: (data) =>
+                                          data.collectionId == zeroAddress
+                                              // NFT DOES NOT EXIST
+                                              ? Text(
+                                                  context.loc
+                                                      .authenticityNftNotFound,
+                                                  textAlign: TextAlign.left,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium)
+                                              // NFT EXISTS
+                                              : creatorData.when(
+                                                  data: (data) =>
+                                                      AuthenticityBoxContent(
+                                                          creatorData: data),
+                                                  loading: () =>
+                                                      const CircularProgressIndicator(),
+                                                  error: (e, s) => Text(
+                                                      context.loc
+                                                          .authenticityNftFound,
+                                                      textAlign: TextAlign.left,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium),
+                                                ),
+                                      // Text(
+                                      //     context.loc.authenticityNftFound,
+                                      //     textAlign: TextAlign.left,
+                                      //     style: Theme.of(context)
+                                      //         .textTheme
+                                      //         .bodyMedium),
 
-                                          AuthenticityBoxContent(),
-                                          // Text(
-                                          //     context.loc.authenticityNftFound,
-                                          //     textAlign: TextAlign.left,
-                                          //     style: Theme.of(context)
-                                          //         .textTheme
-                                          //         .bodyMedium),
-                                                  
                                       error: (e, s) => Text(
                                           context.loc.authenticityNftNotFound,
                                           textAlign: TextAlign.left,

@@ -228,5 +228,7 @@
     "transferToOwnerCard": "Transfer to Identity Card",
     "resetPIN": "Reset PIN",
     "toRequestNewCard": "To request a new card, please enter your contact details below.",
-    "uploadingAttachment": "Uploading attachment..."
+    "uploadingAttachment": "Uploading attachment...",
+    "creatorData": "Creator data",
+    "digitalTwinVerifiedBy": "Digital twin verified by "
 }
