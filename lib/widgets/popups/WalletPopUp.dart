@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:flutter/gestures.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
@@ -51,22 +52,25 @@ Future<void> walletPopupBuilder(
               Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // OwnerCard wallet
                 WalletIcon(
-                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
-                    context.loc.ownercard, () async {
-                  // Navigator.pop(context); //remove wallet popup
-
-                  await Navigator.pushNamed(context, PinScreen.routeName,
-                      arguments: PinScreenArguments(
-                          activeFeature: PinScreenActiveFeature.verifyPinAuth,
-                          callback: (String pin) async {
-                            onCardPress(ref, context, pin);
-                          }));
-                }),
+                  iconPath:
+                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
+                  walletName: context.loc.ownercard,
+                  onTap: () async {
+                    await Navigator.pushNamed(context, PinScreen.routeName,
+                        arguments: PinScreenArguments(
+                            activeFeature: PinScreenActiveFeature.verifyPinAuth,
+                            callback: (String pin) async {
+                              onCardPress(ref, context, pin);
+                            }));
+                  },
+                  backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                      .ownerCardWalletIconBackgroundColor,
+                ),
                 // trust wallet
                 WalletIcon(
-                    walletConfig['https://trustwallet.com']!.iconUri,
-                    walletConfig['https://trustwallet.com']!.name,
-                    () => onWalletPress(context, ref, wc,
+                    iconPath: walletConfig['https://trustwallet.com']!.iconUri,
+                    walletName: walletConfig['https://trustwallet.com']!.name,
+                    onTap: () => onWalletPress(context, ref, wc,
                         walletConfig['https://trustwallet.com']!)),
               ]),
               const SizedBox(height: 20),
@@ -74,16 +78,17 @@ Future<void> walletPopupBuilder(
               Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // metamask
                 WalletIcon(
-                    walletConfig['https://metamask.io/']!.iconUri,
-                    walletConfig['https://metamask.io/']!.name,
-                    () => onWalletPress(context, ref, wc,
-                        walletConfig['https://metamask.io/']!)),
+                  iconPath: walletConfig['https://metamask.io/']!.iconUri,
+                  walletName: walletConfig['https://metamask.io/']!.name,
+                  onTap: () => onWalletPress(
+                      context, ref, wc, walletConfig['https://metamask.io/']!),
+                ),
 
                 //1inch
                 WalletIcon(
-                    walletConfig['https://1inch.io/wallet/']!.iconUri,
-                    walletConfig['https://1inch.io/wallet/']!.name,
-                    () => onWalletPress(context, ref, wc,
+                    iconPath: walletConfig['https://1inch.io/wallet/']!.iconUri,
+                    walletName: walletConfig['https://1inch.io/wallet/']!.name,
+                    onTap: () => onWalletPress(context, ref, wc,
                         walletConfig['https://1inch.io/wallet/']!)),
               ]),
               // const SizedBox(height: 20),

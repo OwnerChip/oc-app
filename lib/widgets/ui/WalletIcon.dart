@@ -7,8 +7,13 @@ class WalletIcon extends StatelessWidget {
   final String iconPath;
   final String walletName;
   final VoidCallback onTap;
+  final Color backgroundColor;
 
-  WalletIcon(this.iconPath, this.walletName, this.onTap);
+  WalletIcon(
+      {required this.iconPath,
+      required this.walletName,
+      required this.onTap,
+      this.backgroundColor = const Color.fromARGB(255, 243, 243, 243)});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,7 @@ class WalletIcon extends StatelessWidget {
           children: [
             Container(
                 decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 243, 243, 243),
+                    color: backgroundColor,
                     borderRadius: const BorderRadius.all(Radius.circular(13)),
                     boxShadow: [
                       BoxShadow(

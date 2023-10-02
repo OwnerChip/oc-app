@@ -29,6 +29,7 @@ class CustomColors {
   late Color customRoundedButtonColor;
   late Color customHomeScreenButtonShadowColor;
   late Color chainDropdownTextColor;
+  late Color ownerCardWalletIconBackgroundColor;
 
   CustomColors(appEnvironment) {
     switch (appEnvironment) {
@@ -60,6 +61,8 @@ class CustomColors {
         customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.black;
+        ownerCardWalletIconBackgroundColor =
+            const Color.fromARGB(255, 243, 243, 243);
         break;
 
       case 'stilami':
@@ -90,6 +93,9 @@ class CustomColors {
         customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.white;
+
+        ownerCardWalletIconBackgroundColor = const Color.fromARGB(255, 0, 0, 0);
+
         break;
 
       case 'ownerchip_infineon':
@@ -120,6 +126,8 @@ class CustomColors {
         customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.black;
+        ownerCardWalletIconBackgroundColor =
+            const Color.fromARGB(255, 243, 243, 243);
         break;
 
       case 'stebo':
@@ -150,6 +158,8 @@ class CustomColors {
         customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.white;
+        ownerCardWalletIconBackgroundColor =
+            const Color.fromARGB(255, 243, 243, 243);
         break;
 
       default:
@@ -180,7 +190,8 @@ class CustomColors {
         customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.black;
-
+        ownerCardWalletIconBackgroundColor =
+            const Color.fromARGB(255, 243, 243, 243);
         break;
     }
   }
