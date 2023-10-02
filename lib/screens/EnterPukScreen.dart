@@ -44,6 +44,7 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
               Container(
                 margin: EdgeInsets.only(top: 20),
                 child: TextFormField(
+                  maxLength: 16,
                   style: Theme.of(context).textTheme.bodyMedium,
                   cursorColor:
                       CustomColors(dotenv.get('APP_ID').toString()).accentColor,
@@ -80,6 +81,7 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
               Container(
                 margin: EdgeInsets.only(top: 20),
                 child: TextFormField(
+                  maxLength: 4,
                   style: Theme.of(context).textTheme.bodyMedium,
                   cursorColor:
                       CustomColors(dotenv.get('APP_ID').toString()).accentColor,

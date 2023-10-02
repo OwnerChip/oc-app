@@ -49,13 +49,15 @@ class PukDisplay extends ConsumerWidget {
           const SizedBox(height: 40),
           pin != null
               ? CustomRoundedButton(
-                  text: 'Connect OwnerCard',
+                  text: context.loc.connectOwnerCard,
                   onPressed: (() async {
                     try {
                       await authenticateCard(ref, context, pin!);
                       ScaffoldMessenger.of(context).showSnackBar(
-                          returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                              context.loc.successCardLogin, 'success'));
+                          returnSnackBarWidget(
+                              context.loc.successHeadingSnackbar,
+                              context.loc.successCardLogin,
+                              'success'));
                       Navigator.pushNamedAndRemoveUntil(
                           context, HomeScreen.routeName, (route) => false);
                     } catch (e) {
