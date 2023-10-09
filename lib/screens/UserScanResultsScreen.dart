@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AuthenticityBoxContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -362,7 +363,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   style:
                                       Theme.of(context).textTheme.displayLarge!)
                               : Container(),
-                          error: (error, stackTrace) => Container(),
+                          error: (error, stackTrace) {
+                            print(error);
+                            if (error == 'Token does not exist.') {
+                              return Container();
+                            } else {
+                              return RefreshMetadataButton();
+                            }
+                          },
                         ),
                         const SizedBox(height: 10),
                         //AUTHENTICITY CHECK

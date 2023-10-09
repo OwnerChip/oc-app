@@ -5,6 +5,7 @@ import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,16 +99,24 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
-                    child: Text(
-                        nftMetadata.when(
-                            loading: () => context.loc.loading,
-                            data: (data) => data['name'],
-                            error: (e, s) => context.loc.loadingNFTDataError),
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            fontSize: CustomFonts(dotenv.get('APP_ID'))
-                                .metadataNameFontSize,
-                            fontWeight: CustomFonts(dotenv.get('APP_ID'))
-                                .metadataNameFontWeight))),
+                  child: nftMetadata.when(
+                      loading: () => Text(context.loc.loading,
+                          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                              fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                  .metadataNameFontSize,
+                              fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                                  .metadataNameFontWeight)),
+                      data: (data) => Text(data['name'],
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge!
+                              .copyWith(
+                                  fontSize: CustomFonts(dotenv.get('APP_ID'))
+                                      .metadataNameFontSize,
+                                  fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                                      .metadataNameFontWeight)),
+                      error: (e, s) => RefreshMetadataButton()),
+                ),
               ],
             ),
             Divider(
@@ -312,81 +321,91 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
 
             /*** DIGITAL TWIN ***/
             tokenInfo.when(
-              data: (data) => DropdownContainer(
-                  title: context.loc.digitalTwin,
-                  content: Column(
-                    children: [
-                      InfoKeyValues(keys: [
-                        context.loc.authenticity,
-                        context.loc.ownership,
-                      ], values: [
-                        // authenticity
-                        tokenInfo.when(
-                          data: ((data) => data.collectionId == zeroAddress
-                              ? context.loc.unconfirmed
-                              : context.loc.confirmed),
-                          error: (e, s) => context.loc.confirmed,
-                          loading: () => context.loc.loading,
-                        ),
-                        // ownership
+              data: (tokenInfoData) {
+                return DropdownContainer(
+                    title: context.loc.digitalTwin,
+                    content: Column(
+                      children: [
+                        InfoKeyValues(keys: [
+                          context.loc.authenticity,
+                          context.loc.ownership,
+                        ], values: [
+                          // authenticity
+                          tokenInfo.when(
+                            data: ((data) => data.collectionId == zeroAddress
+                                ? context.loc.unconfirmed
+                                : context.loc.confirmed),
+                            error: (e, s) => context.loc.confirmed,
+                            loading: () => context.loc.loading,
+                          ),
+                          // ownership
 
-                        nftOwner.when(
-                          data: ((data) => wc!.getActiveSessions().isEmpty
-                              ?
-                              //NFT owner exists and wallet is NOT connected
-                              context.loc.unconfirmed
-                              : connectedWallet == data
-                                  ?
-                                  //NFT owner exists and wallet is connected and wallet is owner
-                                  context.loc.confirmed
-                                  :
-                                  //NFT owner exists and wallet is connected and wallet is NOT owner
-                                  context.loc.unconfirmed),
-                          error: (e, s) => context.loc.ownerError,
-                          loading: () => context.loc.loading,
+                          nftOwner.when(
+                            data: ((nftOwnerData) => wc!
+                                    .getActiveSessions()
+                                    .isEmpty
+                                ?
+                                //NFT owner exists and wallet is NOT connected
+                                context.loc.unconfirmed
+                                : connectedWallet == nftOwnerData
+                                    ?
+                                    //NFT owner exists and wallet is connected and wallet is owner
+                                    context.loc.confirmed
+                                    :
+                                    //NFT owner exists and wallet is connected and wallet is NOT owner
+                                    context.loc.unconfirmed),
+                            error: (e, s) => context.loc.ownerError,
+                            loading: () => context.loc.loading,
+                          ),
+                        ]),
+                        const SizedBox(height: 20),
+                        //if tokenInfo could not be loaded and hence chainId is zero, display empty container
+                        tokenInfoData.chainId == 0
+                            ? Container()
+                            : InfoKeyValues(keys: const [
+                                "Collection",
+                                "Blockchain",
+                              ], values: [
+                                // first, try to find collection in collections list
+                                allCollections
+                                    .collections[tokenInfoData.chainId]!
+                                    .firstWhere((collection) {
+                                  return collection.id ==
+                                      tokenInfoData.collectionId;
+                                },
+                                        // if not found, check chain data
+                                        orElse: () => Collection(
+                                            tokenInfoData.collectionId,
+                                            contractName.when(
+                                              data: (data) => data,
+                                              // if error, show unknown collection
+                                              error: (error, stackTrace) =>
+                                                  context.loc.unknownCollection,
+                                              loading: () =>
+                                                  context.loc.loading,
+                                            ))).name,
+                                chainConfig[tokenInfoData.chainId]!.networkName,
+                              ]),
+                        //spacing
+                        const SizedBox(height: 13),
+                        ChipInfo(
+                          tokenId: BigInt.parse(
+                              chipInfo.chipEthereumAddress
+                                  .toString()
+                                  .substring(2),
+                              radix: 16),
                         ),
-                      ]),
-                      const SizedBox(height: 20),
-                      InfoKeyValues(keys: const [
-                        "Collection",
-                        "Blockchain",
-                      ], values: [
-                        // first, try to find collection in collections list
-                        allCollections.collections[data.chainId]!.firstWhere(
-                            (collection) {
-                          return collection.id == data.collectionId;
-                        },
-                            // if not found, check chain data
-                            orElse: () => Collection(
-                                data.collectionId,
-                                contractName.when(
-                                  data: (data) => data,
-                                  // if error, show unknown collection
-                                  error: (error, stackTrace) =>
-                                      context.loc.unknownCollection,
-                                  loading: () => context.loc.loading,
-                                ))).name,
-                        chainConfig[data.chainId]!.networkName,
-                      ]),
-                      //spacing
-                      const SizedBox(height: 13),
-                      ChipInfo(
-                        tokenId: BigInt.parse(
-                            chipInfo.chipEthereumAddress
-                                .toString()
-                                .substring(2),
-                            radix: 16),
-                      ),
-                      const SizedBox(height: 20),
-                      CustomRoundedButton(
-                        text: context.loc.showOnExplorer,
-                        onPressed: () => {
-                          launchUrl(blockchainExplorerUrl.asData!.value,
-                              mode: LaunchMode.externalApplication)
-                        },
-                      ),
-                    ],
-                  )),
+                        const SizedBox(height: 20),
+                        CustomRoundedButton(
+                          text: context.loc.showOnExplorer,
+                          onPressed: () => {
+                            launchUrl(blockchainExplorerUrl.asData!.value,
+                                mode: LaunchMode.externalApplication)
+                          },
+                        ),
+                      ],
+                    ));
+              },
               loading: () => Container(),
               error: (e, s) => Container(),
             ),

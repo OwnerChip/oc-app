@@ -88,7 +88,7 @@ final nftMetadataProvider = FutureProvider.autoDispose
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING (config chainId & collectionId are 0)
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
-    return {};
+    throw 'Token does not exist.';
   }
   String tokenUri = await getTokenUri(
       getRPCUrlFromChainId(config.chainId), config.collectionId, tokenId);

@@ -4,6 +4,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_dio/sentry_dio.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// get ipfsGatewayClient
 Dio getIpfsGatewayClient(bool api) {
@@ -47,20 +48,19 @@ Future<String> uploadFileToIPFS(XFile xfile, String fileMimeType) async {
 /// download a file from IPFS
 Future<dynamic> downloadMetadataFromIPFS(String cid) async {
   try {
+    // throw ('test error');
     var ipfs = getIpfsGatewayClient(false);
     ipfs.addSentry();
     Response response = await ipfs.get(
       cid,
       options: Options(
-          responseType: ResponseType.json,
-          followRedirects: false,
-          validateStatus: (status) {
-            return status! < 500;
-          }),
+        responseType: ResponseType.json,
+      ),
     );
 
     return response.data;
   } catch (e) {
+    Sentry.captureException(e);
     print("ERROR while downloading metadata from IPFS: $e");
   }
 }
@@ -72,11 +72,8 @@ Future<Map<String, String>> getIpfsProviderImageUrl(String cid) async {
     Response response = await ipfs.get(
       cid,
       options: Options(
-          responseType: ResponseType.bytes,
-          followRedirects: false,
-          validateStatus: (status) {
-            return status! < 500;
-          }),
+        responseType: ResponseType.bytes,
+      ),
     );
 
     final Directory directory = Directory.systemTemp;
@@ -87,6 +84,7 @@ Future<Map<String, String>> getIpfsProviderImageUrl(String cid) async {
     Map<String, String> result = {"imagePath": imagePath, "imageUri": imageUri};
     return result;
   } catch (e) {
+    Sentry.captureException(e);
     print("ERROR while downloading image file from IPFS...");
     print(e);
     return {};

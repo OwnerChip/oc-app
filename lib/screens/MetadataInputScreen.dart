@@ -217,18 +217,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           'gasStation': canUseGasStation
         });
 
-        await Future.delayed(const Duration(seconds: 2));
-        //fetch metadata and image to update provider before navigating to next screen
-        final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-        TokenInfoObject tokenInfo =
-            await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
-        List<Attachment> attachments =
-            await ref.refresh(fetchAttachmentsProvider.future);
-        Map metadata =
-            await ref.read(nftMetadataProvider(chipInfo.tokenId).future);
-        String image =
-            await ref.read(nftImageProvider(chipInfo.tokenId).future);
-
         Navigator.pushNamedAndRemoveUntil(
           context,
           NFTDetailsScreen.routeName,
@@ -263,6 +251,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         isLoading = false;
       });
     }
+    //refresh tokenInfo so it can be loaded; This code is not supposed to be inside try block, so it does not trigger catch if it fails and use does not stay on metadatasecreen with error, despite token minting being successful. User can retrigger manually on next screen
+    final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+    TokenInfoObject tokenInfo =
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
   }
 
   void toggleTraitsForm() {
