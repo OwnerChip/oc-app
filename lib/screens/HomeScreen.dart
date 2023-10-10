@@ -56,14 +56,15 @@ Future<void> onButtonPress(WidgetRef ref, BuildContext context, bool mounted,
     );
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-          context.loc.errorNoNfcReader, 'error'),
+          context.loc.errorNoInternetConnection, 'error'),
     );
+    return;
   }
 
   try {
     //check if NFC is deactivated
     if (!await checkNfcReader()) {
-      throw CustomException("NFC Reader is not activated");
+      throw Exception("NFC Reader is not activated");
     }
   } catch (e, s) {
     await Sentry.captureException(
@@ -72,8 +73,22 @@ Future<void> onButtonPress(WidgetRef ref, BuildContext context, bool mounted,
     );
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-          context.loc.errorNoInternetConnection, 'error'),
+          context.loc.errorNoNfcReader, 'error'),
     );
+    return;
+  }
+
+  if (isInitialize) {
+    if (!await checkBackendAvailability()) {
+      await Sentry.captureException(
+        'backend not available',
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, 'Server not available.', 'error'),
+      );
+      return;
+    }
   }
 
   try {
