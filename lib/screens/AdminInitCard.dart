@@ -26,6 +26,7 @@ class AdminInitCard extends ConsumerStatefulWidget {
 }
 
 class _AdminInitCard extends ConsumerState<AdminInitCard> {
+  final _formKey = GlobalKey<FormState>();
   EthereumAddress? chipAddress0;
   List<EthereumAddress> allChipAddresses = [];
   String customerId = '';
@@ -55,45 +56,66 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
           const Text('Stilami: 103'),
           const SizedBox(height: 20),
           //text input field for the customer id
-          TextFormField(
-            style: Theme.of(context).textTheme.bodyMedium,
-            cursorColor:
-                CustomColors(dotenv.get('APP_ID').toString()).accentColor,
-            decoration: InputDecoration(
-              labelText: 'Customer ID',
-              labelStyle: Theme.of(context).textTheme.bodyMedium,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                    color: CustomColors(dotenv.get('APP_ID').toString())
-                        .primaryColor,
-                    width: 2.0), // normal border color
+          Form(
+            key: _formKey,
+            child: TextFormField(
+              style: Theme.of(context).textTheme.bodyMedium,
+              cursorColor:
+                  CustomColors(dotenv.get('APP_ID').toString()).accentColor,
+              decoration: InputDecoration(
+                labelText: 'Customer ID',
+                labelStyle: Theme.of(context).textTheme.bodyMedium,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                      color: CustomColors(dotenv.get('APP_ID').toString())
+                          .primaryColor,
+                      width: 2.0), // normal border color
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                      color: CustomColors(dotenv.get('APP_ID').toString())
+                          .primaryColor,
+                      width: 2.0), // focused border color
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                    color: CustomColors(dotenv.get('APP_ID').toString())
-                        .primaryColor,
-                    width: 2.0), // focused border color
-              ),
+              keyboardType: TextInputType.text,
+              obscureText: false,
+              onChanged: (value) {
+                setState(() {
+                  customerId = value;
+                });
+              },
+              validator: (value) {
+                //check if value can be converted to integer
+                try {
+                  int.parse(value!);
+                } catch (e) {
+                  return 'Customer ID must be integer';
+                }
+                if (int.parse(value) < 100) {
+                  return 'Customer ID cannot be smaller than 100';
+                }
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a customer id';
+                }
+                return null;
+              },
             ),
-            keyboardType: TextInputType.text,
-            obscureText: false,
-            onChanged: (value) {
-              setState(() {
-                customerId = value;
-              });
-            },
           ),
+
           const SizedBox(height: 20),
           CustomRoundedButton(
             text: 'Init OwnerCard slot 0',
             onPressed: () async {
-              setState(() {
-                allChipAddresses = [];
-              });
-              await importKeyToSlotZero(
-                  context, ref, setChipAddressZero, customerId);
+              if (_formKey.currentState!.validate()) {
+                setState(() {
+                  allChipAddresses = [];
+                });
+                await importKeyToSlotZero(
+                    context, ref, setChipAddressZero, customerId);
+              }
             },
           ),
           const SizedBox(height: 20),
