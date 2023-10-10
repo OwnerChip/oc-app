@@ -23,8 +23,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
-//import customfont
-
 Future<void> walletPopupBuilder(
     BuildContext context, WidgetRef ref, Web3App wc) async {
   return showDialog<void>(
@@ -32,7 +30,6 @@ Future<void> walletPopupBuilder(
     builder: (BuildContext context) {
       return AlertDialog(
           backgroundColor: Theme.of(context).cardColor,
-          //border radius
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
           title: Padding(
@@ -146,10 +143,18 @@ Future<void> walletPopupBuilder(
 Future<void> onWalletPress(
     BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
   try {
-    //check if there is internet connections
     if (!await checkInternetConnection()) {
-      throw Exception("No internet connection");
+      throw "No internet connection";
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        context.loc.errorNoInternetConnection,
+        'error'));
+    return;
+  }
+
+  try {
     ConnectResponse response =
         await startWalletConnection(context, ref, wc, wallet);
     var futureRes = await response.session.future;
@@ -157,14 +162,23 @@ Future<void> onWalletPress(
     Navigator.pop(context);
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        'User denied connection request.',
-        'error'));
+        context.loc.errorHeadingSnackBar, 'User denied connection.', 'error'));
   }
 }
 
 Future<void> onCardPress(
     WidgetRef ref, BuildContext context, String pin) async {
+  try {
+    if (!await checkInternetConnection()) {
+      throw "No internet connection";
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        context.loc.errorNoInternetConnection,
+        'error'));
+    return;
+  }
   await authenticateCard(ref, context, pin);
   ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
       context.loc.successHeadingSnackbar,
