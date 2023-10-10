@@ -4,6 +4,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:web3dart/credentials.dart';
@@ -321,24 +322,9 @@ Future<bool> triggerCardLost(
 
 Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
     Function setStateCallback, String customerId) async {
-  Uint8List seed = Uint8List.fromList([
-    0x00,
-    0x01,
-    0x02,
-    0x03,
-    0x04,
-    0x05,
-    0x06,
-    0x07,
-    0x08,
-    0x09,
-    0x0a,
-    0x0b,
-    0x0c,
-    0x0d,
-    0x0e,
-    0x0f,
-  ]);
+  String identifier = generateOwnerCardIdentifier(
+      int.parse(customerId), dotenv.get('OWNERCARD_BASE_ID'));
+  Uint8List seed = hexToBytes(identifier);
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     var pubKeyZero;

@@ -198,3 +198,14 @@ Future<String> getSha256HashOfFile(File file) async {
   final hash = sha256.convert(bytes);
   return hash.toString();
 }
+
+// generate OwnerCard identifier [from customer 100 to 3582]
+String generateOwnerCardIdentifier(int customerId, String baseIdentifier) {
+  return (customerId == 103)
+      ? '${baseIdentifier}0e0f'
+      : (customerId < 256)
+          ? '${baseIdentifier}00${customerId.toRadixString(16)}'
+          : (customerId < 3583)
+              ? '${baseIdentifier}0${customerId.toRadixString(16)}'
+              : '';
+}

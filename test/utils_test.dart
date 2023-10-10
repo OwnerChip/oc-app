@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:test/test.dart';
@@ -10,6 +11,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 
 void main() {
+  dotenv.load(fileName: ".env");
   group("command helper", () {
     test("return a valid set pin command", () {
       final res = setPinCommand("1234");
@@ -154,6 +156,49 @@ void main() {
 
       // assert
       expect(ethAddress, "0x70a2406aeab89f46f322c57e4fce9b9e5eacbd8e");
+    });
+  });
+
+  group('OwnerCard helpers', () {
+    test(
+        'should generate the OwnerCard identity for a customer with ID 100 correctly',
+        () {
+      // arrange
+      int customerId = 100;
+
+      // act
+      String id = generateOwnerCardIdentifier(
+          customerId, dotenv.get('OWNERCARD_BASE_ID'));
+
+      // assert
+      expect(id, '${dotenv.get('OWNERCARD_BASE_ID')}0064');
+    });
+
+    test(
+        'should generate the OwnerCard identity for a customer with ID 103 correctly',
+        () {
+      // arrange
+      int customerId = 103;
+
+      // act
+      String id = generateOwnerCardIdentifier(
+          customerId, dotenv.get('OWNERCARD_BASE_ID'));
+
+      // assert
+      expect(id, '${dotenv.get('OWNERCARD_BASE_ID')}0e0f');
+    });
+    test(
+        'should generate the OwnerCard identity for a customer with ID 299 correctly',
+        () {
+      // arrange
+      int customerId = 299;
+
+      // act
+      String id = generateOwnerCardIdentifier(
+          customerId, dotenv.get('OWNERCARD_BASE_ID'));
+
+      // assert
+      expect(id, '${dotenv.get('OWNERCARD_BASE_ID')}012b');
     });
   });
 }

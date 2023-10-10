@@ -27,10 +27,14 @@ Dio getBackendClient() {
 
 Future<void> sendCardInitToBackend(
     String customerId, EthereumAddress chipAddress) async {
-  final Dio dio = getBackendClient();
+  // send to prod API so that the owner card data is available in the prod DB
+  final client = Dio(BaseOptions(
+      baseUrl: dotenv.get('OC_BACKEND_URL'),
+      headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
+  client.addSentry();
   final String url = '/customer/$customerId/ownercard';
   try {
-    final _ = await dio.post(url, data: {
+    final _ = await client.post(url, data: {
       'id': chipAddress.hex,
     });
   } catch (e, s) {
