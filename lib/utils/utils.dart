@@ -6,7 +6,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -78,12 +80,25 @@ Future<void> checkInternetAndHandleUI(BuildContext context) async {
 //check for internet connection
 Future<bool> checkInternetConnection() async {
   try {
-    final result = await InternetAddress.lookup('example.com');
+    final result = await InternetAddress.lookup('google.com');
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
       return true;
     }
     return false;
   } on SocketException catch (_) {
+    return false;
+  }
+}
+
+Future<bool> checkBackendAvailability() async {
+  try {
+    //get backend client
+    final client = getBackendClient();
+    await client.get('/auth');
+    return true;
+  } catch (e) {
+    print(e);
+    Sentry.captureException(e);
     return false;
   }
 }

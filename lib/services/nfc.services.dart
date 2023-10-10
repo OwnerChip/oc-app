@@ -187,6 +187,7 @@ Future<void> writeKeyToSlotZero(NFCPlatform nfc, Uint8List seed) async {
 
 //getKeyN
 Future<Uint8List> getPubKeyN(NFCPlatform nfc, int key) async {
+  await nfc.sendCommand(SELECT_APP);
   Uint8List getKeyInfo = makeGetKeyInfoCommand(key);
   var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
 
@@ -196,7 +197,8 @@ Future<Uint8List> getPubKeyN(NFCPlatform nfc, int key) async {
 
   //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
   bool keyExists =
-      !(getKeyInfoResponseCode1 == 106 && getKeyInfoResponseCode2 == 136);
+      !(getKeyInfoResponseCode1 == 106 && getKeyInfoResponseCode2 == 136) &&
+          getKeyInfoData.length > 0;
 
   if (keyExists) {
     Uint8List chipPubKey = makePublicKeyFromChipResponse(getKeyInfoData);

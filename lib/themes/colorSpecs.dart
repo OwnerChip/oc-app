@@ -61,8 +61,7 @@ class CustomColors {
         customRoundedButtonColor = secondaryColor;
         customHomeScreenButtonShadowColor = shadowColor;
         chainDropdownTextColor = Colors.black;
-        ownerCardWalletIconBackgroundColor =
-            const Color.fromARGB(255, 243, 243, 243);
+        ownerCardWalletIconBackgroundColor = primaryColor;
         break;
 
       case 'stilami':

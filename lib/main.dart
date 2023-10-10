@@ -128,9 +128,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final session = jsonEncode(args?.session);
     //store session
     storage.then((value) => value.setString('session', session));
-    //store wallet type (e.g. trust wallet, metamask, etc.)
-    // storage.then((value) =>
-    //     value.setString('walletType', jsonEncode(walletType!.toJson())));
   }
 
   void _onSessionDisconnect(SessionDelete? args) {
@@ -138,6 +135,11 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final storage = SharedPreferences.getInstance();
     storage.then((value) => value.remove('session'));
     storage.then((value) => value.remove('walletType'));
+
+    ref.read(userSessionProvider.notifier).state = null;
+    ref.read(wcSessionProvider.notifier).state = null;
+    ref.read(walletTypeProvider.notifier).state = null;
+    ref.read(wcProvider.notifier).state = null;
   }
 
   void _onSessionExpire(SessionExpire? event) {
@@ -168,9 +170,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   Future<void> _setSessionProviderFromPersistedSession() async {
     final storage = await SharedPreferences.getInstance();
-    // storage.remove('session');
-    // storage.remove('walletType');
-    // storage.remove('userSession');
+
     final storedSession = storage.getString('session');
     final storedWalletType = storage.getString('walletType');
     final storedUserSession = storage.getString('userSession');

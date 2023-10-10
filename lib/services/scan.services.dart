@@ -265,10 +265,12 @@ Future<dynamic> getAllChipWalletAddresses(
     for (int i = 0; i < 256; i++) {
       Uint8List pubKey = await getPubKeyN(nfc, i);
       if (pubKey.isEmpty && i == 0) {
-        //ignore if slot 0 is not initialized
+        //add zero addr if slot 0 is not initialized
+        pubKeys.add(zeroAddress);
         continue;
       }
-      if (pubKey.isEmpty) {
+
+      if (pubKey.isEmpty && i != 0) {
         break;
       }
       Uint8List addr = publicKeyToAddress(pubKey);
@@ -353,6 +355,10 @@ Future<dynamic> scanClosure(
     String analyticsType,
     String alertMessage) async {
   await NfcManager.instance.stopSession();
+
+  if (!await checkInternetConnection()) {
+    throw "No internet connection";
+  }
 
   Completer<void> completer = Completer();
 

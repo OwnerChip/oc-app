@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
@@ -28,49 +29,57 @@ import '../widgets/popups/AuthPopup.dart';
 // This function starts a wallet connection with the WalletConnect connector.
 Future<ConnectResponse> startWalletConnection(
     BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
-  List<String> chains = [];
+  try {
+    List<String> chains = [];
 
-  // store walletType
-  ref.read(walletTypeProvider.notifier).state = wallet;
-  final storage = SharedPreferences.getInstance();
-  storage.then(
-      (value) => value.setString('walletType', jsonEncode(wallet.toJson())));
+    // store walletType
+    ref.read(walletTypeProvider.notifier).state = wallet;
+    final storage = SharedPreferences.getInstance();
+    storage.then(
+        (value) => value.setString('walletType', jsonEncode(wallet.toJson())));
 
-  //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
-  switch (wallet.name) {
-    case 'Metamask':
-      chains = ['eip155:1'];
-      break;
-    case 'Trust Wallet':
-      chains = ['eip155:1', 'eip155:137'];
-      break;
-    case '1inch Wallet':
-      chains = ['eip155:1'];
-      break;
-    default:
-      chains = ['eip155:1', 'eip155:137', 'eip155:80001'];
-      break;
+    //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
+    switch (wallet.name) {
+      case 'Metamask':
+        chains = ['eip155:1'];
+        break;
+      case 'Trust Wallet':
+        chains = ['eip155:1', 'eip155:137'];
+        break;
+      case '1inch Wallet':
+        chains = ['eip155:1'];
+        break;
+      default:
+        chains = ['eip155:1', 'eip155:137', 'eip155:80001'];
+        break;
+    }
+    ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
+      'eip155': RequiredNamespace(
+          chains: chains,
+          methods: [
+            'eth_sendTransaction',
+            'eth_signTypedData_v4',
+            'personal_sign'
+          ],
+          events: EIP155.events.values.toList()),
+    });
+    String? uri = wcResp.uri.toString();
+    Uri walletDeepLink =
+        convertToWcLink(appLink: wallet.deeplinkUri, wcUri: uri);
+
+    launchUrlString(walletDeepLink.toString(),
+        mode: LaunchMode.externalApplication);
+    SessionData session = await wcResp.session.future
+        .onError((error, stackTrace) => throw 'error connecting wallet');
+    Navigator.pop(context);
+    authPopupBuilder(context, ref, wc, wallet.name);
+
+    return wcResp;
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
   }
-  ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
-    'eip155': RequiredNamespace(
-        chains: chains,
-        methods: [
-          'eth_sendTransaction',
-          'eth_signTypedData_v4',
-          'personal_sign'
-        ],
-        events: EIP155.events.values.toList()),
-  });
-  String? uri = wcResp.uri.toString();
-  Uri walletDeepLink = convertToWcLink(appLink: wallet.deeplinkUri, wcUri: uri);
-
-  await launchUrlString(walletDeepLink.toString(),
-      mode: LaunchMode.externalApplication);
-  SessionData session = await wcResp.session.future;
-  Navigator.pop(context);
-  authPopupBuilder(context, ref, wc, wallet.name);
-
-  return wcResp;
 }
 
 Uri convertToWcLink({
@@ -150,14 +159,16 @@ Future<String> makeAndSendGaslessTx(
       await launchUrlString(walletDeepLink.toString(),
           mode: LaunchMode.externalApplication);
 
-      signature = await wc!.request(
-        topic: wcSession!.topic,
-        chainId: 'eip155:1',
-        request: SessionRequestParams(
-          method: 'eth_signTypedData_v4',
-          params: [walletAddress.toString(), json.encode(typedData)],
-        ),
-      );
+      signature = await wc!
+          .request(
+            topic: wcSession!.topic,
+            chainId: 'eip155:1',
+            request: SessionRequestParams(
+              method: 'eth_signTypedData_v4',
+              params: [walletAddress.toString(), json.encode(typedData)],
+            ),
+          )
+          .onError((error, stackTrace) => throw 'error signing gasless tx');
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     }

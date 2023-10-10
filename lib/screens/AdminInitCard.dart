@@ -145,14 +145,40 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                   children: [
                     Text('Number of addresses: ${allChipAddresses.length}'),
                     Text('All chip addresses: '),
-                    for (var address in allChipAddresses)
-                      Column(
-                        children: [
-                          Text(
-                              '${address.hex}'), // show the index before the address
-                          SizedBox(height: 15.0), // add 10px spacing
-                        ],
-                      )
+                    ...allChipAddresses
+                        .asMap()
+                        .map((index, address) {
+                          return MapEntry(
+                            index,
+                            Column(
+                              children: [
+                                Wrap(
+                                  children: [
+                                    Text('Key ${index}: ${address.hex}'),
+                                    IconButton(
+                                        color: Theme.of(context).primaryColor,
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        iconSize: 25,
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(
+                                              text: allChipAddresses[index]
+                                                  .toString()));
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      'Chip address copied to clipboard')));
+                                        },
+                                        icon: const Icon(Icons.copy))
+                                  ],
+                                ), // show the index before the address
+                                SizedBox(height: 40.0), // add 10px spacing
+                              ],
+                            ),
+                          );
+                        })
+                        .values
+                        .toList(),
                   ],
                 )
               : Container(),
