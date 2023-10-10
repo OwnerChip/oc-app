@@ -359,9 +359,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           loading: () => Text(context.loc.loading,
                               style: Theme.of(context).textTheme.displayLarge!),
                           data: (data) => data['name'] != null
-                              ? Text(data['name'],
-                                  style:
-                                      Theme.of(context).textTheme.displayLarge!)
+                              ? GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .pushNamed(NFTDetailsScreen.routeName);
+                                  },
+                                  child: Text(data['name'],
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displayLarge!))
                               : Container(),
                           error: (error, stackTrace) {
                             print(error);
@@ -674,21 +680,26 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                           const CircularProgressIndicator())),
                             ]),
                       ]),
-                  nftImageUri.when(
-                    loading: () => const CustomImage(
-                      width: 130,
-                      loading: true,
-                    ),
-                    error: (e, s) => const CustomImage(
-                      width: 130,
-                      loading: false,
-                    ),
-                    data: (data) => CustomImage(
-                      width: 130,
-                      loading: false,
-                      imagePath: data,
-                    ),
-                  ),
+                  GestureDetector(
+                      onTap: () {
+                        Navigator.of(context)
+                            .pushNamed(NFTDetailsScreen.routeName);
+                      },
+                      child: nftImageUri.when(
+                        loading: () => const CustomImage(
+                          width: 130,
+                          loading: true,
+                        ),
+                        error: (e, s) => const CustomImage(
+                          width: 130,
+                          loading: false,
+                        ),
+                        data: (data) => CustomImage(
+                          width: 130,
+                          loading: false,
+                          imagePath: data,
+                        ),
+                      )),
                 ],
               ),
               const SizedBox(height: 20),

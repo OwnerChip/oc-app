@@ -136,10 +136,10 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     storage.then((value) => value.remove('session'));
     storage.then((value) => value.remove('walletType'));
 
-    ref.read(userSessionProvider.notifier).state = null;
-    ref.read(wcSessionProvider.notifier).state = null;
-    ref.read(walletTypeProvider.notifier).state = null;
-    ref.read(wcProvider.notifier).state = null;
+    // ref.read(userSessionProvider.notifier).state = null;
+    // ref.read(wcSessionProvider.notifier).state = null;
+    // ref.read(walletTypeProvider.notifier).state = null;
+    // ref.read(wcProvider.notifier).state = null;
   }
 
   void _onSessionExpire(SessionExpire? event) {

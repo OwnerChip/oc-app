@@ -212,7 +212,7 @@
     "receivingToken": "Receiving token",
     "transferToAddress": "Transfer to address",
     "cardLost": "Identity Card lost",
-    "cardLostContacted": "You will be contacted within a few days.",
+    "cardLostContacted": "Thank you for reaching out. You will be contacted within a few days.",
     "scanToTriggerCardLost": "Scan chip in the case to trigger process for receiving a new Identity Card.",
     "enterEmailToTriggerCardLost": "Enter email to trigger process for receiving new card.",
     "tokenDoesNotExist": "Token does not exist.",
@@ -234,5 +234,7 @@
     "pleaseScanItem": "Please scan NFC chip in case",
     "scanItemToTriggerCardLost": "Scan item to trigger card lost",
     "pleaseEnterValidTel": "Please enter valid phone number",
-    "pleaseEnterValidName": "Please enter valid name"
+    "pleaseEnterValidName": "Please enter valid name",
+    "pleaseTryAgainLater": "Please try again later.",
+    "showCreatorData": "Show creator data"
 }

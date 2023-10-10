@@ -248,7 +248,8 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                                                 .showSnackBar(returnSnackBarWidget(
                                                     context.loc
                                                         .errorHeadingSnackBar,
-                                                    'Please try again later.',
+                                                    context.loc
+                                                        .pleaseTryAgainLater,
                                                     'error'));
                                           }
                                         },

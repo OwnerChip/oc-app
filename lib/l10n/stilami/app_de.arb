@@ -212,7 +212,7 @@
     "receivingToken": "Token empfangen",
     "transferToAddress": "An Adresse schicken",
     "cardLost": "Identity Card verloren",
-    "cardLostContacted": "Sie werden in den nächsten Tagen kontaktiert.",
+    "cardLostContacted": "Vielen Dank für Ihre Kontaktaufnahme. Sie werden in den nächsten Tagen kontaktiert.",
     "scanToTriggerCardLost": "Chip im Schmuck-Etui scannen, um Prozess für neue Identity Card zu starten.",
     "enterEmailToTriggerCardLost": "Email Adresse eingeben, um Prozess für neue Identity Card zu starten.",
     "tokenDoesNotExist": "Token existiert nicht.",
@@ -234,5 +234,7 @@
     "pleaseScanItem": "Bitte NFC Chip im Schmuck-Etui scannen",
     "scanItemToTriggerCardLost": "Objekt scannen, um neue Karte anzufordern",
     "pleaseEnterValidTel": "Bitte korrekte Tel. Nr. eingeben",
-    "pleaseEnterValidName": "Bitte Name eingeben"
+    "pleaseEnterValidName": "Bitte Name eingeben",
+    "pleaseTryAgainLater": "Bitte versuchen Sie es später nochmal.",
+    "showCreatorData": "Creator Daten anzeigen"
 }
