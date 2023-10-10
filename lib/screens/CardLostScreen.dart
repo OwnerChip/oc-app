@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -12,6 +13,7 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 
 class CardLostScreen extends ConsumerStatefulWidget {
   const CardLostScreen({Key? key}) : super(key: key);
@@ -27,6 +29,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
 
   String email = '';
   String name = '';
+  String telNr = '';
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +39,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
-        withScrollView: false,
+        withScrollView: true,
         children: [
           Form(
               key: _formKey,
@@ -85,7 +88,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                         if (value != null && value.isNotEmpty) {
                           return null;
                         } else {
-                          return 'Please enter valid name.';
+                          return context.loc.pleaseEnterValidName;
                         }
                       },
                     ),
@@ -137,6 +140,52 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                       },
                     ),
                   ),
+                  Container(
+                    margin: EdgeInsets.only(top: 20),
+                    child: TextFormField(
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      cursorColor: CustomColors(dotenv.get('APP_ID').toString())
+                          .accentColor,
+                      decoration: InputDecoration(
+                        labelText: 'Tel. Nr.',
+                        labelStyle: Theme.of(context).textTheme.bodyMedium,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                              color:
+                                  CustomColors(dotenv.get('APP_ID').toString())
+                                      .primaryColor,
+                              width: 2.0), // normal border color
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                              color:
+                                  CustomColors(dotenv.get('APP_ID').toString())
+                                      .primaryColor,
+                              width: 2.0), // focused border color
+                        ),
+                      ),
+                      keyboardType: TextInputType.text,
+                      obscureText: false,
+                      onChanged: (value) {
+                        setState(() {
+                          telNr = value;
+                        });
+                      },
+                      validator: (value) {
+                        //validate if value is phone
+                        bool isTelNr = RegExp(
+                                r'^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$')
+                            .hasMatch(value!);
+                        print(isTelNr);
+                        if (!isTelNr) {
+                          return context.loc.pleaseEnterValidTel;
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
                   const SizedBox(
                     height: 20,
                   ),
@@ -145,26 +194,67 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                     onPressed: email.isEmpty
                         ? null
                         : () async {
-                            //dismiss keyboard
-                            FocusScope.of(context).unfocus();
-                            print(
-                                'form key validate: ${_formKey.currentState!.validate()}');
                             if (_formKey.currentState!.validate()) {
-                              bool success = await triggerCardLost(
-                                  context, ref, email, name);
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    returnSnackBarWidget(
-                                        context.loc.successHeadingSnackbar,
-                                        context.loc.cardLostContacted,
-                                        'success'));
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    returnSnackBarWidget(
-                                        context.loc.errorHeadingSnackBar,
-                                        'Please try again later.',
-                                        'error'));
-                              }
+                              FocusScope.of(context).unfocus();
+                              showCustomPopup(
+                                  context,
+                                  context.loc.pleaseScanItem,
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                          context.loc.scanItemToTriggerCardLost,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium),
+                                      const SizedBox(height: 15),
+                                      CustomRoundedButton(
+                                        text: 'Scan',
+                                        onPressed: () async {
+                                          bool success = await triggerCardLost(
+                                              context, ref, email, name, telNr);
+                                          Navigator.pop(context);
+                                          if (success) {
+                                            // ignore: use_build_context_synchronously
+                                            showCustomPopup(
+                                                context,
+                                                context
+                                                    .loc.successHeadingSnackbar,
+                                                Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        context.loc
+                                                            .cardLostContacted,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodyMedium),
+                                                    const SizedBox(height: 10),
+                                                    CustomRoundedButton(
+                                                        text: context.loc.done,
+                                                        onPressed: () {
+                                                          Navigator.pushNamed(
+                                                              context,
+                                                              HomeScreen
+                                                                  .routeName);
+                                                        })
+                                                  ],
+                                                ));
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(returnSnackBarWidget(
+                                                    context.loc
+                                                        .errorHeadingSnackBar,
+                                                    'Please try again later.',
+                                                    'error'));
+                                          }
+                                        },
+                                      )
+                                    ],
+                                  ));
                             }
                           },
                   )

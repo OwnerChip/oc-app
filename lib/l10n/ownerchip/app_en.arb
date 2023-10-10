@@ -229,5 +229,9 @@
     "toRequestNewCard": "To request a new card, please enter your contact details below.",
     "uploadingAttachment": "Uploading attachment...",
     "creatorData": "Creator data",
-    "digitalTwinVerifiedBy": "Digital twin verified by "
+    "digitalTwinVerifiedBy": "Digital twin verified by ",
+    "pleaseScanItem": "Please scan item",
+    "scanItemToTriggerCardLost": "Scan item to trigger card lost",
+    "pleaseEnterValidTel": "Please enter valid phone number",
+    "pleaseEnterValidName": "Please enter valid name"
 }

@@ -229,5 +229,9 @@
     "toRequestNewCard": "Um eine neue Karte anzufordern, geben Sie bitte unten Ihre Kontaktdaten ein.",
     "uploadingAttachment": "Anhang hochladen...",
     "creatorData": "Creator Daten",
-    "digitalTwinVerifiedBy": "Digital Twin verifiziert von "
+    "digitalTwinVerifiedBy": "Digital Twin verifiziert von ",
+    "pleaseScanItem": "Bitte Chip scannen",
+    "scanItemToTriggerCardLost": "Objekt scannen, um neue Karte anzufordern",
+    "pleaseEnterValidTel": "Bitte korrekte Tel. Nr. eingeben",
+    "pleaseEnterValidName": "Bitte Name eingeben"
 }

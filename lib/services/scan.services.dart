@@ -283,8 +283,8 @@ Future<dynamic> getAllChipWalletAddresses(
       context.loc.holdPhoneToNfcChip);
 }
 
-Future<bool> triggerCardLost(
-    BuildContext context, WidgetRef ref, String email, String name) async {
+Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
+    String name, String telNr) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     EthereumAddress chipEthereumAddress = createFirstKeyChipResponse[0];
@@ -312,7 +312,7 @@ Future<bool> triggerCardLost(
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
     if (tokenInfo.collectionId != zeroAddress) {
       return await sendCardLostToBackend(createFirstKeyChipResponse[0],
-          tokenInfo.collectionId, chipSignature, sessionId, email, name);
+          tokenInfo.collectionId, chipSignature, sessionId, email, name, telNr);
     } else {
       throw context.loc.tokenDoesNotExist;
     }
@@ -381,7 +381,7 @@ Future<dynamic> scanClosure(
       alertMessage: alertMessage,
       onDiscovered: (NfcTag tag) async {
         try {
-          var nfc = NFCPlatform(tag);
+          NFCPlatform nfc = NFCPlatform(tag);
 
           //check if iso7816 or isodep is available and exit if not
           await nfcPlatformCheck(context, sessionId, nfc);

@@ -213,7 +213,7 @@
     "transferToAddress": "Transfer to address",
     "cardLost": "Identity Card lost",
     "cardLostContacted": "You will be contacted within a few days.",
-    "scanToTriggerCardLost": "Scan chip to trigger process for receiving a new Identity Card.",
+    "scanToTriggerCardLost": "Scan chip in the case to trigger process for receiving a new Identity Card.",
     "enterEmailToTriggerCardLost": "Enter email to trigger process for receiving new card.",
     "tokenDoesNotExist": "Token does not exist.",
     "pleaseEnterValidEmailAddress": "Please enter valid email address.",
@@ -230,5 +230,9 @@
     "toRequestNewCard": "To request a new card, please enter your contact details below.",
     "uploadingAttachment": "Uploading attachment...",
     "creatorData": "Creator data",
-    "digitalTwinVerifiedBy": "Digital twin verified by "
+    "digitalTwinVerifiedBy": "Digital twin verified by ",
+    "pleaseScanItem": "Please scan NFC chip in case",
+    "scanItemToTriggerCardLost": "Scan item to trigger card lost",
+    "pleaseEnterValidTel": "Please enter valid phone number",
+    "pleaseEnterValidName": "Please enter valid name"
 }

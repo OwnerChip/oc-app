@@ -200,13 +200,15 @@ Future<bool> sendCardLostToBackend(
     SignatureData chipSignature,
     String sessionId,
     String email,
-    String name) async {
+    String name,
+    String telNr) async {
   final Dio dio = getBackendClient();
   final String url = '/collection/${collectionAddress.hex}/recovery';
   try {
     await dio.post(url, data: {
       'name': name,
       'email': email,
+      'telNr': telNr,
       'sessionId': sessionId,
       'chipAddress': chipAddress.hex,
       'chipSignature': {
