@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -23,8 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
-Future<void> walletPopupBuilder(
-    BuildContext context, WidgetRef ref, Web3App wc) async {
+Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -67,39 +67,26 @@ Future<void> walletPopupBuilder(
                 WalletIcon(
                     iconPath: walletConfig['https://trustwallet.com']!.iconUri,
                     walletName: walletConfig['https://trustwallet.com']!.name,
-                    onTap: () => onWalletPress(context, ref, wc,
+                    onTap: () => onWalletPress(context, ref,
                         walletConfig['https://trustwallet.com']!)),
               ]),
               const SizedBox(height: 20),
-
               Row(mainAxisAlignment: MainAxisAlignment.start, children: [
                 // metamask
                 WalletIcon(
                   iconPath: walletConfig['https://metamask.io/']!.iconUri,
                   walletName: walletConfig['https://metamask.io/']!.name,
                   onTap: () => onWalletPress(
-                      context, ref, wc, walletConfig['https://metamask.io/']!),
+                      context, ref, walletConfig['https://metamask.io/']!),
                 ),
 
                 //1inch
                 WalletIcon(
                     iconPath: walletConfig['https://1inch.io/wallet/']!.iconUri,
                     walletName: walletConfig['https://1inch.io/wallet/']!.name,
-                    onTap: () => onWalletPress(context, ref, wc,
+                    onTap: () => onWalletPress(context, ref,
                         walletConfig['https://1inch.io/wallet/']!)),
               ]),
-              // const SizedBox(height: 20),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.start,
-              //   children: [
-              //     // 1inch
-              //     WalletIcon(
-              //         walletConfig['https://1inch.io/wallet/']!.iconUri,
-              //         walletConfig['https://1inch.io/wallet/']!.name,
-              //         () => onWalletPress(context, ref, wc,
-              //             walletConfig['https://1inch.io/wallet/']!)),
-              //   ],
-              // ),
               Padding(
                 padding: const EdgeInsets.only(top: 30),
                 child: RichText(
@@ -141,7 +128,7 @@ Future<void> walletPopupBuilder(
 }
 
 Future<void> onWalletPress(
-    BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
+    BuildContext context, WidgetRef ref, WalletType wallet) async {
   try {
     if (!await checkInternetConnection()) {
       throw "No internet connection";
@@ -155,6 +142,8 @@ Future<void> onWalletPress(
   }
 
   try {
+    await initWcClient(ref);
+    Web3App wc = ref.read(wcProvider)!; //TODO: maybe null check is risky here?
     ConnectResponse response =
         await startWalletConnection(context, ref, wc, wallet);
     var futureRes = await response.session.future;
@@ -162,7 +151,7 @@ Future<void> onWalletPress(
     Navigator.pop(context);
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar, 'User denied connection.', 'error'));
+        context.loc.errorHeadingSnackBar, 'Error connecting wallet.', 'error'));
   }
 }
 

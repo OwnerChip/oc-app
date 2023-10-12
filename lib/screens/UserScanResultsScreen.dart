@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AuthenticityBoxContent.dart';
@@ -75,9 +76,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     });
   }
 
-  Future<void> burnToken(Web3App wc, BigInt tokenId,
+  Future<void> burnToken(Web3App? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
-    final wcSession = ref.watch(wcSessionProvider);
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
     String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenInfoObject config =
@@ -108,7 +110,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
-            context,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
             burnFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -120,6 +122,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             walletType!,
             toggleLoading: toggleLoading);
       } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
         txnHash = await makeAndSendNormalTx(
             burnFunctionSignature,
             config.chainId,
@@ -141,9 +149,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText = context.loc.burnedSuccess;
         });
 
-        UserSession? userSession = ref.read(userSessionProvider);
-
-        deleteAllAttachments(userSession!, connectedWallet, config.chainId,
+        deleteAllAttachments(userSession, connectedWallet, config.chainId,
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
@@ -156,7 +162,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         await Future.delayed(const Duration(seconds: 2));
 
         Navigator.pushNamedAndRemoveUntil(
-            context, HomeScreen.routeName, (route) => false);
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            HomeScreen.routeName,
+            (route) => false);
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -169,6 +177,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
       sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
+        'error': e,
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
@@ -182,7 +191,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
-  Future<void> claimToken(Web3App wc, BigInt tokenId,
+  Future<void> claimToken(Web3App? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
@@ -213,7 +222,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
-            context,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
             transferFromFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -226,6 +235,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             tokenId: tokenId,
             toggleLoading: toggleLoading);
       } else {
+        if (userSession.isOwnerCard) {
+          throw 'Cannot pay gas for normal transaction with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
         txnHash = await makeAndSendNormalTx(
             transferFromFunctionSignature,
             config.chainId,
@@ -342,6 +357,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
+            key: ScaffoldKey.getScaffoldKey('UserScanResultsScreen'),
             extendBodyBehindAppBar: true,
             appBar: CustomAppBar(
               text: context.loc.tapResults,
@@ -411,7 +427,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               const SizedBox(height: 15),
 
                               //AUTHENTICITY CHECK BODY
-
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: tokenInfo.when(
@@ -529,7 +544,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         .loc.connectWallet,
                                                     onPressed: (() => {
                                                           walletPopupBuilder(
-                                                              context, ref, wc!)
+                                                              context, ref)
                                                         }))
                                               ],
                                             )
@@ -597,7 +612,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                   buttonText: context
                                                                                       .loc.burnToken,
                                                                                   onPressed: (() => {
-                                                                                        fromCancelable(burnToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                        fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
                                                                                       })),
                                                                             ])
                                                                       : Container();
@@ -658,7 +673,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                         .claimOwnership,
                                                                     onPressed:
                                                                         (() => {
-                                                                              fromCancelable(claimToken(wc!, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                              fromCancelable(claimToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
                                                                             })),
                                                               ])
                                                             : Container();

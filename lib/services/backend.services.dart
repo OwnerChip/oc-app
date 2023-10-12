@@ -231,12 +231,18 @@ Future<bool> sendCardLostToBackend(
 //get creator info
 Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
   final Dio dio = getBackendClient();
-  final Response response = await dio.get('/creator/${tokenId.hex}');
-  final Map creatorData = response.data;
-  return CreatorData(
-      name: creatorData['name'],
-      affiliation: creatorData['affiliation'],
-      email: creatorData['email'],
-      walletAddress: EthereumAddress.fromHex(creatorData['address']),
-      createdAt: DateTime.parse(creatorData['created_at']));
+  try {
+    final Response response = await dio.get('/creator/${tokenId.hex}');
+    final Map creatorData = response.data;
+    return CreatorData(
+        name: creatorData['name'],
+        affiliation: creatorData['affiliation'],
+        email: creatorData['email'],
+        walletAddress: EthereumAddress.fromHex(creatorData['address']),
+        createdAt: DateTime.parse(creatorData['created_at']));
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
+  }
 }

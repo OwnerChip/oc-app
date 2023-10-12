@@ -115,6 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     return Scaffold(
+      // key: _scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
         showBackButton: false,

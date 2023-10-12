@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -64,7 +65,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   Future<void> approveToken(
-      Web3App wc,
+      Web3App? wc,
       BigInt tokenId,
       EthereumAddress to,
       SignatureData signatureData,
@@ -73,7 +74,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final wcSession = ref.read(wcSessionProvider);
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(tokenId).future);
-    final userSession = ref.watch(userSessionProvider);
+    final UserSession userSession = ref.read(userSessionProvider)!;
     final isOwnerCard = userSession?.isOwnerCard;
     final transferProcess = Sentry.startTransaction('initApprove()', 'task');
     try {
@@ -98,7 +99,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
-            context,
+            ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
             approveFunctionSignature, // APPROVE
             config.chainId,
             config.collectionId,
@@ -113,6 +114,12 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             enableRecovery: isOwnerCard,
             toggleLoading: toggleLoading);
       } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
         txnHash = await makeAndSendNormalTx(
             approveFunctionSignature,
             config.chainId,
@@ -122,6 +129,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             wc,
             wcSession!,
             ref.read(walletTypeProvider)!,
+            tokenId: tokenId,
             toAccount: to);
       }
 
@@ -220,6 +228,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
+          key: ScaffoldKey.getScaffoldKey('TransferScreen'),
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
             text: context.loc.transferOwnership,
@@ -256,10 +265,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           text: context.loc.transferToOwnerCard,
                           onPressed: (() async {
                             EthereumAddress chipWalletAddress =
-                                await getFirstChipQWalletAddress(context, ref);
+                                await getFirstChipWalletAddressForTransfer(
+                                    context, ref);
 
                             fromCancelable(approveToken(
-                                wc!,
+                                wc,
                                 chipInfo.tokenId,
                                 chipWalletAddress,
                                 signatureData,
@@ -309,7 +319,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                       {
                                         FocusScope.of(context).unfocus(),
                                         fromCancelable(approveToken(
-                                            wc!,
+                                            wc,
                                             chipInfo.tokenId,
                                             EthereumAddress.fromHex(
                                                 textInput.trim()),

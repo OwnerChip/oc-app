@@ -241,15 +241,26 @@ Future<String?> resetPinOnCard(
       context, ref, callback, "RESET_PIN_ON_CARD", context.loc.holdPhoneToCard);
 }
 
-Future<dynamic> getFirstChipQWalletAddress(
+Future<dynamic> getFirstChipWalletAddress(
     BuildContext context, WidgetRef ref) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    // //get 0th key to check if it exists, so user can only send token to owner card
-    // Uint8List cardWalletAddress0 = await getPubKeyN(nfc, 0);
-    // if (cardWalletAddress0.isEmpty) {
-    //   throw context.loc.transferOnlyToOwnerCard;
-    // }
+    return createFirstKeyChipResponse[0];
+  }
+
+  return await scanClosure(context, ref, callback, "GET_CHIP_ADDR_FOR_TRANSFER",
+      context.loc.holdPhoneToCard);
+}
+
+Future<dynamic> getFirstChipWalletAddressForTransfer(
+    BuildContext context, WidgetRef ref) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    //get 0th key to check if it exists, so user can only send token to owner card
+    Uint8List cardWalletAddress0 = await getPubKeyN(nfc, 0);
+    if (cardWalletAddress0.isEmpty) {
+      throw context.loc.transferOnlyToOwnerCard;
+    }
     return createFirstKeyChipResponse[0];
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -69,7 +70,10 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                 CustomColors(dotenv.get('APP_ID')).primaryColor,
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
-                        onPressed: () {
+                        onPressed: () async {
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, HomeScreen.routeName, (route) => false);
+                          // unsubscribeWcListeners(ref);
                           //only delete wc session if user is connected via wallet connect
                           if (wc != null && wcSession != null) {
                             wc.disconnectSession(
@@ -87,8 +91,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                               null; //delete wallet type from riverpod
                           ref.read(userSessionProvider.notifier).state =
                               null; //delete backend session from riverpod
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, HomeScreen.routeName, (route) => false);
+                          print('test');
                         },
                       )
                     : IconButton(
@@ -98,7 +101,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                 CustomColors(dotenv.get('APP_ID')).primaryColor,
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
-                        onPressed: () => walletPopupBuilder(context, ref, wc!),
+                        onPressed: () async {
+                          walletPopupBuilder(context, ref);
+                        },
                       ),
                 Align(
                   alignment: const Alignment(0.0, 0.95),

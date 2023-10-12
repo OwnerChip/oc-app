@@ -88,7 +88,7 @@ Future<void> authPopupBuilder(
               CustomRoundedButton(
                   text: context.loc.authenticate,
                   onPressed: () =>
-                      onTapAuth(context, 'insert_session_id', ref)),
+                      onTapAuth(context, 'insert_session_id', ref, wc)),
               const SizedBox(height: 30),
               if (walletName == 'Metamask')
                 Text(
@@ -103,11 +103,19 @@ Future<void> authPopupBuilder(
 }
 
 Future<void> onTapAuth(
-    BuildContext context, String sessionId, WidgetRef ref) async {
-  Web3App? wc = ref.read(wcProvider);
+    BuildContext context, String sessionId, WidgetRef ref, Web3App wc) async {
   EthereumAddress userWalletAddress = ref.read(userAddressProvider);
   SessionData? session = ref.read(wcSessionProvider);
-  WalletType? walletType = ref.watch(walletTypeProvider);
+  WalletType? walletType = ref.read(walletTypeProvider);
+
+  if (session == null || walletType == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+          context.loc.pleaseTryAgainLater, 'error'),
+    );
+    Navigator.pop(context);
+    return;
+  }
 
   //get sessionid from backend (only if not already set)
   final oldUserSession = ref.read(userSessionProvider);
@@ -118,7 +126,7 @@ Future<void> onTapAuth(
       "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
 
   String hexSignature = await sendPersonalSignRequest(
-      message, userWalletAddress, wc!, session!, walletType!);
+      message, userWalletAddress, wc, session!, walletType!);
 
   MsgSignature signature = hexSignatureToRSV(hexSignature);
 

@@ -78,9 +78,10 @@ class AuthenticityBoxContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        CustomRoundedButton(
+        CustomOutlinedButton(
+            width: double.infinity,
             height: 28,
-            text: 'Show creator data',
+            buttonText: context.loc.showCreatorData,
             onPressed: () {
               triggerPopup(context);
             })

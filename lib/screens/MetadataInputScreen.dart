@@ -1,11 +1,11 @@
-// ignore_for_file: use_build_context_synchronously
-
 //package imports
 import 'package:async/async.dart';
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -115,7 +115,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
   Future<void> createToken(
       String sessionId,
-      Web3App wc,
+      Web3App? wc,
       SignatureData signatureData,
       Map<String, dynamic> metadata,
       int chainId,
@@ -127,6 +127,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       loadingText = context.loc.uploadingMetadata;
     });
 
+    final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
 
@@ -176,11 +177,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       });
 
       String txnHash;
-      // if (canUseGasStation) {
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
-            context,
+            ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
             mintFunctionSignature,
             chainId,
             collectionId,
@@ -193,6 +193,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             cid: cid,
             toggleLoading: toggleLoading);
       } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
         txnHash = await makeAndSendNormalTx(
             mintFunctionSignature,
             chainId,
@@ -218,7 +224,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         });
 
         Navigator.pushNamedAndRemoveUntil(
-          context,
+          ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
           NFTDetailsScreen.routeName,
           (Route route) => route.isFirst,
         );
@@ -339,6 +345,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                   ))
                 ]),
       child: Scaffold(
+          key: ScaffoldKey.getScaffoldKey('MetadataInputScreen'),
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
             text: context.loc.initializeChip,
@@ -517,7 +524,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                               if (_formKey.currentState!.validate()) {
                                 fromCancelable(createToken(
                                     navArgs.sessionId,
-                                    wc!,
+                                    wc,
                                     signatureData,
                                     metadata,
                                     chainId,

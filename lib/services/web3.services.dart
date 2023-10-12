@@ -158,6 +158,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   EthereumAddress? toAccount,
   String? tokenURI,
   String? gasPrice,
+  BigInt? tokenId,
   bool? enableRecovery,
 }) async {
   String data;
@@ -169,6 +170,8 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   } else if (functionSignatureHash == transferFromFunctionSignature) {
     data = makeTransferFromData(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
+  } else if (functionSignatureHash == approveFunctionSignature) {
+    data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
   } else {
     throw Exception('Invalid function signature hash');
   }

@@ -43,8 +43,7 @@ class ChainSelectorScreen extends ConsumerStatefulWidget {
 
 class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
-      BuildContext context, Web3App wc, mounted, String sessionId) async {
-    final wc = ref.read(wcProvider);
+      BuildContext context, mounted, String sessionId) async {
     final wcSession = ref.read(wcSessionProvider);
     BlockchainCollectionList relevantCollections =
         await ref.read(findAllMinterRolesProvider.future);
@@ -52,7 +51,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
     final Collection? collection = ref.read(selectedCollectionIdProvider);
     try {
       if (wcSession == null) {
-        walletPopupBuilder(context, ref, wc!);
+        walletPopupBuilder(context, ref);
       }
 
       if (mounted) {
@@ -150,7 +149,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                 ? null
                 : () {
                     onInitializeButtonPress(
-                        context, wc!, mounted, navArgs.sessionId);
+                        context, mounted, navArgs.sessionId);
                   },
           ),
           const SizedBox(height: 60),

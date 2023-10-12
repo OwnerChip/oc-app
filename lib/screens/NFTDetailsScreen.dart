@@ -341,9 +341,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                           // ownership
 
                           nftOwner.when(
-                            data: ((nftOwnerData) => wc!
-                                    .getActiveSessions()
-                                    .isEmpty
+                            data: ((nftOwnerData) => ref
+                                        .read(userAddressProvider) ==
+                                    zeroAddress
                                 ?
                                 //NFT owner exists and wallet is NOT connected
                                 context.loc.unconfirmed

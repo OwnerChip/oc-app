@@ -6,7 +6,7 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 //****WALLETCONNECT****
 
-//wallet connect 2 provider
+//wallet connect 2 client provider
 final wcProvider = StateProvider<Web3App?>((ref) {
   return null;
 });

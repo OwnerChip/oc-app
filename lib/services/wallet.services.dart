@@ -1,8 +1,12 @@
 //package imports
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
@@ -197,6 +201,7 @@ Future<String> makeAndSendNormalTx(
     SessionData wcSession,
     WalletType walletType,
     {EthereumAddress? toAccount,
+    BigInt? tokenId,
     String? cid}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
@@ -206,6 +211,7 @@ Future<String> makeAndSendNormalTx(
       signatureData.hashedMsg,
       signatureData.signature,
       toAccount: toAccount,
+      tokenId: tokenId,
       tokenURI: cid != null ? "ipfs://$cid" : null,
       enableRecovery: false);
 
@@ -260,4 +266,100 @@ Future<String> getGaslessTxHash(request, collectionId) async {
   String hash = await getEthSignTypedDataSignature(collectionId, request);
 
   return hash;
+}
+
+Future<void> initWcClient(WidgetRef ref) async {
+  Web3App wcClient = await Web3App.createInstance(
+    relayUrl: 'wss://relay.walletconnect.com',
+    projectId: dotenv.env['WC_PROJECT_ID']!,
+    metadata: const PairingMetadata(
+      name: 'OwnerChip',
+      description: 'OwnerChip - Connecting physical objects to the blockchain',
+      url: 'https://www.ownerchip.com',
+      icons: ['https://avatars.githubusercontent.com/u/116345848'],
+    ),
+  );
+  //set walletconnect client provider
+  ref.read(wcProvider.notifier).state = wcClient;
+
+  // Register event handlers
+  final events = EIP155.events.values.toList();
+  for (int chainId in chainConfig.keys) {
+    for (final event in events) {
+      wcClient.registerEventHandler(chainId: 'eip155:$chainId', event: event);
+    }
+  }
+
+  wcClient.onSessionEvent.subscribe(wrapOnSessionEvent(ref));
+  wcClient.onSessionConnect.subscribe(wrapOnSessionConnect(ref));
+  wcClient.onSessionDelete.subscribe(wrapOnSessionDisconnect(ref));
+  wcClient.onSessionExpire.subscribe(wrapOnSessionExpire(ref));
+}
+
+void Function(SessionConnect?) wrapOnSessionConnect(WidgetRef ref) {
+  return (SessionConnect? args) {
+    // WalletType? walletType = walletConfig[args?.session.peer.metadata.url];
+    // ref.read(walletTypeProvider.notifier).state = walletType;
+    ref.read(wcSessionProvider.notifier).state = args?.session;
+    final storage = SharedPreferences.getInstance();
+    final session = jsonEncode(args?.session);
+    storage.then((value) => value.setString('session', session));
+  };
+}
+
+void Function(SessionDelete?) wrapOnSessionDisconnect(WidgetRef ref) {
+  return (SessionDelete? args) {
+    onSessionDisconnect(args, ref);
+  };
+}
+
+void Function(SessionExpire?) wrapOnSessionExpire(WidgetRef ref) {
+  return (SessionExpire? event) {
+    if (event?.topic != null) {
+      SessionDelete deleteArgs = SessionDelete(event!.topic);
+      onSessionDisconnect(deleteArgs, ref);
+    }
+  };
+}
+
+void Function(SessionEvent?) wrapOnSessionEvent(WidgetRef ref) {
+  return (SessionEvent? args) {
+    // if (args?.name == "accountsChanged") {
+    //   EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
+
+    //   EthereumAddress newWalletAddr =
+    //       EthereumAddress.fromHex(args?.data[0].split(':')[2]);
+    //   if (currentWalletAddr != zeroAddress &&
+    //       currentWalletAddr != newWalletAddr) {
+    //     // simply disconnect?
+    //     //TODO: remove session from connected wallet as well!
+    //     SessionDelete deleteArgs = SessionDelete(args!.topic);
+    //     onSessionDisconnect(deleteArgs, ref);
+    //   }
+    // } else {
+    //   //do nothing?
+    // }
+  };
+}
+
+void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {
+  //remove session and wallet type
+  final storage = SharedPreferences.getInstance();
+  storage.then((value) => value.remove('session'));
+  storage.then((value) => value.remove('walletType'));
+
+  ref.read(userSessionProvider.notifier).state = null;
+  ref.read(wcSessionProvider.notifier).state = null;
+  ref.read(walletTypeProvider.notifier).state = null;
+  ref.read(wcProvider.notifier).state = null;
+}
+
+void unsubscribeWcListeners(WidgetRef ref) {
+  Web3App? wcClient = ref.read(wcProvider);
+  if (wcClient != null) {
+    wcClient.onSessionConnect.unsubscribe(wrapOnSessionConnect(ref));
+    wcClient.onSessionDelete.unsubscribe(wrapOnSessionDisconnect(ref));
+    wcClient.onSessionEvent.unsubscribe(wrapOnSessionEvent(ref));
+    wcClient.onSessionExpire.unsubscribe(wrapOnSessionExpire(ref));
+  }
 }

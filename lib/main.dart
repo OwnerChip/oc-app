@@ -15,6 +15,7 @@ import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -89,85 +90,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   // setup walletconnect client
   Web3App? wcClient;
 
-  Future<void> initWcClient() async {
-    Web3App wcClient = await Web3App.createInstance(
-      relayUrl: 'wss://relay.walletconnect.com',
-      projectId: dotenv.env['WC_PROJECT_ID']!,
-      metadata: const PairingMetadata(
-        name: 'OwnerChip',
-        description:
-            'OwnerChip - Connecting physical objects to the blockchain',
-        url: 'https://www.ownerchip.com',
-        icons: ['https://avatars.githubusercontent.com/u/116345848'],
-      ),
-    );
-    //set walletconnect client provider
-    ref.read(wcProvider.notifier).state = wcClient;
-
-    // Register event handlers
-    final events = EIP155.events.values.toList();
-    for (int chainId in chainConfig.keys) {
-      for (final event in events) {
-        wcClient.registerEventHandler(chainId: 'eip155:$chainId', event: event);
-      }
-    }
-
-    wcClient.onSessionEvent.subscribe(_onSessionEvent);
-    wcClient.onSessionConnect.subscribe(_onSessionConnect);
-    wcClient.onSessionDelete.subscribe(_onSessionDisconnect);
-    wcClient.onSessionExpire.subscribe(_onSessionExpire);
-
-    FlutterNativeSplash.remove();
-  }
-
-  void _onSessionConnect(SessionConnect? args) {
-    // WalletType? walletType = walletConfig[args?.session.peer.metadata.url];
-    // ref.read(walletTypeProvider.notifier).state = walletType;
-    ref.read(wcSessionProvider.notifier).state = args?.session;
-    final storage = SharedPreferences.getInstance();
-    final session = jsonEncode(args?.session);
-    //store session
-    storage.then((value) => value.setString('session', session));
-  }
-
-  void _onSessionDisconnect(SessionDelete? args) {
-    //remove session and wallet type
-    final storage = SharedPreferences.getInstance();
-    storage.then((value) => value.remove('session'));
-    storage.then((value) => value.remove('walletType'));
-
-    // ref.read(userSessionProvider.notifier).state = null;
-    // ref.read(wcSessionProvider.notifier).state = null;
-    // ref.read(walletTypeProvider.notifier).state = null;
-    // ref.read(wcProvider.notifier).state = null;
-  }
-
-  void _onSessionExpire(SessionExpire? event) {
-    if (event?.topic != null) {
-      // simply disconnect?
-      SessionDelete deleteArgs = SessionDelete(event!.topic);
-      _onSessionDisconnect(deleteArgs);
-    }
-  }
-
-  // handle WC session event
-  void _onSessionEvent(SessionEvent? args) {
-    if (args?.name == "accountsChanged") {
-      EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
-
-      EthereumAddress newWalletAddr =
-          EthereumAddress.fromHex(args?.data[0].split(':')[2]);
-      if (currentWalletAddr != newWalletAddr) {
-        // simply disconnect?
-        //TODO: remove session from connected wallet as well!
-        SessionDelete deleteArgs = SessionDelete(args!.topic);
-        _onSessionDisconnect(deleteArgs);
-      }
-    } else {
-      //do nothing?
-    }
-  }
-
   Future<void> _setSessionProviderFromPersistedSession() async {
     final storage = await SharedPreferences.getInstance();
 
@@ -178,6 +100,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     if (storedSession != null &&
         storedWalletType != null &&
         storedUserSession != null) {
+      await initWcClient(ref);
       final session = SessionData.fromJson(jsonDecode(storedSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
       final userSession = UserSession.fromJson(jsonDecode(storedUserSession));
@@ -201,6 +124,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       storage.remove('walletType');
       storage.remove('userSession');
     }
+    FlutterNativeSplash.remove();
   }
 
   @override
@@ -208,7 +132,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     //init walletconnect client
-    initWcClient();
+    // initWcClient();
 
     //read persisted session
     _setSessionProviderFromPersistedSession();
@@ -220,11 +144,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    wcClient!.onSessionConnect.unsubscribe(_onSessionConnect);
-    wcClient!.onSessionDelete.unsubscribe(_onSessionDisconnect);
-    wcClient!.onSessionEvent.unsubscribe(_onSessionEvent);
-    wcClient!.onSessionExpire.unsubscribe(_onSessionExpire);
-
+    unsubscribeWcListeners(ref);
     super.dispose();
   }
 
