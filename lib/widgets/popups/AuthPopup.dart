@@ -113,6 +113,8 @@ Future<void> onTapAuth(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.pleaseTryAgainLater, 'error'),
     );
+
+    //remove auth popup
     Navigator.pop(context);
     return;
   }

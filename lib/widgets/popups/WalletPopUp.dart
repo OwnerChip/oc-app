@@ -142,12 +142,15 @@ Future<void> onWalletPress(
   }
 
   try {
-    await initWcClient(ref);
-    Web3App wc = ref.read(wcProvider)!; //TODO: maybe null check is risky here?
+    Web3App? wc = ref.read(wcProvider);
+    if (wc == null) {
+      wc = await initWcClient(ref);
+    }
     ConnectResponse response =
         await startWalletConnection(context, ref, wc, wallet);
     var futureRes = await response.session.future;
     authPopupBuilder(context, ref, wc, wallet.name);
+
     Navigator.pop(context);
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(

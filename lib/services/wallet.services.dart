@@ -268,7 +268,7 @@ Future<String> getGaslessTxHash(request, collectionId) async {
   return hash;
 }
 
-Future<void> initWcClient(WidgetRef ref) async {
+Future<Web3App> initWcClient(WidgetRef ref) async {
   Web3App wcClient = await Web3App.createInstance(
     relayUrl: 'wss://relay.walletconnect.com',
     projectId: dotenv.env['WC_PROJECT_ID']!,
@@ -294,6 +294,8 @@ Future<void> initWcClient(WidgetRef ref) async {
   wcClient.onSessionConnect.subscribe(wrapOnSessionConnect(ref));
   wcClient.onSessionDelete.subscribe(wrapOnSessionDisconnect(ref));
   wcClient.onSessionExpire.subscribe(wrapOnSessionExpire(ref));
+
+  return wcClient;
 }
 
 void Function(SessionConnect?) wrapOnSessionConnect(WidgetRef ref) {
@@ -351,7 +353,7 @@ void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {
   ref.read(userSessionProvider.notifier).state = null;
   ref.read(wcSessionProvider.notifier).state = null;
   ref.read(walletTypeProvider.notifier).state = null;
-  ref.read(wcProvider.notifier).state = null;
+  // ref.read(wcProvider.notifier).state = null;
 }
 
 void unsubscribeWcListeners(WidgetRef ref) {

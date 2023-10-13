@@ -91,6 +91,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   Web3App? wcClient;
 
   Future<void> _setSessionProviderFromPersistedSession() async {
+    await initWcClient(ref);
+
     final storage = await SharedPreferences.getInstance();
 
     final storedSession = storage.getString('session');
@@ -100,7 +102,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     if (storedSession != null &&
         storedWalletType != null &&
         storedUserSession != null) {
-      await initWcClient(ref);
       final session = SessionData.fromJson(jsonDecode(storedSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
       final userSession = UserSession.fromJson(jsonDecode(storedUserSession));
@@ -132,7 +133,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     //init walletconnect client
-    // initWcClient();
+    // initWcClient(ref);
 
     //read persisted session
     _setSessionProviderFromPersistedSession();

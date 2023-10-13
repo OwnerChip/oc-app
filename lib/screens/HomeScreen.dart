@@ -185,8 +185,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         CustomOutlinedButton(
                             buttonText: 'SteboArt',
                             onPressed: () => launchUrl(
-                                  Uri.parse('https://www.steboart.com'),
-                                )),
+                                Uri.parse('https://www.steboart.com'),
+                                mode: LaunchMode.externalApplication)),
                         const SizedBox(height: 10),
                       ])
                     : Container(),
