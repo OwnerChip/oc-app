@@ -176,7 +176,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     throw Exception('Invalid function signature hash');
   }
 
-  String gasAmount = "0x249F0"; // fallback: 150000 gas
+  String gasAmount = "0x493E0"; // fallback: 300000 gas
   try {
     BigInt gasAmountEst =
         await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
