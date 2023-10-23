@@ -235,5 +235,6 @@
     "pleaseEnterValidTel": "Please enter valid phone number",
     "pleaseEnterValidName": "Please enter valid name",
     "pleaseTryAgainLater": "Please try again later.",
-    "showCreatorData": "Show creator data"
+    "showCreatorData": "Show creator data",
+    "next": "Next"
 }

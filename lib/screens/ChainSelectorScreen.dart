@@ -144,7 +144,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
             ],
           ),
           CustomRoundedButton(
-            text: 'Next',
+            text: context.loc.next,
             onPressed: chainId == null || collection == null
                 ? null
                 : () {

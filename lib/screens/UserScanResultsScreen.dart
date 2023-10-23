@@ -717,7 +717,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               //if token does not exists
               tokenInfo.when(
                   data: (data) => data.collectionId == zeroAddress &&
-                          connectedWallet != zeroAddress &&
+                          connectedWallet != zeroAddress && userSession != null &&
                           relevantCollections.value!.collections.isNotEmpty
                       ? CustomRoundedButton(
                           text: context.loc.initializeChip,

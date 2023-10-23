@@ -387,7 +387,13 @@ Future<dynamic> scanClosure(
 
   NfcManager.instance.startSession(
       onError: (error) async {
-        completer.completeError(error);
+        //check if future is already completed
+        if (error.message.contains('Session invalidated by user')) {
+          //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
+          return;
+        } else {
+          completer.completeError(error);
+        }
       },
       alertMessage: alertMessage,
       onDiscovered: (NfcTag tag) async {

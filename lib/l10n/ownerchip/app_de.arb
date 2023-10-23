@@ -184,7 +184,7 @@
     "setUpPin": "OwnerCard PIN erstellen",
     "enterPinToAuth": "PIN eingeben zum Authentifizieren",
     "connectOwnerCard": "OwnerCard verbinden",
-    "enterPinToConfirmTx": "PIN eingbeben um Transaktion zu bestätigen",
+    "enterPinToConfirmTx": "PIN eingeben um Transaktion zu bestätigen",
     "confirmTx": "Transaktion bestätigen",
     "enterPuk": "PUK eingeben",
     "successfullySetUpPin": "Successfully set up PIN",
@@ -235,5 +235,6 @@
     "pleaseEnterValidTel": "Bitte korrekte Tel. Nr. eingeben",
     "pleaseEnterValidName": "Bitte Name eingeben",
     "pleaseTryAgainLater": "Bitte versuchen Sie es später nochmal.",
-    "showCreatorData": "Creator Daten anzeigen"
+    "showCreatorData": "Creator Daten anzeigen",
+    "next": "Weiter"
 }
