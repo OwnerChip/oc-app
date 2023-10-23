@@ -151,7 +151,12 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   //do stuff on app resume
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {}
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    //on resume
+    if (state == AppLifecycleState.resumed) {
+      // _setSessionProviderFromPersistedSession();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

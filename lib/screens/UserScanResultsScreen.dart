@@ -330,6 +330,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
+    final UserSession? userSession = ref.watch(userSessionProvider);
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final wc = ref.watch(wcProvider);
     final AsyncValue<CreatorData> creatorData = ref.watch(creatorDataProvider);
@@ -455,13 +456,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                           .textTheme
                                                           .bodyMedium),
                                                 ),
-                                      // Text(
-                                      //     context.loc.authenticityNftFound,
-                                      //     textAlign: TextAlign.left,
-                                      //     style: Theme.of(context)
-                                      //         .textTheme
-                                      //         .bodyMedium),
-
                                       error: (e, s) => Text(
                                           context.loc.authenticityNftNotFound,
                                           textAlign: TextAlign.left,
@@ -522,7 +516,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                   alignment: Alignment.centerLeft,
                                   child: nftOwner.when(
                                       data: (data) => connectedWallet ==
-                                              zeroAddress
+                                                  zeroAddress ||
+                                              userSession == null
                                           ?
                                           //NFT owner exists and wallet is NOT connected
                                           Column(

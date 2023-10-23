@@ -222,6 +222,9 @@ Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
   if (!(getKeyInfoResponseCode1 == 144 && getKeyInfoResponseCode2 == 00)) {
     throw Exception("Error while generating key");
   }
+  if (getKeyInfoData.length < 73) {
+    throw Exception("Error while generating key");
+  }
   Uint8List chipPubKey =
       makePublicKeyFromChipResponse(getKeyInfoData); //takes first 20 bytes
 
