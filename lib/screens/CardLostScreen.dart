@@ -218,8 +218,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                                             // ignore: use_build_context_synchronously
                                             showCustomPopup(
                                                 context,
-                                                context
-                                                    .loc.successHeadingSnackbar,
+                                                context.loc.requestSent,
                                                 Column(
                                                   mainAxisSize:
                                                       MainAxisSize.min,

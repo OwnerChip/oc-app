@@ -211,8 +211,8 @@
     "receivingToken": "Token empfangen",
     "transferToAddress": "An Adresse schicken",
     "cardLost": "OwnerCard verloren",
-    "cardLostContacted": "Vielen Dank für Ihre Kontaktaufnahme. Sie werden in den nächsten Tagen kontaktiert.",
-    "scanToTriggerCardLost": "Chip scannen, um Prozess für neue OwnerCard zu starten.",
+    "cardLostContacted": "Vielen Dank für die Übermittlung Ihrer Anfrage. Unser Kundendienst wird Sie in Kürze kontaktieren.",
+    "scanToTriggerCardLost": "Halten Sie nun Ihr Handy an den NFC-Chip des Objekts, das mit Ihrer verlorenen OwnerCard verknüpft ist. Prozess für neue OwnerCard zu starten.",
     "enterEmailToTriggerCardLost": "Email Adresse eingeben, um Prozess für neue OwnerCard zu starten.",
     "tokenDoesNotExist": "Token existiert nicht.",
     "pleaseEnterValidEmailAddress": "Bitte geben Sie eine korrekte Email Adresse ein.",
@@ -230,11 +230,12 @@
     "uploadingAttachment": "Anhang hochladen...",
     "creatorData": "Creator Daten",
     "digitalTwinVerifiedBy": "Digital Twin verifiziert von ",
-    "pleaseScanItem": "Bitte Chip scannen",
-    "scanItemToTriggerCardLost": "Objekt scannen, um neue Karte anzufordern",
+    "pleaseScanItem": "Objekt scannen",
+    "scanItemToTriggerCardLost": "Scannen Sie im nächsten Schritt das Objekt ein, welches mit Ihrer verlorenen OwnerCard verknüpft ist. \n\nSo können wir den digitalen Inhalt auf Ihrer Ersatzkarte wiederherstellen.",
     "pleaseEnterValidTel": "Bitte korrekte Tel. Nr. eingeben",
     "pleaseEnterValidName": "Bitte Name eingeben",
     "pleaseTryAgainLater": "Bitte versuchen Sie es später nochmal.",
     "showCreatorData": "Creator Daten anzeigen",
-    "next": "Weiter"
+    "next": "Weiter",
+    "requestSent": "Anfrage versendet!"
 }

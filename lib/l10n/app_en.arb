@@ -211,8 +211,8 @@
     "receivingToken": "Receiving token",
     "transferToAddress": "Transfer to address",
     "cardLost": "OwnerCard lost",
-    "cardLostContacted": "Thank you for reaching out. You will be contacted within a few days.",
-    "scanToTriggerCardLost": "Scan chip to trigger process for receiving a new OwnerCard.",
+    "cardLostContacted": "Thank you for submitting your request. Our support team will be in touch with you shortly.",
+    "scanToTriggerCardLost": "Now hold your phone close to the NFC chip on the item linked to your lost OwnerCard.",
     "enterEmailToTriggerCardLost": "Enter email to trigger process for receiving new card.",
     "tokenDoesNotExist": "Token does not exist.",
     "pleaseEnterValidEmailAddress": "Please enter valid email address.",
@@ -230,11 +230,12 @@
     "uploadingAttachment": "Uploading attachment...",
     "creatorData": "Creator data",
     "digitalTwinVerifiedBy": "Digital twin verified by ",
-    "pleaseScanItem": "Please scan item",
-    "scanItemToTriggerCardLost": "Scan item to trigger card lost",
+    "pleaseScanItem": "Scan the item",
+    "scanItemToTriggerCardLost": "In the next step, please scan the item that is associated with your lost OwnerCard. \n\nThis will allow us to restore its digital counterpart on to your replacement card.",
     "pleaseEnterValidTel": "Please enter valid phone number",
     "pleaseEnterValidName": "Please enter valid name",
     "pleaseTryAgainLater": "Please try again later.",
     "showCreatorData": "Show creator data",
-    "next": "Next"
+    "next": "Next",
+    "requestSent": "Request sent!"
 }

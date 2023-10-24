@@ -212,8 +212,8 @@
     "receivingToken": "Receiving token",
     "transferToAddress": "Transfer to address",
     "cardLost": "Identity Card lost",
-    "cardLostContacted": "Thank you for reaching out. You will be contacted within a few days.",
-    "scanToTriggerCardLost": "Scan chip in the case to trigger process for receiving a new Identity Card.",
+    "cardLostContacted": "Thank you for submitting your request. Our support team will be in touch with you shortly.",
+    "scanToTriggerCardLost": "Now hold your phone close to the NFC chip on the jewellery case linked to your lost Identity Card.",
     "enterEmailToTriggerCardLost": "Enter email to trigger process for receiving new card.",
     "tokenDoesNotExist": "Token does not exist.",
     "pleaseEnterValidEmailAddress": "Please enter valid email address.",
@@ -231,11 +231,12 @@
     "uploadingAttachment": "Uploading attachment...",
     "creatorData": "Creator data",
     "digitalTwinVerifiedBy": "Digital twin verified by ",
-    "pleaseScanItem": "Please scan NFC chip in case",
-    "scanItemToTriggerCardLost": "Scan item to trigger card lost",
+    "pleaseScanItem": "Scan the jewellery case",
+    "scanItemToTriggerCardLost": "Next, scan the NFC chip inside the jewellery case that is linked to your lost Identity Card. \n\nThis will allow us to restore its digital counterpart on to your replacement card.",
     "pleaseEnterValidTel": "Please enter valid phone number",
     "pleaseEnterValidName": "Please enter valid name",
     "pleaseTryAgainLater": "Please try again later.",
     "showCreatorData": "Show creator data",
-    "next": "Next"
+    "next": "Next",
+    "requestSent": "Request sent!"
 }
