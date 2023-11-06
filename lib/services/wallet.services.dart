@@ -31,8 +31,8 @@ import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../widgets/popups/AuthPopup.dart';
 
 // This function starts a wallet connection with the WalletConnect connector.
-Future<ConnectResponse> startWalletConnection(
-    BuildContext context, WidgetRef ref, Web3App wc, WalletType wallet) async {
+Future<ConnectResponse> startWalletConnection(BuildContext context,
+    WidgetRef ref, Web3App wc, WalletType wallet, bool isDeepLink) async {
   try {
     List<String> chains = [];
 
@@ -68,8 +68,8 @@ Future<ConnectResponse> startWalletConnection(
           events: EIP155.events.values.toList()),
     });
     String? uri = wcResp.uri.toString();
-    Uri walletDeepLink =
-        convertToWcLink(appLink: wallet.deeplinkUri, wcUri: uri);
+    Uri walletDeepLink = convertToWcLink(
+        appLink: wallet.deeplinkUri, wcUri: uri, isDeepLink: isDeepLink);
 
     launchUrlString(walletDeepLink.toString(),
         mode: LaunchMode.externalApplication);

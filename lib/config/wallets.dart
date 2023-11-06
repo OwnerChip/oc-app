@@ -9,10 +9,8 @@ final WalletType _metamask = WalletType(
     "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/metamask.png",
     'https://metamask.app.link');
 
-final WalletType _trustWallet = WalletType(
-    "Trust Wallet",
-    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/trustwallet.png",
-    'https://link.trustwallet.com');
+final WalletType _trustWallet = WalletType("Trust Wallet",
+    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/trustwallet.png", 'trust:/');
 
 final WalletType _zerionWallet = WalletType(
     "Zerion Wallet",

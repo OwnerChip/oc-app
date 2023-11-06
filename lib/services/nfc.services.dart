@@ -253,7 +253,8 @@ Future<List<dynamic>> createFirstKeypairOnChip(
 // initialize NDEF tag if empty AND NDEF should be initialized (aka, user is not just scanning but initializing a chip)
   if (/*empty &&*/ initializeNdef) {
     try {
-      String url = getNdefUrl() + chipEthereumAddressHex.toString();
+      String url =
+          '${getNdefUrl()}$chipEthereumAddressHex?appId=${dotenv.get('APP_ID')}';
       await initializeNdefTag(nfc, chipEthereumAddressHex, sessionId);
       sendAnalyticsTrace(sessionId, url, "INITIALIZE_NDEF_SUCCESS",
           tags: {"chipWallet": chipEthereumAddressHex.toString()});

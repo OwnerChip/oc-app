@@ -67,8 +67,11 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                 WalletIcon(
                     iconPath: walletConfig['https://trustwallet.com']!.iconUri,
                     walletName: walletConfig['https://trustwallet.com']!.name,
-                    onTap: () => onWalletPress(context, ref,
-                        walletConfig['https://trustwallet.com']!)),
+                    onTap: () => onWalletPress(
+                          context: context,
+                          ref: ref,
+                          wallet: walletConfig['https://trustwallet.com']!,
+                        )),
               ]),
               const SizedBox(height: 20),
               Row(mainAxisAlignment: MainAxisAlignment.start, children: [
@@ -77,15 +80,19 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                   iconPath: walletConfig['https://metamask.io/']!.iconUri,
                   walletName: walletConfig['https://metamask.io/']!.name,
                   onTap: () => onWalletPress(
-                      context, ref, walletConfig['https://metamask.io/']!),
+                      context: context,
+                      ref: ref,
+                      wallet: walletConfig['https://metamask.io/']!),
                 ),
 
                 //1inch
                 WalletIcon(
                     iconPath: walletConfig['https://1inch.io/wallet/']!.iconUri,
                     walletName: walletConfig['https://1inch.io/wallet/']!.name,
-                    onTap: () => onWalletPress(context, ref,
-                        walletConfig['https://1inch.io/wallet/']!)),
+                    onTap: () => onWalletPress(
+                        context: context,
+                        ref: ref,
+                        wallet: walletConfig['https://1inch.io/wallet/']!)),
               ]),
               Padding(
                 padding: const EdgeInsets.only(top: 30),
@@ -128,7 +135,10 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
 }
 
 Future<void> onWalletPress(
-    BuildContext context, WidgetRef ref, WalletType wallet) async {
+    {required BuildContext context,
+    required WidgetRef ref,
+    required WalletType wallet,
+    bool isDeepLink = false}) async {
   try {
     if (!await checkInternetConnection()) {
       throw "No internet connection";
@@ -147,7 +157,7 @@ Future<void> onWalletPress(
       wc = await initWcClient(ref);
     }
     ConnectResponse response =
-        await startWalletConnection(context, ref, wc, wallet);
+        await startWalletConnection(context, ref, wc, wallet, isDeepLink);
     var futureRes = await response.session.future;
     authPopupBuilder(context, ref, wc, wallet.name);
 
