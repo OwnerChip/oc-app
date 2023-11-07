@@ -100,7 +100,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                       cursorColor: CustomColors(dotenv.get('APP_ID').toString())
                           .accentColor,
                       decoration: InputDecoration(
-                        labelText: 'Email',
+                        labelText: context.loc.emailAddress,
                         labelStyle: Theme.of(context).textTheme.bodyMedium,
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -147,7 +147,7 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                       cursorColor: CustomColors(dotenv.get('APP_ID').toString())
                           .accentColor,
                       decoration: InputDecoration(
-                        labelText: 'Tel. Nr.',
+                        labelText: context.loc.phoneNumber,
                         labelStyle: Theme.of(context).textTheme.bodyMedium,
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),

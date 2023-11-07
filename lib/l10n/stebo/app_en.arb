@@ -237,5 +237,7 @@
     "pleaseTryAgainLater": "Please try again later.",
     "showCreatorData": "Show creator data",
     "next": "Next",
-    "requestSent": "Request sent!"
+    "requestSent": "Request sent!",
+    "phoneNumber": "Phone number",
+    "emailAddress": "Email address"
 }

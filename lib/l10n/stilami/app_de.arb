@@ -212,7 +212,7 @@
     "receivingToken": "Token empfangen",
     "transferToAddress": "An Adresse schicken",
     "cardLost": "Identity Card verloren",
-    "cardLostContacted": "Vielen Dank für die Übermittlung Ihrer Anfrage. Unser Kundendienst wird Sie in Kürze kontaktieren.",
+    "cardLostContacted": "Vielen Dank für die Übermittlung Ihrer Anfrage. Wir bearbeiten Ihre Anfrage und werden Sie in Kürze kontaktieren.",
     "scanToTriggerCardLost": "Halten Sie nun Ihr Handy an den NFC-Chip im Schmuck-Etui, welches mit Ihrer verlorenen Identity Card verknüpft ist.",
     "enterEmailToTriggerCardLost": "Email Adresse eingeben, um Prozess für neue Identity Card zu starten.",
     "tokenDoesNotExist": "Token existiert nicht.",
@@ -232,11 +232,13 @@
     "creatorData": "Creator Daten",
     "digitalTwinVerifiedBy": "Digital Twin verifiziert von ",
     "pleaseScanItem": "Schmuck-Etui scannen",
-    "scanItemToTriggerCardLost": "Scannen Sie im nächsten Schritt den NFC-Chip im Schmuck-Etui, welches mit Ihrer verlorenen Identity Card verknüpft ist. \n\nSo können wir den digitalen Inhalt auf Ihrer Ersatzkarte wiederherstellen.",
+    "scanItemToTriggerCardLost": "Scannen Sie nun den NFC-Chip im Schmuck-Etui, welcher mit Ihrer verlorenen Identity Card verbunden ist. \n\nSo können wir den digitalen Inhalt auf Ihrer Ersatzkarte wiederherstellen.",
     "pleaseEnterValidTel": "Bitte korrekte Tel. Nr. eingeben",
     "pleaseEnterValidName": "Bitte Name eingeben",
     "pleaseTryAgainLater": "Bitte versuchen Sie es später nochmal.",
     "showCreatorData": "Creator Daten anzeigen",
     "next": "Weiter",
-    "requestSent": "Anfrage versendet!"
+    "requestSent": "Anfrage versendet!",
+    "phoneNumber": "Telefonnummer",
+    "emailAddress": "Email Adresse"
 }
