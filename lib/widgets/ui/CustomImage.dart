@@ -25,13 +25,16 @@ class CustomImage extends StatelessWidget {
     return Container(
         width: width,
         height: height,
-        decoration:
-            BoxDecoration(borderRadius: BorderRadius.circular(19), boxShadow: [
-          BoxShadow(
-              color: CustomColors(dotenv.get('APP_ID')).secondaryShadowColor,
-              blurRadius: 5,
-              offset: const Offset(3, 2)),
-        ]),
+        decoration: BoxDecoration(
+            color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
+            borderRadius: BorderRadius.circular(19),
+            boxShadow: [
+              BoxShadow(
+                  color:
+                      CustomColors(dotenv.get('APP_ID')).secondaryShadowColor,
+                  blurRadius: 5,
+                  offset: const Offset(3, 2)),
+            ]),
         child: Stack(children: [
           ClipRRect(
               borderRadius: BorderRadius.circular(19),
@@ -45,10 +48,10 @@ class CustomImage extends StatelessWidget {
                     : imageFile != null
                         ? Image.file(
                             File(imagePath),
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                           )
                         : Image.network(imagePath,
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                             frameBuilder: (context, child, frame,
                                     wasSynchronouslyLoaded) =>
                                 wasSynchronouslyLoaded
