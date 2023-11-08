@@ -44,7 +44,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
     if (navArgs.activeFeature == PinScreenActiveFeature.setPin) {
       setState(() {
         title = context.loc.setUpPin;
-        buttonText = context.loc.submit;
+        buttonText = context.loc.setPin;
       });
     } else if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinAuth) {
       setState(() {

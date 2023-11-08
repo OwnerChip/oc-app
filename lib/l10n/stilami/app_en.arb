@@ -135,7 +135,7 @@
     "pleaseEnterValidWalletAddress": "Please enter a valid wallet address.",
     "creationOfTwin": "Creation of digital twin (NFT)",
     "warningChainSelector": "All data that is entered on next screen \nwill be publicly visible.",
-    "infoScreenText": "The Stilami Identity App verifies the authenticity and ownership of your jewelry piece.",
+    "infoScreenText": "The Stilami Identity App verifies the authenticity and ownership of your jewellery piece.",
     "transferScreenText": "Transfer your token to another wallet.",
     "chooseWallet": "Select login method",
     "agreeToWhenConnecting": "By connecting you agree to our ",
@@ -232,7 +232,7 @@
     "creatorData": "Creator data",
     "digitalTwinVerifiedBy": "Digital twin verified by ",
     "pleaseScanItem": "Scan the jewellery case",
-    "scanItemToTriggerCardLost": "Scan the NFC chip in the jewelry case, which is connected to your lost Identity Card. \n\nThis will allow us to restore its digital counterpart on to your replacement card.",
+    "scanItemToTriggerCardLost": "Scan the NFC chip in the jewellery case, which is connected to your lost Identity Card. \n\nThis will allow us to restore its digital counterpart on to your replacement card.",
     "pleaseEnterValidTel": "Please enter valid phone number",
     "pleaseEnterValidName": "Please enter valid name",
     "pleaseTryAgainLater": "Please try again later.",
@@ -240,5 +240,6 @@
     "next": "Next",
     "requestSent": "Request sent!",
     "phoneNumber": "Phone number",
-    "emailAddress": "Email address"
+    "emailAddress": "Email address",
+    "setPin": "Submit",
 }

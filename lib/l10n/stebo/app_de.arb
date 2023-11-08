@@ -232,12 +232,13 @@
     "digitalTwinVerifiedBy": "Digital Twin verifiziert von ",
     "pleaseScanItem": "Objekt scannen",
     "scanItemToTriggerCardLost": "Scannen Sie im nächsten Schritt das Objekt ein, welches mit Ihrer verlorenen OwnerCard verknüpft ist. \n\nSo können wir den digitalen Inhalt auf Ihrer Ersatzkarte wiederherstellen.",
-    "pleaseEnterValidTel": "Bitte korrekte Tel. Nr. eingeben",
+    "pleaseEnterValidTel": "Bitte korrekte Telefonnummer eingeben",
     "pleaseEnterValidName": "Bitte Name eingeben",
     "pleaseTryAgainLater": "Bitte versuchen Sie es später nochmal.",
     "showCreatorData": "Creator Daten anzeigen",
     "next": "Weiter",
     "requestSent": "Anfrage versendet!",
     "phoneNumber": "Telefonnummer",
-    "emailAddress": "Email Adresse"
+    "emailAddress": "Email Adresse",
+    "setPin": "Einrichten"
 }

@@ -239,5 +239,6 @@
     "next": "Next",
     "requestSent": "Request sent!",
     "phoneNumber": "Phone number",
-    "emailAddress": "Email address"
+    "emailAddress": "Email address",
+    "setPin": "Set PIN"
 }

@@ -181,7 +181,7 @@
     "errorAuthenticatingCard": "Error authenticating OwnerCard.",
     "errorMakingSignature": "Error making signature.",
     "holdPhoneToNfcChip": "Hold your phone close to the NFC chip",
-    "setUpPin": "Set up PIN for OwnerCard",
+    "setUpPin": "Set up new PIN for OwnerCard",
     "enterPinToAuth": "Enter PIN to authenticate",
     "connectOwnerCard": "Connect OwnerCard",
     "enterPinToConfirmTx": "Enter PIN to confirm transaction",
@@ -239,5 +239,6 @@
     "next": "Next",
     "requestSent": "Request sent!",
     "phoneNumber": "Phone number",
-    "emailAddress": "Email address"
+    "emailAddress": "Email address",
+    "setPin": "Set PIN"
 }
