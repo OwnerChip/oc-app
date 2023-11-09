@@ -57,7 +57,7 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                         arguments: PinScreenArguments(
                             activeFeature: PinScreenActiveFeature.verifyPinAuth,
                             callback: (String pin) async {
-                              onCardPress(ref, context, pin);
+                              onCardPress(ref, context, pin, true);
                             }));
                   },
                   backgroundColor: CustomColors(dotenv.get('APP_ID'))
@@ -166,30 +166,6 @@ Future<void> onWalletPress(
     ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
         context.loc.errorHeadingSnackBar, 'Error connecting wallet.', 'error'));
   }
-}
-
-Future<void> onCardPress(
-    WidgetRef ref, BuildContext context, String pin) async {
-  try {
-    if (!await checkInternetConnection()) {
-      throw "No internet connection";
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        context.loc.errorNoInternetConnection,
-        'error'));
-    return;
-  }
-  await authenticateCard(ref, context, pin);
-  ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-      context.loc.successHeadingSnackbar,
-      context.loc.successCardLogin,
-      'success'));
-  //navigate to previous screen
-  Navigator.pop(context);
-  //remove wallet popup
-  Navigator.pop(context);
 }
 
 Future<void> onAddCardPress(

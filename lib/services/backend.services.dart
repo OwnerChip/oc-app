@@ -235,11 +235,12 @@ Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
     final Response response = await dio.get('/creator/${tokenId.hex}');
     final Map creatorData = response.data;
     return CreatorData(
-        name: creatorData['name'],
-        affiliation: creatorData['affiliation'],
-        email: creatorData['email'],
-        walletAddress: EthereumAddress.fromHex(creatorData['address']),
-        createdAt: DateTime.parse(creatorData['created_at']));
+      name: creatorData['name'],
+      affiliation: creatorData['affiliation'],
+      email: creatorData['email'],
+      walletAddress: EthereumAddress.fromHex(creatorData['address']),
+      createdAt: DateTime.parse(creatorData['created_at']),
+    );
   } catch (e) {
     Sentry.captureException(e);
     print(e);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
 import 'package:web3dart/web3dart.dart';
 
 class ChipInfo extends StatelessWidget {
@@ -33,27 +34,8 @@ class ChipInfo extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium),
                 Container(
                     width: 150,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('${tokenId.toString().substring(0, 8)}...',
-                            style: Theme.of(context).textTheme.headlineSmall),
-                        IconButton(
-                            color: Theme.of(context).primaryColor,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            iconSize: 25,
-                            onPressed: () {
-                              Clipboard.setData(
-                                  ClipboardData(text: tokenId.toString()));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text(context
-                                          .loc.tokenIdCopiedToClipboard)));
-                            },
-                            icon: const Icon(Icons.copy))
-                      ],
-                    ))
+                    child:
+                        DisplayLongStringWithCopy(string: tokenId.toString()))
               ],
             )
           : Container(),
@@ -62,21 +44,7 @@ class ChipInfo extends StatelessWidget {
           ? Row(
               children: [
                 Text('Wallet: ', style: Theme.of(context).textTheme.bodyMedium),
-                Text('${walletAddress!.toString().substring(0, 8)}...',
-                    style: Theme.of(context).textTheme.headlineSmall),
-                //icon that copies navargs.nftowner to clipboard
-                IconButton(
-                    color: Theme.of(context).primaryColor,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    iconSize: 25,
-                    onPressed: () {
-                      Clipboard.setData(
-                          ClipboardData(text: walletAddress.toString()));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(context.loc.addressCopied)));
-                    },
-                    icon: const Icon(Icons.copy))
+                DisplayLongStringWithCopy(string: walletAddress.toString())
               ],
             )
           : Container(),

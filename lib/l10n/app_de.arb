@@ -240,5 +240,6 @@
     "requestSent": "Anfrage versendet!",
     "phoneNumber": "Telefonnummer",
     "emailAddress": "Email Adresse",
-    "setPin": "Einrichten"
+    "setPin": "Einrichten",
+    "createdAt": "Erstellt am"
 }

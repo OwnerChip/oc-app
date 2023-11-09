@@ -6,12 +6,12 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
-import 'package:web3dart/web3dart.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 
-class AuthenticityBoxContent extends StatelessWidget {
-  const AuthenticityBoxContent({
+class CreatorDataBoxContent extends StatelessWidget {
+  const CreatorDataBoxContent({
     super.key,
     required this.creatorData,
   });
@@ -26,14 +26,16 @@ class AuthenticityBoxContent extends StatelessWidget {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            InfoKeyValues(keyWidth: 77, valueWidth: 175, keys: [
+            InfoKeyValues(keyWidth: 83, valueWidth: 169, keys: [
               'Name',
-              // 'Email',
-              'Affiliation'
+              'Affiliation',
+              context.loc.createdAt,
+              'Wallet'
             ], values: [
               creatorData.name,
-              // creatorData.email,
-              creatorData.affiliation
+              creatorData.affiliation,
+              formatDate(creatorData.createdAt.toString().substring(0, 10)),
+              DisplayLongStringWithCopy(string: creatorData.walletAddress.hex)
             ])
           ],
         ));

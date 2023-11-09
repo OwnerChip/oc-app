@@ -5,6 +5,9 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:web3dart/credentials.dart';
@@ -107,31 +110,49 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
         await ref.watch(findTokenProvider(chipTokenId).future);
 
     //verify signature
-    List verificationResult = await verifySignatureAuthenticity(
-        nfc, sessionId, chipEthereumAddress, chipTokenId);
-    Uint8List hashedMsg = verificationResult[0];
-    MsgSignature signature = verificationResult[1];
-    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-        SignatureData(hashedMsg: hashedMsg, signature: signature));
+    try {
+      List verificationResult = await verifySignatureAuthenticity(
+          nfc, sessionId, chipEthereumAddress, chipTokenId);
+      Uint8List hashedMsg = verificationResult[0];
+      MsgSignature signature = verificationResult[1];
+      ref.read(chipSignatureDataProvider.notifier).setSignatureData(
+          SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-    //TOKEN DOES NOT EXIST
-    if (config.collectionId == zeroAddress) {
-      sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
-          tags: {"chipWallet": chipWalletAddress});
+      //TOKEN DOES NOT EXIST
+      if (config.collectionId == zeroAddress) {
+        sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+            tags: {"chipWallet": chipWalletAddress});
 
-      Navigator.pushNamed(
-        context,
-        UserScanResultsScreen.routeName,
-      );
-    } else {
-      //TOKEN EXISTS
-      await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
-          signature, sessionId, chipWalletAddress, context);
+        Navigator.pushNamed(
+          context,
+          UserScanResultsScreen.routeName,
+        );
+      } else {
+        //TOKEN EXISTS
+        await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+            signature, sessionId, chipWalletAddress, context);
 
-      Navigator.pushNamed(
-        context,
-        UserScanResultsScreen.routeName,
-      );
+        Navigator.pushNamed(
+          context,
+          UserScanResultsScreen.routeName,
+        );
+      }
+    } catch (e) {
+      // check if wallet is connected
+
+      if (ref.read(wcSessionProvider) == null &&
+          e == "Error: Chip is PIN code locked.") {
+        await NfcManager.instance.stopSession();
+        //navigate to PinScreen
+        Navigator.pushNamed(context, PinScreen.routeName,
+            arguments: PinScreenArguments(
+                activeFeature: PinScreenActiveFeature.verifyPinAuth,
+                callback: (String pin) async {
+                  onCardPress(ref, context, pin, false);
+                }));
+      } else {
+        rethrow;
+      }
     }
   }
 

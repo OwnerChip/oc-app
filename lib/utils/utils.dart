@@ -224,3 +224,19 @@ String generateOwnerCardIdentifier(int customerId, String baseIdentifier) {
               ? '${baseIdentifier}0${customerId.toRadixString(16)}'
               : '';
 }
+
+// A function that takes a date string of format "YYYY-MM-DD" and returns a string "DD. MM. YYYY" without leading zeros
+String formatDate(String date) {
+  // Split the date string by "-" and store the parts in a list
+  List<String> parts = date.split("-");
+  // Check if the list has exactly 3 elements
+  if (parts.length == 3) {
+    // Convert each part to an integer and then to a string without leading zeros
+    parts = parts.map((part) => int.parse(part).toString()).toList();
+    // Return the formatted string by joining the parts in reverse order with ". "
+    return parts.reversed.join(". ");
+  } else {
+    // Return an error message if the input is not valid
+    return "Invalid date format";
+  }
+}

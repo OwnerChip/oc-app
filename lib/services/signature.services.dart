@@ -31,7 +31,7 @@ Future<MsgSignature> signHash(
       final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
       return extractSignature(signer, hash, chipSignatureData);
     } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
-      throw ("Error: Chip is PIN code locked.");
+      throw ("Error: Chip is PIN code locked."); //do not change error message, double check if other logic relies on it
     } else {
       throw ("Error: Unable to get chip signature.");
     }

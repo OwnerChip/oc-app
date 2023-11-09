@@ -240,5 +240,6 @@
     "requestSent": "Request sent!",
     "phoneNumber": "Phone number",
     "emailAddress": "Email address",
-    "setPin": "Set PIN"
+    "setPin": "Set PIN",
+    "createdAt": "Created at"
 }

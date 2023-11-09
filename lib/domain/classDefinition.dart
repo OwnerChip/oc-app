@@ -163,10 +163,11 @@ class CreatorData {
   final EthereumAddress walletAddress;
   final DateTime createdAt;
 
-  const CreatorData(
-      {required this.name,
-      required this.affiliation,
-      required this.email,
-      required this.walletAddress,
-      required this.createdAt});
+  const CreatorData({
+    required this.name,
+    required this.affiliation,
+    required this.email,
+    required this.walletAddress,
+    required this.createdAt,
+  });
 }

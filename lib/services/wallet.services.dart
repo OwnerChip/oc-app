@@ -9,7 +9,9 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
@@ -363,5 +365,31 @@ void unsubscribeWcListeners(WidgetRef ref) {
     wcClient.onSessionDelete.unsubscribe(wrapOnSessionDisconnect(ref));
     wcClient.onSessionEvent.unsubscribe(wrapOnSessionEvent(ref));
     wcClient.onSessionExpire.unsubscribe(wrapOnSessionExpire(ref));
+  }
+}
+
+Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
+    bool removeWalletPopup) async {
+  try {
+    if (!await checkInternetConnection()) {
+      throw "No internet connection";
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        context.loc.errorNoInternetConnection,
+        'error'));
+    return;
+  }
+  await authenticateCard(ref, context, pin);
+  ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+      context.loc.successHeadingSnackbar,
+      context.loc.successCardLogin,
+      'success'));
+  //navigate to previous screen
+  Navigator.pop(context);
+  if (removeWalletPopup) {
+    //remove wallet popup
+    Navigator.pop(context);
   }
 }

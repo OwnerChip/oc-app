@@ -9,7 +9,7 @@ class InfoKeyValues extends StatelessWidget {
       this.valueWidth = 135});
 
   final List<String> keys;
-  final List<String> values;
+  final List<dynamic> values;
   final double keyWidth;
   final double valueWidth;
 
@@ -48,8 +48,11 @@ class InfoKeyValues extends StatelessWidget {
                     direction: Axis.horizontal,
                     children: [
                       Flexible(
-                          child: Text(values[idx].toString(),
-                              style: Theme.of(context).textTheme.headlineSmall))
+                          child: values[idx] is String
+                              ? Text(values[idx].toString(),
+                                  style:
+                                      Theme.of(context).textTheme.headlineSmall)
+                              : values[idx])
                     ],
                   ),
                 )

@@ -6,7 +6,7 @@ import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AuthenticityBoxContent.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CreatorDataBoxContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -444,7 +444,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               // NFT EXISTS
                                               : creatorData.when(
                                                   data: (data) =>
-                                                      AuthenticityBoxContent(
+                                                      CreatorDataBoxContent(
                                                           creatorData: data),
                                                   loading: () =>
                                                       const CircularProgressIndicator(),
@@ -717,7 +717,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               //if token does not exists
               tokenInfo.when(
                   data: (data) => data.collectionId == zeroAddress &&
-                          connectedWallet != zeroAddress && userSession != null &&
+                          connectedWallet != zeroAddress &&
+                          userSession != null &&
                           relevantCollections.value!.collections.isNotEmpty
                       ? CustomRoundedButton(
                           text: context.loc.initializeChip,
