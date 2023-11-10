@@ -159,19 +159,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onPressed: () => onButtonPress(ref, context, mounted, false),
                 ),
                 const SizedBox(height: 20),
-                relevantCollections.when(
-                    data: (data) => data.hasAnyMinterRole! &&
-                            ref.read(userSessionProvider) != null
-                        ? CustomRoundedButton(
-                            width: 250,
-                            text: context.loc.initializeChip,
-                            onPressed: () =>
-                                onButtonPress(ref, context, mounted, true),
-                          )
-                        : const SizedBox(height: 40),
-                    loading: () =>
-                        SizedBox(height: 40, child: Text(context.loc.loading)),
-                    error: (err, stack) => const SizedBox(height: 40)),
+                ref.read(userSessionProvider) == null
+                    ? Container()
+                    : relevantCollections.when(
+                        data: (data) => data.hasAnyMinterRole! &&
+                                ref.read(userSessionProvider) != null
+                            ? CustomRoundedButton(
+                                width: 250,
+                                text: context.loc.initializeChip,
+                                onPressed: () =>
+                                    onButtonPress(ref, context, mounted, true),
+                              )
+                            : const SizedBox(height: 40),
+                        loading: () => SizedBox(
+                            height: 40, child: Text(context.loc.loading)),
+                        error: (err, stack) => const SizedBox(height: 40)),
               ],
             ),
 

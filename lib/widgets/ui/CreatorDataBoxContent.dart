@@ -35,7 +35,10 @@ class CreatorDataBoxContent extends StatelessWidget {
               creatorData.name,
               creatorData.affiliation,
               formatDate(creatorData.createdAt.toString().substring(0, 10)),
-              DisplayLongStringWithCopy(string: creatorData.walletAddress.hex)
+              DisplayLongStringWithCopy(
+                string: creatorData.walletAddress.hex,
+                textStyles: Theme.of(context).textTheme.headlineSmall,
+              )
             ])
           ],
         ));

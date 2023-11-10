@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InfoKeyValues extends StatelessWidget {
   InfoKeyValues(
@@ -49,9 +52,21 @@ class InfoKeyValues extends StatelessWidget {
                     children: [
                       Flexible(
                           child: values[idx] is String
-                              ? Text(values[idx].toString(),
+                              ? Linkify(
                                   style:
-                                      Theme.of(context).textTheme.headlineSmall)
+                                      Theme.of(context).textTheme.headlineSmall,
+                                  onOpen: (link) async {
+                                    if (!await launchUrl(Uri.parse(link.url))) {
+                                      throw Exception(
+                                          'Could not launch ${link.url}');
+                                    }
+                                  },
+                                  text: values[idx].toString(),
+                                )
+                              // Text(values[idx].toString(),
+                              //     style:
+                              //         Theme.of(context).textTheme.headlineSmall)
+
                               : values[idx])
                     ],
                   ),

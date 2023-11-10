@@ -33,9 +33,12 @@ class ChipInfo extends StatelessWidget {
                 Text('Token ID: ',
                     style: Theme.of(context).textTheme.bodyMedium),
                 Container(
-                    width: 150,
-                    child:
-                        DisplayLongStringWithCopy(string: tokenId.toString()))
+                  width: 150,
+                  child: DisplayLongStringWithCopy(
+                    string: tokenId.toString(),
+                    textStyles: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                )
               ],
             )
           : Container(),
@@ -44,7 +47,10 @@ class ChipInfo extends StatelessWidget {
           ? Row(
               children: [
                 Text('Wallet: ', style: Theme.of(context).textTheme.bodyMedium),
-                DisplayLongStringWithCopy(string: walletAddress.toString())
+                DisplayLongStringWithCopy(
+                  string: walletAddress.toString(),
+                  textStyles: Theme.of(context).textTheme.headlineSmall,
+                )
               ],
             )
           : Container(),

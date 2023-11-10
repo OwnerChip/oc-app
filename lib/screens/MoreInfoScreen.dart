@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 //import widgets
@@ -111,6 +113,26 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             const SizedBox(height: 20),
             Text('Version: ${dotenv.get('VERSION_NUMBER')}',
                 style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 10),
+            ref.read(userSessionProvider) != null
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Wallet: ',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      DisplayLongStringWithCopy(
+                        string: ref
+                            .read(userSessionProvider)!
+                            .userWalletAddress
+                            .hex,
+                        textStyles: Theme.of(context).textTheme.bodySmall,
+                        iconSize: 18,
+                      )
+                    ],
+                  )
+                : Container()
           ]),
     );
   }
