@@ -241,5 +241,7 @@
     "phoneNumber": "Telefonnummer",
     "emailAddress": "Email Adresse",
     "setPin": "Einrichten",
-    "createdAt": "Erstellt am"
+    "createdAt": "Erstellt am",
+    "pleaseHoldPhoneLonger": "Bitte Smartphone länger zum Chip halten.",
+    "unableToReadChip": "Fehler beim Lesen des Chips."
 }

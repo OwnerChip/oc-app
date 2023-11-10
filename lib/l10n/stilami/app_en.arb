@@ -242,5 +242,7 @@
     "phoneNumber": "Phone number",
     "emailAddress": "Email address",
     "setPin": "Submit",
-    "createdAt": "Created at"
+    "createdAt": "Created at",
+    "pleaseHoldPhoneLonger": "Please hold phone to chip a bit longer.",
+    "unableToReadChip": "Unable to read NFC chip."
 }

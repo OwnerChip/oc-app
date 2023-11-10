@@ -63,10 +63,6 @@ class InfoKeyValues extends StatelessWidget {
                                   },
                                   text: values[idx].toString(),
                                 )
-                              // Text(values[idx].toString(),
-                              //     style:
-                              //         Theme.of(context).textTheme.headlineSmall)
-
                               : values[idx])
                     ],
                   ),

@@ -440,10 +440,10 @@ Future<dynamic> scanClosure(
           String errorMessage = e.toString();
           print(errorMessage);
           if (errorMessage.contains('Tag response error / no response')) {
-            errorMessage = 'Please hold phone to chip a bit longer.';
+            errorMessage = context.loc.pleaseHoldPhoneLonger;
           }
           if (errorMessage.contains('RangeError')) {
-            errorMessage = 'Unable to read NFC chip.';
+            errorMessage = context.loc.unableToReadChip;
           }
           NfcManager.instance.stopSession(
               errorMessage: errorMessage); //the error is passed to onError here

@@ -241,5 +241,7 @@
     "phoneNumber": "Phone number",
     "emailAddress": "Email address",
     "setPin": "Set PIN",
-    "createdAt": "Created at"
+    "createdAt": "Created at",
+    "pleaseHoldPhoneLonger": "Please hold phone to chip a bit longer.",
+    "unableToReadChip": "Unable to read NFC chip."
 }
