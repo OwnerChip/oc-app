@@ -244,5 +244,7 @@
     "setPin": "Submit",
     "createdAt": "Created at",
     "pleaseHoldPhoneLonger": "Please hold phone to chip a bit longer.",
-    "unableToReadChip": "Unable to read NFC chip."
+    "unableToReadChip": "Unable to read NFC chip.",
+    "offerOnOpenSea": "Offer on OpenSea",
+    "offerOnRarible": "Offer on Rarible"
 }
