@@ -5,11 +5,16 @@ import 'package:web3dart/web3dart.dart';
 
 class DisplayLongStringWithCopy extends StatelessWidget {
   const DisplayLongStringWithCopy(
-      {super.key, required this.string, this.iconSize = 25, this.textStyles});
+      {super.key,
+      required this.string,
+      this.iconSize = 25,
+      this.textCopiedMessage = 'Copied!',
+      this.textStyles});
 
   final String string;
-  final double? iconSize;
+  final double iconSize;
   final TextStyle? textStyles;
+  final String textCopiedMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +30,8 @@ class DisplayLongStringWithCopy extends StatelessWidget {
             iconSize: iconSize,
             onPressed: () {
               Clipboard.setData(ClipboardData(text: string));
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(context.loc.tokenIdCopiedToClipboard)));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(textCopiedMessage)));
             },
             icon: const Icon(Icons.copy))
       ],

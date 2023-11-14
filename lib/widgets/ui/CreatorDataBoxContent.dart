@@ -26,7 +26,7 @@ class CreatorDataBoxContent extends StatelessWidget {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            InfoKeyValues(keyWidth: 83, valueWidth: 169, keys: [
+            InfoKeyValues(keyWidth: 90, valueWidth: 162, keys: [
               'Name',
               'Affiliation',
               context.loc.createdAt,
@@ -36,6 +36,7 @@ class CreatorDataBoxContent extends StatelessWidget {
               creatorData.affiliation,
               formatDate(creatorData.createdAt.toString().substring(0, 10)),
               DisplayLongStringWithCopy(
+                textCopiedMessage: context.loc.walletAddressCopiedToClipboard,
                 string: creatorData.walletAddress.hex,
                 textStyles: Theme.of(context).textTheme.headlineSmall,
               )

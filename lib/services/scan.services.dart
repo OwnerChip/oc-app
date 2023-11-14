@@ -439,7 +439,8 @@ Future<dynamic> scanClosure(
         } catch (e, stackTrace) {
           String errorMessage = e.toString();
           print(errorMessage);
-          if (errorMessage.contains('Tag response error / no response')) {
+          if (errorMessage.contains('Tag response error / no response') ||
+              errorMessage.contains('Tag was lost.')) {
             errorMessage = context.loc.pleaseHoldPhoneLonger;
           }
           if (errorMessage.contains('RangeError')) {
