@@ -7,6 +7,7 @@ class CustomOutlinedButton extends StatelessWidget {
   final double height;
   final VoidCallback onPressed;
   final String buttonText;
+  final Color? color;
 
   // Use default values for width and height if not provided
   const CustomOutlinedButton({
@@ -15,6 +16,7 @@ class CustomOutlinedButton extends StatelessWidget {
     this.height = 40,
     required this.onPressed,
     required this.buttonText,
+    this.color,
   });
 
   @override
@@ -28,13 +30,18 @@ class CustomOutlinedButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(18.0),
           ),
           side: BorderSide(
-              width: 2, color: CustomColors(dotenv.get('APP_ID')).primaryColor),
+              width: 2,
+              color: color != null
+                  ? color!
+                  : CustomColors(dotenv.get('APP_ID')).primaryColor),
         ),
         onPressed: onPressed,
         child: Text(
           buttonText,
-          style:
-              TextStyle(color: CustomColors(dotenv.get('APP_ID')).primaryColor),
+          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+              color: color != null
+                  ? color!
+                  : CustomColors(dotenv.get('APP_ID')).primaryColor),
         ),
       ),
     );

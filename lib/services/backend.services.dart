@@ -1,8 +1,18 @@
+import 'dart:convert';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_dio/sentry_dio.dart';
 import 'package:sentry/sentry.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 /// get OC backend client (with sentry interceptor)
 Dio getBackendClient() {
@@ -15,7 +25,28 @@ Dio getBackendClient() {
   return client;
 }
 
-/// get a list of all collections associated with a specific app
+Future<void> sendCardInitToBackend(
+    String customerId, EthereumAddress chipAddress) async {
+  // send to prod API so that the owner card data is available in the prod DB
+  final client = Dio(BaseOptions(
+      baseUrl: dotenv.get('OC_BACKEND_URL'),
+      headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
+  client.addSentry();
+  final String url = '/customer/$customerId/ownercard';
+  try {
+    final _ = await client.post(url, data: {
+      'id': chipAddress.hex,
+    });
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+  }
+}
+
+// get a list of all collections associated with a specific app
 Future<List<dynamic>> getAppCollections() async {
   final Dio dio = getBackendClient();
   final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
@@ -61,6 +92,16 @@ Future<String> sendGaslessRequest(
   return response.data; //txId
 }
 
+// gets the hash that needs to be used to sign a gasless tx request.
+Future<String> getEthSignTypedDataSignature(
+    EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
+  final Dio dio = getBackendClient();
+  final String url = '/collection/$collectionId/metatx/hash';
+  //make post request with dio
+  final response = await dio.post(url, data: txRequest);
+  return response.data; //hash
+}
+
 // This function will post a user action to the analytics backend.
 Future<void> sendAnalyticsTrace(String caseId, String description, String type,
     {Map<String, dynamic>? tags}) async {
@@ -72,7 +113,7 @@ Future<void> sendAnalyticsTrace(String caseId, String description, String type,
       "case_id": caseId,
       "description": description,
       "type": type,
-      "tags": tags.toString()
+      "tags": jsonEncode(tags)
     });
   } catch (e, s) {
     await Sentry.captureException(
@@ -96,6 +137,113 @@ Future<String> getSessionId() async {
       stackTrace: s,
     );
     print(e);
-    return "";
+    //fallback!
+    return makeRandomInt().toString();
+  }
+}
+
+Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
+    EthereumAddress userWalletAddress, MsgSignature signature) async {
+  final Dio dio = getBackendClient();
+  try {
+    final response = await dio.post('/auth/${sessionDuration}',
+        data: {
+          "sessionId": sessionId,
+          "walletAddress": userWalletAddress.hex,
+          "userWalletSignature": {
+            'r': convertSignatureParamToHexString(signature.r),
+            's': convertSignatureParamToHexString(signature.s),
+            'v': signature.v
+          }
+        },
+        options: Options(
+          responseType: ResponseType.plain,
+        ));
+    return int.parse(response.data); // unix expiration timestamp
+  } catch (e, s) {
+    await Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+    return 0;
+  }
+}
+
+/// save a userSession of a OwnerCard
+Future<void> saveUserSession(
+    String sessionId,
+    EthereumAddress cardWalletAddress,
+    MsgSignature signature,
+    WidgetRef ref) async {
+  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+  int sessionExpirationDate = await getSessionExpiration(
+      sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
+
+  ref.read(userAddressProvider.notifier).state = cardWalletAddress;
+  ref.read(walletTypeProvider.notifier).state = walletConfig['ownerCard'];
+  const isOwnerCard = true;
+  UserSession userSession = UserSession(sessionId, signature,
+      ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
+
+  ref.read(userSessionProvider.notifier).state = userSession;
+
+  //persist session date
+  final SharedPreferences storage = await SharedPreferences.getInstance();
+  final String jsonUserSession = jsonEncode(userSession.toJson());
+  storage.setString('userSession', jsonUserSession);
+}
+
+Future<bool> sendCardLostToBackend(
+    EthereumAddress chipAddress,
+    EthereumAddress collectionAddress,
+    SignatureData chipSignature,
+    String sessionId,
+    String email,
+    String name,
+    String telNr) async {
+  final Dio dio = getBackendClient();
+  final String url = '/collection/${collectionAddress.hex}/recovery';
+  try {
+    await dio.post(url, data: {
+      'name': name,
+      'email': email,
+      'telNr': telNr,
+      'sessionId': sessionId,
+      'chipAddress': chipAddress.hex,
+      'chipSignature': {
+        'r': convertSignatureParamToHexString(chipSignature.signature.r),
+        's': convertSignatureParamToHexString(chipSignature.signature.s),
+        'v': chipSignature.signature.v,
+      }
+    });
+    return true;
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+    return false;
+  }
+}
+
+//get creator info
+Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
+  final Dio dio = getBackendClient();
+  try {
+    final Response response = await dio.get('/creator/${tokenId.hex}');
+    final Map creatorData = response.data;
+    return CreatorData(
+      name: creatorData['name'],
+      affiliation: creatorData['affiliation'],
+      email: creatorData['email'],
+      walletAddress: EthereumAddress.fromHex(creatorData['address']),
+      createdAt: DateTime.parse(creatorData['created_at']),
+    );
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
   }
 }

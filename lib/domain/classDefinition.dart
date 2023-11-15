@@ -1,7 +1,11 @@
+import 'dart:convert';
+
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:file_picker/file_picker.dart';
 
 class MoreInfoButton {
   final String text;
@@ -108,5 +112,62 @@ class EthereumSignMessage {
     required this.data,
     required this.address,
     required this.type,
+  });
+}
+
+enum AttachmentType { text, audio, image, video, url, other }
+
+class Attachment {
+  final String title; //file title set by user
+  final String fileName; //file name including file extension
+  final AttachmentType type;
+  final bool isPrivate;
+  final String url;
+  final String backendUuid;
+  final bool? isFromCreator;
+
+  Attachment(this.title, this.fileName, this.type, this.url, this.backendUuid,
+      {this.isPrivate = false, this.isFromCreator});
+}
+
+class UserSession {
+  final String sessionId;
+  final MsgSignature signatureData;
+  final EthereumAddress userWalletAddress;
+  final bool isOwnerCard;
+  final int expiryDate;
+
+  UserSession(this.sessionId, this.signatureData, this.userWalletAddress,
+      this.isOwnerCard, this.expiryDate);
+
+  Map<String, dynamic> toJson() => {
+        'sessionId': sessionId,
+        'signatureData': msgSignatureToJson(signatureData),
+        'userWalletAddress': userWalletAddress.hex,
+        'isOwnerCard': isOwnerCard,
+        'expiryDate': expiryDate.toString(),
+      };
+
+  UserSession.fromJson(Map<String, dynamic> json)
+      : sessionId = json['sessionId'],
+        signatureData = msgSignatureFromJson(json['signatureData']),
+        userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
+        isOwnerCard = json['isOwnerCard'],
+        expiryDate = int.parse(json['expiryDate']);
+}
+
+class CreatorData {
+  final String name;
+  final String affiliation;
+  final String email;
+  final EthereumAddress walletAddress;
+  final DateTime createdAt;
+
+  const CreatorData({
+    required this.name,
+    required this.affiliation,
+    required this.email,
+    required this.walletAddress,
+    required this.createdAt,
   });
 }

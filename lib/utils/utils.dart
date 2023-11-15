@@ -6,15 +6,21 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:crypto/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 //validate ethereum address
-bool validateEthAddress(String? hex) {
+bool validateEthAddress(String hex) {
+  //validate if hex is a valid ethereum address
+
   bool result = true;
 
   if (hex == null) {
@@ -74,12 +80,25 @@ Future<void> checkInternetAndHandleUI(BuildContext context) async {
 //check for internet connection
 Future<bool> checkInternetConnection() async {
   try {
-    final result = await InternetAddress.lookup('example.com');
+    final result = await InternetAddress.lookup('google.com');
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
       return true;
     }
     return false;
   } on SocketException catch (_) {
+    return false;
+  }
+}
+
+Future<bool> checkBackendAvailability() async {
+  try {
+    //get backend client
+    final client = getBackendClient();
+    await client.get('/auth');
+    return true;
+  } catch (e) {
+    print(e);
+    Sentry.captureException(e);
     return false;
   }
 }
@@ -146,11 +165,16 @@ String uint8ListTo32ByteHex(Uint8List uint8List) {
 
 String convertTokenIdToEthereumAddress(BigInt intToConvert) {
   var hex = intToConvert.toRadixString(16);
-  return "0x${hex.padLeft(40)}";
+  return "0x${hex.padLeft(40, '0')}";
+}
+
+String convertSignatureParamToHexString(BigInt intToConvert) {
+  var hex = intToConvert.toRadixString(16);
+  return "0x${hex.padLeft(64, '0')}";
 }
 
 // specific to secora chip response
-Uint8List getPublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
+Uint8List makePublicKeyFromChipResponse(Uint8List responseGetKeyInfo) {
   return responseGetKeyInfo.sublist(9, 73); //get 64 bit public key
 }
 
@@ -165,4 +189,52 @@ Future<XFile> saveMetadataAsJSONFile(Map<String, dynamic> metadata) async {
   await file.writeAsString(json.encode(metadata));
   XFile jsonFile = XFile(file.path);
   return jsonFile;
+}
+
+//function that returns a file name substring
+String getFileNameSubstring(String fileName) {
+  //if fileName is short, return full file name
+  if (fileName.length <= 14) {
+    return fileName;
+  }
+  //else return substring of file name
+  return fileName.substring(0, 5) +
+      '...' +
+      fileName.substring(fileName.length - 9);
+}
+
+String getEthAddressSubstring(EthereumAddress address) {
+  return '${address.hex.substring(0, 5)}...';
+}
+
+//function that takes file as input and returns sha256 hash as hex string
+Future<String> getSha256HashOfFile(File file) async {
+  final bytes = await file.readAsBytes();
+  final hash = sha256.convert(bytes);
+  return hash.toString();
+}
+
+// generate OwnerCard identifier [from customer 100 to 3582]
+String generateOwnerCardIdentifier(int customerId, String baseIdentifier) {
+  return (customerId == 103)
+      ? '${baseIdentifier}0e0f'
+      : (customerId < 256)
+          ? '${baseIdentifier}00${customerId.toRadixString(16)}'
+          : (customerId < 3583)
+              ? '${baseIdentifier}0${customerId.toRadixString(16)}'
+              : '';
+}
+
+// A function that takes a date string of format "YYYY-MM-DD" and returns a string "DD. MM. YYYY" without leading zeros
+String formatDate(String date) {
+  // Split the date string by "-" and store the parts in a list
+  List<String> parts = date.split("-");
+  // Check if the list has exactly 3 elements
+  if (parts.length == 3) {
+    // Return the formatted string by joining the parts in reverse order with ". "
+    return parts.reversed.join(".");
+  } else {
+    // Return an error message if the input is not valid
+    return "Invalid date format";
+  }
 }

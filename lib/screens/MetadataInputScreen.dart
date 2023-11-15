@@ -1,46 +1,54 @@
-// ignore_for_file: use_build_context_synchronously
-
 //package imports
 import 'package:async/async.dart';
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry/sentry.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 
 //screen imports
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 
 //widget imports
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
-import 'package:ownerchip_whitelabel/services/images.service.dart';
+import 'package:ownerchip_whitelabel/services/images.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //theme imports
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -64,7 +72,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   late Map<String, dynamic> metadata;
   XFile? image;
   bool showImageOptions = false;
-  bool showOverlay = false;
+  bool isLoading = false;
   String overlayContentType = 'loading'; //can be "traits" or "loading"
   String loadingText = '';
   CancelableOperation? cancellableOperation;
@@ -99,36 +107,38 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     return imageFile!;
   }
 
+  Future<void> toggleLoading() async {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
   Future<void> createToken(
       String sessionId,
-      Web3App wc,
+      Web3App? wc,
       SignatureData signatureData,
       Map<String, dynamic> metadata,
       int chainId,
       EthereumAddress collectionId,
       {XFile? image}) async {
     setState(() {
-      showOverlay = true;
+      isLoading = true;
       overlayContentType = 'loading';
       loadingText = context.loc.uploadingMetadata;
     });
 
+    final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
 
     final mintProcess = Sentry.startTransaction('initMinting()', 'task');
-
-    //if wc bridge is not connected, then reconnect
-    if (wcSession == null || walletType == null) {
-      walletPopupBuilder(context, ref, wc);
-    }
 
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     try {
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
       sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
-          tags: {'connectedWallet': connectedWallet});
+          tags: {'connectedWallet': connectedWallet.hex});
       //upload image to ipfs
       String imageCid;
       String cid = '';
@@ -145,41 +155,50 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       if (cid != '') {
         ipfsProcess.finish();
         sendAnalyticsTrace(sessionId, cid, "IPFS_UPLOAD_FINISHED",
-            tags: {'connectedWallet': connectedWallet, 'cid': cid});
+            tags: {'connectedWallet': connectedWallet.hex, 'cid': cid});
       }
 
       //check if user is allowed to use gas station
       final List response =
-          await checkMetaTx(collectionId, gaslessMintFunctionSignature);
+          await checkMetaTx(collectionId, mintFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
       // switch to minting loading overlay
       setState(() {
-        showOverlay = true;
+        isLoading = true;
         overlayContentType = 'loading';
         loadingText = context.loc.mintingToken;
       });
 
       sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
-        'connectedWallet': connectedWallet,
+        'connectedWallet': connectedWallet.hex,
         'gasStation': canUseGasStation
       });
 
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
-            gaslessMintFunctionSignature,
+            ref,
+            ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
+            mintFunctionSignature,
             chainId,
             collectionId,
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             metaTxAgreementId,
             walletType!,
-            cid: cid);
+            cid: cid,
+            toggleLoading: toggleLoading);
       } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
         txnHash = await makeAndSendNormalTx(
             mintFunctionSignature,
             chainId,
@@ -200,25 +219,17 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       if (txnReceipt?.status) {
         mintProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
-          'connectedWallet': '$connectedWallet',
+          'connectedWallet': connectedWallet.hex,
           'gasStation': canUseGasStation
         });
 
-        await Future.delayed(const Duration(seconds: 1));
-        //fetch metadata and image to update provider before navigating to next screen
-        final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-        Map metadata =
-            await ref.read(nftMetadataProvider(chipInfo.tokenId).future);
-        String image =
-            await ref.read(nftImageProvider(chipInfo.tokenId).future);
-
         Navigator.pushNamedAndRemoveUntil(
-          context,
+          ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
           NFTDetailsScreen.routeName,
           (Route route) => route.isFirst,
         );
         setState(() {
-          showOverlay = false;
+          isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
@@ -230,7 +241,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
       sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
-          tags: {'connectedWallet': '$connectedWallet'});
+          tags: {'connectedWallet': connectedWallet.hex});
       mintProcess.throwable = e;
       mintProcess.status = const SpanStatus.aborted();
       mintProcess.finish();
@@ -243,14 +254,18 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
       );
       setState(() {
-        showOverlay = false;
+        isLoading = false;
       });
     }
+    //refresh tokenInfo so it can be loaded; This code is not supposed to be inside try block, so it does not trigger catch if it fails and use does not stay on metadatasecreen with error, despite token minting being successful. User can retrigger manually on next screen
+    final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+    TokenInfoObject tokenInfo =
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
   }
 
   void toggleTraitsForm() {
     setState(() {
-      showOverlay = !showOverlay;
+      isLoading = !isLoading;
       overlayContentType = 'traits';
     });
   }
@@ -284,16 +299,21 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     final wc = ref.watch(wcProvider);
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
-    final SignatureData signatureData = ref.watch(signatureDataProvider);
+    final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
+    final AsyncValue<List<Attachment>> fetchedAttachments =
+        ref.watch(fetchAttachmentsProvider);
+    final List<Attachment>? attachmentList =
+        ref.watch(localAttachmentsProvider);
+
     return CustomOverlay(
-      show: showOverlay,
+      show: isLoading,
       content: overlayContentType == 'loading'
           ? SpinningLoadingSvg(
               onPressed: loadingText == context.loc.mintingToken
                   ? () {
                       cancellableOperation?.cancel();
                       setState(() {
-                        showOverlay = false;
+                        isLoading = false;
                       });
                       Navigator.pushNamedAndRemoveUntil(
                           context, HomeScreen.routeName, (route) => false);
@@ -325,154 +345,196 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                   ))
                 ]),
       child: Scaffold(
+          key: ScaffoldKey.getScaffoldKey('MetadataInputScreen'),
           extendBodyBehindAppBar: true,
           appBar: CustomAppBar(
             text: context.loc.initializeChip,
           ),
-          body: ScreenBodyLayout(children: [
-            Row(
-              children: [
-                const SizedBox(width: 22),
-                RichText(
-                  text: TextSpan(
-                      text: '${context.loc.step} 2/',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge!
-                          .copyWith(fontSize: 18),
-                      children: [
-                        TextSpan(
-                            text: '2',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall!
-                                .copyWith(fontSize: 18))
-                      ]),
+          body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: ScreenBodyLayout(children: [
+                Row(
+                  children: [
+                    const SizedBox(width: 22),
+                    RichText(
+                      text: TextSpan(
+                          text: '${context.loc.step} 2/',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge!
+                              .copyWith(fontSize: 18),
+                          children: [
+                            TextSpan(
+                                text: '2',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(fontSize: 18))
+                          ]),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            CustomCard(
-                color: CustomColors(dotenv.get('APP_ID')).cardColor,
-                children: [
-                  SetImageWidget(
-                    imageFile: image,
-                    setCameraImage: setCameraImage,
-                    setGalleryImage: setGalleryImage,
-                    resetImage: resetImage,
-                  ),
-                  const SizedBox(height: 20),
-                  Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Row(children: [
-                            Expanded(
-                              flex: 5,
-                              child: TextFormField(
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                controller: _titleController,
-                                decoration: InputDecoration(
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color:
-                                              Theme.of(context).primaryColor),
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color:
-                                              Theme.of(context).primaryColor),
-                                    ),
-                                    contentPadding:
-                                        const EdgeInsets.only(left: 12),
-                                    hintText: context.loc.title,
-                                    hintStyle:
-                                        Theme.of(context).textTheme.bodyMedium),
-                                onChanged: (text) {
-                                  metadata['name'] = text;
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return context.loc.pleaseEnterText;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: CustomRoundedButton(
-                                  height: 25,
-                                  // width: 100,
-                                  textStyle: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(
-                                          color:
-                                              CustomColors(dotenv.get('APP_ID'))
+                const SizedBox(height: 20),
+                CustomCard(
+                    color: CustomColors(dotenv.get('APP_ID')).cardColor,
+                    children: [
+                      SetImageWidget(
+                        imageFile: image,
+                        setCameraImage: setCameraImage,
+                        setGalleryImage: setGalleryImage,
+                        resetImage: resetImage,
+                      ),
+                      const SizedBox(height: 20),
+                      Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              Row(children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: TextFormField(
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    controller: _titleController,
+                                    decoration: InputDecoration(
+                                        enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor),
+                                        ),
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.only(left: 12),
+                                        hintText: context.loc.title,
+                                        hintStyle: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium),
+                                    onChanged: (text) {
+                                      metadata['name'] = text;
+                                    },
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return context.loc.pleaseEnterText;
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 3,
+                                  child: CustomRoundedButton(
+                                      height: 25,
+                                      // width: 100,
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                              color: CustomColors(
+                                                      dotenv.get('APP_ID'))
                                                   .customRoundedButtonColor,
-                                          fontSize:
-                                              CustomFonts(dotenv.get('APP_ID'))
+                                              fontSize: CustomFonts(
+                                                          dotenv.get('APP_ID'))
                                                       .bodyText2FontSize /
                                                   1.3),
-                                  text: context.loc.traits,
-                                  onPressed: () => toggleTraitsForm()),
-                            )
-                          ]),
-                          const SizedBox(height: 15),
-                          Container(
-                            decoration: BoxDecoration(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(13)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: CustomColors(dotenv.get('APP_ID'))
-                                        .secondaryShadowColor,
-                                    offset: const Offset(1, 3),
-                                    blurRadius: 13,
-                                  )
-                                ]),
-                            child: TextField(
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              maxLines: 3,
-                              keyboardType: TextInputType.multiline,
-                              controller: _descriptionController,
-                              decoration: InputDecoration(
-                                focusColor: Theme.of(context).primaryColorDark,
-                                hintText: context.loc.description,
-                                hintStyle:
-                                    Theme.of(context).textTheme.bodyMedium,
-                                filled: true,
-                                fillColor:
-                                    Theme.of(context).scaffoldBackgroundColor,
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(13),
+                                      text: context.loc.traits,
+                                      onPressed: () => toggleTraitsForm()),
+                                )
+                              ]),
+                              const SizedBox(height: 15),
+                              Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(13)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .secondaryShadowColor,
+                                        offset: const Offset(1, 3),
+                                        blurRadius: 3,
+                                      )
+                                    ]),
+                                child: TextField(
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  maxLines: 3,
+                                  keyboardType: TextInputType.multiline,
+                                  controller: _descriptionController,
+                                  decoration: InputDecoration(
+                                    focusColor:
+                                        Theme.of(context).primaryColorDark,
+                                    hintText: context.loc.description,
+                                    hintStyle:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .scaffoldBackgroundColor,
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(13),
+                                    ),
+                                  ),
+                                  onChanged: (text) {
+                                    metadata['description'] = text;
+                                  },
                                 ),
+                              )
+                            ],
+                          )),
+                      const SizedBox(height: 20),
+
+                      AttachmentUploadButton(
+                          text: context.loc.uploadDigitalContent,
+                          icon: Icons.add),
+                      const SizedBox(height: 20),
+                      //map over attachmentList to display all attachments as FileBox
+                      if (attachmentList != null)
+                        for (var i = 0; i < attachmentList.length; i++)
+                          Column(
+                            children: [
+                              AttachmentBox(
+                                text: attachmentList[i].title,
+                                icon:
+                                    attachmentList[i].type == AttachmentType.url
+                                        ? Icons.link
+                                        : Icons.attach_file,
+                                isPrivate: attachmentList[i].isPrivate,
+                                onTap: () {
+                                  //navigate to AddFileScreen with navigation args
+                                  Navigator.pushNamed(
+                                      context, AddAttachmentScreen.routeName,
+                                      arguments: AttachmentScreensArguments(
+                                          true, attachmentList[i].type,
+                                          index: i));
+                                },
                               ),
-                              onChanged: (text) {
-                                metadata['description'] = text;
-                              },
-                            ),
-                          )
-                        ],
-                      )),
-                  const SizedBox(height: 20),
-                  Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: CustomRoundedButton(
-                        text: context.loc.mintNft,
-                        onPressed: () async {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          if (_formKey.currentState!.validate()) {
-                            fromCancelable(createToken(navArgs.sessionId, wc!,
-                                signatureData, metadata, chainId, collectionId,
-                                image: image));
-                          }
-                        },
-                      )),
-                ])
-          ])),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+
+                      Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: CustomRoundedButton(
+                            text: context.loc.mintNft,
+                            onPressed: () async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              if (_formKey.currentState!.validate()) {
+                                fromCancelable(createToken(
+                                    navArgs.sessionId,
+                                    wc,
+                                    signatureData,
+                                    metadata,
+                                    chainId,
+                                    collectionId,
+                                    image: image));
+                              }
+                            },
+                          )),
+                    ])
+              ]))),
     );
   }
 }

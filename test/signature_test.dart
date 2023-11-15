@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:test/test.dart';
-import 'package:ownerchip_whitelabel/services/signature.service.dart';
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 

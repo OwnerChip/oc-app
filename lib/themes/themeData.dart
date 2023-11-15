@@ -6,11 +6,12 @@ import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 class CustomThemeData {
   static ThemeData getThemeData() {
     return ThemeData(
+      unselectedWidgetColor: CustomColors(dotenv.get('APP_ID')).primaryColor,
       primaryColor: CustomColors(dotenv.get('APP_ID')).primaryColor,
-      primaryColorLight: CustomColors(dotenv.get('APP_ID')).primaryColorLight,
+      primaryColorLight: CustomColors(dotenv.get('APP_ID')).accentColor,
       shadowColor: CustomColors(dotenv.get('APP_ID')).shadowColor,
       scaffoldBackgroundColor:
-          CustomColors(dotenv.get('APP_ID')).scaffoldBackgroundColor,
+          CustomColors(dotenv.get('APP_ID')).secondaryColor,
       cardColor: CustomColors(dotenv.get('APP_ID')).cardColor,
       textTheme: TextTheme(
         displayLarge: TextStyle(
@@ -52,6 +53,11 @@ class CustomThemeData {
             fontSize: CustomFonts(dotenv.get('APP_ID')).bodyText2FontSize,
             fontFamily: CustomFonts(dotenv.get('APP_ID')).bodyText2Font,
             color: CustomColors(dotenv.get('APP_ID')).bodyText2Color,
+            fontWeight: CustomFonts(dotenv.get('APP_ID')).bodyText2FontWeight),
+        bodySmall: TextStyle(
+            fontSize: CustomFonts(dotenv.get('APP_ID')).bodySmallFontSize,
+            fontFamily: CustomFonts(dotenv.get('APP_ID')).bodySmallFont,
+            color: CustomColors(dotenv.get('APP_ID')).bodySmallColor,
             fontWeight: CustomFonts(dotenv.get('APP_ID')).bodyText2FontWeight),
       ),
     );

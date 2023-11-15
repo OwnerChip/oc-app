@@ -54,9 +54,10 @@ class CustomCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
-                color: Theme.of(context).shadowColor,
-                blurRadius: 5,
-                offset: const Offset(3, 4)),
+              color: CustomColors(dotenv.get('APP_ID')).secondaryShadowColor,
+              offset: const Offset(1, 3),
+              blurRadius: 3,
+            ),
           ]),
       child: withScrollView
           ? SingleChildScrollView(

@@ -10,44 +10,43 @@ class MoreInfoButtons {
     switch (appEnvironment) {
       case 'ownerchip':
         roundedButtons = [
-          MoreInfoButton(
-              loc.watchTutorial, "http://www.ownerchip.com/tutorial"),
-          MoreInfoButton(loc.viewProjects, "http://www.ownerchip.com/projects"),
-          MoreInfoButton(loc.orderChips, "http://www.ownerchip.com/orderchips"),
+          MoreInfoButton(loc.watchTutorial, loc.tutorialUrl),
+          MoreInfoButton(loc.viewProjects, loc.projectsUrl),
+          MoreInfoButton(loc.orderChips, loc.orderChipsUrl),
         ];
         outlinedRoundedButtons = [
-          MoreInfoButton(
-              loc.support, 'https://www.ownerchip.com/en/support.html'),
-          MoreInfoButton(loc.legal,
-              'https://www.ownerchip.com/en/app-support-legal-information.html')
+          MoreInfoButton(loc.support, loc.supportUrl),
+          MoreInfoButton(loc.legal, loc.legalUrl)
         ];
         break;
       case 'stebo':
         roundedButtons = [
-          MoreInfoButton(
-              loc.watchTutorial, "http://www.ownerchip.com/tutorial"),
-          MoreInfoButton(
-              loc.viewGallery, "https://www.steboart.com/en/galerie"),
+          MoreInfoButton(loc.watchTutorial, loc.tutorialUrl),
         ];
         outlinedRoundedButtons = [
-          MoreInfoButton(
-              loc.support, 'https://www.ownerchip.com/en/support.html'),
-          MoreInfoButton(loc.legal,
-              'https://www.ownerchip.com/en/app-support-legal-information.html')
+          MoreInfoButton(loc.support, loc.supportUrl),
+          MoreInfoButton(loc.legal, loc.legalUrl)
+        ];
+        break;
+      case 'stilami':
+        roundedButtons = [
+          MoreInfoButton(loc.stilamiIdentityButtonText, loc.stilamiIdentityUrl),
+          MoreInfoButton(loc.collectionsButtonText, loc.collectionsUrl),
+        ];
+        outlinedRoundedButtons = [
+          MoreInfoButton(loc.support, loc.supportUrl),
+          MoreInfoButton(loc.legal, loc.legalUrl)
         ];
         break;
       default:
         roundedButtons = [
-          MoreInfoButton(
-              loc.watchTutorial, "http://www.ownerchip.com/tutorial"),
-          MoreInfoButton(loc.viewProjects, "http://www.ownerchip.com/projects"),
-          MoreInfoButton(loc.orderChips, "http://www.ownerchip.com/orderchips"),
+          MoreInfoButton(loc.watchTutorial, loc.tutorialUrl),
+          MoreInfoButton(loc.viewProjects, loc.projectsUrl),
+          MoreInfoButton(loc.orderChips, loc.orderChipsUrl),
         ];
         outlinedRoundedButtons = [
-          MoreInfoButton(
-              loc.support, 'https://www.ownerchip.com/en/support.html'),
-          MoreInfoButton(loc.legal,
-              'https://www.ownerchip.com/en/app-support-legal-information.html')
+          MoreInfoButton(loc.support, loc.supportUrl),
+          MoreInfoButton(loc.legal, loc.legalUrl)
         ];
     }
   }

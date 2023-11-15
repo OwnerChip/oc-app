@@ -2,6 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
+import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
+import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 //import widgets
@@ -51,7 +58,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             const SizedBox(
               height: 60,
             ),
-
             ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
                 .roundedButtons
                 .map((button) => Padding(
@@ -64,50 +70,71 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             },
                         width: 250)))
                 .toList(),
-
-            // CustomRoundedButton(
-            //     text: context.loc.watchTutorial,
-            //     onPressed: () => {
-            //           launchUrl(Uri.parse(dotenv.get('TUTORIAL_PAGE_URL')),
-            //               mode: LaunchMode.externalApplication)
-            //         },
-            //     width: 250),
-            // const SizedBox(height: 10),
-            // CustomRoundedButton(
-            //     text: context.loc.viewProjects,
-            //     onPressed: () => {
-            //           launchUrl(Uri.parse(dotenv.get('PROJECTS_PAGE_URL')),
-            //               mode: LaunchMode.externalApplication)
-            //         },
-            //     width: 250),
-            // const SizedBox(height: 10),
-            // dotenv.get('APP_ID') == 'ownerchip'
-            //     ? CustomRoundedButton(
-            //         text: context.loc.orderChips,
-            //         onPressed: () => {
-            //               launchUrl(Uri.parse(dotenv.get('ORDER_CHIPS_URL')),
-            //                   mode: LaunchMode.externalApplication)
-            //             },
-            //         width: 250)
-            //     : Container(),
-
+            Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CustomRoundedButton(
+                    text: context.loc.resetPIN,
+                    onPressed: () => {
+                          Navigator.pushNamed(context, EnterPukScreen.routeName)
+                        },
+                    width: 250)),
+            Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CustomRoundedButton(
+                    text: context.loc.cardLost,
+                    onPressed: () async {
+                      Navigator.pushNamed(context, CardLostScreen.routeName);
+                    },
+                    width: 250)),
+            dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
+                ? Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: CustomRoundedButton(
+                        text: 'Admin Init Card',
+                        onPressed: () => {
+                              Navigator.pushNamed(
+                                  context, AdminInitCard.routeName)
+                            },
+                        width: 250))
+                : Container(),
             const SizedBox(height: 60),
-            CustomOutlinedButton(
-                buttonText: context.loc.support,
-                onPressed: () => {
-                      launchUrl(Uri.parse(dotenv.get('SUPPORT_PAGE_URL')),
-                          mode: LaunchMode.externalApplication)
-                    }),
-            const SizedBox(height: 10),
-            CustomOutlinedButton(
-                buttonText: context.loc.legal,
-                onPressed: () => {
-                      launchUrl(Uri.parse(dotenv.get('LEGAL_PAGE_URL')),
-                          mode: LaunchMode.externalApplication)
-                    }),
+            ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
+                .outlinedRoundedButtons
+                .map((button) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: CustomOutlinedButton(
+                        buttonText: button.text,
+                        onPressed: () => {
+                              launchUrl(Uri.parse(button.url),
+                                  mode: LaunchMode.externalApplication)
+                            },
+                        width: 250)))
+                .toList(),
             const SizedBox(height: 20),
             Text('Version: ${dotenv.get('VERSION_NUMBER')}',
                 style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 10),
+            ref.read(userSessionProvider) != null
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Wallet: ',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      DisplayLongStringWithCopy(
+                        textCopiedMessage:
+                            context.loc.walletAddressCopiedToClipboard,
+                        string: ref
+                            .read(userSessionProvider)!
+                            .userWalletAddress
+                            .hex,
+                        textStyles: Theme.of(context).textTheme.bodySmall,
+                        iconSize: 18,
+                      )
+                    ],
+                  )
+                : Container()
           ]),
     );
   }

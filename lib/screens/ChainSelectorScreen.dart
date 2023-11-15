@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -11,19 +13,18 @@ import 'package:ownerchip_whitelabel/widgets/ui/ChainDropdown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/PopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 
 //import services
-import 'package:ownerchip_whitelabel/services/providers.service.dart';
-import 'package:ownerchip_whitelabel/services/walletconnect.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigation.arguments.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 //import dotenv
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 //import svg
@@ -42,8 +43,7 @@ class ChainSelectorScreen extends ConsumerStatefulWidget {
 
 class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
-      BuildContext context, Web3App wc, mounted, String sessionId) async {
-    final wc = ref.read(wcProvider);
+      BuildContext context, mounted, String sessionId) async {
     final wcSession = ref.read(wcSessionProvider);
     BlockchainCollectionList relevantCollections =
         await ref.read(findAllMinterRolesProvider.future);
@@ -51,7 +51,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
     final Collection? collection = ref.read(selectedCollectionIdProvider);
     try {
       if (wcSession == null) {
-        walletPopupBuilder(context, ref, wc!);
+        walletPopupBuilder(context, ref);
       }
 
       if (mounted) {
@@ -144,12 +144,12 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
             ],
           ),
           CustomRoundedButton(
-            text: 'Next',
+            text: context.loc.next,
             onPressed: chainId == null || collection == null
                 ? null
                 : () {
                     onInitializeButtonPress(
-                        context, wc!, mounted, navArgs.sessionId);
+                        context, mounted, navArgs.sessionId);
                   },
           ),
           const SizedBox(height: 60),
@@ -170,7 +170,6 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                       .copyWith(fontSize: 15, fontWeight: FontWeight.w500),
                 ),
               ),
-              //TODO: show a hint if metamask is connected that the correct CHAIN must be selected in metamask
             ],
           )
         ],
