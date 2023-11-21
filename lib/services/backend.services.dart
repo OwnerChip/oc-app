@@ -239,7 +239,7 @@ Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
       affiliation: creatorData['affiliation'],
       email: creatorData['email'],
       walletAddress: EthereumAddress.fromHex(creatorData['address']),
-      createdAt: DateTime.parse(creatorData['created_at']),
+      createdAt: DateTime.parse(creatorData['token']['mintedAt']),
     );
   } catch (e) {
     Sentry.captureException(e);

@@ -38,7 +38,7 @@ class CreatorDataBoxContent extends StatelessWidget {
               DisplayLongStringWithCopy(
                 textCopiedMessage: context.loc.walletAddressCopiedToClipboard,
                 string: creatorData.walletAddress.hex,
-                textStyles: Theme.of(context).textTheme.headlineSmall,
+                textStyles: Theme.of(context).textTheme.bodyMedium,
               )
             ])
           ],
