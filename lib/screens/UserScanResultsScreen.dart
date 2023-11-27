@@ -483,8 +483,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //OWNERSHIP CHECK ICON
                                   nftOwner.when(
-                                    data: ((data) => connectedWallet ==
-                                            zeroAddress
+                                    data: ((data) => userSession == null
                                         ?
                                         //NFT owner exists and wallet is NOT connected
                                         SvgPicture.asset(

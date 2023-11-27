@@ -123,6 +123,8 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       DisplayLongStringWithCopy(
+                        textCopiedMessage:
+                            context.loc.walletAddressCopiedToClipboard,
                         string: ref
                             .read(userSessionProvider)!
                             .userWalletAddress

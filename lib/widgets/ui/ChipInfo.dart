@@ -48,6 +48,7 @@ class ChipInfo extends StatelessWidget {
               children: [
                 Text('Wallet: ', style: Theme.of(context).textTheme.bodyMedium),
                 DisplayLongStringWithCopy(
+                  textCopiedMessage: context.loc.tokenIdCopiedToClipboard,
                   string: walletAddress.toString(),
                   textStyles: Theme.of(context).textTheme.headlineSmall,
                 )
