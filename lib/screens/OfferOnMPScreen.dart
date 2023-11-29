@@ -234,8 +234,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                     text: 'Offer now',
                     onPressed: email.isEmpty ||
                             walletAddress.isEmpty ||
-                            price > 0 ||
-                            raribleCheck == false
+                            (price <= 0) ||
+                            (raribleCheck) == false
                         ? null
                         : () async {
                             if (_formKey.currentState!.validate()) {
