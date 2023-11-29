@@ -247,3 +247,20 @@ Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
     rethrow;
   }
 }
+
+//GET request to https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR,CNY,JPY,GBP
+
+Future<Map> getEthPrice(String cryptoSymbol) async {
+  final Dio dio = Dio(BaseOptions(
+      baseUrl: 'https://min-api.cryptocompare.com/data',
+      headers: {"lang": "en"}));
+  String url = '/price?fsym=$cryptoSymbol&tsyms=USD,EUR,CNY,JPY,GBP';
+  try {
+    final Response response = await dio.get(url);
+    return response.data;
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
+  }
+}

@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -445,43 +446,16 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                 )
                               ]),
                               const SizedBox(height: 15),
-                              Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(13)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            CustomColors(dotenv.get('APP_ID'))
-                                                .secondaryShadowColor,
-                                        offset: const Offset(1, 3),
-                                        blurRadius: 3,
-                                      )
-                                    ]),
-                                child: TextField(
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  maxLines: 3,
-                                  keyboardType: TextInputType.multiline,
-                                  controller: _descriptionController,
-                                  decoration: InputDecoration(
-                                    focusColor:
-                                        Theme.of(context).primaryColorDark,
-                                    hintText: context.loc.description,
-                                    hintStyle:
-                                        Theme.of(context).textTheme.bodyMedium,
-                                    filled: true,
-                                    fillColor: Theme.of(context)
-                                        .scaffoldBackgroundColor,
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.circular(13),
-                                    ),
-                                  ),
-                                  onChanged: (text) {
-                                    metadata['description'] = text;
-                                  },
-                                ),
-                              )
+                              StyledTextInputBox(
+                                controller: _descriptionController,
+                                setText: (input) =>
+                                    metadata['description'] = input,
+                                keyboardType: TextInputType.multiline,
+                                maxlines: 3,
+                                fillColor:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                hintText: context.loc.description,
+                              ),
                             ],
                           )),
                       const SizedBox(height: 20),

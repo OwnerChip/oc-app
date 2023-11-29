@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -132,9 +133,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance.addObserver(this);
 
-    //init walletconnect client
-    // initWcClient(ref);
-
     //read persisted session
     _setSessionProviderFromPersistedSession();
 
@@ -153,9 +151,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     //on resume
-    if (state == AppLifecycleState.resumed) {
-      // _setSessionProviderFromPersistedSession();
-    }
+    if (state == AppLifecycleState.resumed) {}
   }
 
   @override
@@ -206,6 +202,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         EnterPukScreen.routeName: (context) => const EnterPukScreen(),
         AdminInitCard.routeName: (context) => const AdminInitCard(),
         CardLostScreen.routeName: (context) => const CardLostScreen(),
+        OfferOnMPScreen.routeName: (context) => const OfferOnMPScreen(),
       },
     );
   }

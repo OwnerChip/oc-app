@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
+import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -84,6 +85,14 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                     text: context.loc.cardLost,
                     onPressed: () async {
                       Navigator.pushNamed(context, CardLostScreen.routeName);
+                    },
+                    width: 250)),
+            Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CustomRoundedButton(
+                    text: 'Offer on MP, delete later',
+                    onPressed: () async {
+                      Navigator.pushNamed(context, OfferOnMPScreen.routeName);
                     },
                     width: 250)),
             dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
