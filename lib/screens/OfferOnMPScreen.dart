@@ -3,10 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:web3dart/web3dart.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -56,7 +58,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         ref.watch(ethPriceProvider(allDropdownValues[0]));
     return Scaffold(
       appBar: CustomAppBar(
-        text: 'Offer object',
+        text: 'Offer item',
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
@@ -132,7 +134,11 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                             });
                           },
                           validator: (value) {
-                            //TODO: validate if this is wallet address
+                            try {
+                              EthereumAddress.fromHex(value!);
+                            } catch (e) {
+                              return 'Please enter a valid wallet address';
+                            }
                             return null;
                           },
                         ),
@@ -162,7 +168,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                   },
                                   selectedCurrency: currencyDropdownValue),
                               context,
-                              'Enter sale price for your object',
+                              'Enter sale price for your item',
                               fillColor:
                                   CustomColors(dotenv.get('APP_ID')).cardColor),
                           keyboardType:
@@ -177,9 +183,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                 price = double.parse(value);
                               }
                             });
-                          },
-                          validator: (value) {
-                            //TODO: validate if this is price
                           },
                         ),
                         const SizedBox(
@@ -242,6 +245,25 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                               FocusScope.of(context).unfocus();
                             }
                           },
+                  ),
+                  const SizedBox(height: 10),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 300,
+                        child: Text(
+                          'OwnerChip will notify you once the item is purchased. You are responsible for packaging and shipping the item to the buyer.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall!
+                              .copyWith(
+                                  fontSize: 12, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
                   )
                 ],
               )),
