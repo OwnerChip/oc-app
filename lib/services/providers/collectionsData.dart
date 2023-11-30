@@ -18,7 +18,8 @@ final appCollectionProvider =
 
   // first, try to get the collections from the backend
   try {
-    final rawCollections = await getAppCollections();
+    final data = await getAppCollections();
+    final rawCollections = data['collections'];
     collections =
         BlockchainCollectionList(groupCollectionsByChainId(rawCollections));
   } catch (e) {
@@ -47,7 +48,8 @@ final findAllMinterRolesProvider =
       Future<bool> hasMinterRoleFuture = checkMinterRole(
           getRPCUrlFromChainId(chainId), collection.id, userWalletAddress);
       futures.add(hasMinterRoleFuture);
-      res.add(Collection(collection.id, collection.name, chainId: chainId));
+      res.add(Collection(collection.id, collection.name,
+          voucherAddress: collection.voucherAddress, chainId: chainId));
     }
   });
   var resRaw = await Future.wait(futures);

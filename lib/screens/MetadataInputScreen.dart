@@ -121,6 +121,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       Map<String, dynamic> metadata,
       int chainId,
       EthereumAddress collectionId,
+      EthereumAddress? voucherCollectionId,
       {XFile? image}) async {
     setState(() {
       isLoading = true;
@@ -137,6 +138,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     try {
+      if (voucherCollectionId == null) {
+        throw 'Voucher collection id is null';
+      }
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
       sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet.hex});
@@ -184,7 +188,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
             mintFunctionSignature,
             chainId,
-            collectionId,
+            voucherCollectionId,
             signatureData,
             connectedWallet,
             wc,
@@ -203,7 +207,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         txnHash = await makeAndSendNormalTx(
             mintFunctionSignature,
             chainId,
-            collectionId,
+            voucherCollectionId,
             signatureData,
             connectedWallet,
             wc,
@@ -300,6 +304,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     final wc = ref.watch(wcProvider);
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
+    EthereumAddress? voucherCollectionId = navArgs.voucherAddress;
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final AsyncValue<List<Attachment>> fetchedAttachments =
         ref.watch(fetchAttachmentsProvider);
@@ -503,6 +508,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                     metadata,
                                     chainId,
                                     collectionId,
+                                    voucherCollectionId,
                                     image: image));
                               }
                             },

@@ -7,8 +7,10 @@ class MetadataInputScreenArguments {
   final String sessionId;
   final int chainId;
   final EthereumAddress collectionId;
+  final EthereumAddress? voucherAddress;
 
-  MetadataInputScreenArguments(this.sessionId, this.chainId, this.collectionId);
+  MetadataInputScreenArguments(this.sessionId, this.chainId, this.collectionId,
+      {this.voucherAddress});
 }
 
 class AttachmentScreensArguments {

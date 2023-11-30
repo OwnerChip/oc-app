@@ -62,7 +62,8 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
         if (chainId != null && collection != null) {
           Navigator.pushNamed(context, MetadataScreen.routeName,
               arguments: MetadataInputScreenArguments(
-                  sessionId, chainId, collection.id));
+                  sessionId, chainId, collection.id,
+                  voucherAddress: collection.voucherAddress));
         }
       }
     } catch (e, s) {

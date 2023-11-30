@@ -47,13 +47,13 @@ Future<void> sendCardInitToBackend(
 }
 
 // get a list of all collections associated with a specific app
-Future<List<dynamic>> getAppCollections() async {
+Future<Map> getAppCollections() async {
   final Dio dio = getBackendClient();
   final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
   final String url = '/app/$appId';
 
   final response = await dio.get(url);
-  return response.data['collections'];
+  return response.data;
 }
 
 // Checks if a gasless transaction is supported by a collection.

@@ -47,7 +47,9 @@ Future<ConnectResponse> startWalletConnection(BuildContext context,
     //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
     switch (wallet.name) {
       case 'Metamask':
-        chains = ['eip155:1'];
+        chains = [
+          'eip155:1',
+        ];
         break;
       case 'Trust Wallet':
         chains = ['eip155:1', 'eip155:137'];
