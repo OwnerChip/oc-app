@@ -1,8 +1,11 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
+import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
@@ -27,6 +30,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/BigIconButton.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -125,6 +129,50 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               thickness: 1,
               indent: 0,
               endIndent: 0,
+            ),
+
+            nftOwner.when(
+              data: (data) => data == connectedWallet
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: BigIconButton(
+                            text: 'Offer for sale',
+                            onPressed: () => Navigator.pushNamed(
+                                context, OfferOnMPScreen.routeName),
+                            icon: Icon(
+                              Icons.euro,
+                              size: 35,
+                              color: CustomColors(dotenv.get('APP_ID'))
+                                  .primaryColor,
+                            ),
+                            height: 85,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: BigIconButton(
+                            text: 'Transfer',
+                            onPressed: () => Navigator.pushNamed(
+                                context, TransferScreen.routeName),
+                            icon: const Icon(
+                              Icons.send,
+                              size: 35,
+                            ),
+                            height: 85,
+                          ),
+                        )
+                      ],
+                    )
+                  : Container(),
+              error: (e, s) => Container(),
+              loading: () => Container(),
             ),
 
             /*** DESCRIPTION ***/
