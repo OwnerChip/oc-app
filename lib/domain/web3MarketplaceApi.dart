@@ -1,3 +1,5 @@
+import 'package:web3dart/web3dart.dart';
+
 /** RARIBLE */
 
 final Map<int, String> raribleUpsertOrderApiUrls = {
@@ -8,10 +10,11 @@ final Map<int, String> raribleUpsertOrderApiUrls = {
 class RaribleV2Order {
   final String type = "RARIBLE_V2";
   final RaribleDataObject data;
-  final String maker;
+  final EthereumAddress maker;
   final RaribleOrderFormAsset make;
   final RaribleOrderFormAsset take;
-  final int salt;
+  final BigInt salt;
+  final int start;
   final int end;
   final String signature;
 
@@ -21,8 +24,41 @@ class RaribleV2Order {
       required this.make,
       required this.take,
       required this.salt,
+      required this.start,
       required this.end,
       required this.signature});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'data': {
+        'dataType': data.dataType,
+        'payouts': data.payouts.map((e) => e.toJson()).toList(),
+        'originFees': data.originFees.map((e) => e.toJson()).toList(),
+      },
+      'maker': maker.hex,
+      'make': {
+        'assetType': {
+          'assetClass': make.assetType.assetClass,
+          'contract': make.assetType.contract?.hex,
+          'tokenId': make.assetType.tokenId?.toInt(),
+        },
+        'value': make.value.toInt(),
+      },
+      'take': {
+        'assetType': {
+          'assetClass': take.assetType.assetClass,
+          'contract': take.assetType.contract?.hex,
+          'tokenId': take.assetType.tokenId?.toInt(),
+        },
+        'value': take.value.toInt(),
+      },
+      'salt': salt.toInt(),
+      'start': start,
+      'end': end,
+      'signature': signature,
+    };
+  }
 }
 
 class RaribleDataObject {
@@ -34,21 +70,62 @@ class RaribleDataObject {
       {required this.dataType,
       required this.payouts,
       required this.originFees});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'dataType': dataType,
+      'payouts': payouts.map((e) => e.toJson()).toList(),
+      'originFees': originFees.map((e) => e.toJson()).toList(),
+    };
+  }
 }
 
 class RaribleOrderFormAsset {
-  final String dataType = "RARIBLE_V2_DATA_V3_SELL";
-  final List<RariblePayout> payouts;
-  final List<RariblePayout> originFees;
+  final RaribleAssetType assetType;
+  final BigInt value;
 
-  RaribleOrderFormAsset({required this.payouts, required this.originFees});
+  RaribleOrderFormAsset({required this.assetType, required this.value});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'assetType': {
+        'assetClass': assetType.assetClass,
+        'contract': assetType.contract?.hex,
+        'tokenId': assetType.tokenId?.toInt(),
+      },
+      'value': value.toInt(),
+    };
+  }
+}
+
+class RaribleAssetType {
+  final String assetClass;
+  final EthereumAddress? contract;
+  final BigInt? tokenId;
+
+  RaribleAssetType({required this.assetClass, this.contract, this.tokenId});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'assetClass': assetClass,
+      'contract': contract?.hex,
+      'tokenId': tokenId?.toInt(),
+    };
+  }
 }
 
 class RariblePayout {
-  final String account;
+  final EthereumAddress account;
   final int value; // in bps (100=1%)
 
   RariblePayout({required this.account, required this.value});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'account': account.hex,
+      'value': value,
+    };
+  }
 }
 
 /** OPENSEA */

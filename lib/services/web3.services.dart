@@ -12,12 +12,33 @@ Web3Client getWeb3Client(String chainRpcUrl) {
   return client;
 }
 
+Future<DeployedContract> getControllerContract(
+    EthereumAddress collectionId) async {
+  String abi =
+      await rootBundle.loadString("assets/contracts/controller.abi.json");
+  DeployedContract contract = DeployedContract(
+    ContractAbi.fromJson(abi, 'OwnerChipController'),
+    collectionId,
+  );
+  return contract;
+}
+
 Future<DeployedContract> getCollectionContract(
     EthereumAddress collectionId) async {
   String abi =
       await rootBundle.loadString("assets/contracts/collection.abi.json");
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, 'OwnerChipDemo'),
+    collectionId,
+  );
+  return contract;
+}
+
+Future<DeployedContract> getVoucherContract(
+    EthereumAddress collectionId) async {
+  String abi = await rootBundle.loadString("assets/contracts/voucher.abi.json");
+  DeployedContract contract = DeployedContract(
+    ContractAbi.fromJson(abi, 'OwnerChipVoucher'),
     collectionId,
   );
   return contract;
@@ -176,7 +197,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     throw Exception('Invalid function signature hash');
   }
 
-  String gasAmount = "0x493E0"; // fallback: 300000 gas
+  String gasAmount = "0x55730"; // fallback: 300000 gas
   try {
     BigInt gasAmountEst =
         await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
@@ -196,7 +217,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
       gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
     }
   }
-
+  gasAmount = "0x55730"; // fallback: 350000 gas
   final params = [
     {
       "from": from.toString(),
@@ -236,6 +257,27 @@ String makeApproveData(
   String data = functionSignatureHash +
       to.toString().substring(2).padLeft(64, '0') +
       tokenId.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+// offerItem(
+//         uint256 tokenId,
+//         address marketplaceContract,
+//         address payable sellerPayoutAddress,
+//         bytes32 typedSignatureHash
+//     )
+
+String makeOfferItemData(
+    String functionSignatureHash,
+    BigInt tokenId,
+    EthereumAddress marketplaceContract,
+    EthereumAddress sellerPayoutAddress,
+    String typedSignatureHash) {
+  String data = functionSignatureHash +
+      tokenId.toRadixString(16).padLeft(64, '0') +
+      marketplaceContract.toString().substring(2).padLeft(64, '0') +
+      sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
+      typedSignatureHash.substring(2).padLeft(64, '0');
   return data;
 }
 

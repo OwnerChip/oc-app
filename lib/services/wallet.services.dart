@@ -122,10 +122,12 @@ Future<String> makeAndSendGaslessTx(
     SessionData? wcSession,
     String metaTxAgreementId,
     WalletType walletType,
-    {EthereumAddress? toAccount,
+    {EthereumAddress? controllerContractId,
+    EthereumAddress? toAccount,
     String? cid,
     BigInt? tokenId,
     bool? enableRecovery,
+    EthereumAddress? sellerPayoutAddress,
     required Function toggleLoading}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,
@@ -134,11 +136,12 @@ Future<String> makeAndSendGaslessTx(
       randomValueHash: signatureData.hashedMsg,
       signature: signatureData.signature,
       from: walletAddress,
-      to: collectionId,
+      to: controllerContractId ?? collectionId,
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null,
       tokenId: tokenId,
-      enableRecovery: enableRecovery);
+      enableRecovery: enableRecovery,
+      sellerPayoutAddress: sellerPayoutAddress);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 

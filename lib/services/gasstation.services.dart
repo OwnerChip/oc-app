@@ -35,7 +35,6 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
     'domain': {
       'name': 'MinimalForwarder',
       'version': '0.0.2',
-      //'chainId': chainId,
       'verifyingContract': verifyingContract,
     },
     'primaryType': 'ForwardRequest',
@@ -54,7 +53,8 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     EthereumAddress? toAccount,
     String? tokenURI,
     BigInt? tokenId,
-    bool? enableRecovery) async {
+    bool? enableRecovery,
+    EthereumAddress? sellerPayoutAddress) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -67,6 +67,14 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
+  } else if (functionSignatureHash == offerItemFunctionSignature) {
+    //TODO: pass real params
+    data = makeOfferItemData(
+        functionSignatureHash,
+        tokenId!,
+        EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
+        sellerPayoutAddress!,
+        '0x6b7a97faedb7b95a98fd5cdcc3d4b3627f276f4dd261b6db86777a0ed7d45916');
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -78,7 +86,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     'to': to.hex,
     'value': 0,
     'gas':
-        300000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
+        500000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
     'nonce': nonce.toInt(),
     'data': data,
   };
@@ -107,7 +115,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     EthereumAddress? toAccount,
     String? tokenURI,
     BigInt? tokenId,
-    bool? enableRecovery}) async {
+    bool? enableRecovery,
+    EthereumAddress? sellerPayoutAddress}) async {
   final request = await buildTypedV4Request(
       functionSignatureHash,
       chainRpcUrl,
@@ -119,7 +128,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
       toAccount,
       tokenURI,
       tokenId,
-      enableRecovery);
+      enableRecovery,
+      sellerPayoutAddress);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

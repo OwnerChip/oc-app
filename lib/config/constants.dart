@@ -14,3 +14,6 @@ const String transferFromFunctionSignature = '0x8f10e951';
 
 // approve
 const String approveFunctionSignature = '0x095ea7b3';
+
+//offerItem
+const String offerItemFunctionSignature = '0xfbdba33a';
