@@ -100,9 +100,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     //TODO: move this to after successful mint
-    await onOfferItemPress(
-        EthereumAddress.fromHex('0xf4DbA9EB37E273cF5C2DE194f74fd139Eb87a5e8'),
-        config);
+    // await onOfferItemPress(
+    //     EthereumAddress.fromHex('0x08268aD94BfE1909878Ac702Be6170c645745A92'),
+    //     config);
 
     try {
       //check if user is allowed to use gas station
@@ -119,7 +119,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       });
 
       EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
-          '0xf4DbA9EB37E273cF5C2DE194f74fd139Eb87a5e8'); //TODO: controller contr addr; make this more flexible
+          '0x08268aD94BfE1909878Ac702Be6170c645745A92'); //TODO: controller contr addr; make this more flexible
 
       String txnHash;
       if (canUseGasStation) {
@@ -150,14 +150,17 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
-            offerItemFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession!,
-            walletType!);
+          offerItemFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession!,
+          walletType!,
+          sellerPayoutAddress: EthereumAddress.fromHex(walletAddress),
+          tokenId: config.tokenId,
+        );
       }
 
       //wait until TX is succeeded or failed
@@ -442,6 +445,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                     (raribleCheck) == false
                                 ? null
                                 : () async {
+                                    //unfocus keyboard
+                                    FocusScope.of(context).unfocus();
                                     if (_formKey.currentState!.validate()) {
                                       fromCancelable(offerToken());
                                     }

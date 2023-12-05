@@ -209,7 +209,8 @@ Future<String> makeAndSendNormalTx(
     WalletType walletType,
     {EthereumAddress? toAccount,
     BigInt? tokenId,
-    String? cid}) async {
+    String? cid,
+    EthereumAddress? sellerPayoutAddress}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
       collectionId,
@@ -220,7 +221,8 @@ Future<String> makeAndSendNormalTx(
       toAccount: toAccount,
       tokenId: tokenId,
       tokenURI: cid != null ? "ipfs://$cid" : null,
-      enableRecovery: false);
+      enableRecovery: false,
+      sellerPayoutAddress: sellerPayoutAddress);
 
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");

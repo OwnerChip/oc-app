@@ -181,6 +181,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   String? gasPrice,
   BigInt? tokenId,
   bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
 }) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -193,6 +194,14 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
+  } else if (functionSignatureHash == offerItemFunctionSignature) {
+    //TODO: pass real params
+    data = makeOfferItemData(
+        functionSignatureHash,
+        tokenId!,
+        EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
+        sellerPayoutAddress!,
+        '0x6b7a97faedb7b95a98fd5cdcc3d4b3627f276f4dd261b6db86777a0ed7d45916');
   } else {
     throw Exception('Invalid function signature hash');
   }
