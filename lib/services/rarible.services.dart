@@ -78,19 +78,19 @@ Future createRaribleOrder(int chainId, RaribleV2Order order) async {
 
 // backend encodes message and returns hash of typed data
 Future getTypedDataHash(Map typedData, RaribleV2Order order) async {
-  try {
-    final Dio dio = getBackendClient();
-    String url = '/offer/hash/rarible';
-    final result = await dio.post(url,
-        data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
-    return result.data;
-  } catch (e, s) {
-    Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-  }
+  //try {
+  final Dio dio = getBackendClient();
+  final result = await dio.post('/offer/hash/rarible',
+      data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
+  print(result.data);
+  return result.data;
+  // } catch (e, s) {
+  //   Sentry.captureException(
+  //     e,
+  //     stackTrace: s,
+  //   );
+  //   print(e);
+  // }
 }
 
 Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
@@ -113,7 +113,5 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
 
 Future<String> getRaribleMakeOrderTypedDataHash(
     int chainId, RaribleV2Order order) async {
-  final Map<String, dynamic> typeData = getRaribleMakeOrderTypeData(chainId);
-  final String result = await getTypedDataHash(typeData, order);
-  return result;
+  return await getTypedDataHash(getRaribleMakeOrderTypeData(chainId), order);
 }
