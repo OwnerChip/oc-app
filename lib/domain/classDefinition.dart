@@ -54,6 +54,7 @@ class BlockchainCollectionList {
 
 class BlockchainConfig {
   final String networkName;
+  final String nativeTokenSymbol;
   final String rpcUrl;
   final String registryContract;
   final String controllerContract;
@@ -64,6 +65,7 @@ class BlockchainConfig {
 
   BlockchainConfig(
       {required this.networkName,
+      required this.nativeTokenSymbol,
       required this.rpcUrl,
       required this.registryContract,
       required this.controllerContract,
