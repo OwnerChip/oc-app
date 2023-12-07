@@ -297,3 +297,20 @@ Future getRaribeOfferTypedDataHash(Map typedData, RaribleV2Order order) async {
     print(e);
   }
 }
+
+// backend encodes message and returns hash of typed data
+Future getRaribleOfferTypedDataHash(Map typedData, RaribleV2Order order) async {
+  try {
+    final Dio dio = getBackendClient();
+    final result = await dio.post('/offer/hash/rarible',
+        data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
+    print(result.data);
+    return result.data;
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+  }
+}

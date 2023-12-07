@@ -59,43 +59,7 @@ RaribleV2Order makeRaribleV2Order(
   return raribleV2Order;
 }
 
-// create rarible order api call
-Future createRaribleOrder(int chainId, RaribleV2Order order) async {
-  final String url = raribleUpsertOrderApiUrls[chainId]!;
-  try {
-    final Dio dio = Dio();
-    dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
-    Response result = await dio.post(url, data: jsonEncode(order.toJson()));
-    return result.data;
-  } catch (e, s) {
-    Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-  }
-}
-
-// backend encodes message and returns hash of typed data
-Future getTypedDataHash(Map typedData, RaribleV2Order order) async {
-  try {
-    final Dio dio = getBackendClient();
-    String url = '/offer/hash/rarible';
-    final result = await dio.post(url,
-        data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
-    return result.data;
-  } catch (e, s) {
-    Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-  }
-}
-
 Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
-  final String verifyingContract =
-      '0x12b3897a36fdb436dde2788c06eff0ffd997066e'; //TODO: dont hardcode controller contract
   return {
     'types': {
       'EIP712Domain': EIP712DomainWithChainId,
@@ -106,17 +70,34 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
     'domain': {
       'name': 'Exchange',
       'version': '2',
-      'chainId': chainId.toString(),
-      'verifyingContract': verifyingContract,
+      'chainId': chainId,
+      'verifyingContract': raribleExchangeContracts[chainId],
     },
     'primaryType': 'Order',
   };
 }
 
-Future<String> getRaribleMakeOrderTypedDataHash(
+Future<String> getRaribleOrderTypedDataHash(
     int chainId, RaribleV2Order order) async {
-  //TODO: call backend sending typed data and message
-  final Map<String, dynamic> typeData = getRaribleMakeOrderTypeData(chainId);
-  final String result = await getTypedDataHash(typeData, order);
-  return result;
+  //call backend to get hash of typed data
+  return await getRaribeOfferTypedDataHash(
+      getRaribleMakeOrderTypeData(chainId), order);
+}
+
+// create rarible order api call
+Future createRaribleOrder(int chainId, RaribleV2Order order) async {
+  final String url = raribleUpsertOrderApiUrls[chainId]!;
+  try {
+    final Dio dio = Dio();
+    dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
+    Response result = await dio.post(url, data: jsonEncode(order.toJson()));
+    print(result);
+    return result.data;
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+  }
 }

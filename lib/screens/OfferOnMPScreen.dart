@@ -115,8 +115,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         config.tokenId,
         priceInPrimaryChainCurrency,
         null);
-    final typedDataHash = await getRaribleMakeOrderTypedDataHash(
-        config.chainId, raribleV2Order); //TODO: check if chainId is needed
+    final typedDataHash =
+        await getRaribleOrderTypedDataHash(config.chainId, raribleV2Order);
 
     try {
       //check if user is allowed to use gas station
@@ -179,8 +179,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
-        final MsgSignature? chipSignature =
-            await getChipSignature(ref, context, typedDataHash, toggleLoading);//TODO: change "CARD" to "CHIP"
+        final MsgSignature? chipSignature = await getChipSignature(ref, context,
+            typedDataHash, toggleLoading); //TODO: change "CARD" to "CHIP"
         final String hexSignature = msgSignatureToHex(chipSignature!);
 
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
