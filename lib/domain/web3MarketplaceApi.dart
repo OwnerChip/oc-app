@@ -63,7 +63,7 @@ class RaribleV2Order {
           'contract': make.assetType.contract?.hex,
           'tokenId': make.assetType.tokenId.toString(),
         },
-        'value': make.value,
+        'value': make.value.toString(),
       },
       'take': {
         'assetType': {
@@ -71,7 +71,7 @@ class RaribleV2Order {
           'contract': take.assetType.contract?.hex,
           'tokenId': take.assetType.tokenId.toString(),
         },
-        'value': take.value,
+        'value': take.value.toString(),
       },
       'salt': salt.toString(),
       'start': start,
