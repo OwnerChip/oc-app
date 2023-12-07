@@ -180,7 +180,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
         final MsgSignature? chipSignature =
-            await getChipSignature(ref, context, typedDataHash, toggleLoading);
+            await getChipSignature(ref, context, typedDataHash, toggleLoading);//TODO: change "CARD" to "CHIP"
         final String hexSignature = msgSignatureToHex(chipSignature!);
 
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
