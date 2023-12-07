@@ -4,7 +4,15 @@ import 'package:web3dart/web3dart.dart';
 
 final Map<int, String> raribleUpsertOrderApiUrls = {
   1: 'https://ethereum-api.rarible.org/v0.1/order/orders/',
-  137: 'https://polygon-api.rarible.org/v0.1/order/orders/'
+  137: 'https://polygon-api.rarible.org/v0.1/order/orders/',
+  80001: 'https://testnet-api.rarible.org/v0.1/order/orders/'
+};
+
+final Map<int, String> raribleExchangeContracts = {
+  1: '0x9757F2d2b135150BBeb65308D4a91804107cd8D6',
+  137: '0x12b3897a36fDB436ddE2788C06Eff0ffD997066e',
+  //42161: '0x07b637739CAd9A5f0c487219B283a52717E69978', arbitrum (maybe later)
+  80001: '0x2Fc743F5419637B93dDAC159715B902186300041'
 };
 
 class RaribleV2Order {
