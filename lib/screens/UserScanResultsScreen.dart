@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -324,17 +325,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, burnFunctionSignature);
+          await checkMetaTx(config.collectionId, cancelOfferFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      //TODO: dont hard code this here
-      final EthereumAddress controllerContractAddress =
-          EthereumAddress.fromHex('0x4f0116D5C9329b7d838f365e3a90016F3651B5e9');
+      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+          chainConfig[config.chainId]!.controllerContract);
 
       String txnHash;
-      // if (canUseGasStation) {
-      if (false) {
+      if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
