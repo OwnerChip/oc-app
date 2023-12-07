@@ -94,8 +94,6 @@ Future getTypedDataHash(Map typedData, RaribleV2Order order) async {
 }
 
 Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
-  final String verifyingContract =
-      '0x4f0116D5C9329b7d838f365e3a90016F3651B5e9'; //TODO: dont hardcode controller contract
   return {
     'types': {
       'EIP712Domain': EIP712DomainWithChainId,
@@ -106,8 +104,8 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
     'domain': {
       'name': 'Exchange',
       'version': '2',
-      'chainId': chainId.toString(),
-      'verifyingContract': verifyingContract,
+      'chainId': chainId,
+      'verifyingContract': raribleExchangeContracts[chainId],
     },
     'primaryType': 'Order',
   };
@@ -115,7 +113,6 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
 
 Future<String> getRaribleMakeOrderTypedDataHash(
     int chainId, RaribleV2Order order) async {
-  //TODO: call backend sending typed data and message
   final Map<String, dynamic> typeData = getRaribleMakeOrderTypeData(chainId);
   final String result = await getTypedDataHash(typeData, order);
   return result;

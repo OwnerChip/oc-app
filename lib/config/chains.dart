@@ -5,6 +5,7 @@ final polygonMumbaiTestnet = BlockchainConfig(
     rpcUrl:
         "https://polygon-mumbai.infura.io/v3/b5b3b9c6bd56483c9203c06f9b0eb0f4",
     registryContract: "0xE587fb76509550a72Eb120b941F9235488aB6AEe",
+    controllerContract: "",
     openseaUrl: "https://testnets.opensea.io/assets/mumbai",
     raribleUrl: "https://testnet.rarible.com/token/polygon",
     blockchainExplorerUrl: "https://mumbai.polygonscan.com/token",
@@ -14,6 +15,7 @@ final polygonMainnet = BlockchainConfig(
     rpcUrl:
         "https://polygon-mainnet.infura.io/v3/b5b3b9c6bd56483c9203c06f9b0eb0f4",
     registryContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
+    controllerContract: "0x7c7A814D6c5286336beDcB7b068dE647DB2D8B8B",
     openseaUrl: "https://opensea.io/assets/matic",
     raribleUrl: "https://rarible.com/token/polygon",
     blockchainExplorerUrl: "https://polygonscan.com/token",
@@ -23,6 +25,7 @@ final ethereumMainnet = BlockchainConfig(
     networkName: "Ethereum Mainnet",
     rpcUrl: "https://mainnet.infura.io/v3/b5b3b9c6bd56483c9203c06f9b0eb0f4",
     registryContract: "0x8Dcc2016E0dEe536D238562dC2a46c8EEf2aac86",
+    controllerContract: "",
     openseaUrl: "https://opensea.io/assets",
     raribleUrl: "https://rarible.com/token",
     blockchainExplorerUrl: "https://etherscan.com/token");
