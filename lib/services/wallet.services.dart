@@ -123,6 +123,7 @@ Future<String> makeAndSendGaslessTx(
     String metaTxAgreementId,
     WalletType walletType,
     {EthereumAddress? controllerContractId,
+    String? typedDataHash,
     EthereumAddress? toAccount,
     String? cid,
     BigInt? tokenId,
@@ -141,7 +142,8 @@ Future<String> makeAndSendGaslessTx(
       tokenURI: cid != null ? "ipfs://$cid" : null,
       tokenId: tokenId,
       enableRecovery: enableRecovery,
-      sellerPayoutAddress: sellerPayoutAddress);
+      sellerPayoutAddress: sellerPayoutAddress,
+      typedDataHash: typedDataHash);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 

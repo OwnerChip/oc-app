@@ -28,6 +28,18 @@ class RaribleV2Order {
       required this.end,
       required this.signature});
 
+  RaribleV2Order setSignature(String signature) {
+    return RaribleV2Order(
+        data: data,
+        maker: maker,
+        make: make,
+        take: take,
+        salt: salt,
+        start: start,
+        end: end,
+        signature: signature);
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'type': type,
@@ -41,19 +53,19 @@ class RaribleV2Order {
         'assetType': {
           'assetClass': make.assetType.assetClass,
           'contract': make.assetType.contract?.hex,
-          'tokenId': make.assetType.tokenId?.toInt(),
+          'tokenId': make.assetType.tokenId.toString(),
         },
-        'value': make.value.toInt(),
+        'value': make.value,
       },
       'take': {
         'assetType': {
           'assetClass': take.assetType.assetClass,
           'contract': take.assetType.contract?.hex,
-          'tokenId': take.assetType.tokenId?.toInt(),
+          'tokenId': take.assetType.tokenId.toString(),
         },
-        'value': take.value.toInt(),
+        'value': take.value,
       },
-      'salt': salt.toInt(),
+      'salt': salt.toString(),
       'start': start,
       'end': end,
       'signature': signature,
@@ -91,9 +103,9 @@ class RaribleOrderFormAsset {
       'assetType': {
         'assetClass': assetType.assetClass,
         'contract': assetType.contract?.hex,
-        'tokenId': assetType.tokenId?.toInt(),
+        'tokenId': assetType.tokenId.toString(),
       },
-      'value': value.toInt(),
+      'value': value.toString(),
     };
   }
 }
@@ -109,7 +121,7 @@ class RaribleAssetType {
     return {
       'assetClass': assetClass,
       'contract': contract?.hex,
-      'tokenId': tokenId?.toInt(),
+      'tokenId': tokenId.toString(),
     };
   }
 }

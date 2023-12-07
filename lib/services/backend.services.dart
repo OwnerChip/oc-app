@@ -263,3 +263,28 @@ Future<Map> getEthPrice(String cryptoSymbol) async {
     rethrow;
   }
 }
+
+Future<void> sendOfferItemInfoToBackend(
+    BigInt tokenId,
+    double offerPriceInCrypto,
+    String cryptoCurrencySymbol,
+    String email,
+    EthereumAddress sellerWalletAddress,
+    EthereumAddress payoutAddress) async {
+  final Dio dio = getBackendClient();
+  final String url = '';
+  try {
+    await dio.post(url, data: {
+      'tokenId': convertTokenIdToEthereumAddress(tokenId),
+      'offerPrice': offerPriceInCrypto,
+      'offerCurrency': cryptoCurrencySymbol,
+      'sellerEmail': email,
+      'sellerWalletAddress': sellerWalletAddress.hex,
+      'sellerPayoutAddress': payoutAddress.hex
+    });
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
+  }
+}

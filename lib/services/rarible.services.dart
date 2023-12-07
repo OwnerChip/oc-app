@@ -23,7 +23,8 @@ RaribleV2Order makeRaribleV2Order(
     int originFeesValue,
     EthereumAddress voucherContractAddress,
     BigInt voucherTokenId,
-    BigInt salePriceInCrypto) {
+    BigInt salePriceInCrypto,
+    String? signature) {
   final RariblePayout payout = RariblePayout(
       account: payoutAddress,
       value: payoutValue); //seller address (controller contract)
@@ -54,17 +55,18 @@ RaribleV2Order makeRaribleV2Order(
       salt: salt,
       start: 0,
       end: 1711688790,
-      signature: "");
+      signature: signature ?? '');
   return raribleV2Order;
 }
 
 // create rarible order api call
-Future<void> createRaribleOrder(int chainId, RaribleV2Order order) async {
+Future createRaribleOrder(int chainId, RaribleV2Order order) async {
   final String url = raribleUpsertOrderApiUrls[chainId]!;
   try {
     final Dio dio = Dio();
     dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
-    await dio.post(url, data: jsonEncode(order.toJson()));
+    Response result = await dio.post(url, data: jsonEncode(order.toJson()));
+    return result.data;
   } catch (e, s) {
     Sentry.captureException(
       e,
@@ -78,10 +80,10 @@ Future<void> createRaribleOrder(int chainId, RaribleV2Order order) async {
 Future getTypedDataHash(Map typedData, RaribleV2Order order) async {
   try {
     final Dio dio = getBackendClient();
-    String url = '/getHash'; //TODO: send do correct endpoint
-    final typedDataHash = await dio.post(url,
+    String url = '/offer/hash/rarible';
+    final result = await dio.post(url,
         data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
-    return typedDataHash;
+    return result.data;
   } catch (e, s) {
     Sentry.captureException(
       e,
@@ -93,7 +95,7 @@ Future getTypedDataHash(Map typedData, RaribleV2Order order) async {
 
 Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
   final String verifyingContract =
-      '0x08268aD94BfE1909878Ac702Be6170c645745A92'; //TODO: dont hardcode controller contract
+      '0x4f0116D5C9329b7d838f365e3a90016F3651B5e9'; //TODO: dont hardcode controller contract
   return {
     'types': {
       'EIP712Domain': EIP712DomainWithChainId,
@@ -111,10 +113,10 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
   };
 }
 
-Future<Map<String, dynamic>> getRaribleMakeOrderTypedDataHash(
+Future<String> getRaribleMakeOrderTypedDataHash(
     int chainId, RaribleV2Order order) async {
   //TODO: call backend sending typed data and message
   final Map<String, dynamic> typeData = getRaribleMakeOrderTypeData(chainId);
-  final result = await getTypedDataHash(typeData, order);
+  final String result = await getTypedDataHash(typeData, order);
   return result;
 }

@@ -16,6 +16,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -26,6 +27,7 @@ import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 //import widgets
@@ -55,7 +57,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   String loadingText = '';
   String overlayContentType = 'loading'; //can be "traits" or "loading"
   String email = '';
-  String walletAddress = '';
+  String sellerPayoutAddress = '';
   double price = 0.00;
   String loadingSvgPath =
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
@@ -84,11 +86,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   }
 
   Future<void> offerToken() async {
-    setState(() {
-      isLoading = true;
-      overlayContentType = 'loading';
-      loadingText = 'Offering token...';
-    });
     final Web3App? wc = ref.read(wcProvider);
     final SignatureData signatureData = ref.read(chipSignatureDataProvider);
     final UserSession userSession = ref.read(userSessionProvider)!;
@@ -99,10 +96,27 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         await ref.watch(findTokenProvider(chipInfo.tokenId).future);
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
-    //TODO: move this to after successful mint
-    // await onOfferItemPress(
-    //     EthereumAddress.fromHex('0x08268aD94BfE1909878Ac702Be6170c645745A92'),
-    //     config);
+    //TODO: dont hard code this here
+    final EthereumAddress controllerContractAddress =
+        EthereumAddress.fromHex('0x4f0116D5C9329b7d838f365e3a90016F3651B5e9');
+
+    //call rarible api
+    BigInt priceInPrimaryChainCurrency =
+        BigInt.from(this.price * 1000000000000000000);
+    RaribleV2Order raribleV2Order = makeRaribleV2Order(
+        controllerContractAddress,
+        controllerContractAddress,
+        config.tokenId,
+        controllerContractAddress,
+        10000, //TODO: fix this
+        10000, //TODO: fix this
+        EthereumAddress.fromHex(
+            '0x2a3171184e9f73313fd0e61eedbf8f2e33feb552'), //TODO: get this voucher contr. collection from appCollectionProvider
+        config.tokenId,
+        priceInPrimaryChainCurrency,
+        null);
+    final typedDataHash = await getRaribleMakeOrderTypedDataHash(
+        config.chainId, raribleV2Order); //TODO: check if chainId is needed
 
     try {
       //check if user is allowed to use gas station
@@ -115,16 +129,11 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       setState(() {
         isLoading = true;
         overlayContentType = 'loading';
-        loadingText = context.loc.mintingToken;
+        loadingText = 'Offering token...';
       });
-
-      EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
-          '0x08268aD94BfE1909878Ac702Be6170c645745A92'); //TODO: controller contr addr; make this more flexible
 
       String txnHash;
       if (canUseGasStation) {
-        //TODO: the contract address for collectionId/metatx has to be the address of TWIN contract
-        //TODO: the contract address for the current "collectionId" parameter has to be the controller adress (as is currently)
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
@@ -137,10 +146,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             wcSession,
             metaTxAgreementId,
             walletType!,
+            typedDataHash: typedDataHash,
             controllerContractId: controllerContractAddress,
             tokenId: config.tokenId,
-            sellerPayoutAddress: EthereumAddress.fromHex(
-                walletAddress), //TODO: first check if walletAddress can be converted
+            sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -149,6 +158,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         if (wc == null) {
           throw 'Please connect with MetaMask or similar wallet.';
         }
+        //TODO: pass typedDataHash for normal tx
         txnHash = await makeAndSendNormalTx(
           offerItemFunctionSignature,
           config.chainId,
@@ -158,7 +168,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           wc,
           wcSession!,
           walletType!,
-          sellerPayoutAddress: EthereumAddress.fromHex(walletAddress),
+          sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
           tokenId: config.tokenId,
         );
       }
@@ -169,11 +179,33 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
-        //TODO: call onOfferItemPress
+        final MsgSignature? chipSignature =
+            await getChipSignature(ref, context, typedDataHash, toggleLoading);
+        final String hexSignature = msgSignatureToHex(chipSignature!);
+
+        RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
+
+        var response = await createRaribleOrder(config.chainId, order);
+        print(response);
+
+        //call backend with info about offering
+        if (currencyDropdownValue == 'EUR') {
+          price = await convertEurToToCrypto(price, currencyDropdownValue);
+        }
+        await sendOfferItemInfoToBackend(
+            config.tokenId,
+            price * 1000000000000000000,
+            currencyDropdownValue,
+            email,
+            ref.read(userSessionProvider)!.userWalletAddress,
+            EthereumAddress.fromHex(sellerPayoutAddress));
+
+        //TODO: show success message here
+
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
-          loadingText = context.loc.transferSuccess;
+          loadingText = 'Item offered';
           isLoading = false;
         });
 
@@ -187,31 +219,16 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.transferError, 'error'),
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, 'Error offering token', 'error'),
       );
     }
   }
 
-  Future<void> onOfferItemPress(
-      EthereumAddress controllerContractAddress, config) async {
-    //call rarible api
-    BigInt priceInPrimaryChainCurrency =
-        BigInt.from(this.price * 1000000000000000000);
-    final RaribleV2Order raribleV2Order = makeRaribleV2Order(
-        controllerContractAddress,
-        controllerContractAddress,
-        config.tokenId,
-        controllerContractAddress,
-        10000, //TODO: fix this
-        10000, //TODO: fix this
-        EthereumAddress.fromHex(
-            '0x2a3171184e9f73313fd0e61eedbf8f2e33feb552'), //TODO: get this voucher contr. collection from appCollectionProvider
-        config.tokenId,
-        priceInPrimaryChainCurrency);
-    final typedDataHash = await getRaribleMakeOrderTypedDataHash(
-        config.chainId, raribleV2Order); //TODO: check if chainId is needed
-    await createRaribleOrder(config.chainId, raribleV2Order);
+  Future convertEurToToCrypto(double price, String cryptoCurrencySymbol) async {
+    Map conversionRates =
+        await ref.read(ethPriceProvider(allDropdownValues[0]).future);
+    return price / conversionRates['EUR'];
   }
 
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
@@ -328,7 +345,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                   obscureText: false,
                                   onChanged: (value) {
                                     setState(() {
-                                      walletAddress = value;
+                                      sellerPayoutAddress = value;
                                     });
                                   },
                                   validator: (value) {
@@ -440,7 +457,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           CustomRoundedButton(
                             text: 'Offer now',
                             onPressed: email.isEmpty ||
-                                    walletAddress.isEmpty ||
+                                    sellerPayoutAddress.isEmpty ||
                                     (price <= 0) ||
                                     (raribleCheck) == false
                                 ? null

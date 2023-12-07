@@ -195,6 +195,21 @@ Future<void> verifyAuthenticity(
   }
 }
 
+/*GET SIGNATURE OF A MESSAGE/HASH FROM A CHIP WHICH IS NOT PIN LOCKED*/
+Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
+    msgHashToSign, Function toggleLoading) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    EthereumAddress chipWalletAddress = createFirstKeyChipResponse[0];
+    MsgSignature signature = await signHash(
+        nfc, 0x01, chipWalletAddress, hexToBytes(msgHashToSign), false);
+    return signature;
+  }
+
+  return await scanClosure(context, ref, callback, "MAKE_CARD_SIGNATURE",
+      context.loc.holdPhoneToCard);
+}
+
 /* GET SIGNATURE A MESSAGE/HASH FORM CARD*/
 //returns MsgSignature if everything worked correctly
 //returns null if user cancels scan or error occurs

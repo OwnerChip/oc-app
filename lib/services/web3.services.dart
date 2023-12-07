@@ -281,12 +281,12 @@ String makeOfferItemData(
     BigInt tokenId,
     EthereumAddress marketplaceContract,
     EthereumAddress sellerPayoutAddress,
-    String typedSignatureHash) {
+    String typedDataHash) {
   String data = functionSignatureHash +
       tokenId.toRadixString(16).padLeft(64, '0') +
       marketplaceContract.toString().substring(2).padLeft(64, '0') +
       sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
-      typedSignatureHash.substring(2).padLeft(64, '0');
+      typedDataHash.substring(2).padLeft(64, '0');
   return data;
 }
 

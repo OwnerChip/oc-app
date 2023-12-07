@@ -54,7 +54,8 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     String? tokenURI,
     BigInt? tokenId,
     bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress) async {
+    EthereumAddress? sellerPayoutAddress,
+    String? typedDataHash) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -74,7 +75,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         tokenId!,
         EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
         sellerPayoutAddress!,
-        '0x6b7a97faedb7b95a98fd5cdcc3d4b3627f276f4dd261b6db86777a0ed7d45916');
+        typedDataHash!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -116,7 +117,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     String? tokenURI,
     BigInt? tokenId,
     bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress}) async {
+    EthereumAddress? sellerPayoutAddress,
+    String? typedDataHash}) async {
   final request = await buildTypedV4Request(
       functionSignatureHash,
       chainRpcUrl,
@@ -129,7 +131,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
       tokenURI,
       tokenId,
       enableRecovery,
-      sellerPayoutAddress);
+      sellerPayoutAddress,
+      typedDataHash);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }
