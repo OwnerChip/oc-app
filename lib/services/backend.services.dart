@@ -270,7 +270,7 @@ Future<Map> getEthPrice(String cryptoSymbol) async {
 
 Future<void> sendOfferItemInfoToBackend(OfferItemInputDto dto) async {
   final Dio dio = getBackendClient();
-  final String url = '';
+  final String url = '/offer';
   try {
     await dio.post(url, data: dto);
   } catch (e) {
