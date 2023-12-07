@@ -233,6 +233,10 @@ Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
   try {
     final Response response = await dio.get('/creator/${tokenId.hex}');
     final Map creatorData = response.data;
+
+    //TODO: use this!
+    bool hasOffer = creatorData["token"]["hasActiveOffer"];
+
     return CreatorData(
       name: creatorData['name'],
       affiliation: creatorData['affiliation'],
