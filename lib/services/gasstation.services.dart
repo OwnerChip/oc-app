@@ -76,6 +76,9 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
         sellerPayoutAddress!,
         typedDataHash!);
+  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
+    data =
+        makeCancelOfferData(functionSignatureHash, randomValueHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
   }

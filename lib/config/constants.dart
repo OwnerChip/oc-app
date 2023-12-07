@@ -18,8 +18,8 @@ const String approveFunctionSignature = '0x095ea7b3';
 //offerItem
 const String offerItemFunctionSignature = '0xfbdba33a';
 
-//cancelItem
-const String cancelItemFunctionSignature = '0x89e2f42c';
+//cancelOffer
+const String cancelOfferFunctionSignature = '0x89e2f42c';
 
 //redeemItem
 const String redeemItemFunctionSignature = '0x1247fcb5';
