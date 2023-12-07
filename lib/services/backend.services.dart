@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
@@ -272,10 +273,27 @@ Future<void> sendOfferItemInfoToBackend(OfferItemInputDto dto) async {
   final Dio dio = getBackendClient();
   final String url = '/offer';
   try {
-    await dio.post(url, data: dto);
+    await dio.post(url, data: dto.toJson());
   } catch (e) {
     Sentry.captureException(e);
     print(e);
     rethrow;
+  }
+}
+
+// backend encodes message and returns hash of typed data
+Future getRaribeOfferTypedDataHash(Map typedData, RaribleV2Order order) async {
+  try {
+    final Dio dio = getBackendClient();
+    final result = await dio.post('/offer/hash/rarible',
+        data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
+    print(result.data);
+    return result.data;
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
   }
 }

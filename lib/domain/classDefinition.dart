@@ -201,4 +201,17 @@ class OfferItemInputDto {
     required this.chipSignature,
     required this.marketplaceContract,
   });
+
+  Map<String, dynamic> toJson() => {
+        'tokenId': tokenId,
+        'offerPrice': offerPrice,
+        'offerCurrency': offerCurrency,
+        'sellerWalletAddress': sellerWalletAddress,
+        'sellerPayoutAddress': sellerPayoutAddress,
+        'sellerEmail': sellerEmail,
+        'validUntil': validUntil,
+        'typedDataHash': typedDataHash,
+        'chipSignature': chipSignature,
+        'marketplaceContract': marketplaceContract,
+      };
 }
