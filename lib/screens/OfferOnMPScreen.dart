@@ -200,7 +200,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             validUntil: 1711688790, //TODO: make dynamic
             typedDataHash: typedDataHash,
             chipSignature: hexSignature,
-            marketplaceContract: raribleExchangeContracts[config.chainId]!);
+            marketplaceContract: raribleExchangeV2Contracts[config.chainId]!);
 
         await sendOfferItemInfoToBackend(offerItemInputDto);
 

@@ -71,7 +71,7 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
       'name': 'Exchange',
       'version': '2',
       'chainId': chainId,
-      'verifyingContract': raribleExchangeContracts[chainId],
+      'verifyingContract': raribleExchangeV2Contracts[chainId],
     },
     'primaryType': 'Order',
   };

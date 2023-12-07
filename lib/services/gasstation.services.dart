@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -69,11 +70,10 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
   } else if (functionSignatureHash == offerItemFunctionSignature) {
-    //TODO: pass real params
     data = makeOfferItemData(
         functionSignatureHash,
         tokenId!,
-        EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
+        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
         sellerPayoutAddress!,
         typedDataHash!);
   } else if (functionSignatureHash == cancelOfferFunctionSignature) {
