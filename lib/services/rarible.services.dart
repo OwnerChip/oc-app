@@ -95,7 +95,7 @@ Future getTypedDataHash(Map typedData, RaribleV2Order order) async {
 
 Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
   final String verifyingContract =
-      '0x4f0116D5C9329b7d838f365e3a90016F3651B5e9'; //TODO: dont hardcode controller contract
+      '0x12b3897a36fdb436dde2788c06eff0ffd997066e'; //TODO: dont hardcode controller contract
   return {
     'types': {
       'EIP712Domain': EIP712DomainWithChainId,

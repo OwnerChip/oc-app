@@ -202,6 +202,9 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
         sellerPayoutAddress!,
         '0x6b7a97faedb7b95a98fd5cdcc3d4b3627f276f4dd261b6db86777a0ed7d45916');
+  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
+    data =
+        makeCancelOfferData(functionSignatureHash, randomValueHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -240,6 +243,16 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
 }
 
 String makeBurnData(
+    String functionSignatureHash, Uint8List hash, MsgSignature signature) {
+  String data = functionSignatureHash +
+      uint8ListTo32ByteHex(hash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+String makeCancelOfferData(
     String functionSignatureHash, Uint8List hash, MsgSignature signature) {
   String data = functionSignatureHash +
       uint8ListTo32ByteHex(hash) +

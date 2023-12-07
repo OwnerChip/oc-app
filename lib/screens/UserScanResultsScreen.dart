@@ -305,6 +305,95 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
+  //TODO: currently only smart contract is called; Rarible and also Backend has to be called
+  Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
+    final TokenInfoObject config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.burning;
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, burnFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      //TODO: dont hard code this here
+      final EthereumAddress controllerContractAddress =
+          EthereumAddress.fromHex('0x4f0116D5C9329b7d838f365e3a90016F3651B5e9');
+
+      String txnHash;
+      // if (canUseGasStation) {
+      if (false) {
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            cancelOfferFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            controllerContractId: controllerContractAddress,
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+          cancelOfferFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession!,
+          walletType!,
+        );
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        //TODO: make sure that ownership checkbox updates
+
+        //this means cancelling offer succeeded
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg";
+          loadingText = context.loc.burnedSuccess;
+        });
+      } else {
+        throw Exception('Error cancelling sale of token.');
+      }
+    } catch (e, s) {
+      //TODO: add proper error logging to sentry etc
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            'Error cancelling sale of token.', 'error'),
+      );
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
@@ -651,6 +740,20 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                               Theme.of(context)
                                                                   .textTheme
                                                                   .bodyMedium)),
+                                                  //customrounded button
+                                                  const SizedBox(height: 10),
+
+                                                  CustomRoundedButton(
+                                                      text: 'Cancel order',
+                                                      onPressed: () {
+                                                        fromCancelable(
+                                                            cancelOffer(
+                                                                wc,
+                                                                chipInfo
+                                                                    .tokenId,
+                                                                signatureData,
+                                                                connectedWallet));
+                                                      }),
                                                   approval.when(
                                                       data: (data) {
                                                         //check if a wallet can CLAIM OWNERSHIP

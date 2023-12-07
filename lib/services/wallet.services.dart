@@ -115,7 +115,7 @@ Future<String> makeAndSendGaslessTx(
     BuildContext context,
     String functionSignatureHash,
     int chainId,
-    EthereumAddress collectionId,
+    EthereumAddress toAddress,
     SignatureData signatureData,
     EthereumAddress walletAddress,
     Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
@@ -137,7 +137,8 @@ Future<String> makeAndSendGaslessTx(
       randomValueHash: signatureData.hashedMsg,
       signature: signatureData.signature,
       from: walletAddress,
-      to: controllerContractId ?? collectionId,
+      to: controllerContractId ??
+          toAddress, //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null,
       tokenId: tokenId,
@@ -150,7 +151,7 @@ Future<String> makeAndSendGaslessTx(
   try {
     String signature;
     if (walletType.name == 'OwnerCard') {
-      String hash = await getGaslessTxHash(request, collectionId);
+      String hash = await getGaslessTxHash(request, toAddress);
 
       var cardSignature =
           // ignore: use_build_context_synchronously
@@ -187,7 +188,7 @@ Future<String> makeAndSendGaslessTx(
     }
 
     String txnHash = await sendGaslessRequest(
-        collectionId, signature, metaTxAgreementId, request);
+        toAddress, signature, metaTxAgreementId, request);
     return txnHash;
   } catch (e) {
     print(e);
@@ -203,7 +204,7 @@ Future<String> makeAndSendGaslessTx(
 Future<String> makeAndSendNormalTx(
     String functionSignatureHash,
     int chainId,
-    EthereumAddress collectionId,
+    EthereumAddress toAddress,
     SignatureData signatureData,
     EthereumAddress walletAddress,
     Web3App wc,
@@ -215,7 +216,7 @@ Future<String> makeAndSendNormalTx(
     EthereumAddress? sellerPayoutAddress}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
-      collectionId,
+      toAddress,
       walletAddress,
       functionSignatureHash,
       signatureData.hashedMsg,
