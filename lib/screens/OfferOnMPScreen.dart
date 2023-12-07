@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
@@ -63,7 +64,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   bool isRotating = true;
   String currencyDropdownValue =
-      'MATIC'; //TODO: change this to the network the token is on
+      chainConfig[137]!.nativeTokenSymbol; //TODO: load chainID from somewhere
   bool raribleCheck = true;
   List allDropdownValues = [
     'MATIC',
@@ -95,14 +96,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final TokenInfoObject config =
         await ref.watch(findTokenProvider(chipInfo.tokenId).future);
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
+    final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+        chainConfig[config.chainId]!.controllerContract);
 
-    //TODO: dont hard code this here
-    final EthereumAddress controllerContractAddress =
-        EthereumAddress.fromHex('0x4f0116D5C9329b7d838f365e3a90016F3651B5e9');
+    BigInt priceInPrimaryChainCurrency =
+        BigInt.from(price) * BigInt.from(1000000000000000000);
 
     //call rarible api
-    BigInt priceInPrimaryChainCurrency =
-        BigInt.from(this.price * 1000000000000000000);
     RaribleV2Order raribleV2Order = makeRaribleV2Order(
         controllerContractAddress,
         controllerContractAddress,
@@ -189,16 +189,20 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         print(response);
 
         //call backend with info about offering
-        if (currencyDropdownValue == 'EUR') {
-          price = await convertEurToToCrypto(price, currencyDropdownValue);
-        }
-        await sendOfferItemInfoToBackend(
-            config.tokenId,
-            price * 1000000000000000000,
-            currencyDropdownValue,
-            email,
-            ref.read(userSessionProvider)!.userWalletAddress,
-            EthereumAddress.fromHex(sellerPayoutAddress));
+        OfferItemInputDto offerItemInputDto = OfferItemInputDto(
+            tokenId: convertTokenIdToEthereumAddress(config.tokenId),
+            offerPrice: priceInPrimaryChainCurrency.toString(),
+            offerCurrency: 'MATIC', //TODO: make dynamic
+            sellerWalletAddress:
+                ref.read(userSessionProvider)!.userWalletAddress.toString(),
+            sellerPayoutAddress: sellerPayoutAddress,
+            sellerEmail: email,
+            validUntil: 1711688790, //TODO: make dynamic
+            typedDataHash: typedDataHash,
+            chipSignature: hexSignature,
+            marketplaceContract: raribleExchangeContracts[config.chainId]!);
+
+        await sendOfferItemInfoToBackend(offerItemInputDto);
 
         //TODO: show success message here
 

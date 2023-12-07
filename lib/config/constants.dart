@@ -20,3 +20,6 @@ const String offerItemFunctionSignature = '0xfbdba33a';
 
 //cancelOffer
 const String cancelOfferFunctionSignature = '0x89e2f42c';
+
+//redeemItem
+const String redeemItemFunctionSignature = '0x1247fcb5';

@@ -54,8 +54,10 @@ class BlockchainCollectionList {
 
 class BlockchainConfig {
   final String networkName;
+  final String nativeTokenSymbol;
   final String rpcUrl;
   final String registryContract;
+  final String controllerContract;
   final String openseaUrl;
   final String raribleUrl;
   final String blockchainExplorerUrl;
@@ -63,8 +65,10 @@ class BlockchainConfig {
 
   BlockchainConfig(
       {required this.networkName,
+      required this.nativeTokenSymbol,
       required this.rpcUrl,
       required this.registryContract,
+      required this.controllerContract,
       required this.openseaUrl,
       required this.raribleUrl,
       required this.blockchainExplorerUrl,
@@ -171,4 +175,43 @@ class CreatorData {
     required this.walletAddress,
     required this.createdAt,
   });
+}
+
+class OfferItemInputDto {
+  final String tokenId;
+  final String offerPrice;
+  final String offerCurrency;
+  final String sellerWalletAddress;
+  final String sellerPayoutAddress;
+  final String sellerEmail;
+  final int validUntil;
+  final String typedDataHash;
+  final String chipSignature;
+  final String marketplaceContract;
+
+  const OfferItemInputDto({
+    required this.tokenId,
+    required this.offerPrice,
+    required this.offerCurrency,
+    required this.sellerWalletAddress,
+    required this.sellerPayoutAddress,
+    required this.sellerEmail,
+    required this.validUntil,
+    required this.typedDataHash,
+    required this.chipSignature,
+    required this.marketplaceContract,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'tokenId': tokenId,
+        'offerPrice': offerPrice,
+        'offerCurrency': offerCurrency,
+        'sellerWalletAddress': sellerWalletAddress,
+        'sellerPayoutAddress': sellerPayoutAddress,
+        'sellerEmail': sellerEmail,
+        'validUntil': validUntil,
+        'typedDataHash': typedDataHash,
+        'chipSignature': chipSignature,
+        'marketplaceContract': marketplaceContract,
+      };
 }
