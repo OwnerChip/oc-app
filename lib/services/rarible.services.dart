@@ -54,7 +54,8 @@ RaribleV2Order makeRaribleV2Order(
       take: take,
       salt: salt,
       start: 0,
-      end: 1711688790,
+      //end now in 10 years
+      end: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 315360000,
       signature: signature ?? '');
   return raribleV2Order;
 }
@@ -101,3 +102,17 @@ Future createRaribleOrder(int chainId, RaribleV2Order order) async {
     print(e);
   }
 }
+
+//make rarible token page url
+
+String makeRaribleTokenPageUrl(
+    int chainId, EthereumAddress collectionId, BigInt tokenId) {
+  return '${raribleTokenPageUrls[chainId]!}${collectionId.hex}:$tokenId';
+}
+
+// format is: rarible.com/token/polygon/[collectionAddressInHex]:[tokenIdInDecimal]
+const raribleTokenPageUrls = {
+  1: 'https://rarible.com/token/',
+  137: 'https://rarible.com/token/polygon/',
+  80001: 'https://testnet.rarible.com/token/polygon/',
+};

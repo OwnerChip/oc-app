@@ -213,7 +213,8 @@ Future<String> makeAndSendNormalTx(
     {EthereumAddress? toAccount,
     BigInt? tokenId,
     String? cid,
-    EthereumAddress? sellerPayoutAddress}) async {
+    EthereumAddress? sellerPayoutAddress,
+    String? typedDataHash}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
       toAddress,
@@ -225,7 +226,8 @@ Future<String> makeAndSendNormalTx(
       tokenId: tokenId,
       tokenURI: cid != null ? "ipfs://$cid" : null,
       enableRecovery: false,
-      sellerPayoutAddress: sellerPayoutAddress);
+      sellerPayoutAddress: sellerPayoutAddress,
+      typedDataHash: typedDataHash);
 
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
@@ -337,23 +339,7 @@ void Function(SessionExpire?) wrapOnSessionExpire(WidgetRef ref) {
 }
 
 void Function(SessionEvent?) wrapOnSessionEvent(WidgetRef ref) {
-  return (SessionEvent? args) {
-    // if (args?.name == "accountsChanged") {
-    //   EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
-
-    //   EthereumAddress newWalletAddr =
-    //       EthereumAddress.fromHex(args?.data[0].split(':')[2]);
-    //   if (currentWalletAddr != zeroAddress &&
-    //       currentWalletAddr != newWalletAddr) {
-    //     // simply disconnect?
-    //     //TODO: remove session from connected wallet as well!
-    //     SessionDelete deleteArgs = SessionDelete(args!.topic);
-    //     onSessionDisconnect(deleteArgs, ref);
-    //   }
-    // } else {
-    //   //do nothing?
-    // }
-  };
+  return (SessionEvent? args) {};
 }
 
 void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {

@@ -13,20 +13,20 @@ import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 //**** TOKEN DATA ****
 
 final findTokenProvider = FutureProvider.autoDispose
-    .family<TokenInfoObject, BigInt>((ref, tokenId) async {
-  var result =
-      await Future.wait<TokenInfoObject>(chainConfig.keys.map((chainId) async {
+    .family<TokenChainAndCollection, BigInt>((ref, tokenId) async {
+  var result = await Future.wait<TokenChainAndCollection>(
+      chainConfig.keys.map((chainId) async {
     EthereumAddress collectionId = await getCollectionId(
         chainConfig[chainId]!.rpcUrl,
         chainConfig[chainId]!.registryContract,
         tokenId);
 
-    return TokenInfoObject(chainId, collectionId, tokenId);
+    return TokenChainAndCollection(chainId, collectionId, tokenId);
   }));
 
-  TokenInfoObject tokenInfo = result.firstWhere(
+  TokenChainAndCollection tokenInfo = result.firstWhere(
       (element) => element.collectionId != zeroAddress,
-      orElse: () => TokenInfoObject(0, zeroAddress,
+      orElse: () => TokenChainAndCollection(0, zeroAddress,
           tokenId)); //if token does not exist, zero address is returned as collection
   return tokenInfo;
 });
@@ -37,7 +37,7 @@ final nftOwnerProvider =
     FutureProvider.autoDispose<EthereumAddress>((ref) async {
   // watch chipInfoProvider
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject config =
+  final TokenChainAndCollection config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
@@ -57,7 +57,7 @@ final nftApprovalProvider =
     FutureProvider.autoDispose<EthereumAddress>((ref) async {
   // watch chipInfoProvider
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject config =
+  final TokenChainAndCollection config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
@@ -75,7 +75,7 @@ final nftApprovalProvider =
 
 final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject tokenInfo =
+  final TokenChainAndCollection tokenInfo =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   return getContractName(
       getRPCUrlFromChainId(tokenInfo.chainId), tokenInfo.collectionId);
@@ -84,7 +84,7 @@ final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject config =
+  final TokenChainAndCollection config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING (config chainId & collectionId are 0)
   if (config.chainId == 0 || config.collectionId == zeroAddress) {

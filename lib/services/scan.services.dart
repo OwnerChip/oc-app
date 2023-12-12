@@ -60,7 +60,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
     //set chip info data in provider
     setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
 
-    TokenInfoObject config =
+    TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipTokenId).future);
 
     //verify signature
@@ -106,7 +106,7 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
     //set chip info data in provider
     setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
 
-    TokenInfoObject config =
+    TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipTokenId).future);
 
     //verify signature
@@ -171,7 +171,7 @@ void setChipInfoProvider(
 
 //TODO: Check if this function should actually return a bool? What happens if verifyTokenAuthenticity returns false?
 Future<void> verifyAuthenticity(
-    TokenInfoObject config,
+    TokenChainAndCollection config,
     EthereumAddress chipEthereumAddress,
     Uint8List hashedMsg,
     MsgSignature signature,
@@ -206,8 +206,8 @@ Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
     return signature;
   }
 
-  return await scanClosure(context, ref, callback, "MAKE_CARD_SIGNATURE",
-      context.loc.holdPhoneToCard);
+  return await scanClosure(context, ref, callback, "MAKE_CHIP_SIGNATURE",
+      context.loc.holdPhoneToNfcChip);
 }
 
 /* GET SIGNATURE A MESSAGE/HASH FORM CARD*/
@@ -354,7 +354,7 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
         SignatureData(hashedMsg: hashedMsg, signature: signature));
 
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-    final TokenInfoObject tokenInfo =
+    final TokenChainAndCollection tokenInfo =
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
     if (tokenInfo.collectionId != zeroAddress) {

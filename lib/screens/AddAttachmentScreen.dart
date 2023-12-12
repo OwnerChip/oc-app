@@ -466,7 +466,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     ChipInfoModel chipInfo = ref.read(chipInfoProvider);
 
     //get correct chain and collection
-    TokenInfoObject tokenInfo =
+    TokenChainAndCollection tokenInfo =
         await ref.read(findTokenProvider(chipInfo.tokenId).future);
     int chainId = tokenInfo.chainId;
     EthereumAddress collectionId = tokenInfo.collectionId;

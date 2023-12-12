@@ -83,7 +83,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
     String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
@@ -198,7 +198,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final walletType = ref.read(walletTypeProvider);
     UserSession userSession = ref.read(userSessionProvider)!;
     String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
     try {
@@ -306,19 +306,18 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
-  //TODO: currently only smart contract is called; Rarible and also Backend has to be called
   Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
     String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     try {
       setState(() {
         isLoading = true;
-        loadingText = context.loc.burning;
+        loadingText = 'Cancelling offer';
         isRotating = true;
         loadingSvgPath =
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
@@ -370,13 +369,33 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
-        //TODO: make sure that ownership checkbox updates
+        CreatorData creatorData = await ref.read(creatorDataProvider.future);
 
-        //this means cancelling offer succeeded
+        creatorData.tokenForWhichCreatorDataWasRequested.activeOffers
+            .forEach((offer) async {
+          await cancelOfferBackendRequest(offer.offerHash);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
+        );
+
+        //refresh providers for ownerchip check on ResultScreen
+        await ref.refresh(nftOwnerProvider.future);
+        await ref.refresh(creatorDataProvider.future);
+
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg";
-          loadingText = context.loc.burnedSuccess;
+          loadingText = 'Offer canceled';
+        });
+
+        //delay two seconds
+        await Future.delayed(const Duration(seconds: 2));
+
+        setState(() {
+          isLoading = false;
         });
       } else {
         throw Exception('Error cancelling sale of token.');
@@ -413,7 +432,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
-    final AsyncValue<TokenInfoObject> tokenInfo =
+    final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
@@ -739,20 +758,26 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                               Theme.of(context)
                                                                   .textTheme
                                                                   .bodyMedium)),
-                                                  //customrounded button
                                                   const SizedBox(height: 10),
-
-                                                  CustomRoundedButton(
-                                                      text: 'Cancel order',
-                                                      onPressed: () {
-                                                        fromCancelable(
-                                                            cancelOffer(
-                                                                wc,
-                                                                chipInfo
-                                                                    .tokenId,
-                                                                signatureData,
-                                                                connectedWallet));
-                                                      }),
+                                                  creatorData.when(
+                                                    data: (data) => data
+                                                            .hasActiveOffer
+                                                        ? CustomRoundedButton(
+                                                            text:
+                                                                'Cancel order',
+                                                            onPressed: () {
+                                                              fromCancelable(cancelOffer(
+                                                                  wc,
+                                                                  chipInfo
+                                                                      .tokenId,
+                                                                  signatureData,
+                                                                  connectedWallet));
+                                                            })
+                                                        : Container(),
+                                                    loading: () => Container(),
+                                                    error: (e, s) =>
+                                                        Container(),
+                                                  ),
                                                   approval.when(
                                                       data: (data) {
                                                         //check if a wallet can CLAIM OWNERSHIP

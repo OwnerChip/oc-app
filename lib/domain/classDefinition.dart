@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ownerchip_whitelabel/domain/tokenDomain.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
@@ -75,12 +76,12 @@ class BlockchainConfig {
       this.forwarderContract});
 }
 
-class TokenInfoObject {
+class TokenChainAndCollection {
   final int chainId;
   final EthereumAddress collectionId;
   final BigInt tokenId;
 
-  TokenInfoObject(this.chainId, this.collectionId, this.tokenId);
+  TokenChainAndCollection(this.chainId, this.collectionId, this.tokenId);
 }
 
 class ChipInfoModel {
@@ -167,6 +168,8 @@ class CreatorData {
   final String email;
   final EthereumAddress walletAddress;
   final DateTime createdAt;
+  final bool hasActiveOffer;
+  final Token tokenForWhichCreatorDataWasRequested;
 
   const CreatorData({
     required this.name,
@@ -174,10 +177,12 @@ class CreatorData {
     required this.email,
     required this.walletAddress,
     required this.createdAt,
+    required this.hasActiveOffer,
+    required this.tokenForWhichCreatorDataWasRequested,
   });
 }
 
-class OfferItemInputDto {
+class OfferItemInputData {
   final String tokenId;
   final String offerPrice;
   final String offerCurrency;
@@ -189,7 +194,7 @@ class OfferItemInputDto {
   final String chipSignature;
   final String marketplaceContract;
 
-  const OfferItemInputDto({
+  const OfferItemInputData({
     required this.tokenId,
     required this.offerPrice,
     required this.offerCurrency,

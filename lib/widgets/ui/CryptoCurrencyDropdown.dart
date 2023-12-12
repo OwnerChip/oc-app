@@ -12,11 +12,12 @@ class CryptoCurrencyDropdown extends ConsumerWidget {
   CryptoCurrencyDropdown(
       {super.key,
       required this.setCurrency,
-      required,
+      required this.allDropDownItems,
       required this.selectedCurrency});
 
   final Function setCurrency;
   final String selectedCurrency;
+  final List<String> allDropDownItems;
 
   _buildDropdown(data, ref, String selectString, Function setCurrency,
       String selectedCurrency) {
@@ -41,7 +42,7 @@ class CryptoCurrencyDropdown extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _buildDropdown(
-        ['MATIC', 'EUR'],
+        allDropDownItems,
         ref,
         context.loc.pleaseSelect,
         setCurrency,

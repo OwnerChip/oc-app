@@ -72,7 +72,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       EthereumAddress connectedWallet,
       String sessionId) async {
     final wcSession = ref.read(wcSessionProvider);
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final UserSession userSession = ref.read(userSessionProvider)!;
     final isOwnerCard = userSession?.isOwnerCard;

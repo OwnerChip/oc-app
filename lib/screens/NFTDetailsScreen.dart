@@ -57,7 +57,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
-    final AsyncValue<TokenInfoObject> tokenInfo =
+    final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final wc = ref.watch(wcProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/tokenDomain.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -235,8 +236,7 @@ Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
     final Response response = await dio.get('/creator/${tokenId.hex}');
     final Map creatorData = response.data;
 
-    //TODO: use this!
-    bool hasOffer = creatorData["token"]["hasActiveOffer"];
+    bool hasActiveOffer = creatorData["token"]["hasActiveOffer"];
 
     return CreatorData(
       name: creatorData['name'],
@@ -244,6 +244,9 @@ Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
       email: creatorData['email'],
       walletAddress: EthereumAddress.fromHex(creatorData['address']),
       createdAt: DateTime.parse(creatorData['token']['mintedAt']),
+      hasActiveOffer: hasActiveOffer,
+      tokenForWhichCreatorDataWasRequested:
+          Token.fromJson(creatorData['token']),
     );
   } catch (e) {
     Sentry.captureException(e);
@@ -269,11 +272,23 @@ Future<Map> getEthPrice(String cryptoSymbol) async {
   }
 }
 
-Future<void> sendOfferItemInfoToBackend(OfferItemInputDto dto) async {
+Future<void> sendOfferItemInfoToBackend(OfferItemInputData dto) async {
   final Dio dio = getBackendClient();
   final String url = '/offer';
   try {
     await dio.post(url, data: dto.toJson());
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
+  }
+}
+
+Future<void> cancelOfferBackendRequest(String offerHash) async {
+  final Dio dio = getBackendClient();
+  final String url = '/offer/cancel/$offerHash';
+  try {
+    await dio.post(url);
   } catch (e) {
     Sentry.captureException(e);
     print(e);

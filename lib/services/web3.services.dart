@@ -170,19 +170,19 @@ String makeMintData(String functionSignatureHash, Uint8List hash,
 }
 
 Future<List<dynamic>> buildEthSendTransactionRequest(
-  String chainRpcUrl,
-  EthereumAddress collectionId,
-  EthereumAddress? from,
-  String functionSignatureHash,
-  Uint8List randomValueHash,
-  MsgSignature signature, {
-  EthereumAddress? toAccount,
-  String? tokenURI,
-  String? gasPrice,
-  BigInt? tokenId,
-  bool? enableRecovery,
-  EthereumAddress? sellerPayoutAddress,
-}) async {
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    EthereumAddress? from,
+    String functionSignatureHash,
+    Uint8List randomValueHash,
+    MsgSignature signature,
+    {EthereumAddress? toAccount,
+    String? tokenURI,
+    String? gasPrice,
+    BigInt? tokenId,
+    bool? enableRecovery,
+    EthereumAddress? sellerPayoutAddress,
+    String? typedDataHash}) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
@@ -201,7 +201,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         tokenId!,
         EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
         sellerPayoutAddress!,
-        '0x6b7a97faedb7b95a98fd5cdcc3d4b3627f276f4dd261b6db86777a0ed7d45916');
+        typedDataHash!);
   } else if (functionSignatureHash == cancelOfferFunctionSignature) {
     data =
         makeCancelOfferData(functionSignatureHash, randomValueHash, signature);
@@ -281,13 +281,6 @@ String makeApproveData(
       tokenId.toRadixString(16).padLeft(64, '0');
   return data;
 }
-
-// offerItem(
-//         uint256 tokenId,
-//         address marketplaceContract,
-//         address payable sellerPayoutAddress,
-//         bytes32 typedSignatureHash
-//     )
 
 String makeOfferItemData(
     String functionSignatureHash,

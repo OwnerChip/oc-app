@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:web3dart/web3dart.dart';
@@ -28,6 +30,26 @@ final appCollectionProvider =
     collections = BlockchainCollectionList({});
   }
   return collections;
+});
+
+final voucherContractProvider =
+    FutureProvider.autoDispose<EthereumAddress?>((ref) async {
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+
+  //watch findTokenProvider
+  final TokenChainAndCollection tokenInfo =
+      await ref.read(findTokenProvider(chipInfo.tokenId).future);
+  //watch appCollectionProvider
+  final BlockchainCollectionList collections =
+      await ref.read(appCollectionProvider.future);
+
+  // get collection in collections.collections[tokenInfo.chainId] with id == tokenInfo.collectionAddress
+  final Collection collection = collections.collections[tokenInfo.chainId]!
+      .firstWhere((element) => element.id == tokenInfo.collectionId);
+
+  final EthereumAddress? voucherContractAddress = collection.voucherAddress;
+
+  return voucherContractAddress;
 });
 
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE

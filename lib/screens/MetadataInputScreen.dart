@@ -264,7 +264,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     }
     //refresh tokenInfo so it can be loaded; This code is not supposed to be inside try block, so it does not trigger catch if it fails and use does not stay on metadatasecreen with error, despite token minting being successful. User can retrigger manually on next screen
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-    TokenInfoObject tokenInfo =
+    TokenChainAndCollection tokenInfo =
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
   }
 
