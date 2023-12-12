@@ -112,12 +112,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   }
 
   Future<void> offerToken() async {
-    setState(() {
-      isLoading = true;
-      overlayContentType = 'loading';
-      loadingText = 'Offering token...';
-    });
-
     final Web3App? wc = ref.read(wcProvider);
     final SignatureData signatureData = ref.read(chipSignatureDataProvider);
     final UserSession userSession = ref.read(userSessionProvider)!;
@@ -149,6 +143,16 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         null);
     final typedDataHash =
         await getRaribleOrderTypedDataHash(config.chainId, raribleV2Order);
+
+    final MsgSignature? chipSignature =
+        await getChipSignature(ref, context, typedDataHash, toggleLoading);
+    final String hexSignature = msgSignatureToHex(chipSignature!);
+
+    setState(() {
+      isLoading = true;
+      overlayContentType = 'loading';
+      loadingText = 'Offering token...';
+    });
 
     try {
       //check if user is allowed to use gas station
@@ -204,10 +208,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
-        final MsgSignature? chipSignature =
-            await getChipSignature(ref, context, typedDataHash, toggleLoading);
-        final String hexSignature = msgSignatureToHex(chipSignature!);
-
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
         var response = await createRaribleOrder(config.chainId, order);
@@ -336,9 +336,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
           // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
+          // secondaryButton: true,
+          // secondaryButtonText: context.loc.troubleshoot,
+          // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
           key: ScaffoldKey.getScaffoldKey('OfferOnMPScreen'),

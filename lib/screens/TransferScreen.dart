@@ -222,10 +222,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
+          // secondaryButton: true,
+          // secondaryButtonText: context.loc.troubleshoot,
+          // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
           key: ScaffoldKey.getScaffoldKey('TransferScreen'),

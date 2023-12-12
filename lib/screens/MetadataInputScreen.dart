@@ -329,9 +329,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               svgPath:
                   '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
               // enable secondary button
-              secondaryButton: true,
-              secondaryButtonText: context.loc.troubleshoot,
-              secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'))
+              // secondaryButton: true,
+              // secondaryButtonText: context.loc.troubleshoot,
+              // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL')
+            )
           : CustomCard(
               mainAxisSize: MainAxisSize.min,
               maxHeight: MediaQuery.of(context).size.height * 0.8,
