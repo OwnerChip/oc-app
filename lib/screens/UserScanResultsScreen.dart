@@ -387,7 +387,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         setState(() {
           isRotating = false;
-          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg";
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = 'Offer canceled';
         });
 
@@ -459,10 +459,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
+          // secondaryButton: true,
+          // secondaryButtonText: context.loc.troubleshoot,
+          // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
             key: ScaffoldKey.getScaffoldKey('UserScanResultsScreen'),
