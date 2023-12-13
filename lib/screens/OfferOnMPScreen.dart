@@ -230,13 +230,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         OfferItemInputData offerItemInputData = OfferItemInputData(
             tokenId: convertTokenIdToEthereumAddress(config.tokenId),
             offerPrice: priceInPrimaryChainCurrency.toString(),
-            offerCurrency: currencyDropdownValue,
+            offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
             sellerWalletAddress:
                 ref.read(userSessionProvider)!.userWalletAddress.toString(),
             sellerPayoutAddress: sellerPayoutAddress,
             sellerEmail: email,
             validUntil: raribleV2Order.end,
-            salt: int.parse(raribleV2Order.salt.toString()),
+            salt: raribleV2Order.salt.toString(),
             encodedData: typedDataHashAndEncodedData.encodedData,
             typedDataHash: typedDataHash,
             chipSignature: hexSignature,

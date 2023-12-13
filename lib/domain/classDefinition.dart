@@ -190,7 +190,7 @@ class OfferItemInputData {
   final String sellerPayoutAddress;
   final String sellerEmail;
   final int validUntil;
-  final int salt;
+  final String salt;
   final String encodedData;
   final String typedDataHash;
   final String chipSignature;
