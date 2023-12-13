@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'dart:io';
@@ -46,7 +47,8 @@ Future<List> postAttachmentMetadataToBackend(
     final response = await dio.post(url, data: data);
     return response.data;
   } catch (e) {
-    //TODO: send analytics to sentry
+    //sentry
+
     print(e);
     rethrow;
   }
@@ -86,7 +88,7 @@ Future<String> putAttachmentMetadataToBackend(
     final response = await dio.put(url, data: data);
     return response.data;
   } catch (e) {
-    //TODO: send analytics to sentry
+    Sentry.captureException(e);
     print(e);
     rethrow;
   }

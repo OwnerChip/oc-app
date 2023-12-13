@@ -71,7 +71,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   bool isRotating = true;
   String currencyDropdownValue = 'MATIC';
   bool raribleCheck = true;
-  List<String> allDropdownValues = ['MATIC', 'EUR'];
+  List<String> allDropdownValues = [
+    'MATIC',
+    'EUR'
+  ]; //attention: order of items is important
   Future<bool>?
       _setCurrencyDropDownValuesFuture; //future used for currency dropdown FutureBuilder
   //initState
@@ -124,8 +127,14 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
         chainConfig[config.chainId]!.controllerContract);
 
-    BigInt priceInPrimaryChainCurrency =
-        BigInt.from(price) * BigInt.from(1000000000000000000);
+    final double priceInPrimaryChainCurrency;
+    if (currencyDropdownValue == 'EUR') {
+      priceInPrimaryChainCurrency =
+          await convertEurToToCrypto(price, allDropdownValues[0]) *
+              1000000000000000000;
+    } else {
+      priceInPrimaryChainCurrency = price * 1000000000000000000;
+    }
 
     EthereumAddress? voucherContractAddress =
         await ref.read(voucherContractProvider.future);
@@ -139,7 +148,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         10000, //TODO: fix this
         voucherContractAddress!,
         config.tokenId,
-        priceInPrimaryChainCurrency,
+        BigInt.from(priceInPrimaryChainCurrency),
         null);
     final typedDataHash =
         await getRaribleOrderTypedDataHash(config.chainId, raribleV2Order);
@@ -298,7 +307,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     }
   }
 
-  Future convertEurToToCrypto(double price, String cryptoCurrencySymbol) async {
+  Future<double> convertEurToToCrypto(
+      double price, String cryptoCurrencySymbol) async {
     Map conversionRates =
         await ref.read(ethPriceProvider(allDropdownValues[0]).future);
     return price / conversionRates['EUR'];

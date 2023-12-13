@@ -227,7 +227,8 @@ Future<String> makeAndSendNormalTx(
       tokenURI: cid != null ? "ipfs://$cid" : null,
       enableRecovery: false,
       sellerPayoutAddress: sellerPayoutAddress,
-      typedDataHash: typedDataHash);
+      typedDataHash: typedDataHash,
+      chainId: chainId);
 
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");

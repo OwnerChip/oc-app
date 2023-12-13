@@ -87,14 +87,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                       Navigator.pushNamed(context, CardLostScreen.routeName);
                     },
                     width: 250)),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomRoundedButton(
-                    text: 'Offer on MP, delete later',
-                    onPressed: () async {
-                      Navigator.pushNamed(context, OfferOnMPScreen.routeName);
-                    },
-                    width: 250)),
             dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
                 ? Padding(
                     padding: const EdgeInsets.only(bottom: 10),

@@ -15,12 +15,10 @@ Future<MsgSignature> signHash(
     EthereumAddress chipEthereumAddress,
     Uint8List hash,
     bool callSelectApp) async {
-  if (callSelectApp)
-    await nfc.sendCommand(
-        SELECT_APP); //selectapp should not be called if a session has already be initiated with a verifyPIN command
-
+  if (callSelectApp) await nfc.sendCommand(SELECT_APP);
   final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hash);
   try {
+    await nfc.sendCommand(SELECT_APP);
     final List responseGetSignature = await nfc.sendCommand(getSigCmd);
     final Uint8List chipSignatureData = responseGetSignature[0];
     final int responseCode1 = responseGetSignature[1];

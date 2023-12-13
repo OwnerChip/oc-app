@@ -401,7 +401,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         throw Exception('Error cancelling sale of token.');
       }
     } catch (e, s) {
-      //TODO: add proper error logging to sentry etc
+      Sentry.captureException(e);
       setState(() {
         isLoading = false;
       });

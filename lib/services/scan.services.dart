@@ -76,7 +76,6 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
           tags: {"chipWallet": chipWalletAddress});
 
-      //TODO: WHY DO I PASS METADATAScreen Arguments t o ChainSelectorScreen??
       Navigator.pushNamed(context, ChainSelectorScreen.routeName,
           arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
     }
@@ -394,7 +393,7 @@ Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
       context.loc.holdPhoneToCard);
 }
 
-//scan closure abstraction
+//this function takes a callback, executes the NFC scan and executes the callback (e.g. to get chip signature etc)
 Future<dynamic> scanClosure(
     BuildContext context,
     WidgetRef ref,

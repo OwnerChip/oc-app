@@ -1,18 +1,12 @@
 import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/marketplace/types.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_dio/sentry_dio.dart';
 import 'package:sentry/sentry.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 RaribleV2Order makeRaribleV2Order(
     EthereumAddress payoutAddress,

@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
+import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -182,7 +183,8 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
-    String? typedDataHash}) async {
+    String? typedDataHash,
+    int? chainId}) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
@@ -195,11 +197,10 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
   } else if (functionSignatureHash == offerItemFunctionSignature) {
-    //TODO: pass real params
     data = makeOfferItemData(
         functionSignatureHash,
         tokenId!,
-        EthereumAddress.fromHex('0x00000000000000adc04c56bf30ac9d3c0aaf14dc'),
+        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
         sellerPayoutAddress!,
         typedDataHash!);
   } else if (functionSignatureHash == cancelOfferFunctionSignature) {
