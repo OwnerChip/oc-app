@@ -304,7 +304,8 @@ Future<RaribleHashAndEncodedData> getRaribleOfferTypedDataHashAndEncodedData(
     final result = await dio.post('/offer/hash/rarible',
         data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
     print(result.data);
-    return result.data;
+    return RaribleHashAndEncodedData(
+        result.data['typedDataHash'], result.data['encodedData']);
   } catch (e, s) {
     Sentry.captureException(
       e,
