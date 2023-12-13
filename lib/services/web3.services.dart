@@ -185,7 +185,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     EthereumAddress? sellerPayoutAddress,
     BigInt? offerPrice,
     String? typedDataHash,
-    int? salt,
+    BigInt? salt,
     int? end,
     String? encodedOfferData,
     int? chainId}) async {
@@ -262,7 +262,7 @@ String makeCancelOfferData(
     String functionSignatureHash,
     Uint8List hash,
     MsgSignature signature,
-    int offerSalt,
+    BigInt offerSalt,
     int offerEnd,
     String encodedOfferData) {
   String data = functionSignatureHash +

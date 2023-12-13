@@ -189,7 +189,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             controllerContractId: controllerContractAddress,
             tokenId: config.tokenId,
             sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
-            salt: int.parse(raribleV2Order.salt.toString()),
+            salt: raribleV2Order.salt,
             endTimestamp: raribleV2Order.end,
             price: BigInt.from(priceInPrimaryChainCurrency),
             encodedOfferData: typedDataHashAndEncodedData.encodedData,

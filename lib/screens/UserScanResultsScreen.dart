@@ -331,6 +331,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
           chainConfig[config.chainId]!.controllerContract);
 
+      //fetch order data from backend
+      CreatorData creatorData = await ref.read(creatorDataProvider.future);
+      final allOffers =
+          creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
+      final offer = allOffers.firstWhere((o) => o.isCancelled == false);
+
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
@@ -346,6 +352,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             metaTxAgreementId,
             walletType!,
             controllerContractId: controllerContractAddress,
+            price: BigInt.parse(offer.offerPrice),
+            salt: BigInt.parse(offer.salt),
+            encodedOfferData: offer.encodedData,
+            endTimestamp: offer.validUntil,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -369,12 +379,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
-        CreatorData creatorData = await ref.read(creatorDataProvider.future);
-
-        creatorData.tokenForWhichCreatorDataWasRequested.activeOffers
-            .forEach((offer) async {
-          await cancelOfferBackendRequest(offer.offerHash);
-        });
+        await cancelOfferBackendRequest(offer.offerHash);
 
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(

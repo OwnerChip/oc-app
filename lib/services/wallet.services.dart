@@ -129,7 +129,7 @@ Future<String> makeAndSendGaslessTx(
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
-    int? salt,
+    BigInt? salt,
     int? endTimestamp,
     BigInt? price,
     String? encodedOfferData,
