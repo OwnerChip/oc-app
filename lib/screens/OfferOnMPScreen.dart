@@ -150,8 +150,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         config.tokenId,
         BigInt.from(priceInPrimaryChainCurrency),
         null);
-    final typedDataHash =
+    final typedDataHashAndEncodedData =
         await getRaribleOrderTypedDataHash(config.chainId, raribleV2Order);
+    final typedDataHash = typedDataHashAndEncodedData.typedDataHash;
 
     final MsgSignature? chipSignature =
         await getChipSignature(ref, context, typedDataHash, toggleLoading);
@@ -231,6 +232,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             sellerPayoutAddress: sellerPayoutAddress,
             sellerEmail: email,
             validUntil: raribleV2Order.end,
+            salt: int.parse(raribleV2Order.salt.toString()),
+            encodedData: typedDataHashAndEncodedData.encodedData,
             typedDataHash: typedDataHash,
             chipSignature: hexSignature,
             marketplaceContract: raribleExchangeV2Contracts[config.chainId]!);

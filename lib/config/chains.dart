@@ -17,7 +17,7 @@ final polygonMainnet = BlockchainConfig(
     rpcUrl:
         "https://polygon-mainnet.infura.io/v3/b5b3b9c6bd56483c9203c06f9b0eb0f4",
     registryContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
-    controllerContract: "0x3796d2Cc6160011815379dF4d4Ccdee4E61b26e5",
+    controllerContract: "0x7F15F01af90Fd8c1AA32264f44DB02E6bEd259aF",
     openseaUrl: "https://opensea.io/assets/matic",
     raribleUrl: "https://rarible.com/token/polygon",
     blockchainExplorerUrl: "https://polygonscan.com/token",

@@ -129,6 +129,7 @@ Future<String> makeAndSendGaslessTx(
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
+    //TODO: add params for offer / cancel item
     required Function toggleLoading}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,

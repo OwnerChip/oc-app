@@ -190,6 +190,8 @@ class OfferItemInputData {
   final String sellerPayoutAddress;
   final String sellerEmail;
   final int validUntil;
+  final int salt;
+  final String encodedData;
   final String typedDataHash;
   final String chipSignature;
   final String marketplaceContract;
@@ -202,6 +204,8 @@ class OfferItemInputData {
     required this.sellerPayoutAddress,
     required this.sellerEmail,
     required this.validUntil,
+    required this.salt,
+    required this.encodedData,
     required this.typedDataHash,
     required this.chipSignature,
     required this.marketplaceContract,
@@ -215,8 +219,17 @@ class OfferItemInputData {
         'sellerPayoutAddress': sellerPayoutAddress,
         'sellerEmail': sellerEmail,
         'validUntil': validUntil,
+        'salt': salt,
+        'encodedData': encodedData,
         'typedDataHash': typedDataHash,
         'chipSignature': chipSignature,
         'marketplaceContract': marketplaceContract,
       };
+}
+
+class RaribleHashAndEncodedData {
+  final String typedDataHash;
+  final String encodedData;
+
+  RaribleHashAndEncodedData(this.typedDataHash, this.encodedData);
 }

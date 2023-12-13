@@ -56,6 +56,10 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
+    int? salt,
+    int? endTimestamp,
+    BigInt? price,
+    String? encodedOfferData,
     String? typedDataHash) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
@@ -75,10 +79,11 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         tokenId!,
         EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
         sellerPayoutAddress!,
+        price!,
         typedDataHash!);
   } else if (functionSignatureHash == cancelOfferFunctionSignature) {
-    data =
-        makeCancelOfferData(functionSignatureHash, randomValueHash, signature);
+    data = makeCancelOfferData(functionSignatureHash, randomValueHash,
+        signature, salt!, endTimestamp!, encodedOfferData!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -121,7 +126,13 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
-    String? typedDataHash}) async {
+    int? salt,
+    int? endTimestamp,
+    BigInt? price,
+    String? encodedOfferData,
+    String? typedDataHash
+    //TODO: add other params for offerItem and cancelOffer functions
+    }) async {
   final request = await buildTypedV4Request(
       functionSignatureHash,
       chainRpcUrl,
@@ -135,6 +146,10 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
       tokenId,
       enableRecovery,
       sellerPayoutAddress,
+      salt,
+      endTimestamp,
+      price,
+      encodedOfferData,
       typedDataHash);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];

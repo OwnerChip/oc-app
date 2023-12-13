@@ -183,7 +183,11 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
+    BigInt? offerPrice,
     String? typedDataHash,
+    int? salt,
+    int? end,
+    String? encodedOfferData,
     int? chainId}) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -202,10 +206,11 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         tokenId!,
         EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
         sellerPayoutAddress!,
+        offerPrice!,
         typedDataHash!);
   } else if (functionSignatureHash == cancelOfferFunctionSignature) {
-    data =
-        makeCancelOfferData(functionSignatureHash, randomValueHash, signature);
+    data = makeCancelOfferData(functionSignatureHash, randomValueHash,
+        signature, salt!, end!, encodedOfferData!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -254,12 +259,21 @@ String makeBurnData(
 }
 
 String makeCancelOfferData(
-    String functionSignatureHash, Uint8List hash, MsgSignature signature) {
+    String functionSignatureHash,
+    Uint8List hash,
+    MsgSignature signature,
+    int offerSalt,
+    int offerEnd,
+    String encodedOfferData) {
   String data = functionSignatureHash +
       uint8ListTo32ByteHex(hash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0');
+      signature.v.toRadixString(16).padLeft(64, '0') +
+      offerSalt.toRadixString(16).padLeft(64, '0') +
+      offerEnd.toRadixString(16).padLeft(64, '0') +
+      //TODO: check if length of offerData is needed?
+      encodedOfferData.substring(2);
   return data;
 }
 
@@ -288,11 +302,13 @@ String makeOfferItemData(
     BigInt tokenId,
     EthereumAddress marketplaceContract,
     EthereumAddress sellerPayoutAddress,
+    BigInt offerPrice,
     String typedDataHash) {
   String data = functionSignatureHash +
       tokenId.toRadixString(16).padLeft(64, '0') +
       marketplaceContract.toString().substring(2).padLeft(64, '0') +
       sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
+      tokenId.toRadixString(16).padLeft(64, '0') +
       typedDataHash.substring(2).padLeft(64, '0');
   return data;
 }
