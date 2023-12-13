@@ -352,7 +352,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             metaTxAgreementId,
             walletType!,
             controllerContractId: controllerContractAddress,
-            price: BigInt.parse(offer.offerPrice),
             salt: BigInt.parse(offer.salt),
             encodedOfferData: offer.encodedData,
             endTimestamp: offer.validUntil,

@@ -272,7 +272,9 @@ String makeCancelOfferData(
       signature.v.toRadixString(16).padLeft(64, '0') +
       offerSalt.toRadixString(16).padLeft(64, '0') +
       offerEnd.toRadixString(16).padLeft(64, '0') +
-      //TODO: check if length of offerData is needed?
+      (encodedOfferData.substring(2).length ~/ 2)
+          .toRadixString(16)
+          .padLeft(64, '0') +
       encodedOfferData.substring(2);
   return data;
 }
