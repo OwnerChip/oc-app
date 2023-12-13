@@ -130,9 +130,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     int? endTimestamp,
     BigInt? price,
     String? encodedOfferData,
-    String? typedDataHash
-    //TODO: add other params for offerItem and cancelOffer functions
-    }) async {
+    String? typedDataHash}) async {
   final request = await buildTypedV4Request(
       functionSignatureHash,
       chainRpcUrl,

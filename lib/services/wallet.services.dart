@@ -129,7 +129,10 @@ Future<String> makeAndSendGaslessTx(
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
-    //TODO: add params for offer / cancel item
+    int? salt,
+    int? endTimestamp,
+    BigInt? price,
+    String? encodedOfferData,
     required Function toggleLoading}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,
@@ -145,6 +148,10 @@ Future<String> makeAndSendGaslessTx(
       tokenId: tokenId,
       enableRecovery: enableRecovery,
       sellerPayoutAddress: sellerPayoutAddress,
+      salt: salt,
+      endTimestamp: endTimestamp,
+      price: price,
+      encodedOfferData: encodedOfferData,
       typedDataHash: typedDataHash);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
