@@ -213,6 +213,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
           tokenId: config.tokenId,
           typedDataHash: typedDataHash,
+          price: BigInt.from(priceInPrimaryChainCurrency),
         );
       }
 

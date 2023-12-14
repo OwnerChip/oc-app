@@ -416,6 +416,116 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
+  Future<void> redeemTwinToken(Web3App? wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    final TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = 'Redeeming token';
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, cancelOfferFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+          chainConfig[config.chainId]!.controllerContract);
+
+      //fetch order data from backend
+      CreatorData creatorData = await ref.read(creatorDataProvider.future);
+      final allOffers =
+          creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
+      final offer = allOffers.firstWhere((o) =>
+          o.isCancelled ==
+          false); //TODO: dont get offer by is cancelled but some isRedeemed or other flag which will be sent from backend
+      String txnHash;
+      if (false) {
+        // if (canUseGasStation) {
+        //TODO: revert back to gasstation
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            redeemItemFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            controllerContractId: controllerContractAddress,
+            offerHash: offer.offerHash,
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+            redeemItemFunctionSignature,
+            config.chainId,
+            controllerContractAddress,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            walletType!,
+            offerHash: offer.offerHash);
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        await cancelOfferBackendRequest(offer.offerHash);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
+        );
+
+        //refresh providers for ownerchip check on ResultScreen
+        await ref.refresh(nftOwnerProvider.future);
+        await ref.refresh(creatorDataProvider.future);
+
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = 'Offer canceled';
+        });
+
+        //delay two seconds
+        await Future.delayed(const Duration(seconds: 2));
+
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Error cancelling sale of token.');
+      }
+    } catch (e, s) {
+      Sentry.captureException(e);
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            'Error redeeming twin token.', 'error'),
+      );
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
@@ -445,6 +555,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final wc = ref.watch(wcProvider);
     final AsyncValue<CreatorData> creatorData = ref.watch(creatorDataProvider);
+    final AsyncValue<EthereumAddress?> voucherContractAddress =
+        ref.watch(voucherContractProvider);
+    final AsyncValue<EthereumAddress?> vouchertokenOwner =
+        ref.watch(voucherTokenOwnerProvider);
+
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
     );
@@ -781,6 +896,39 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                     error: (e, s) =>
                                                         Container(),
                                                   ),
+                                                  //REDEEM twin token if you have a voucher token and voucherTokenOwner is connectedWalet
+                                                  voucherContractAddress.when(
+                                                      data: (data) {
+                                                        return vouchertokenOwner
+                                                            .when(
+                                                                data: (tokenOwner) => tokenOwner ==
+                                                                            connectedWallet &&
+                                                                        data !=
+                                                                            null
+                                                                    ? Column(
+                                                                        children: [
+                                                                            const SizedBox(height: 15),
+                                                                            CustomRoundedButton(
+                                                                                width: double.infinity,
+                                                                                text: 'Redeem Token',
+                                                                                onPressed: (() => {
+                                                                                      fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                    })),
+                                                                          ])
+                                                                    : Container(),
+                                                                error: (e, s) =>
+                                                                    Container(),
+                                                                loading: () =>
+                                                                    Container());
+
+                                                        // nftOwnerProvider
+                                                      },
+                                                      error: (e, s) =>
+                                                          Container(),
+                                                      loading: () =>
+                                                          Container()),
+
+                                                  //CLAIM Ownership of twin token if it was transferred to user
                                                   approval.when(
                                                       data: (data) {
                                                         //check if a wallet can CLAIM OWNERSHIP

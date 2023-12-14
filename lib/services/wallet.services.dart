@@ -133,7 +133,8 @@ Future<String> makeAndSendGaslessTx(
     int? endTimestamp,
     BigInt? price,
     String? encodedOfferData,
-    required Function toggleLoading}) async {
+    required Function toggleLoading,
+    String? offerHash}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,
       chainRpcUrl: getRPCUrlFromChainId(chainId),
@@ -152,7 +153,8 @@ Future<String> makeAndSendGaslessTx(
       endTimestamp: endTimestamp,
       price: price,
       encodedOfferData: encodedOfferData,
-      typedDataHash: typedDataHash);
+      typedDataHash: typedDataHash,
+      offerHash: offerHash);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
@@ -222,7 +224,9 @@ Future<String> makeAndSendNormalTx(
     BigInt? tokenId,
     String? cid,
     EthereumAddress? sellerPayoutAddress,
-    String? typedDataHash}) async {
+    String? typedDataHash,
+    String? offerHash,
+    BigInt? price}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
       toAddress,
@@ -236,7 +240,9 @@ Future<String> makeAndSendNormalTx(
       enableRecovery: false,
       sellerPayoutAddress: sellerPayoutAddress,
       typedDataHash: typedDataHash,
-      chainId: chainId);
+      chainId: chainId,
+      offerHash: offerHash,
+      offerPrice: price);
 
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");

@@ -60,7 +60,8 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     int? endTimestamp,
     BigInt? price,
     String? encodedOfferData,
-    String? typedDataHash) async {
+    String? typedDataHash,
+    String? offerHash) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -84,6 +85,9 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   } else if (functionSignatureHash == cancelOfferFunctionSignature) {
     data = makeCancelOfferData(functionSignatureHash, randomValueHash,
         signature, salt!, endTimestamp!, encodedOfferData!);
+  } else if (functionSignatureHash == redeemItemFunctionSignature) {
+    data = makeRedeemTwinTokenData(
+        functionSignatureHash, randomValueHash, signature, offerHash!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -130,7 +134,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     int? endTimestamp,
     BigInt? price,
     String? encodedOfferData,
-    String? typedDataHash}) async {
+    String? typedDataHash,
+    String? offerHash}) async {
   final request = await buildTypedV4Request(
       functionSignatureHash,
       chainRpcUrl,
@@ -148,7 +153,8 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
       endTimestamp,
       price,
       encodedOfferData,
-      typedDataHash);
+      typedDataHash,
+      offerHash);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

@@ -188,7 +188,8 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     BigInt? salt,
     int? end,
     String? encodedOfferData,
-    int? chainId}) async {
+    int? chainId,
+    String? offerHash}) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
@@ -211,6 +212,9 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   } else if (functionSignatureHash == cancelOfferFunctionSignature) {
     data = makeCancelOfferData(functionSignatureHash, randomValueHash,
         signature, salt!, end!, encodedOfferData!);
+  } else if (functionSignatureHash == redeemItemFunctionSignature) {
+    data = makeRedeemTwinTokenData(
+        functionSignatureHash, randomValueHash, signature, offerHash!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -255,6 +259,17 @@ String makeBurnData(
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+String makeRedeemTwinTokenData(String functionSignatureHash, Uint8List hash,
+    MsgSignature signature, String offerHash) {
+  String data = functionSignatureHash +
+      uint8ListTo32ByteHex(hash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0') +
+      offerHash.substring(2).padLeft(64, '0');
   return data;
 }
 
