@@ -247,5 +247,6 @@
     "pleaseHoldPhoneLonger": "Bitte Smartphone länger zum Chip halten.",
     "unableToReadChip": "Fehler beim Lesen des Chips.",
     "offerOnOpenSea": "Auf OpenSea zum Verkauf anbieten",
-    "offerOnRarible": "Auf Rarible zum Verkauf anbieten"
+    "offerOnRarible": "Auf Rarible zum Verkauf anbieten",
+    "offeringToken": "'Token wird angeboten..."
 }

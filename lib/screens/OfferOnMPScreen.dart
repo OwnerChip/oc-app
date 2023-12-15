@@ -138,14 +138,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
     EthereumAddress? voucherContractAddress =
         await ref.read(voucherContractProvider.future);
-    //call rarible api
     RaribleV2Order raribleV2Order = makeRaribleV2Order(
         controllerContractAddress,
         controllerContractAddress,
         config.tokenId,
         controllerContractAddress,
         10000, //TODO: fix this
-        10000, //TODO: fix this
+        0, //TODO: fix this
         voucherContractAddress!,
         config.tokenId,
         BigInt.from(priceInPrimaryChainCurrency),
@@ -160,7 +159,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
     setState(() {
       isLoading = true;
-      overlayContentType = 'loading';
+      overlayContentType = context.loc.loading;
       loadingText = 'Offering token...';
     });
 
