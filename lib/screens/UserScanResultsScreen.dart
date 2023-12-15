@@ -448,9 +448,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           o.isCancelled ==
           false); //TODO: dont get offer by is cancelled but some isRedeemed or other flag which will be sent from backend
       String txnHash;
-      if (false) {
-        // if (canUseGasStation) {
-        //TODO: revert back to gasstation
+      // if (false) {
+      if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
