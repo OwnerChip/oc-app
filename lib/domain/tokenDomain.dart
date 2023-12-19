@@ -67,7 +67,6 @@ class ActiveOffer {
     required this.sellerPayoutAddress,
     required this.createdAt,
     required this.validUntil,
-    required this.salt,
     required this.encodedData,
     required this.marketplaceContract,
     required this.isCancelled,
@@ -81,7 +80,6 @@ class ActiveOffer {
   String sellerPayoutAddress;
   DateTime createdAt;
   int validUntil;
-  String salt;
   String encodedData;
   String marketplaceContract;
   bool isCancelled;
@@ -95,7 +93,6 @@ class ActiveOffer {
         sellerPayoutAddress: json["seller_payout_address"],
         createdAt: DateTime.parse(json["created_at"]),
         validUntil: json["valid_until"],
-        salt: json["salt"],
         encodedData: json["encoded_data"],
         marketplaceContract: json["marketplace_contract"],
         isCancelled: json["is_cancelled"],
@@ -110,7 +107,6 @@ class ActiveOffer {
         "seller_payout_address": sellerPayoutAddress,
         "created_at": createdAt.toIso8601String(),
         "valid_until": validUntil,
-        "salt": salt,
         "encoded_data": encodedData,
         "marketplace_contract": marketplaceContract,
         "is_cancelled": isCancelled,

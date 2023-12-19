@@ -108,7 +108,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       String txnHash;
 
-      if (false) {
+      if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
@@ -352,7 +352,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             metaTxAgreementId,
             walletType!,
             controllerContractId: controllerContractAddress,
-            salt: BigInt.parse(offer.salt),
+            salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
             encodedOfferData: offer.encodedData,
             endTimestamp: offer.validUntil,
             toggleLoading: toggleLoading);
@@ -385,9 +385,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
         );
 
+        await Future.delayed(const Duration(seconds: 2));
+
         //refresh providers for ownerchip check on ResultScreen
         await ref.refresh(nftOwnerProvider.future);
         await ref.refresh(creatorDataProvider.future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
         setState(() {
           isRotating = false;
@@ -441,7 +444,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           chainConfig[config.chainId]!.controllerContract);
 
       //fetch order data from backend
-      CreatorData creatorData = await ref.read(creatorDataProvider.future);
+      // CreatorData creatorData = await ref.read(creatorDataProvider.future);
+      ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+      final CreatorData creatorData =
+          await getCreatorData(chipInfo.chipEthereumAddress);
       final allOffers =
           creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
       final offer = allOffers.firstWhere((o) =>
@@ -496,6 +502,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         //refresh providers for ownerchip check on ResultScreen
         await ref.refresh(nftOwnerProvider.future);
         await ref.refresh(creatorDataProvider.future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
         setState(() {
           isRotating = false;
@@ -557,6 +564,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(voucherContractProvider);
     final AsyncValue<EthereumAddress?> vouchertokenOwner =
         ref.watch(voucherTokenOwnerProvider);
+    final AsyncValue<List> voucherContractAndTwinNftOwner =
+        ref.watch(voucherContractAndTwinNftOwnerProvider);
 
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
@@ -876,8 +885,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                   .bodyMedium)),
                                                   const SizedBox(height: 10),
                                                   creatorData.when(
+                                                    //if seller wallet address is equal to connected wallet address, show cancel order button
                                                     data: (data) => data
-                                                            .hasActiveOffer
+                                                                .hasActiveOffer &&
+                                                            EthereumAddress.fromHex(data
+                                                                    .tokenForWhichCreatorDataWasRequested
+                                                                    .activeOffers[
+                                                                        0]
+                                                                    .sellerAddress) ==
+                                                                connectedWallet
                                                         ? CustomRoundedButton(
                                                             text:
                                                                 'Cancel order',

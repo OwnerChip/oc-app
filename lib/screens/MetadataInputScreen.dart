@@ -4,6 +4,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -224,6 +225,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           'connectedWallet': connectedWallet.hex,
           'gasStation': canUseGasStation
         });
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        var _ = await ref.refresh(voucherContractAndTwinNftOwnerProvider);
 
         Navigator.pushNamedAndRemoveUntil(
           ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,

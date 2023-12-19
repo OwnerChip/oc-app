@@ -249,11 +249,12 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
               context.loc.itemOffered, 'success'),
         );
 
+        await Future.delayed(Duration(seconds: 2));
+
         //refresh providers for ownerchip check on ResultScreen
         await ref.refresh(nftOwnerProvider.future);
         await ref.refresh(creatorDataProvider.future);
-
-        await Future.delayed(Duration(seconds: 2));
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
         setState(() {
           isLoading = false;
@@ -278,14 +279,14 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                       launchUrl(Uri.parse(raribleTokenUrl),
                           mode: LaunchMode.externalApplication);
                     }),
-                const SizedBox(height: 10),
-                CustomOutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(
-                          ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                              .currentContext!);
-                    },
-                    buttonText: context.loc.done)
+                // const SizedBox(height: 10),
+                // CustomOutlinedButton(
+                //     onPressed: () {
+                //       Navigator.pop(
+                //           ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                //               .currentContext!);
+                //     },
+                //     buttonText: context.loc.done)
               ],
             ),
             icon: Icon(Icons.celebration,
