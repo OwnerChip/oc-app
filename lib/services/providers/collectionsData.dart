@@ -32,6 +32,13 @@ final appCollectionProvider =
   return collections;
 });
 
+final voucherContractAndTwinNftOwnerProvider =
+    FutureProvider.autoDispose<List>((ref) async {
+  final voucherContractAddress = await ref.read(voucherContractProvider.future);
+  final twinNftOwner = await ref.read(nftOwnerProvider.future);
+  return [voucherContractAddress, twinNftOwner];
+});
+
 final voucherContractProvider =
     FutureProvider.autoDispose<EthereumAddress?>((ref) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);

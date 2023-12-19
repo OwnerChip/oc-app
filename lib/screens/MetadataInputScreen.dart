@@ -138,9 +138,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     try {
-      if (voucherCollectionId == null) {
-        throw 'Voucher collection id is null';
-      }
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
       sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet.hex});
@@ -188,7 +185,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
             mintFunctionSignature,
             chainId,
-            voucherCollectionId,
+            voucherCollectionId ?? collectionId,
             signatureData,
             connectedWallet,
             wc,
@@ -207,7 +204,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         txnHash = await makeAndSendNormalTx(
             mintFunctionSignature,
             chainId,
-            voucherCollectionId,
+            voucherCollectionId ?? collectionId,
             signatureData,
             connectedWallet,
             wc,

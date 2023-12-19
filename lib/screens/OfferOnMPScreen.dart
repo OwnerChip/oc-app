@@ -160,7 +160,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     setState(() {
       isLoading = true;
       overlayContentType = context.loc.loading;
-      loadingText = 'Offering token...';
+      loadingText = context.loc.offeringToken;
     });
 
     try {
@@ -245,8 +245,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         await sendOfferItemInfoToBackend(offerItemInputData);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-              context.loc.successHeadingSnackbar, 'Item offered', 'success'),
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.itemOffered, 'success'),
         );
 
         //refresh providers for ownerchip check on ResultScreen
@@ -267,13 +267,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         // ignore: use_build_context_synchronously
         showCustomPopup(
             context,
-            'Item offered on marketplace',
+            context.loc.itemOfferedOnMP,
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 10),
                 CustomRoundedButton(
-                    text: 'View on Marketplace',
+                    text: context.loc.viewOnMP,
                     onPressed: () {
                       launchUrl(Uri.parse(raribleTokenUrl),
                           mode: LaunchMode.externalApplication);
@@ -308,8 +308,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, 'Error offering token', 'error'),
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorOfferingToken, 'error'),
       );
     }
   }
@@ -352,15 +352,11 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          // secondaryButton: true,
-          // secondaryButtonText: context.loc.troubleshoot,
-          // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
           key: ScaffoldKey.getScaffoldKey('OfferOnMPScreen'),
           appBar: CustomAppBar(
-            text: 'Offer item',
+            text: context.loc.offerItem,
             showBackButton: true,
           ),
           body: GestureDetector(
@@ -376,7 +372,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Email address',
+                                Text(context.loc.emailAddress,
                                     style: Theme.of(context)
                                         .textTheme
                                         .headlineSmall!),
@@ -420,7 +416,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Wallet address',
+                                Text(context.loc.walletAddress,
                                     style: Theme.of(context)
                                         .textTheme
                                         .headlineSmall!),
@@ -434,7 +430,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                           dotenv.get('APP_ID').toString())
                                       .accentColor,
                                   decoration: customInputDecoration(context,
-                                      'Enter wallet to receive the payment',
+                                      context.loc.enterWalletAddressForPayout,
                                       fillColor:
                                           CustomColors(dotenv.get('APP_ID'))
                                               .cardColor),
@@ -449,7 +445,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                     try {
                                       EthereumAddress.fromHex(value!);
                                     } catch (e) {
-                                      return 'Please enter a valid wallet address';
+                                      return context
+                                          .loc.pleaseEnterValidWalletAddress;
                                     }
                                     return null;
                                   },
@@ -461,7 +458,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Price',
+                                Text(context.loc.price,
                                     style: Theme.of(context)
                                         .textTheme
                                         .headlineSmall!),
@@ -498,7 +495,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                         },
                                       ),
                                       context,
-                                      'Enter sale price for your item',
+                                      context.loc.enterSalePrice,
                                       fillColor:
                                           CustomColors(dotenv.get('APP_ID'))
                                               .cardColor),
@@ -554,7 +551,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                         });
                                       }),
                                   Text(
-                                    'List on Rarible',
+                                    context.loc.listOnRarible,
                                     style:
                                         Theme.of(context).textTheme.bodyMedium,
                                   )
@@ -566,7 +563,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                             height: 20,
                           ),
                           CustomRoundedButton(
-                            text: 'Offer now',
+                            text: context.loc.offerNow,
                             onPressed: email.isEmpty ||
                                     sellerPayoutAddress.isEmpty ||
                                     (price <= 0) ||

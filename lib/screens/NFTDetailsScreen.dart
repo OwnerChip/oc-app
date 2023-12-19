@@ -4,6 +4,7 @@ import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
@@ -72,6 +73,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     List<Attachment> attachments = ref.watch(localAttachmentsProvider);
     List<Attachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
     List<Attachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
+    final AsyncValue<List?> voucherContractAndTwinNftOwner =
+        ref.watch(voucherContractAndTwinNftOwnerProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -131,46 +134,47 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               endIndent: 0,
             ),
 
-            nftOwner.when(
-              data: (data) => data == connectedWallet
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: BigIconButton(
-                            text: 'Offer for sale',
-                            onPressed: () => Navigator.pushNamed(
-                                context, OfferOnMPScreen.routeName),
-                            icon: Icon(
-                              Icons.euro,
-                              size: 35,
-                              color: CustomColors(dotenv.get('APP_ID'))
-                                  .primaryColor,
+            voucherContractAndTwinNftOwner.when(
+              data: (data) =>
+                  data != null && data[0] != null && data[1] == connectedWallet
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: BigIconButton(
+                                text: 'Offer for sale',
+                                onPressed: () => Navigator.pushNamed(
+                                    context, OfferOnMPScreen.routeName),
+                                icon: Icon(
+                                  Icons.euro,
+                                  size: 35,
+                                  color: CustomColors(dotenv.get('APP_ID'))
+                                      .primaryColor,
+                                ),
+                                height: 85,
+                              ),
                             ),
-                            height: 85,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: BigIconButton(
-                            text: 'Transfer',
-                            onPressed: () => Navigator.pushNamed(
-                                context, TransferScreen.routeName),
-                            icon: const Icon(
-                              Icons.send,
-                              size: 35,
+                            const SizedBox(
+                              width: 10,
                             ),
-                            height: 85,
-                          ),
+                            Expanded(
+                              flex: 1,
+                              child: BigIconButton(
+                                text: 'Transfer',
+                                onPressed: () => Navigator.pushNamed(
+                                    context, TransferScreen.routeName),
+                                icon: const Icon(
+                                  Icons.send,
+                                  size: 35,
+                                ),
+                                height: 85,
+                              ),
+                            )
+                          ],
                         )
-                      ],
-                    )
-                  : Container(),
+                      : Container(),
               error: (e, s) => Container(),
               loading: () => Container(),
             ),

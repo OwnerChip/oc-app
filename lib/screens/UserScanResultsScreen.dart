@@ -108,7 +108,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       String txnHash;
 
-      if (canUseGasStation) {
+      if (false) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
@@ -448,7 +448,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           o.isCancelled ==
           false); //TODO: dont get offer by is cancelled but some isRedeemed or other flag which will be sent from backend
       String txnHash;
-      // if (false) {
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
@@ -491,7 +490,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(
-              context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
+              context.loc.successHeadingSnackbar, 'Token redeemed', 'success'),
         );
 
         //refresh providers for ownerchip check on ResultScreen
@@ -501,7 +500,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
-          loadingText = 'Offer canceled';
+          loadingText = 'Token redeemed';
         });
 
         //delay two seconds
@@ -511,7 +510,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           isLoading = false;
         });
       } else {
-        throw Exception('Error cancelling sale of token.');
+        throw Exception('Error redeeming token.');
       }
     } catch (e, s) {
       Sentry.captureException(e);
