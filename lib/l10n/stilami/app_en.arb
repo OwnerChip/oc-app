@@ -258,5 +258,12 @@
     "price": "Price",
     "enterSalePrice": "Enter sale price for your item",
     "listOnRarible": "List on Rarible",
-    "offerNow": "Offer now"
+    "offerNow": "Offer now",
+    "offerForSale": "Offer for sale",
+    "offerCanceled": "Offer canceled",
+    "errorCancellingSale": "Error cancelling sale of token.",
+    "redeemingtoken": "Redeeming token",
+    "tokenRedeemed": "Token redeemed",
+    "errorRedeemingToken": "Error redeeming twin token.",
+    "redeemToken": "Redeem token"
 }

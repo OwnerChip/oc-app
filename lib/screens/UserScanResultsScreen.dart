@@ -395,7 +395,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
-          loadingText = 'Offer canceled';
+          loadingText = context.loc.offerCanceled;
         });
 
         //delay two seconds
@@ -414,7 +414,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            'Error cancelling sale of token.', 'error'),
+            context.loc.errorCancellingSale, 'error'),
       );
     }
   }
@@ -429,7 +429,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     try {
       setState(() {
         isLoading = true;
-        loadingText = 'Redeeming token';
+        loadingText = context.loc.redeemingtoken;
         isRotating = true;
         loadingSvgPath =
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
@@ -444,10 +444,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           chainConfig[config.chainId]!.controllerContract);
 
       //fetch order data from backend
-      // CreatorData creatorData = await ref.read(creatorDataProvider.future);
-      ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-      final CreatorData creatorData =
-          await getCreatorData(chipInfo.chipEthereumAddress);
+      CreatorData creatorData = await ref.read(creatorDataProvider.future);
       final allOffers =
           creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
       final offer = allOffers.firstWhere((o) =>
@@ -475,7 +472,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Gas station needed for TX with OwnerCard.';
         }
         if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
+          throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
             redeemItemFunctionSignature,
@@ -495,8 +492,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         await cancelOfferBackendRequest(offer.offerHash);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-              context.loc.successHeadingSnackbar, 'Token redeemed', 'success'),
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.tokenRedeemed, 'success'),
         );
 
         //refresh providers for ownerchip check on ResultScreen
@@ -507,7 +504,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
-          loadingText = 'Token redeemed';
+          loadingText = context.loc.tokenRedeemed;
         });
 
         //delay two seconds
@@ -517,7 +514,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           isLoading = false;
         });
       } else {
-        throw Exception('Error redeeming token.');
+        throw Exception(context.loc.errorRedeemingToken);
       }
     } catch (e, s) {
       Sentry.captureException(e);
@@ -526,7 +523,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            'Error redeeming twin token.', 'error'),
+            context.loc.errorRedeemingToken, 'error'),
       );
     }
   }
@@ -585,9 +582,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // secondaryButton: true,
-          // secondaryButtonText: context.loc.troubleshoot,
-          // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
             key: ScaffoldKey.getScaffoldKey('UserScanResultsScreen'),
@@ -924,7 +918,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                             const SizedBox(height: 15),
                                                                             CustomRoundedButton(
                                                                                 width: double.infinity,
-                                                                                text: 'Redeem Token',
+                                                                                text: context.loc.redeemToken,
                                                                                 onPressed: (() => {
                                                                                       fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
                                                                                     })),

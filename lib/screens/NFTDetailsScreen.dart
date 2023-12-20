@@ -144,7 +144,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             Expanded(
                               flex: 1,
                               child: BigIconButton(
-                                text: 'Offer for sale',
+                                text: context.loc.offerForSale,
                                 onPressed: () => Navigator.pushNamed(
                                     context, OfferOnMPScreen.routeName),
                                 icon: Icon(
@@ -162,12 +162,14 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             Expanded(
                               flex: 1,
                               child: BigIconButton(
-                                text: 'Transfer',
+                                text: context.loc.transferToken,
                                 onPressed: () => Navigator.pushNamed(
                                     context, TransferScreen.routeName),
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.send,
                                   size: 35,
+                                  color: CustomColors(dotenv.get('APP_ID'))
+                                      .primaryColor,
                                 ),
                                 height: 85,
                               ),

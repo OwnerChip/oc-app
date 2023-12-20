@@ -39,11 +39,12 @@ class BigIconButton extends StatelessWidget {
           // width: width,
           height: height,
           child: CustomCard(
+              // color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
               margin: const EdgeInsets.only(
                 top: 5.0,
                 bottom: 5.0,
               ),
-              padding: EdgeInsets.all(7),
+              padding: const EdgeInsets.all(7),
               children: [
                 icon,
                 Text(text,
