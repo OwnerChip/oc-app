@@ -18,7 +18,6 @@ Future<MsgSignature> signHash(
   if (callSelectApp) await nfc.sendCommand(SELECT_APP);
   final Uint8List getSigCmd = makeSignatureCommand(hexKeyNumber, hash);
   try {
-    await nfc.sendCommand(SELECT_APP);
     final List responseGetSignature = await nfc.sendCommand(getSigCmd);
     final Uint8List chipSignatureData = responseGetSignature[0];
     final int responseCode1 = responseGetSignature[1];

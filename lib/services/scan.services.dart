@@ -201,7 +201,7 @@ Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
       List createFirstKeyChipResponse) async {
     EthereumAddress chipWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
-        nfc, 0x01, chipWalletAddress, hexToBytes(msgHashToSign), false);
+        nfc, 0x01, chipWalletAddress, hexToBytes(msgHashToSign), true);
     return signature;
   }
 

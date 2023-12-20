@@ -247,7 +247,7 @@
     "unableToReadChip": "Unable to read NFC chip.",
     "offerOnOpenSea": "Offer on OpenSea",
     "offerOnRarible": "Offer on Rarible",
-    "offeringToken": "'Offering token...",
+    "offeringToken": "Offering token...",
     "itemOffered": "Item offered",
     "itemOfferedOnMP": "Item offered on marketplace",
     "viewOnMP": "View on Marketplace",
