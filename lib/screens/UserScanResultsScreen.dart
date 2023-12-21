@@ -338,7 +338,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final offer = allOffers.firstWhere((o) => o.isCancelled == false);
 
       String txnHash;
-      if (false) {
+      if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
