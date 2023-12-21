@@ -244,11 +244,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
         await sendOfferItemInfoToBackend(offerItemInputData);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(context.loc.successHeadingSnackbar,
-              context.loc.itemOffered, 'success'),
-        );
-
         await Future.delayed(Duration(seconds: 2));
 
         //refresh providers for ownerchip check on ResultScreen
@@ -300,6 +295,11 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                 fontWeight:
                     CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
             titlePadding: const EdgeInsets.all(0));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.itemOffered, 'success'),
+        );
       } else {
         throw Exception('Offer on marketplace failed');
       }

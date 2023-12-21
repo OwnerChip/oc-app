@@ -212,21 +212,25 @@ Future<String> makeAndSendGaslessTx(
 //It then returns the txnHash.
 
 Future<String> makeAndSendNormalTx(
-    String functionSignatureHash,
-    int chainId,
-    EthereumAddress toAddress,
-    SignatureData signatureData,
-    EthereumAddress walletAddress,
-    Web3App wc,
-    SessionData wcSession,
-    WalletType walletType,
-    {EthereumAddress? toAccount,
-    BigInt? tokenId,
-    String? cid,
-    EthereumAddress? sellerPayoutAddress,
-    String? typedDataHash,
-    String? offerHash,
-    BigInt? price}) async {
+  String functionSignatureHash,
+  int chainId,
+  EthereumAddress toAddress,
+  SignatureData signatureData,
+  EthereumAddress walletAddress,
+  Web3App wc,
+  SessionData wcSession,
+  WalletType walletType, {
+  EthereumAddress? toAccount,
+  BigInt? tokenId,
+  String? cid,
+  EthereumAddress? sellerPayoutAddress,
+  String? typedDataHash,
+  String? offerHash,
+  BigInt? price,
+  BigInt? salt,
+  int? endTimestamp,
+  String? encodedOfferData,
+}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
       toAddress,
@@ -242,7 +246,10 @@ Future<String> makeAndSendNormalTx(
       typedDataHash: typedDataHash,
       chainId: chainId,
       offerHash: offerHash,
-      offerPrice: price);
+      offerPrice: price,
+      salt: salt,
+      end: endTimestamp,
+      encodedOfferData: encodedOfferData);
 
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");

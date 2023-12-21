@@ -338,7 +338,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final offer = allOffers.firstWhere((o) => o.isCancelled == false);
 
       String txnHash;
-      if (canUseGasStation) {
+      if (false) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
@@ -372,6 +372,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           wc,
           wcSession!,
           walletType!,
+          salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
+          encodedOfferData: offer.encodedData,
+          endTimestamp: offer.validUntil,
         );
       }
 
