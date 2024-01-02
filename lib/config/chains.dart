@@ -6,7 +6,7 @@ final polygonMumbaiTestnet = BlockchainConfig(
     rpcUrl:
         "https://polygon-mumbai.infura.io/v3/b5b3b9c6bd56483c9203c06f9b0eb0f4",
     registryContract: "0xE587fb76509550a72Eb120b941F9235488aB6AEe",
-    controllerContract: "",
+    controllerContract: "0x99a0EEBe6D5Abd437485B2c61522A0E5770fc681",
     openseaUrl: "https://testnets.opensea.io/assets/mumbai",
     raribleUrl: "https://testnet.rarible.com/token/polygon",
     blockchainExplorerUrl: "https://mumbai.polygonscan.com/token",
