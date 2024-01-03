@@ -382,6 +382,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
         await cancelOfferBackendRequest(offer.offerHash);
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
 
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(
@@ -415,6 +422,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorCancellingSale, 'error'),
@@ -492,7 +506,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
-        await cancelOfferBackendRequest(offer.offerHash);
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
 
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
@@ -524,6 +544,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_REDEMPTION_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorRedeemingToken, 'error'),

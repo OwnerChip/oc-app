@@ -244,6 +244,14 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
         await sendOfferItemInfoToBackend(offerItemInputData);
 
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_OFFER_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
         await Future.delayed(Duration(seconds: 2));
 
         //refresh providers for ownerchip check on ResultScreen
@@ -308,6 +316,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         isLoading = false;
       });
       await Sentry.captureException(e, stackTrace: s);
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_OFFER_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorOfferingToken, 'error'),
