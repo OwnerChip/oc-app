@@ -228,7 +228,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
         await Future.delayed(const Duration(seconds: 2));
 
-        var _ = await ref.refresh(voucherContractAndTwinNftOwnerProvider);
+        //refresh providers so offer for sale button is shown correctly on NFT Details
+        ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
         Navigator.pushNamedAndRemoveUntil(
           ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
