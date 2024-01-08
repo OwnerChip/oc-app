@@ -274,9 +274,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         //wait for 2 seconds, to make sure corrrect data is fetched by providers
         await Future.delayed(const Duration(seconds: 2));
 
-        // update providers
+        //update providers for burn and transfer buttons
         await ref.refresh(nftApprovalProvider.future);
         await ref.refresh(nftOwnerProvider.future);
+        //update providers so offer for sale button is shown correctly on NFT Details
+        ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
         setState(() {
           isLoading = false;
