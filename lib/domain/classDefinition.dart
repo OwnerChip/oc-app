@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:ownerchip_whitelabel/domain/tokenDomain.dart';
+import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
@@ -62,6 +62,7 @@ class BlockchainConfig {
   final String openseaUrl;
   final String raribleUrl;
   final String blockchainExplorerUrl;
+  final String alchemyBaseUrl;
   final String? forwarderContract;
 
   BlockchainConfig(
@@ -73,6 +74,7 @@ class BlockchainConfig {
       required this.openseaUrl,
       required this.raribleUrl,
       required this.blockchainExplorerUrl,
+      required this.alchemyBaseUrl,
       this.forwarderContract});
 }
 
@@ -232,4 +234,21 @@ class RaribleHashAndEncodedData {
   final String encodedData;
 
   RaribleHashAndEncodedData(this.typedDataHash, this.encodedData);
+}
+
+typedef StringCallback = Function(String?);
+typedef VoidStringCallback = void Function(String);
+
+class InputFieldModel {
+  final String? placeholder;
+  final TextInputType? keyboardType;
+  final VoidStringCallback setStateCallback;
+  final StringCallback validator;
+
+  InputFieldModel({
+    this.placeholder = '',
+    this.keyboardType = TextInputType.text,
+    required this.setStateCallback,
+    required this.validator,
+  });
 }

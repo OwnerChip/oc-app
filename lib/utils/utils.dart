@@ -123,7 +123,7 @@ int makeRandomInt() {
 }
 
 // hex to BigInt - used to calculate tokenId based on EthAddress
-BigInt hexToBigInt(Uint8List ethereumAddress) {
+BigInt bytesEthAddrToBigInt(Uint8List ethereumAddress) {
   BigInt decimalValue = BigInt.from(0);
   for (int i = 0; i < ethereumAddress.length; i++) {
     decimalValue = decimalValue << 8;

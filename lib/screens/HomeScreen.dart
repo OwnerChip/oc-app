@@ -1,10 +1,16 @@
 //import packages
+import 'dart:convert';
+
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -30,6 +36,7 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
@@ -42,80 +49,163 @@ class HomeScreen extends ConsumerStatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-Future<void> onButtonPress(WidgetRef ref, BuildContext context, bool mounted,
-    bool isInitialize) async {
-  try {
-    //check if there is internet connections
-    if (!await checkInternetConnection()) {
-      throw Exception("No internet connection");
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
+  // setup walletconnect client
+  Web3App? wcClient;
+  bool shippingPopupIsShown = false;
+
+  Future<void> _setSessionProviderFromPersistedSession() async {
+    await initWcClient(ref);
+
+    final storage = await SharedPreferences.getInstance();
+
+    final storedSession = storage.getString('session');
+    final storedWalletType = storage.getString('walletType');
+    final storedUserSession = storage.getString('userSession');
+    //check if a session is stored
+    if (storedSession != null &&
+        storedWalletType != null &&
+        storedUserSession != null) {
+      final session = SessionData.fromJson(jsonDecode(storedSession));
+      final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
+      final userSession = UserSession.fromJson(jsonDecode(storedUserSession));
+      //check if the stored session is expired
+      double nowPlusOneHour =
+          DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
+      if (session.expiry > nowPlusOneHour &&
+          userSession.expiryDate > nowPlusOneHour) {
+        ref.read(wcSessionProvider.notifier).state = session;
+        ref.read(walletTypeProvider.notifier).state = walletType;
+        ref.read(userSessionProvider.notifier).state = userSession;
+      } else {
+        //remove session and wallet type from storage
+        storage.remove('session');
+        storage.remove('walletType');
+        storage.remove('userSession');
+      }
+    } else {
+      //remove session and wallet type from storage
+      storage.remove('session');
+      storage.remove('walletType');
+      storage.remove('userSession');
     }
-  } catch (e, s) {
-    await Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-          context.loc.errorNoInternetConnection, 'error'),
-    );
-    return;
+
+    if (!shippingPopupIsShown) {
+      checkAndShowShippingPopup(context, ref,
+          setShippingPopupIsShownState: () => setState(() {
+                shippingPopupIsShown = !shippingPopupIsShown;
+              }));
+    }
+
+    FlutterNativeSplash.remove();
   }
 
-  try {
-    //check if NFC is deactivated
-    if (!await checkNfcReader()) {
-      throw Exception("NFC Reader is not activated");
-    }
-  } catch (e, s) {
-    await Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-          context.loc.errorNoNfcReader, 'error'),
-    );
-    return;
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+
+    //read persisted session
+    _setSessionProviderFromPersistedSession();
+
+    super.initState();
   }
 
-  if (isInitialize) {
-    if (!await checkBackendAvailability()) {
+  //remove lifecycle events listener
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   WidgetsBinding.instance.removeObserver(this);
+  //   unsubscribeWcListeners(ref);
+  // }
+
+  //do stuff on app resume
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    //on resume
+    if (state == AppLifecycleState.resumed) {
+      // _setSessionProviderFromPersistedSession();
+      if (!shippingPopupIsShown) {
+        checkAndShowShippingPopup(context, ref,
+            setShippingPopupIsShownState: () => setState(() {
+                  shippingPopupIsShown = !shippingPopupIsShown;
+                }));
+      }
+    }
+  }
+
+  Future<void> onButtonPress(bool isInitialize) async {
+    try {
+      //check if there is internet connections
+      if (!await checkInternetConnection()) {
+        throw Exception("No internet connection");
+      }
+    } catch (e, s) {
       await Sentry.captureException(
-        'backend not available',
+        e,
+        stackTrace: s,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, 'Server not available.', 'error'),
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorNoInternetConnection, 'error'),
       );
       return;
     }
-  }
 
-  try {
-    if (mounted) {
-      if (isInitialize) {
-        await initializeItem(ref, context);
-      } else {
-        await scanItem(ref, context);
+    try {
+      //check if NFC is deactivated
+      if (!await checkNfcReader()) {
+        throw Exception("NFC Reader is not activated");
+      }
+    } catch (e, s) {
+      await Sentry.captureException(
+        e,
+        stackTrace: s,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorNoNfcReader, 'error'),
+      );
+      return;
+    }
+
+    if (isInitialize) {
+      if (!await checkBackendAvailability()) {
+        await Sentry.captureException(
+          'backend not available',
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+              'Server not available.', 'error'),
+        );
+        return;
       }
     }
-  } catch (e) {
-    NfcManager.instance.stopSession();
-    ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(
-          context.loc.errorHeadingSnackBar, 'Error reading chip.', 'error'),
-    );
-  }
-}
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+    try {
+      if (mounted) {
+        if (isInitialize) {
+          await initializeItem(ref, context);
+        } else {
+          await scanItem(ref, context);
+        }
+      }
+    } catch (e) {
+      NfcManager.instance.stopSession();
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, 'Error reading chip.', 'error'),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     return Scaffold(
-      // key: _scaffoldKey,
+      // key: ScaffoldKey.getScaffoldKey('HomeScreen'),
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
         showBackButton: false,
@@ -151,12 +241,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     text: context.loc.scanning,
                     svgPath:
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                    onTap: () => onButtonPress(ref, context, mounted, false)),
+                    onTap: () => onButtonPress(false)),
                 const SizedBox(height: 40),
                 CustomRoundedButton(
                   width: 250,
                   text: context.loc.scanNow,
-                  onPressed: () => onButtonPress(ref, context, mounted, false),
+                  onPressed: () => onButtonPress(false),
                 ),
                 const SizedBox(height: 20),
                 ref.read(userSessionProvider) == null
@@ -167,8 +257,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ? CustomRoundedButton(
                                 width: 250,
                                 text: context.loc.initializeChip,
-                                onPressed: () =>
-                                    onButtonPress(ref, context, mounted, true),
+                                onPressed: () => onButtonPress(true),
                               )
                             : const SizedBox(height: 40),
                         loading: () => SizedBox(

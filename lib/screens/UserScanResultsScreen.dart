@@ -924,7 +924,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                 connectedWallet
                                                         ? CustomRoundedButton(
                                                             text:
-                                                                'Cancel order',
+                                                                'Cancel order', //TODO: localization
                                                             onPressed: () {
                                                               fromCancelable(cancelOffer(
                                                                   wc,

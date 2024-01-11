@@ -46,7 +46,7 @@ final voucherContractProvider =
   //watch findTokenProvider
   final TokenChainAndCollection tokenInfo =
       await ref.read(findTokenProvider(chipInfo.tokenId).future);
-  //watch appCollectionProvider
+
   final BlockchainCollectionList collections =
       await ref.read(appCollectionProvider.future);
 

@@ -25,7 +25,8 @@ Future<MsgSignature> signHash(
 
     if (responseCode1 == 0x90 && responseCode2 == 0x00) {
       //neccassary for V parameter calculation
-      final BigInt signer = hexToBigInt(chipEthereumAddress.addressBytes);
+      final BigInt signer =
+          bytesEthAddrToBigInt(chipEthereumAddress.addressBytes);
       return extractSignature(signer, hash, chipSignatureData);
     } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
       throw ("Error: Chip is PIN code locked."); //do not change error message, double check if other logic relies on it
@@ -163,7 +164,7 @@ int calculateV(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
     MsgSignature signature = MsgSignature(r, s, v);
     Uint8List recoveredPubKey = ecRecover(hashedMsg, signature);
     Uint8List recoveredAddress = publicKeyToAddress(recoveredPubKey);
-    bool res = hexToBigInt(recoveredAddress) == tokenId;
+    bool res = bytesEthAddrToBigInt(recoveredAddress) == tokenId;
     if (res) {
       vResult = v;
       break;
@@ -180,9 +181,9 @@ bool verifySignature(BigInt tokenId, Uint8List hashedMsg, BigInt r, BigInt s) {
     MsgSignature signature = MsgSignature(r, s, v);
     Uint8List recoveredPubKey = ecRecover(hashedMsg, signature);
     Uint8List recoveredAddress = publicKeyToAddress(recoveredPubKey);
-    res = hexToBigInt(recoveredAddress) == tokenId;
+    res = bytesEthAddrToBigInt(recoveredAddress) == tokenId;
     if (res) {
-      print("${hexToBigInt(recoveredAddress)} (recovered tokenId)");
+      print("${bytesEthAddrToBigInt(recoveredAddress)} (recovered tokenId)");
       break;
     }
   }

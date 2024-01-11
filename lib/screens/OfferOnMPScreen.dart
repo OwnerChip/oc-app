@@ -282,14 +282,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                       launchUrl(Uri.parse(raribleTokenUrl),
                           mode: LaunchMode.externalApplication);
                     }),
-                // const SizedBox(height: 10),
-                // CustomOutlinedButton(
-                //     onPressed: () {
-                //       Navigator.pop(
-                //           ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                //               .currentContext!);
-                //     },
-                //     buttonText: context.loc.done)
               ],
             ),
             icon: Icon(Icons.celebration,
@@ -298,7 +290,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
                 fontSize:
                     CustomFonts(dotenv.get('APP_ID')).metadataNameFontSize,
-                //no margin
                 color: CustomColors(dotenv.get('APP_ID')).primaryColor,
                 fontWeight:
                     CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),

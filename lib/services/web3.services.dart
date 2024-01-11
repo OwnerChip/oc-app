@@ -1,6 +1,15 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -422,5 +431,40 @@ Future<dynamic> getTxnReceipt(String chainRpcUrl, String txnHash) async {
   } catch (e) {
     print('Error while fetching txn receipt: $e');
     return e;
+  }
+}
+
+Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
+    {VoidCallback? setShippingPopupIsShownState}) async {
+  final UserSession? userSession = ref.read(userSessionProvider);
+
+  if (userSession == null) {
+    return;
+  }
+
+  final List<Purchase> unredeemedPurchases =
+      await ref.read(unredeemedVoucherNftsProvider.future);
+  if (unredeemedPurchases.isNotEmpty) {
+    await showCustomPopup(
+        context,
+        'Enter shipping address',
+        Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+            'Please enter your shipping address',
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          CustomRoundedButton(
+            text: 'Enter shipping address',
+            onPressed: () {
+              Navigator.pushNamed(
+                  context, EnterShippingAddressScreen.routeName);
+            },
+          )
+        ]),
+        setShippingPopupIsShownState: setShippingPopupIsShownState);
   }
 }

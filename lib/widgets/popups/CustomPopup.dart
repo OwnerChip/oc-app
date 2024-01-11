@@ -5,7 +5,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 
 Future<void> showCustomPopup(BuildContext context, String title, Widget content,
-    {Widget? icon, TextStyle? titleTextStyle, EdgeInsets? titlePadding}) async {
+    {Widget? icon,
+    TextStyle? titleTextStyle,
+    EdgeInsets? titlePadding,
+    VoidCallback? setShippingPopupIsShownState}) async {
+  setShippingPopupIsShownState?.call();
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -30,5 +34,7 @@ Future<void> showCustomPopup(BuildContext context, String title, Widget content,
                       CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
           content: content);
     },
-  );
+  ).then((value) {
+    setShippingPopupIsShownState?.call();
+  });
 }

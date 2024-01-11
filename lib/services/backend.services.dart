@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/tokenDomain.dart';
+import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
+import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -311,6 +312,36 @@ Future<RaribleHashAndEncodedData> getRaribleOfferTypedDataHashAndEncodedData(
       e,
       stackTrace: s,
     );
+    print(e);
+    rethrow;
+  }
+}
+
+//get unredeemed purchases for tokenId
+Future<List<Purchase>> getUnredeemedPurchases(BigInt tokenId) async {
+  final Dio dio = getBackendClient();
+  try {
+    final String tokenIdHex = tokenId.toRadixString(16);
+    final Response response =
+        await dio.get('/token/0x$tokenIdHex/purchase/unredeemed');
+    final List<dynamic> purchases = response.data;
+    return purchases.map((e) => Purchase.fromJson(e)).toList();
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
+  }
+}
+
+Future<void> postShippingInfoToBackend(
+    Purchase purchase, ShippingInfo shippingInfo) async {
+  final Dio dio = getBackendClient();
+  final String url =
+      '/token/0x${purchase.token.id.toRadixString(16)}/purchase/${purchase.purchaseTxHash}/shippingInfo';
+  try {
+    await dio.post(url, data: shippingInfo.toJson());
+  } catch (e) {
+    Sentry.captureException(e);
     print(e);
     rethrow;
   }

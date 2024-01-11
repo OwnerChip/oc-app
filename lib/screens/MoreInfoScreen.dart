@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
-import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
+import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -98,6 +98,15 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             },
                         width: 250))
                 : Container(),
+            Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CustomRoundedButton(
+                    text: 'DELETE LATER',
+                    onPressed: () => {
+                          Navigator.pushNamed(
+                              context, EnterShippingAddressScreen.routeName)
+                        },
+                    width: 250)),
             const SizedBox(height: 60),
             ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
                 .outlinedRoundedButtons
