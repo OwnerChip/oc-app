@@ -39,7 +39,6 @@ class BigIconButton extends StatelessWidget {
           // width: width,
           height: height,
           child: CustomCard(
-              // color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
               margin: const EdgeInsets.only(
                 top: 5.0,
                 bottom: 5.0,
@@ -48,6 +47,7 @@ class BigIconButton extends StatelessWidget {
               children: [
                 icon,
                 Text(text,
+                    textAlign: TextAlign.center,
                     style: textStyle ?? Theme.of(context).textTheme.bodySmall!),
               ]),
         ));

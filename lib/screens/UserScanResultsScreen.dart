@@ -804,7 +804,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                             )
                                           : connectedWallet == data
                                               //NFT owner exists and wallet is connected and wallet is owner
-                                              ? approval.value == zeroAddress
+                                              ? approval.value == zeroAddress ||
+                                                      approval.value == null
                                                   // show transfer / burn Token buttons only if token is not approved
                                                   ? Column(
                                                       children: [
