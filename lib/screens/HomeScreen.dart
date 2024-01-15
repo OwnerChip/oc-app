@@ -124,7 +124,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     //on resume
     if (state == AppLifecycleState.resumed) {
-      // _setSessionProviderFromPersistedSession();
       if (!shippingPopupIsShown) {
         checkAndShowShippingPopup(context, ref,
             setShippingPopupIsShownState: () => setState(() {

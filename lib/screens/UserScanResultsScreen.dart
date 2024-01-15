@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -28,6 +29,7 @@ import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
@@ -457,20 +459,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, cancelOfferFunctionSignature);
+          await checkMetaTx(config.collectionId, redeemItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
       final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
           chainConfig[config.chainId]!.controllerContract);
 
-      //fetch order data from backend
-      CreatorData creatorData = await ref.read(creatorDataProvider.future);
-      final allOffers =
-          creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
-      final offer = allOffers.firstWhere((o) =>
-          o.isCancelled ==
-          false); //TODO: dont get offer by is cancelled but some isRedeemed or other flag which will be sent from backend
+      final List<Purchase> unredeemedVoucherNfts =
+          await ref.watch(unredeemedVoucherNftsProvider.future);
+      final String offerHash = unredeemedVoucherNfts.first.offer.offerHash;
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
@@ -486,7 +484,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             metaTxAgreementId,
             walletType!,
             controllerContractId: controllerContractAddress,
-            offerHash: offer.offerHash,
+            offerHash: offerHash,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -504,7 +502,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             wc,
             wcSession!,
             walletType!,
-            offerHash: offer.offerHash);
+            offerHash: offerHash);
       }
 
       var txnReceipt =
@@ -595,8 +593,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(voucherContractProvider);
     final AsyncValue<EthereumAddress?> vouchertokenOwner =
         ref.watch(voucherTokenOwnerProvider);
-    final AsyncValue<List> voucherContractAndTwinNftOwner =
-        ref.watch(voucherContractAndTwinNftOwnerProvider);
 
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
@@ -901,17 +897,38 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               //NFT owner exists and wallet is connected and wallet is NOT owner
                                               Column(children: [
                                                   Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: Text(
-                                                          context.loc
-                                                              .youAreNotNftOwner,
-                                                          textAlign:
-                                                              TextAlign.left,
-                                                          style:
-                                                              Theme.of(context)
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child:
+
+                                                        //Wallet is not the TWIN token owner, because token is currently offered on MP
+                                                        creatorData.when(
+                                                      //if seller wallet address is equal to connected wallet address, show cancel order button
+                                                      data: (data) => data.hasActiveOffer &&
+                                                              EthereumAddress.fromHex(data
+                                                                      .tokenForWhichCreatorDataWasRequested
+                                                                      .activeOffers[
+                                                                          0]
+                                                                      .sellerAddress) ==
+                                                                  connectedWallet
+                                                          ? Text(context.loc.tokenCurrentlyOfferedForSale,
+                                                              textAlign: TextAlign
+                                                                  .left,
+                                                              style: Theme.of(context)
                                                                   .textTheme
-                                                                  .bodyMedium)),
+                                                                  .bodyMedium)
+                                                          : Text(context.loc.youAreNotNftOwner,
+                                                              textAlign: TextAlign
+                                                                  .left,
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium),
+                                                      loading: () =>
+                                                          Container(),
+                                                      error: (e, s) =>
+                                                          Container(),
+                                                    ),
+                                                  ),
                                                   const SizedBox(height: 10),
                                                   creatorData.when(
                                                     //if seller wallet address is equal to connected wallet address, show cancel order button
@@ -924,8 +941,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                     .sellerAddress) ==
                                                                 connectedWallet
                                                         ? CustomRoundedButton(
-                                                            text:
-                                                                'Cancel order', //TODO: localization
+                                                            text: context.loc
+                                                                .cancelOrder, //TODO: localization
                                                             onPressed: () {
                                                               fromCancelable(cancelOffer(
                                                                   wc,
@@ -963,8 +980,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                     Container(),
                                                                 loading: () =>
                                                                     Container());
-
-                                                        // nftOwnerProvider
                                                       },
                                                       error: (e, s) =>
                                                           Container(),

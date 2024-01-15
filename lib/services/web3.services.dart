@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:web3dart/web3dart.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 Web3Client getWeb3Client(String chainRpcUrl) {
   var client = Web3Client(chainRpcUrl, Client());
@@ -98,7 +100,7 @@ Future<List<dynamic>> queryCollectionContract(
   DeployedContract contract = await getCollectionContract(collectionId);
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client(chainRpcUrl);
-  List<dynamic> result = await web3Client.call(
+  final result = await web3Client.call(
       contract: contract, function: function, params: args);
   return result;
 }
@@ -444,13 +446,16 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
 
   final List<Purchase> unredeemedPurchases =
       await ref.read(unredeemedVoucherNftsProvider.future);
-  if (unredeemedPurchases.isNotEmpty) {
+  if (unredeemedPurchases.isNotEmpty &&
+      unredeemedPurchases.first.shippingInfo == null) {
     await showCustomPopup(
         context,
-        'Enter shipping address',
+        icon: Icon(Icons.local_shipping_outlined,
+            size: 90, color: CustomColors(dotenv.get('APP_ID')).accentColor),
+        context.loc.claimPhysicalItem,
         Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Please enter your shipping address',
+            'Request the shipment now.',
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
@@ -458,7 +463,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
             height: 20,
           ),
           CustomRoundedButton(
-            text: 'Enter shipping address',
+            text: context.loc.enterShippingAddress,
             onPressed: () {
               Navigator.pushNamed(
                   context, EnterShippingAddressScreen.routeName);

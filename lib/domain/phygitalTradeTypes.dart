@@ -31,7 +31,9 @@ class Purchase {
         buyer: Buyer.fromJson(json["buyer"]),
         token: PurchaseTokenData.fromJson(json["token"]),
         offer: Offer.fromJson(json["offer"]),
-        shippingInfo: ShippingInfo.fromJson(json["shipping_info"]),
+        shippingInfo: json["shipping_info"] == null
+            ? null
+            : ShippingInfo.fromJson(json["shipping_info"]),
       );
 }
 

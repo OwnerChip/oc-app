@@ -32,7 +32,7 @@ final unredeemedVoucherNftsProvider =
   //loop over unredeemedPurchasesList and in every purchase add it to unredeemedPurchases, if isRedeemed is false
   for (var unredeemedPurchasesForNft in unredeemedPurchasesForEachNft) {
     for (var purchase in unredeemedPurchasesForNft) {
-      if (purchase.shippingInfo == null) {
+      if (!purchase.isRedeemed) {
         unredeemedPurchases.add(purchase);
       }
     }
@@ -42,23 +42,6 @@ final unredeemedVoucherNftsProvider =
 });
 
 //**** Voucher NFT DATA ****
-
-final voucherTokenOwnerProvider =
-    FutureProvider.autoDispose<EthereumAddress?>((ref) async {
-  EthereumAddress? voucherContractAddress =
-      await ref.watch(voucherContractProvider.future);
-  if (voucherContractAddress == null) {
-    return null;
-  }
-  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenChainAndCollection config =
-      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
-  EthereumAddress voucherTokenOwner = await getOwner(
-      getRPCUrlFromChainId(config.chainId),
-      voucherContractAddress,
-      chipInfo.tokenId);
-  return voucherTokenOwner;
-});
 
 final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
   List chainIds = chainConfig.keys.toList();

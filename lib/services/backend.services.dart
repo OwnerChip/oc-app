@@ -321,9 +321,9 @@ Future<RaribleHashAndEncodedData> getRaribleOfferTypedDataHashAndEncodedData(
 Future<List<Purchase>> getUnredeemedPurchases(BigInt tokenId) async {
   final Dio dio = getBackendClient();
   try {
-    final String tokenIdHex = tokenId.toRadixString(16);
+    final String tokenIdHex = convertTokenIdToEthereumAddress(tokenId);
     final Response response =
-        await dio.get('/token/0x$tokenIdHex/purchase/unredeemed');
+        await dio.get('/token/$tokenIdHex/purchase/unredeemed');
     final List<dynamic> purchases = response.data;
     return purchases.map((e) => Purchase.fromJson(e)).toList();
   } catch (e) {
@@ -337,7 +337,7 @@ Future<void> postShippingInfoToBackend(
     Purchase purchase, ShippingInfo shippingInfo) async {
   final Dio dio = getBackendClient();
   final String url =
-      '/token/0x${purchase.token.id.toRadixString(16)}/purchase/${purchase.purchaseTxHash}/shippingInfo';
+      '/token/${convertTokenIdToEthereumAddress(purchase.token.id)}/purchase/${purchase.purchaseTxHash}/shippingInfo';
   try {
     await dio.post(url, data: shippingInfo.toJson());
   } catch (e) {

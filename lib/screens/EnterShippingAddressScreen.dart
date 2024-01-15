@@ -81,6 +81,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
         phoneNumber: phone);
 
     try {
+      await toggleLoading();
       List<Purchase> unredeemedVoucherNfts =
           await ref.read(unredeemedVoucherNftsProvider.future);
 
@@ -93,22 +94,22 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
         // ignore: use_build_context_synchronously
         showCustomPopup(
             context,
-            'Shipping data successfully sent.',
+            context.loc.shippingDataSuccessfullySent,
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 10),
                 Text(
-                  'You will receive further details via email.',
+                  context.loc.youWillReceiveFurtherInformationViaEmail,
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 10),
-                CustomRoundedButton(
-                    text: context.loc.done,
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
+                // const SizedBox(height: 10),
+                // CustomRoundedButton(
+                //     text: context.loc.done,
+                //     onPressed: () {
+                //       Navigator.pop(context);
+                //     }),
               ],
             ),
             icon: Icon(Icons.celebration,
@@ -138,7 +139,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
   Widget build(BuildContext context) {
     final nameInputFields = [
       InputFieldModel(
-          placeholder: 'First Name',
+          placeholder: context.loc.firstName,
           keyboardType: TextInputType.name,
           setStateCallback: (value) {
             setState(() {
@@ -149,11 +150,11 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
             if (value != null && value.isNotEmpty) {
               return null;
             } else {
-              return 'Please enter last name.';
+              return context.loc.pleaseEnterFirstName;
             }
           }),
       InputFieldModel(
-          placeholder: 'Last Name',
+          placeholder: context.loc.lastName,
           keyboardType: TextInputType.name,
           setStateCallback: (value) {
             setState(() {
@@ -164,14 +165,14 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
             if (value != null && value.isNotEmpty) {
               return null;
             } else {
-              return 'Please enter last name.';
+              return context.loc.pleaseEnterLastName;
             }
           }),
     ];
 
     final contactInputFields = [
       InputFieldModel(
-          placeholder: 'Email',
+          placeholder: context.loc.emailAddress,
           keyboardType: TextInputType.emailAddress,
           setStateCallback: (value) {
             setState(() {
@@ -189,7 +190,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
             }
           }),
       InputFieldModel(
-          placeholder: 'Phone (optional)',
+          placeholder: '${context.loc.phoneNumber} (optional)',
           keyboardType: TextInputType.phone,
           setStateCallback: (value) {
             setState(() {
@@ -211,7 +212,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
 
     final addressInputFields = [
       InputFieldModel(
-          placeholder: 'Company (optional)',
+          placeholder: '${context.loc.company} (optional)',
           keyboardType: TextInputType.streetAddress,
           setStateCallback: (value) {
             setState(() {
@@ -220,7 +221,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
           },
           validator: (value) {}),
       InputFieldModel(
-          placeholder: 'Street Address',
+          placeholder: context.loc.streetAddress,
           keyboardType: TextInputType.streetAddress,
           setStateCallback: (value) {
             setState(() {
@@ -231,11 +232,11 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
             if (value != null && value.isNotEmpty) {
               return null;
             } else {
-              return 'Please enter street address.';
+              return context.loc.pleaseEnterStreetAddress;
             }
           }),
       InputFieldModel(
-          placeholder: 'Street Address 1 (optional)',
+          placeholder: '${context.loc.streetAddress1} (optional)',
           keyboardType: TextInputType.streetAddress,
           setStateCallback: (value) {
             setState(() {
@@ -244,7 +245,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
           },
           validator: (value) {}),
       InputFieldModel(
-          placeholder: 'City',
+          placeholder: context.loc.city,
           keyboardType: TextInputType.streetAddress,
           setStateCallback: (value) {
             setState(() {
@@ -255,11 +256,11 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
             if (value != null && value.isNotEmpty) {
               return null;
             } else {
-              return 'Please enter city.';
+              return context.loc.pleaseEnterCity;
             }
           }),
       InputFieldModel(
-          placeholder: 'Zip',
+          placeholder: context.loc.zip,
           keyboardType: TextInputType.number,
           setStateCallback: (value) {
             setState(() {
@@ -270,11 +271,11 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
             if (value != null && value.isNotEmpty) {
               return null;
             } else {
-              return 'Please enter zip.';
+              return context.loc.pleaseEnterZip;
             }
           }),
       InputFieldModel(
-          placeholder: 'State/Province (optional)',
+          placeholder: '${context.loc.stateProvince} (optional)',
           keyboardType: TextInputType.streetAddress,
           setStateCallback: (value) {
             setState(() {
@@ -287,7 +288,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
     return Scaffold(
       key: ScaffoldKey.getScaffoldKey('EnterShippingAddressScreen'),
       appBar: CustomAppBar(
-        text: 'Shipping address',
+        text: context.loc.shippingAddress,
         showBackButton: true,
       ),
       body: GestureDetector(
@@ -340,7 +341,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Address',
+                            Text(context.loc.shippingAddress,
                                 style:
                                     Theme.of(context).textTheme.headlineSmall!),
                             const SizedBox(
@@ -373,7 +374,6 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                             const SizedBox(height: 10),
                             TextFormField(
                               onTap: () {
-                                print('test');
                                 showCountryPicker(
                                   context: context,
                                   onSelect: (Country country) {
@@ -383,7 +383,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                                       countryCode = country.countryCode;
                                     });
                                     print(
-                                        'Select country: ${country.displayName}');
+                                        '${context.loc.selectCountry}: ${country.displayName}');
                                   },
                                   countryListTheme: CountryListThemeData(
                                     flagSize: 25,
@@ -406,13 +406,12 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                                     ),
                                     //Optional. Styles the search field.
                                     inputDecoration: InputDecoration(
-                                      //TODO: localize text
-                                      labelText: 'Search',
+                                      labelText: context.loc.search,
                                       labelStyle: TextStyle(
                                           color:
                                               CustomColors(dotenv.get('APP_ID'))
                                                   .primaryColor),
-                                      hintText: 'Start typing to search',
+                                      hintText: context.loc.startTypingToSearch,
                                       hintStyle: TextStyle(
                                           color:
                                               CustomColors(dotenv.get('APP_ID'))
@@ -446,7 +445,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                                   CustomColors(dotenv.get('APP_ID').toString())
                                       .accentColor,
                               decoration: customInputDecoration(
-                                  context, 'Country',
+                                  context, context.loc.country,
                                   fillColor: CustomColors(
                                           dotenv.get('APP_ID').toString())
                                       .cardColor),
@@ -455,7 +454,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                                 if (value != null && value.isNotEmpty) {
                                   return null;
                                 } else {
-                                  return 'Please enter country.';
+                                  return context.loc.pleaseEnterCountry;
                                 }
                               },
                             ),
@@ -466,7 +465,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Contact',
+                            Text(context.loc.contact,
                                 style:
                                     Theme.of(context).textTheme.headlineSmall!),
                             const SizedBox(
@@ -501,12 +500,14 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
                         height: 40,
                       ),
                       CustomRoundedButton(
-                          text: 'Send shipping data',
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              await sendShippingData();
-                            }
-                          }),
+                          text: context.loc.sendShippingData,
+                          onPressed: isLoading
+                              ? null
+                              : () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    await sendShippingData();
+                                  }
+                                }),
                       const SizedBox(height: 10),
                     ],
                   )),

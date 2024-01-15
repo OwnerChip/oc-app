@@ -98,15 +98,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             },
                         width: 250))
                 : Container(),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomRoundedButton(
-                    text: 'DELETE LATER',
-                    onPressed: () => {
-                          Navigator.pushNamed(
-                              context, EnterShippingAddressScreen.routeName)
-                        },
-                    width: 250)),
             const SizedBox(height: 60),
             ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
                 .outlinedRoundedButtons
