@@ -119,7 +119,7 @@ void main() {
       Uint8List ethAddressBytes = publicKeyToAddress(pubKey);
 
       // act
-      BigInt tokenId = hexToBigInt(ethAddressBytes);
+      BigInt tokenId = bytesEthAddrToBigInt(ethAddressBytes);
 
       // assert
       expect(tokenId.toString(),
@@ -133,7 +133,7 @@ void main() {
       String ethAddress = "0x0ae7a580a3101f78bade64da3257abb20ad309af";
 
       //act 1
-      BigInt tokenId = hexToBigInt(hexToBytes(ethAddress));
+      BigInt tokenId = bytesEthAddrToBigInt(hexToBytes(ethAddress));
 
       //assert 1
       expect(tokenId.toString(),

@@ -72,7 +72,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       EthereumAddress connectedWallet,
       String sessionId) async {
     final wcSession = ref.read(wcSessionProvider);
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final UserSession userSession = ref.read(userSessionProvider)!;
     final isOwnerCard = userSession?.isOwnerCard;
@@ -222,10 +222,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
+          // secondaryButton: true,
+          // secondaryButtonText: context.loc.troubleshoot,
+          // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
           key: ScaffoldKey.getScaffoldKey('TransferScreen'),

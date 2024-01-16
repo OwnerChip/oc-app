@@ -41,11 +41,12 @@ class CustomRoundedButton extends StatelessWidget {
             backgroundColor: backgroundColor ??
                 CustomColors(dotenv.get('APP_ID')).primaryColor,
             shape: RoundedRectangleBorder(
+              side: const BorderSide(width: 0),
               borderRadius: BorderRadius.circular(18),
             ),
             shadowColor: showShadow != null && showShadow!
                 ? CustomColors(dotenv.get('APP_ID')).shadowColor
-                : Colors.transparent,
+                : null,
           ),
           child: Row(
             mainAxisAlignment: mainAxisAlignment,

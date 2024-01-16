@@ -91,7 +91,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                               null; //delete wallet type from riverpod
                           ref.read(userSessionProvider.notifier).state =
                               null; //delete backend session from riverpod
-                          print('test');
                         },
                       )
                     : IconButton(

@@ -158,7 +158,7 @@ void main() {
         73
       ]);
       Uint8List ethAddressBytes = publicKeyToAddress(pubKey);
-      BigInt tokenId = hexToBigInt(ethAddressBytes);
+      BigInt tokenId = bytesEthAddrToBigInt(ethAddressBytes);
       Uint8List msgHash = keccakUtf8(tokenId.toString());
 
       // act
@@ -168,7 +168,7 @@ void main() {
 
       // assert
       expect(recoveredAddress, ethAddressBytes);
-      expect(hexToBigInt(recoveredAddress).toString(),
+      expect(bytesEthAddrToBigInt(recoveredAddress).toString(),
           "643025298622660478098289384378752240690720980366");
     });
   });

@@ -49,6 +49,12 @@ class SpinningLoadingSvg extends StatelessWidget {
             loadingText,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
+          const SizedBox(height: 20),
+          onPressed != null
+              ? CustomOutlinedButton(
+                  buttonText: context.loc.continueInBackground,
+                  onPressed: () => onPressed!())
+              : Container(),
           // secondary Button
           secondaryButton
               ? Column(children: [

@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
@@ -56,26 +57,9 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                       style: Theme.of(context).textTheme.bodyMedium,
                       cursorColor: CustomColors(dotenv.get('APP_ID').toString())
                           .accentColor,
-                      decoration: InputDecoration(
-                        labelText: 'Name',
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color:
-                                  CustomColors(dotenv.get('APP_ID').toString())
-                                      .primaryColor,
-                              width: 2.0), // normal border color
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color:
-                                  CustomColors(dotenv.get('APP_ID').toString())
-                                      .primaryColor,
-                              width: 2.0), // focused border color
-                        ),
-                      ),
+                      decoration: customInputDecoration(context, 'Name',
+                          fillColor:
+                              CustomColors(dotenv.get('APP_ID')).cardColor),
                       keyboardType: TextInputType.text,
                       obscureText: false,
                       onChanged: (value) {
@@ -99,26 +83,31 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                       style: Theme.of(context).textTheme.bodyMedium,
                       cursorColor: CustomColors(dotenv.get('APP_ID').toString())
                           .accentColor,
-                      decoration: InputDecoration(
-                        labelText: context.loc.emailAddress,
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color:
-                                  CustomColors(dotenv.get('APP_ID').toString())
-                                      .primaryColor,
-                              width: 2.0), // normal border color
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color:
-                                  CustomColors(dotenv.get('APP_ID').toString())
-                                      .primaryColor,
-                              width: 2.0), // focused border color
-                        ),
-                      ),
+                      decoration: customInputDecoration(
+                          context, context.loc.emailAddress,
+                          fillColor:
+                              CustomColors(dotenv.get('APP_ID')).cardColor),
+
+                      // InputDecoration(
+                      //   labelText: context.loc.emailAddress,
+                      //   labelStyle: Theme.of(context).textTheme.bodyMedium,
+                      //   enabledBorder: OutlineInputBorder(
+                      //     borderRadius: BorderRadius.circular(10),
+                      //     borderSide: BorderSide(
+                      //         color:
+                      //             CustomColors(dotenv.get('APP_ID').toString())
+                      //                 .primaryColor,
+                      //         width: 2.0), // normal border color
+                      //   ),
+                      //   focusedBorder: OutlineInputBorder(
+                      //     borderRadius: BorderRadius.circular(10),
+                      //     borderSide: BorderSide(
+                      //         color:
+                      //             CustomColors(dotenv.get('APP_ID').toString())
+                      //                 .primaryColor,
+                      //         width: 2.0), // focused border color
+                      //   ),
+                      // ),
                       keyboardType: TextInputType.text,
                       obscureText: false,
                       onChanged: (value) {
@@ -131,7 +120,6 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                         bool isEmail =
                             RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                                 .hasMatch(value!);
-                        print('isemail: $isEmail');
                         if (isEmail) {
                           return null;
                         } else {
@@ -146,26 +134,10 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                       style: Theme.of(context).textTheme.bodyMedium,
                       cursorColor: CustomColors(dotenv.get('APP_ID').toString())
                           .accentColor,
-                      decoration: InputDecoration(
-                        labelText: context.loc.phoneNumber,
-                        labelStyle: Theme.of(context).textTheme.bodyMedium,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color:
-                                  CustomColors(dotenv.get('APP_ID').toString())
-                                      .primaryColor,
-                              width: 2.0), // normal border color
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color:
-                                  CustomColors(dotenv.get('APP_ID').toString())
-                                      .primaryColor,
-                              width: 2.0), // focused border color
-                        ),
-                      ),
+                      decoration: customInputDecoration(
+                          context, context.loc.phoneNumber,
+                          fillColor:
+                              CustomColors(dotenv.get('APP_ID')).cardColor),
                       keyboardType: TextInputType.text,
                       obscureText: false,
                       onChanged: (value) {
@@ -178,7 +150,6 @@ class _CardLostScreen extends ConsumerState<CardLostScreen> {
                         bool isTelNr = RegExp(
                                 r'^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$')
                             .hasMatch(value!);
-                        print(isTelNr);
                         if (!isTelNr) {
                           return context.loc.pleaseEnterValidTel;
                         }

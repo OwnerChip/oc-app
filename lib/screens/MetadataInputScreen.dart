@@ -4,10 +4,12 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,6 +122,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       Map<String, dynamic> metadata,
       int chainId,
       EthereumAddress collectionId,
+      EthereumAddress? voucherCollectionId,
       {XFile? image}) async {
     setState(() {
       isLoading = true;
@@ -183,7 +186,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
             mintFunctionSignature,
             chainId,
-            collectionId,
+            voucherCollectionId ?? collectionId,
             signatureData,
             connectedWallet,
             wc,
@@ -202,7 +205,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         txnHash = await makeAndSendNormalTx(
             mintFunctionSignature,
             chainId,
-            collectionId,
+            voucherCollectionId ?? collectionId,
             signatureData,
             connectedWallet,
             wc,
@@ -222,6 +225,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           'connectedWallet': connectedWallet.hex,
           'gasStation': canUseGasStation
         });
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        //refresh providers so offer for sale button is shown correctly on NFT Details
+        ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
         Navigator.pushNamedAndRemoveUntil(
           ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
@@ -259,7 +269,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     }
     //refresh tokenInfo so it can be loaded; This code is not supposed to be inside try block, so it does not trigger catch if it fails and use does not stay on metadatasecreen with error, despite token minting being successful. User can retrigger manually on next screen
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-    TokenInfoObject tokenInfo =
+    TokenChainAndCollection tokenInfo =
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
   }
 
@@ -299,6 +309,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     final wc = ref.watch(wcProvider);
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
+    EthereumAddress? voucherCollectionId = navArgs.voucherAddress;
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final AsyncValue<List<Attachment>> fetchedAttachments =
         ref.watch(fetchAttachmentsProvider);
@@ -323,9 +334,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               svgPath:
                   '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
               // enable secondary button
-              secondaryButton: true,
-              secondaryButtonText: context.loc.troubleshoot,
-              secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'))
+              // secondaryButton: true,
+              // secondaryButtonText: context.loc.troubleshoot,
+              // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL')
+            )
           : CustomCard(
               mainAxisSize: MainAxisSize.min,
               maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -445,43 +457,16 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                 )
                               ]),
                               const SizedBox(height: 15),
-                              Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(13)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            CustomColors(dotenv.get('APP_ID'))
-                                                .secondaryShadowColor,
-                                        offset: const Offset(1, 3),
-                                        blurRadius: 3,
-                                      )
-                                    ]),
-                                child: TextField(
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  maxLines: 3,
-                                  keyboardType: TextInputType.multiline,
-                                  controller: _descriptionController,
-                                  decoration: InputDecoration(
-                                    focusColor:
-                                        Theme.of(context).primaryColorDark,
-                                    hintText: context.loc.description,
-                                    hintStyle:
-                                        Theme.of(context).textTheme.bodyMedium,
-                                    filled: true,
-                                    fillColor: Theme.of(context)
-                                        .scaffoldBackgroundColor,
-                                    border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.circular(13),
-                                    ),
-                                  ),
-                                  onChanged: (text) {
-                                    metadata['description'] = text;
-                                  },
-                                ),
-                              )
+                              StyledTextInputBox(
+                                controller: _descriptionController,
+                                setText: (input) =>
+                                    metadata['description'] = input,
+                                keyboardType: TextInputType.multiline,
+                                maxlines: 3,
+                                fillColor:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                hintText: context.loc.description,
+                              ),
                             ],
                           )),
                       const SizedBox(height: 20),
@@ -529,6 +514,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                     metadata,
                                     chainId,
                                     collectionId,
+                                    voucherCollectionId,
                                     image: image));
                               }
                             },

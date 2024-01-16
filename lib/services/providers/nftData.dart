@@ -1,9 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/web3dart.dart';
@@ -13,20 +17,20 @@ import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 //**** TOKEN DATA ****
 
 final findTokenProvider = FutureProvider.autoDispose
-    .family<TokenInfoObject, BigInt>((ref, tokenId) async {
-  var result =
-      await Future.wait<TokenInfoObject>(chainConfig.keys.map((chainId) async {
+    .family<TokenChainAndCollection, BigInt>((ref, tokenId) async {
+  var result = await Future.wait<TokenChainAndCollection>(
+      chainConfig.keys.map((chainId) async {
     EthereumAddress collectionId = await getCollectionId(
         chainConfig[chainId]!.rpcUrl,
         chainConfig[chainId]!.registryContract,
         tokenId);
 
-    return TokenInfoObject(chainId, collectionId, tokenId);
+    return TokenChainAndCollection(chainId, collectionId, tokenId);
   }));
 
-  TokenInfoObject tokenInfo = result.firstWhere(
+  TokenChainAndCollection tokenInfo = result.firstWhere(
       (element) => element.collectionId != zeroAddress,
-      orElse: () => TokenInfoObject(0, zeroAddress,
+      orElse: () => TokenChainAndCollection(0, zeroAddress,
           tokenId)); //if token does not exist, zero address is returned as collection
   return tokenInfo;
 });
@@ -37,7 +41,7 @@ final nftOwnerProvider =
     FutureProvider.autoDispose<EthereumAddress>((ref) async {
   // watch chipInfoProvider
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject config =
+  final TokenChainAndCollection config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
@@ -57,7 +61,7 @@ final nftApprovalProvider =
     FutureProvider.autoDispose<EthereumAddress>((ref) async {
   // watch chipInfoProvider
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject config =
+  final TokenChainAndCollection config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
@@ -75,7 +79,7 @@ final nftApprovalProvider =
 
 final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject tokenInfo =
+  final TokenChainAndCollection tokenInfo =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   return getContractName(
       getRPCUrlFromChainId(tokenInfo.chainId), tokenInfo.collectionId);
@@ -84,7 +88,7 @@ final contractNameProvider = FutureProvider.autoDispose<String>((ref) async {
 final nftMetadataProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, BigInt>((ref, tokenId) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject config =
+  final TokenChainAndCollection config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING (config chainId & collectionId are 0)
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
@@ -115,7 +119,82 @@ final nftImageProvider =
 final creatorDataProvider =
     FutureProvider.autoDispose<CreatorData>((ref) async {
   ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final CreatorData creatorData =
-      await getCreatorData(chipInfo.chipEthereumAddress);
-  return creatorData;
+  try {
+    final CreatorData creatorData =
+        await getCreatorData(chipInfo.chipEthereumAddress);
+    return creatorData;
+  } catch (err) {
+    rethrow;
+  }
+});
+
+//**** Voucher NFT DATA ****
+
+final voucherTokenOwnerProvider =
+    FutureProvider.autoDispose<EthereumAddress?>((ref) async {
+  EthereumAddress? voucherContractAddress =
+      await ref.watch(voucherContractProvider.future);
+  if (voucherContractAddress == null) {
+    return null;
+  }
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  final TokenChainAndCollection config =
+      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
+  EthereumAddress voucherTokenOwner = await getOwner(
+      getRPCUrlFromChainId(config.chainId),
+      voucherContractAddress,
+      chipInfo.tokenId);
+  return voucherTokenOwner;
+});
+
+final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
+  List chainIds = chainConfig.keys.toList();
+  final UserSession? userSession = ref.read(userSessionProvider);
+  final EthereumAddress? walletAddress = userSession?.userWalletAddress;
+
+  //call fetchNFTsForOwner for each chainId; use Future.wait to wait for all futures to complete
+  final Map chainIdToNfts = {};
+  try {
+    var result = await Future.wait(chainIds.map((chainId) async {
+      final Map nftsForOwner = await fetchNFTsForOwner(walletAddress!, chainId);
+      chainIdToNfts[chainId] = nftsForOwner;
+      return chainIdToNfts;
+    }));
+    return chainIdToNfts;
+  } catch (err) {
+    rethrow;
+  }
+});
+
+final voucherNftsOwnedByUserProvider =
+    FutureProvider.autoDispose<List<AlchemyNFTAsset>>((ref) async {
+  final Map? nftsForOwnerByChainId =
+      await ref.watch(getNftsForOwnerProvider.future);
+  if (nftsForOwnerByChainId == null) {
+    return [];
+  }
+  final BlockchainCollectionList collections =
+      await ref.read(appCollectionProvider.future);
+
+  List chainIds = chainConfig.keys.toList();
+  final List voucherContractsAllChains = [];
+  for (var chainId in chainIds) {
+    for (var collection in collections.collections[chainId]?.toList() ?? []) {
+      if (collection.voucherAddress != null) {
+        voucherContractsAllChains.add(collection.voucherAddress);
+      }
+    }
+  }
+
+  List nftsForOwner = [];
+  nftsForOwnerByChainId.forEach((chainId, nfts) {
+    nftsForOwner.addAll(nfts["ownedNfts"]);
+  });
+  List voucherNftsOwnedByUser = nftsForOwner
+      .where((nft) => voucherContractsAllChains.contains(
+          EthereumAddress.fromHex(nft['contract']['address'].toString())))
+      .toList();
+  final List<AlchemyNFTAsset> alchemyVoucherNftsOwnedByUser =
+      voucherNftsOwnedByUser.map((e) => AlchemyNFTAsset.fromJson(e)).toList();
+  return alchemyVoucherNftsOwnedByUser;
 });

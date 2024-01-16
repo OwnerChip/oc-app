@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
@@ -47,7 +48,9 @@ Future<ConnectResponse> startWalletConnection(BuildContext context,
     //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
     switch (wallet.name) {
       case 'Metamask':
-        chains = ['eip155:1'];
+        chains = [
+          'eip155:1',
+        ];
         break;
       case 'Trust Wallet':
         chains = ['eip155:1', 'eip155:137'];
@@ -113,18 +116,26 @@ Future<String> makeAndSendGaslessTx(
     BuildContext context,
     String functionSignatureHash,
     int chainId,
-    EthereumAddress collectionId,
+    EthereumAddress toAddress,
     SignatureData signatureData,
     EthereumAddress walletAddress,
     Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
     SessionData? wcSession,
     String metaTxAgreementId,
     WalletType walletType,
-    {EthereumAddress? toAccount,
+    {EthereumAddress? controllerContractId,
+    String? typedDataHash,
+    EthereumAddress? toAccount,
     String? cid,
     BigInt? tokenId,
     bool? enableRecovery,
-    required Function toggleLoading}) async {
+    EthereumAddress? sellerPayoutAddress,
+    BigInt? salt,
+    int? endTimestamp,
+    BigInt? price,
+    String? encodedOfferData,
+    required Function toggleLoading,
+    String? offerHash}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,
       chainRpcUrl: getRPCUrlFromChainId(chainId),
@@ -132,18 +143,26 @@ Future<String> makeAndSendGaslessTx(
       randomValueHash: signatureData.hashedMsg,
       signature: signatureData.signature,
       from: walletAddress,
-      to: collectionId,
+      to: controllerContractId ??
+          toAddress, //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null,
       tokenId: tokenId,
-      enableRecovery: enableRecovery);
+      enableRecovery: enableRecovery,
+      sellerPayoutAddress: sellerPayoutAddress,
+      salt: salt,
+      endTimestamp: endTimestamp,
+      price: price,
+      encodedOfferData: encodedOfferData,
+      typedDataHash: typedDataHash,
+      offerHash: offerHash);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
   try {
     String signature;
     if (walletType.name == 'OwnerCard') {
-      String hash = await getGaslessTxHash(request, collectionId);
+      String hash = await getGaslessTxHash(request, toAddress);
 
       var cardSignature =
           // ignore: use_build_context_synchronously
@@ -167,20 +186,22 @@ Future<String> makeAndSendGaslessTx(
 
       signature = await wc!
           .request(
-            topic: wcSession!.topic,
-            chainId: 'eip155:1',
-            request: SessionRequestParams(
-              method: 'eth_signTypedData_v4',
-              params: [walletAddress.toString(), json.encode(typedData)],
-            ),
-          )
-          .onError((error, stackTrace) => throw 'error signing gasless tx');
+        topic: wcSession!.topic,
+        chainId: 'eip155:1',
+        request: SessionRequestParams(
+          method: 'eth_signTypedData_v4',
+          params: [walletAddress.toString(), json.encode(typedData)],
+        ),
+      )
+          .onError((error, stackTrace) {
+        throw 'error signing gasless tx';
+      });
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     }
 
     String txnHash = await sendGaslessRequest(
-        collectionId, signature, metaTxAgreementId, request);
+        toAddress, signature, metaTxAgreementId, request);
     return txnHash;
   } catch (e) {
     print(e);
@@ -194,20 +215,28 @@ Future<String> makeAndSendGaslessTx(
 //It then returns the txnHash.
 
 Future<String> makeAndSendNormalTx(
-    String functionSignatureHash,
-    int chainId,
-    EthereumAddress collectionId,
-    SignatureData signatureData,
-    EthereumAddress walletAddress,
-    Web3App wc,
-    SessionData wcSession,
-    WalletType walletType,
-    {EthereumAddress? toAccount,
-    BigInt? tokenId,
-    String? cid}) async {
+  String functionSignatureHash,
+  int chainId,
+  EthereumAddress toAddress,
+  SignatureData signatureData,
+  EthereumAddress walletAddress,
+  Web3App wc,
+  SessionData wcSession,
+  WalletType walletType, {
+  EthereumAddress? toAccount,
+  BigInt? tokenId,
+  String? cid,
+  EthereumAddress? sellerPayoutAddress,
+  String? typedDataHash,
+  String? offerHash,
+  BigInt? price,
+  BigInt? salt,
+  int? endTimestamp,
+  String? encodedOfferData,
+}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
-      collectionId,
+      toAddress,
       walletAddress,
       functionSignatureHash,
       signatureData.hashedMsg,
@@ -215,7 +244,15 @@ Future<String> makeAndSendNormalTx(
       toAccount: toAccount,
       tokenId: tokenId,
       tokenURI: cid != null ? "ipfs://$cid" : null,
-      enableRecovery: false);
+      enableRecovery: false,
+      sellerPayoutAddress: sellerPayoutAddress,
+      typedDataHash: typedDataHash,
+      chainId: chainId,
+      offerHash: offerHash,
+      offerPrice: price,
+      salt: salt,
+      end: endTimestamp,
+      encodedOfferData: encodedOfferData);
 
   String walletLink = walletType.deeplinkUri;
   Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
@@ -327,23 +364,7 @@ void Function(SessionExpire?) wrapOnSessionExpire(WidgetRef ref) {
 }
 
 void Function(SessionEvent?) wrapOnSessionEvent(WidgetRef ref) {
-  return (SessionEvent? args) {
-    // if (args?.name == "accountsChanged") {
-    //   EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
-
-    //   EthereumAddress newWalletAddr =
-    //       EthereumAddress.fromHex(args?.data[0].split(':')[2]);
-    //   if (currentWalletAddr != zeroAddress &&
-    //       currentWalletAddr != newWalletAddr) {
-    //     // simply disconnect?
-    //     //TODO: remove session from connected wallet as well!
-    //     SessionDelete deleteArgs = SessionDelete(args!.topic);
-    //     onSessionDisconnect(deleteArgs, ref);
-    //   }
-    // } else {
-    //   //do nothing?
-    // }
-  };
+  return (SessionEvent? args) {};
 }
 
 void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {

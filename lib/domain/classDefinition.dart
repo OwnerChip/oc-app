@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
@@ -36,12 +37,13 @@ class WalletType {
 class Collection {
   final EthereumAddress id;
   final String name;
+  final EthereumAddress? voucherAddress;
   final String? symbol;
   final int? chainId;
   bool? hasMinterRole;
 
   Collection(this.id, this.name,
-      {this.symbol, this.chainId, this.hasMinterRole});
+      {this.voucherAddress, this.symbol, this.chainId, this.hasMinterRole});
 }
 
 class BlockchainCollectionList {
@@ -53,29 +55,35 @@ class BlockchainCollectionList {
 
 class BlockchainConfig {
   final String networkName;
+  final String nativeTokenSymbol;
   final String rpcUrl;
   final String registryContract;
+  final String controllerContract;
   final String openseaUrl;
   final String raribleUrl;
   final String blockchainExplorerUrl;
+  final String alchemyBaseUrl;
   final String? forwarderContract;
 
   BlockchainConfig(
       {required this.networkName,
+      required this.nativeTokenSymbol,
       required this.rpcUrl,
       required this.registryContract,
+      required this.controllerContract,
       required this.openseaUrl,
       required this.raribleUrl,
       required this.blockchainExplorerUrl,
+      required this.alchemyBaseUrl,
       this.forwarderContract});
 }
 
-class TokenInfoObject {
+class TokenChainAndCollection {
   final int chainId;
   final EthereumAddress collectionId;
   final BigInt tokenId;
 
-  TokenInfoObject(this.chainId, this.collectionId, this.tokenId);
+  TokenChainAndCollection(this.chainId, this.collectionId, this.tokenId);
 }
 
 class ChipInfoModel {
@@ -162,6 +170,8 @@ class CreatorData {
   final String email;
   final EthereumAddress walletAddress;
   final DateTime createdAt;
+  final bool hasActiveOffer;
+  final Token tokenForWhichCreatorDataWasRequested;
 
   const CreatorData({
     required this.name,
@@ -169,5 +179,76 @@ class CreatorData {
     required this.email,
     required this.walletAddress,
     required this.createdAt,
+    required this.hasActiveOffer,
+    required this.tokenForWhichCreatorDataWasRequested,
+  });
+}
+
+class OfferItemInputData {
+  final String tokenId;
+  final String offerPrice;
+  final String offerCurrency;
+  final String sellerWalletAddress;
+  final String sellerPayoutAddress;
+  final String sellerEmail;
+  final int validUntil;
+  final String salt;
+  final String encodedData;
+  final String typedDataHash;
+  final String chipSignature;
+  final String marketplaceContract;
+
+  const OfferItemInputData({
+    required this.tokenId,
+    required this.offerPrice,
+    required this.offerCurrency,
+    required this.sellerWalletAddress,
+    required this.sellerPayoutAddress,
+    required this.sellerEmail,
+    required this.validUntil,
+    required this.salt,
+    required this.encodedData,
+    required this.typedDataHash,
+    required this.chipSignature,
+    required this.marketplaceContract,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'tokenId': tokenId,
+        'offerPrice': offerPrice,
+        'offerCurrency': offerCurrency,
+        'sellerWalletAddress': sellerWalletAddress,
+        'sellerPayoutAddress': sellerPayoutAddress,
+        'sellerEmail': sellerEmail,
+        'validUntil': validUntil,
+        'salt': salt,
+        'encodedData': encodedData,
+        'typedDataHash': typedDataHash,
+        'chipSignature': chipSignature,
+        'marketplaceContract': marketplaceContract,
+      };
+}
+
+class RaribleHashAndEncodedData {
+  final String typedDataHash;
+  final String encodedData;
+
+  RaribleHashAndEncodedData(this.typedDataHash, this.encodedData);
+}
+
+typedef StringCallback = Function(String?);
+typedef VoidStringCallback = void Function(String);
+
+class InputFieldModel {
+  final String? placeholder;
+  final TextInputType? keyboardType;
+  final VoidStringCallback setStateCallback;
+  final StringCallback validator;
+
+  InputFieldModel({
+    this.placeholder = '',
+    this.keyboardType = TextInputType.text,
+    required this.setStateCallback,
+    required this.validator,
   });
 }

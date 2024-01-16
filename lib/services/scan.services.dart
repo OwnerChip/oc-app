@@ -60,7 +60,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
     //set chip info data in provider
     setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
 
-    TokenInfoObject config =
+    TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipTokenId).future);
 
     //verify signature
@@ -76,7 +76,6 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
           tags: {"chipWallet": chipWalletAddress});
 
-      //TODO: WHY DO I PASS METADATAScreen Arguments t o ChainSelectorScreen??
       Navigator.pushNamed(context, ChainSelectorScreen.routeName,
           arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
     }
@@ -106,7 +105,7 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
     //set chip info data in provider
     setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
 
-    TokenInfoObject config =
+    TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipTokenId).future);
 
     //verify signature
@@ -171,7 +170,7 @@ void setChipInfoProvider(
 
 //TODO: Check if this function should actually return a bool? What happens if verifyTokenAuthenticity returns false?
 Future<void> verifyAuthenticity(
-    TokenInfoObject config,
+    TokenChainAndCollection config,
     EthereumAddress chipEthereumAddress,
     Uint8List hashedMsg,
     MsgSignature signature,
@@ -193,6 +192,21 @@ Future<void> verifyAuthenticity(
     //TOKEN IS NOT AUTHENTIC
     rethrow;
   }
+}
+
+/*GET SIGNATURE OF A MESSAGE/HASH FROM A CHIP WHICH IS NOT PIN LOCKED*/
+Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
+    msgHashToSign, Function toggleLoading) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    EthereumAddress chipWalletAddress = createFirstKeyChipResponse[0];
+    MsgSignature signature = await signHash(
+        nfc, 0x01, chipWalletAddress, hexToBytes(msgHashToSign), true);
+    return signature;
+  }
+
+  return await scanClosure(context, ref, callback, "MAKE_CHIP_SIGNATURE",
+      context.loc.holdPhoneToNfcChip);
 }
 
 /* GET SIGNATURE A MESSAGE/HASH FORM CARD*/
@@ -339,7 +353,7 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
         SignatureData(hashedMsg: hashedMsg, signature: signature));
 
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-    final TokenInfoObject tokenInfo =
+    final TokenChainAndCollection tokenInfo =
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
     if (tokenInfo.collectionId != zeroAddress) {
@@ -379,7 +393,7 @@ Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
       context.loc.holdPhoneToCard);
 }
 
-//scan closure abstraction
+//this function takes a callback, executes the NFC scan and executes the callback (e.g. to get chip signature etc)
 Future<dynamic> scanClosure(
     BuildContext context,
     WidgetRef ref,

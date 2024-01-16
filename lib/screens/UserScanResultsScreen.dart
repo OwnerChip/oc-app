@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -27,6 +29,7 @@ import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
@@ -82,7 +85,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
     String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
     try {
@@ -197,7 +200,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final walletType = ref.read(walletTypeProvider);
     UserSession userSession = ref.read(userSessionProvider)!;
     String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
     try {
@@ -273,9 +276,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         //wait for 2 seconds, to make sure corrrect data is fetched by providers
         await Future.delayed(const Duration(seconds: 2));
 
-        // update providers
+        //update providers for burn and transfer buttons
         await ref.refresh(nftApprovalProvider.future);
         await ref.refresh(nftOwnerProvider.future);
+        //update providers so offer for sale button is shown correctly on NFT Details
+        ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
         setState(() {
           isLoading = false;
@@ -305,6 +312,254 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
+  Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
+    final TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.cancelOffer;
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, cancelOfferFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+          chainConfig[config.chainId]!.controllerContract);
+
+      //fetch order data from backend
+      CreatorData creatorData = await ref.read(creatorDataProvider.future);
+      final allOffers =
+          creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
+      final offer = allOffers.firstWhere((o) => o.isCancelled == false);
+
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            cancelOfferFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            controllerContractId: controllerContractAddress,
+            salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
+            encodedOfferData: offer.encodedData,
+            endTimestamp: offer.validUntil,
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+          cancelOfferFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession!,
+          walletType!,
+          salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
+          encodedOfferData: offer.encodedData,
+          endTimestamp: offer.validUntil,
+        );
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        await cancelOfferBackendRequest(offer.offerHash);
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
+        );
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        //refresh providers for ownerchip check on ResultScreen
+        await ref.refresh(nftOwnerProvider.future);
+        await ref.refresh(creatorDataProvider.future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = context.loc.offerCanceled;
+        });
+
+        //delay two seconds
+        await Future.delayed(const Duration(seconds: 2));
+
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Error cancelling sale of token.');
+      }
+    } catch (e, s) {
+      Sentry.captureException(e);
+      setState(() {
+        isLoading = false;
+      });
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorCancellingSale, 'error'),
+      );
+    }
+  }
+
+  Future<void> redeemTwinToken(Web3App? wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    final TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.redeemingtoken;
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, redeemItemFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+          chainConfig[config.chainId]!.controllerContract);
+
+      final List<Purchase> unredeemedVoucherNfts =
+          await ref.watch(unredeemedVoucherNftsProvider.future);
+      final String offerHash = unredeemedVoucherNfts.first.offer.offerHash;
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            redeemItemFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            controllerContractId: controllerContractAddress,
+            offerHash: offerHash,
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+            redeemItemFunctionSignature,
+            config.chainId,
+            controllerContractAddress,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            walletType!,
+            offerHash: offerHash);
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.tokenRedeemed, 'success'),
+        );
+
+        //refresh providers for ownerchip check on ResultScreen
+        await ref.refresh(nftOwnerProvider.future);
+        await ref.refresh(creatorDataProvider.future);
+        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = context.loc.tokenRedeemed;
+        });
+
+        //delay two seconds
+        await Future.delayed(const Duration(seconds: 2));
+
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        throw Exception(context.loc.errorRedeemingToken);
+      }
+    } catch (e, s) {
+      Sentry.captureException(e);
+      setState(() {
+        isLoading = false;
+      });
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_REDEMPTION_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorRedeemingToken, 'error'),
+      );
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
@@ -325,7 +580,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
-    final AsyncValue<TokenInfoObject> tokenInfo =
+    final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
@@ -334,6 +589,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final wc = ref.watch(wcProvider);
     final AsyncValue<CreatorData> creatorData = ref.watch(creatorDataProvider);
+    final AsyncValue<EthereumAddress?> voucherContractAddress =
+        ref.watch(voucherContractProvider);
+    final AsyncValue<EthereumAddress?> vouchertokenOwner =
+        ref.watch(voucherTokenOwnerProvider);
+
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
     );
@@ -352,10 +612,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
             key: ScaffoldKey.getScaffoldKey('UserScanResultsScreen'),
@@ -544,7 +800,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                             )
                                           : connectedWallet == data
                                               //NFT owner exists and wallet is connected and wallet is owner
-                                              ? approval.value == zeroAddress
+                                              ? approval.value == zeroAddress ||
+                                                      approval.value == null
                                                   // show transfer / burn Token buttons only if token is not approved
                                                   ? Column(
                                                       children: [
@@ -640,17 +897,96 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               //NFT owner exists and wallet is connected and wallet is NOT owner
                                               Column(children: [
                                                   Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: Text(
-                                                          context.loc
-                                                              .youAreNotNftOwner,
-                                                          textAlign:
-                                                              TextAlign.left,
-                                                          style:
-                                                              Theme.of(context)
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child:
+
+                                                        //Wallet is not the TWIN token owner, because token is currently offered on MP
+                                                        creatorData.when(
+                                                      //if seller wallet address is equal to connected wallet address, show cancel order button
+                                                      data: (data) => data.hasActiveOffer &&
+                                                              EthereumAddress.fromHex(data
+                                                                      .tokenForWhichCreatorDataWasRequested
+                                                                      .activeOffers[
+                                                                          0]
+                                                                      .sellerAddress) ==
+                                                                  connectedWallet
+                                                          ? Text(context.loc.tokenCurrentlyOfferedForSale,
+                                                              textAlign: TextAlign
+                                                                  .left,
+                                                              style: Theme.of(context)
                                                                   .textTheme
-                                                                  .bodyMedium)),
+                                                                  .bodyMedium)
+                                                          : Text(context.loc.youAreNotNftOwner,
+                                                              textAlign: TextAlign
+                                                                  .left,
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium),
+                                                      loading: () =>
+                                                          Container(),
+                                                      error: (e, s) =>
+                                                          Container(),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  creatorData.when(
+                                                    //if seller wallet address is equal to connected wallet address, show cancel order button
+                                                    data: (data) => data
+                                                                .hasActiveOffer &&
+                                                            EthereumAddress.fromHex(data
+                                                                    .tokenForWhichCreatorDataWasRequested
+                                                                    .activeOffers[
+                                                                        0]
+                                                                    .sellerAddress) ==
+                                                                connectedWallet
+                                                        ? CustomRoundedButton(
+                                                            text: context.loc
+                                                                .cancelOffer,
+                                                            onPressed: () {
+                                                              fromCancelable(cancelOffer(
+                                                                  wc,
+                                                                  chipInfo
+                                                                      .tokenId,
+                                                                  signatureData,
+                                                                  connectedWallet));
+                                                            })
+                                                        : Container(),
+                                                    loading: () => Container(),
+                                                    error: (e, s) =>
+                                                        Container(),
+                                                  ),
+                                                  //REDEEM twin token if you have a voucher token and voucherTokenOwner is connectedWalet
+                                                  voucherContractAddress.when(
+                                                      data: (data) {
+                                                        return vouchertokenOwner
+                                                            .when(
+                                                                data: (tokenOwner) => tokenOwner ==
+                                                                            connectedWallet &&
+                                                                        data !=
+                                                                            null
+                                                                    ? Column(
+                                                                        children: [
+                                                                            const SizedBox(height: 15),
+                                                                            CustomRoundedButton(
+                                                                                width: double.infinity,
+                                                                                text: context.loc.redeemToken,
+                                                                                onPressed: (() => {
+                                                                                      fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                    })),
+                                                                          ])
+                                                                    : Container(),
+                                                                error: (e, s) =>
+                                                                    Container(),
+                                                                loading: () =>
+                                                                    Container());
+                                                      },
+                                                      error: (e, s) =>
+                                                          Container(),
+                                                      loading: () =>
+                                                          Container()),
+
+                                                  //CLAIM Ownership of twin token if it was transferred to user
                                                   approval.when(
                                                       data: (data) {
                                                         //check if a wallet can CLAIM OWNERSHIP
