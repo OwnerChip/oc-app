@@ -186,14 +186,16 @@ Future<String> makeAndSendGaslessTx(
 
       signature = await wc!
           .request(
-            topic: wcSession!.topic,
-            chainId: 'eip155:1',
-            request: SessionRequestParams(
-              method: 'eth_signTypedData_v4',
-              params: [walletAddress.toString(), json.encode(typedData)],
-            ),
-          )
-          .onError((error, stackTrace) => throw 'error signing gasless tx');
+        topic: wcSession!.topic,
+        chainId: 'eip155:1',
+        request: SessionRequestParams(
+          method: 'eth_signTypedData_v4',
+          params: [walletAddress.toString(), json.encode(typedData)],
+        ),
+      )
+          .onError((error, stackTrace) {
+        throw 'error signing gasless tx';
+      });
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     }

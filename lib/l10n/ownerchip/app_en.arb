@@ -292,6 +292,7 @@
     "sendShippingData": "Send shipping data",
     "pleaseEnterFirstName": "Please enter first name.",
     "pleaseEnterLastName": "Please enter last name.",
-    "cancelOrder": "Cancel order",
-    "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on marketplace."
+    "cancelOffer": "Cancel offer",
+    "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on marketplace.",
+    "payoutWalletAddress": "Payout Wallet Adresse"
 }

@@ -292,5 +292,6 @@
     "pleaseEnterFirstName": "Bitte Vorname angeben.",
     "pleaseEnterLastName": "Bitte Nachname angeben.",
     "cancelOrder": "Angebot entfernen",
-    "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten."
+    "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten.",
+    "payoutWalletAddress": "Auszahlungs Wallet Adresse"
 }

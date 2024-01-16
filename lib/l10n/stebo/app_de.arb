@@ -247,7 +247,7 @@
     "unableToReadChip": "Fehler beim Lesen des Chips.",
     "offerOnOpenSea": "Auf OpenSea zum Verkauf anbieten",
     "offerOnRarible": "Auf Rarible zum Verkauf anbieten",
-    "offeringToken": "'Token wird angeboten...",
+    "offeringToken": "Token wird angeboten...",
     "itemOffered": "Objekt angeboten",
     "itemOfferedOnMP": "Objekt auf Marktplatz angeboten",
     "viewOnMP": "Auf Marktplatz ansehen",
@@ -291,6 +291,7 @@
     "sendShippingData": "Versanddaten absenden",
     "pleaseEnterFirstName": "Bitte Vorname angeben.",
     "pleaseEnterLastName": "Bitte Nachname angeben.",
-    "cancelOrder": "Angebot entfernen",
-    "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten."
+    "cancelOffer": "Angebot entfernen",
+    "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten.",
+    "payoutWalletAddress": "Auszahlungs Wallet Adresse"
 }

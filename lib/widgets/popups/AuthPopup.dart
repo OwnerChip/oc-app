@@ -162,10 +162,4 @@ Future<void> onTapAuth(
   );
 
   Navigator.pop(context);
-
-  // try {
-  //   await checkAndShowShippingPopup(navigatorKey.currentContext!, ref);
-  // } catch (e) {
-  //   print("Error in onTapAuth: $e");
-  // }
 }

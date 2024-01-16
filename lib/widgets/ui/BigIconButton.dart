@@ -10,7 +10,6 @@ class BigIconButton extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     this.height = 60,
-    // this.width = double.infinity,
     this.backgroundColor,
     this.borderColor,
     this.textStyle,
@@ -23,7 +22,6 @@ class BigIconButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Icon icon;
   final double height;
-  // final double? width;
   final Color? backgroundColor;
   final Color? borderColor;
   final MainAxisAlignment mainAxisAlignment;
@@ -36,7 +34,6 @@ class BigIconButton extends StatelessWidget {
     return GestureDetector(
         onTap: onPressed,
         child: SizedBox(
-          // width: width,
           height: height,
           child: CustomCard(
               margin: const EdgeInsets.only(
