@@ -122,7 +122,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   //do stuff on app resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    //on resume
     if (state == AppLifecycleState.resumed) {
       if (!shippingPopupIsShown) {
         checkAndShowShippingPopup(context, ref,

@@ -343,7 +343,6 @@ String makeOfferItemData(
 
 Future<dynamic> getOwner(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
-  print('checking owner of tokenId $tokenId on chain $chainRpcUrl');
   try {
     var owner = await queryCollectionContract(
         chainRpcUrl, collectionId, "ownerOf", [tokenId]);
