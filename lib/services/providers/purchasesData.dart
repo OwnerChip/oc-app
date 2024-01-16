@@ -1,20 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 
 final unredeemedVoucherNftsProvider =
     FutureProvider.autoDispose<List<Purchase>>((ref) async {
@@ -74,7 +67,6 @@ final voucherNftsOwnedByUserProvider =
 
   List chainIds = chainConfig.keys.toList();
   final List voucherContractsAllChains = [];
-  //TODO: extract all voucher contracts from collections.collections
   for (var chainId in chainIds) {
     for (var collection in collections.collections[chainId]?.toList() ?? []) {
       if (collection.voucherAddress != null) {

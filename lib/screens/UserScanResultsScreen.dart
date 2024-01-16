@@ -323,7 +323,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     try {
       setState(() {
         isLoading = true;
-        loadingText = 'Cancelling offer';
+        loadingText = context.loc.cancelOffer;
         isRotating = true;
         loadingSvgPath =
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
@@ -942,7 +942,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                 connectedWallet
                                                         ? CustomRoundedButton(
                                                             text: context.loc
-                                                                .cancelOrder, //TODO: localization
+                                                                .cancelOffer,
                                                             onPressed: () {
                                                               fromCancelable(cancelOffer(
                                                                   wc,

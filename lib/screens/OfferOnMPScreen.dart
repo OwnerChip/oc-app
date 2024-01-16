@@ -404,7 +404,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                     });
                                   },
                                   validator: (value) {
-                                    //validate if value is email
                                     bool isEmail = RegExp(
                                             r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                                         .hasMatch(value!);
@@ -423,7 +422,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(context.loc.walletAddress,
+                                Text(context.loc.payoutWalletAddress,
                                     style: Theme.of(context)
                                         .textTheme
                                         .headlineSmall!),
