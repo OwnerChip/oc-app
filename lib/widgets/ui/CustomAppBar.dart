@@ -15,6 +15,7 @@ import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key, this.text, this.showBackButton = true})

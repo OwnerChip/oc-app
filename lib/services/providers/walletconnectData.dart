@@ -3,8 +3,14 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 //****WALLETCONNECT****
+
+//wallet connect 2 client provider
+final w3mServiceProvider = StateProvider<W3MService?>((ref) {
+  return null;
+});
 
 //wallet connect 2 client provider
 final wcProvider = StateProvider<Web3App?>((ref) {
