@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/secora.services.dart';
 
 void main() {
   dotenv.load(fileName: ".env");

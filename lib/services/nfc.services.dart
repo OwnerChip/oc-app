@@ -1,457 +1,506 @@
-import 'dart:convert';
-import 'dart:io';
+// ignore_for_file: use_build_context_synchronously
+
+//import packages
+import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:flutter/foundation.dart';
-import 'package:nfc_manager/platform_tags.dart';
-import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:web3dart/credentials.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:web3dart/crypto.dart';
+import 'package:sentry/sentry.dart';
+
+//import services
+import 'package:ownerchip_whitelabel/services/secora.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
-class NFCPlatform {
-  var platform = defaultTargetPlatform;
-  final NfcTag tag;
-  // cannot assign type to nfc because type depends on platform
-  // ignore: prefer_typing_uninitialized_variables
-  late final nfc;
-  NFCPlatform(this.tag) {
-    if (Platform.isIOS) {
-      nfc = Iso7816.from(tag);
-    } else if (Platform.isAndroid) {
-      nfc = IsoDep.from(tag);
+//import screens
+import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
+import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
+
+//import misc
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+
+Future<void> generateKeyOnChip(WidgetRef ref, BuildContext context) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    return await generatePubAddress(nfc);
+  }
+
+  return await scanClosure(context, ref, callback, "testGenerateKeyOnChip",
+      context.loc.holdPhoneToNfcChip);
+}
+
+Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    EthereumAddress chipEthereumAddress = createFirstKeyChipResponse[0];
+    String chipWalletAddress = chipEthereumAddress.toString();
+    BigInt chipTokenId = createFirstKeyChipResponse[1];
+    bool ndefTagInitialized = createFirstKeyChipResponse[2];
+    if (ndefTagInitialized) {
+      sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+    }
+
+    //set chip info data in provider
+    setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
+
+    TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(chipTokenId).future);
+
+    //verify signature
+    List verificationResult = await verifySignatureAuthenticity(
+        nfc, sessionId, chipEthereumAddress, chipTokenId);
+    Uint8List hashedMsg = verificationResult[0];
+    MsgSignature signature = verificationResult[1];
+    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
+        SignatureData(hashedMsg: hashedMsg, signature: signature));
+
+    //TOKEN DOES NOT EXIST
+    if (config.collectionId == zeroAddress) {
+      sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+          tags: {"chipWallet": chipWalletAddress});
+
+      Navigator.pushNamed(context, ChainSelectorScreen.routeName,
+          arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
+    }
+    //TOKEN EXISTS
+    else {
+      await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+          signature, sessionId, chipWalletAddress, context);
+
+      Navigator.pushNamed(
+        context,
+        UserScanResultsScreen.routeName,
+      );
     }
   }
 
-  /// sends an APDU commands and returns the response List<Uint8List, int, int>
-  Future<List<dynamic>> sendCommand(Uint8List data) async {
-    if (Platform.isIOS) {
-      Iso7816ResponseApdu res = await nfc.sendCommandRaw(data);
-      return [res.payload, res.statusWord1, res.statusWord2];
-    } else if (Platform.isAndroid) {
-      Uint8List res = await nfc.transceive(data: data);
-      return [
-        res.sublist(0, res.length - 2),
-        res[res.length - 2],
-        res[res.length - 1]
-      ];
-    }
-    throw Exception("Unsupported platform");
-  }
+  return await scanClosure(context, ref, callback, "INITIALIZE_ITEM",
+      context.loc.holdPhoneToNfcChip);
 }
 
-//****COMMANDS****
+Future<void> scanItem(WidgetRef ref, BuildContext context) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    EthereumAddress chipEthereumAddress = createFirstKeyChipResponse[0];
+    String chipWalletAddress = chipEthereumAddress.toString();
+    BigInt chipTokenId = createFirstKeyChipResponse[1];
 
-Uint8List makeGetKeyInfoCommand(hexKeyNumber) {
-  return Uint8List.fromList([
-    0x00,
-    0x16,
-    hexKeyNumber,
-    0x00,
-    0x00,
-  ]);
-}
+    //set chip info data in provider
+    setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
 
-Uint8List setPinCommand(String pin) {
-  final Uint8List cmd = Uint8List.fromList([
-    0x00,
-    0x40,
-    0x00,
-    0x00,
-    pin.length, // Length of the PIN in bytes (between 4 and 62 bytes)
-    ...pin.codeUnits,
-    0x08 // Expected length of answer
-  ]);
-  return cmd;
-}
+    TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(chipTokenId).future);
 
-Uint8List verifyPinCommand(String pin) {
-  final Uint8List cmd = Uint8List.fromList([
-    0x00,
-    0x44,
-    0x00,
-    0x00,
-    pin.length, // Length of the PIN in bytes (between 4 and 62 bytes)
-    ...pin.codeUnits
-  ]);
-  return cmd;
-}
-
-Uint8List changePinCommand(String oldPin, String newPin) {
-  final Uint8List cmd = Uint8List.fromList([
-    0x00,
-    0x42,
-    0x00,
-    0x00,
-    oldPin.length + newPin.length + 2,
-    oldPin.length,
-    ...oldPin.codeUnits,
-    newPin.length,
-    ...newPin.codeUnits,
-    0x08 // Expected length of answer
-  ]);
-  return cmd;
-}
-
-Uint8List unlockPinCommand(Uint8List puk) {
-  final Uint8List cmd = Uint8List.fromList([
-    0x00,
-    0x46,
-    0x00,
-    0x00,
-    0x08,
-    ...puk,
-  ]);
-  return cmd;
-}
-
-Uint8List makeSignatureCommand(int hexKeyNumber, Uint8List dataToSign) {
-  var bytes = BytesBuilder();
-  Uint8List a = Uint8List.fromList([
-    0x00,
-    0x18,
-    hexKeyNumber,
-    0x00,
-    0x20,
-  ]);
-  bytes.add(a);
-  bytes.add(dataToSign);
-  bytes.add(Uint8List.fromList([0x00]));
-  Uint8List res = bytes.toBytes();
-  return res;
-}
-
-Uint8List importKeyCommand(Uint8List seed) {
-  final Uint8List cmd = Uint8List.fromList([
-    0x00,
-    0x20,
-    0x00,
-    0x00,
-    0x10,
-    ...seed,
-  ]);
-  return cmd;
-}
-
-Uint8List makeWriteNdefUrl(EthereumAddress chipEthereumAddressHex) {
-  String url = getNdefUrl() +
-      chipEthereumAddressHex.toString() +
-      '?appId=' +
-      dotenv.get('APP_ID');
-
-  // byte content
-  Uint8List typeName = Uint8List.fromList([0x55]);
-  Uint8List httpsPrefix = Uint8List.fromList([0x04]);
-  Uint8List urlBytes = Uint8List.fromList(url.codeUnits);
-  Uint8List urlPayload =
-      Uint8List.fromList([...typeName, ...httpsPrefix, ...urlBytes]);
-
-  Uint8List res = Uint8List.fromList([
-    0,
-    0xD6,
-    0,
-    0,
-    urlPayload.length + 5,
-    0,
-    urlPayload.length + 3,
-    0xD1,
-    0x01,
-    urlPayload.length - 1,
-    ...urlPayload
-  ]);
-  print(res);
-  return res;
-}
-
-//****NFC HELPERS****
-
-Future<Uint8List> getFirstPubKey(NFCPlatform nfc) async {
-  return await getPubKeyN(nfc, 0x01);
-}
-
-//write key to slot zero
-Future<void> writeKeyToSlotZero(NFCPlatform nfc, Uint8List seed) async {
-  Uint8List importKey = importKeyCommand(seed);
-  var responseImportKey = await nfc.sendCommand(importKey);
-  int responseCode1 = responseImportKey[1];
-  int responseCode2 = responseImportKey[2];
-
-  if (!(responseCode1 == 144 && responseCode2 == 00)) {
-    throw Exception("Error while importing key");
-  }
-}
-
-//getKeyN
-Future<Uint8List> getPubKeyN(NFCPlatform nfc, int key) async {
-  await nfc.sendCommand(SELECT_APP);
-  Uint8List getKeyInfo = makeGetKeyInfoCommand(key);
-  var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
-
-  Uint8List getKeyInfoData = responseGetKeyInfo[0];
-  int getKeyInfoResponseCode1 = responseGetKeyInfo[1];
-  int getKeyInfoResponseCode2 = responseGetKeyInfo[2];
-
-  //check if first key does not exist yet exist; [106, 136] is error code for key does not exist in decimal
-  bool keyExists =
-      !(getKeyInfoResponseCode1 == 106 && getKeyInfoResponseCode2 == 136) &&
-          getKeyInfoData.length > 0;
-
-  if (keyExists) {
-    Uint8List chipPubKey = makePublicKeyFromChipResponse(getKeyInfoData);
-    return chipPubKey;
-  } else {
-    return Uint8List.fromList([]);
-  }
-}
-
-Future<Uint8List> generatePubAddress(NFCPlatform nfc) async {
-  //create new key
-  var responseGenerateKey = await nfc.sendCommand(GENERATE_KEY);
-  int keySlot = responseGenerateKey[0][0];
-  //get key info after generating new key
-  Uint8List getKeyInfo = makeGetKeyInfoCommand(keySlot);
-  var responseGetKeyInfo = await nfc.sendCommand(getKeyInfo);
-  Uint8List getKeyInfoData = responseGetKeyInfo[0];
-  int getKeyInfoResponseCode1 = responseGetKeyInfo[1];
-  int getKeyInfoResponseCode2 = responseGetKeyInfo[2];
-
-  if (!(getKeyInfoResponseCode1 == 144 && getKeyInfoResponseCode2 == 00)) {
-    throw Exception("Error while generating key");
-  }
-  if (getKeyInfoData.length < 73) {
-    throw Exception("Error while generating key");
-  }
-  Uint8List chipPubKey =
-      makePublicKeyFromChipResponse(getKeyInfoData); //takes first 20 bytes
-
-  return chipPubKey;
-}
-
-//check if first key already exists, if not, generate key. Return key info.
-Future<List<dynamic>> createFirstKeypairOnChip(
-    NFCPlatform nfc, bool initializeNdef, String sessionId) async {
-  bool empty = false;
-  //empty UintList
-  await nfc.sendCommand(SELECT_APP);
-
-  Uint8List chipPubKey = await getFirstPubKey(nfc);
-
-  if (chipPubKey.isEmpty) {
-    empty = true;
-    chipPubKey = await generatePubAddress(nfc);
-  }
-  //check if response from get key is does NOT have success code 90 00 in hex --> 144 0 in decimal
-  Uint8List chipEthereumAddress = publicKeyToAddress(chipPubKey);
-
-  EthereumAddress chipEthereumAddressHex =
-      EthereumAddress.fromHex("0x${bytesToHex(chipEthereumAddress)}");
-  BigInt chipTokenId = bytesToUnsignedInt(chipEthereumAddress);
-// initialize NDEF tag if empty AND NDEF should be initialized (aka, user is not just scanning but initializing a chip)
-  if (/*empty &&*/ initializeNdef) {
+    //verify signature
     try {
-      String url =
-          '${getNdefUrl()}$chipEthereumAddressHex?appId=${dotenv.get('APP_ID')}';
-      await initializeNdefTag(nfc, chipEthereumAddressHex, sessionId);
-      sendAnalyticsTrace(sessionId, url, "INITIALIZE_NDEF_SUCCESS",
-          tags: {"chipWallet": chipEthereumAddressHex.toString()});
-    } catch (e) {
-      sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_ERROR",
-          tags: {"chipWallet": chipEthereumAddress.toString()});
-      rethrow;
-    }
-  }
+      List verificationResult = await verifySignatureAuthenticity(
+          nfc, sessionId, chipEthereumAddress, chipTokenId);
+      Uint8List hashedMsg = verificationResult[0];
+      MsgSignature signature = verificationResult[1];
+      ref.read(chipSignatureDataProvider.notifier).setSignatureData(
+          SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-  return [chipEthereumAddressHex, chipTokenId, empty];
-}
+      //TOKEN DOES NOT EXIST
+      if (config.collectionId == zeroAddress) {
+        sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+            tags: {"chipWallet": chipWalletAddress});
 
-// initialize NDEF tag
-Future<void> initializeNdefTag(NFCPlatform nfc,
-    EthereumAddress chipEthereumAddressHex, String sessionId) async {
-  //select Applet
-  var selectAppletRes = await nfc.sendCommand(SELECT_NDEF_APP);
-  int selectAppletResCode1 = selectAppletRes[1];
-  int selectAppletResCode2 = selectAppletRes[2];
-  if (!(selectAppletResCode1 == 144 && selectAppletResCode2 == 00)) {
-    if (selectAppletResCode1 == 106 && selectAppletResCode2 == 130) {
-      // do NOTHING, but report analytics
-      sendAnalyticsTrace(
-          "$sessionId",
-          "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
-          "INITIALIZE_NDEF_NO_APPLET",
-          tags: {"chipWallet": chipEthereumAddressHex.hex});
-      print("---- No NDEF applet installed! ----");
-    } else {
-      throw Exception(
-          "Error while selecting NDEF applet. ERROR CODE: ${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}");
-    }
-  } else {
-    print("---- ... initializing NDEF ----");
-
-    //select NDEF file
-    var selectNdefFileRes = await nfc.sendCommand(SELECT_NDEF_FILE);
-    int selectNdefFileResCode1 = selectNdefFileRes[1];
-    int selectNdefFileResCode2 = selectNdefFileRes[2];
-    if (!(selectNdefFileResCode1 == 144 && selectNdefFileResCode2 == 00)) {
-      throw Exception("Error while selecting NDEF file");
-    }
-
-    //write NDEF message
-    Uint8List ndefUrlMsg = makeWriteNdefUrl(chipEthereumAddressHex);
-    var writeNdefMessageRes = await nfc.sendCommand(ndefUrlMsg);
-    int writeNdefMessageResCode1 = writeNdefMessageRes[1];
-    int writeNdefMessageResCode2 = writeNdefMessageRes[2];
-    if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 0)) {
-      if (writeNdefMessageResCode1 == 105 && writeNdefMessageResCode2 == 133) {
-        // do NOTHING, but report analytics
-        sendAnalyticsTrace(
-            "$sessionId",
-            "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
-            "INITIALIZE_NDEF_WRONG_STATE",
-            tags: {"chipWallet": chipEthereumAddressHex.hex});
-        print(
-            "---- NDEF is locked or NFC chip is not in correct state to write ----");
+        Navigator.pushNamed(
+          context,
+          UserScanResultsScreen.routeName,
+        );
       } else {
-        throw Exception(
-            "Error while writing NDEF Url. ERROR CODE: ${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}");
-      }
-    }
+        //TOKEN EXISTS
+        await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+            signature, sessionId, chipWalletAddress, context);
 
-    // lock NDEF file if app is not internal test version
-    else if (dotenv.get('IS_INTERNAL') != 'true') {
-      var lockNdefFileRes = await nfc.sendCommand(LOCK_NDEF_FILE);
-      int lockNdefFileResCode1 = lockNdefFileRes[1];
-      int lockNdefFileResCode2 = lockNdefFileRes[2];
-      if (!(lockNdefFileResCode1 == 144 && lockNdefFileResCode2 == 00)) {
-        throw Exception(
-            "Error while locking NDEF. ERROR CODE: ${lockNdefFileResCode1.toRadixString(16)} ${lockNdefFileResCode2.toRadixString(16)}");
+        Navigator.pushNamed(
+          context,
+          UserScanResultsScreen.routeName,
+        );
+      }
+    } catch (e) {
+      // check if wallet is connected
+
+      if (ref.read(wcSessionProvider) == null &&
+          e == "Error: Chip is PIN code locked.") {
+        await NfcManager.instance.stopSession();
+        //navigate to PinScreen
+        Navigator.pushNamed(context, PinScreen.routeName,
+            arguments: PinScreenArguments(
+                activeFeature: PinScreenActiveFeature.verifyPinAuth,
+                callback: (String pin) async {
+                  onCardPress(ref, context, pin, false);
+                }));
+      } else {
+        rethrow;
       }
     }
   }
+
+  return await scanClosure(
+      context, ref, callback, "SCAN_ITEM", context.loc.holdPhoneToNfcChip);
 }
 
-Future<void> nfcPlatformCheck(
-    BuildContext context, String sessionId, NFCPlatform nfc) async {
-  // null comparison below is NOT unnecessary!
-  // ignore: unnecessary_null_comparison
-  if (nfc == null) {
+void setChipInfoProvider(
+    WidgetRef ref, EthereumAddress chipEthereumAddress, BigInt chipTokenId) {
+  ref
+      .read(chipInfoProvider.notifier)
+      .setChipEthereumAddress(chipEthereumAddress);
+  ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
+  ref.read(chipInfoProvider.notifier).setChipToInitialized();
+}
+
+//TODO: Check if this function should actually return a bool? What happens if verifyTokenAuthenticity returns false?
+Future<void> verifyAuthenticity(
+    TokenChainAndCollection config,
+    EthereumAddress chipEthereumAddress,
+    Uint8List hashedMsg,
+    MsgSignature signature,
+    String sessionId,
+    String chipWalletAddress,
+    BuildContext context) async {
+  try {
+    //verify token authenticity via smart contract
+    bool tokenIsAuthentic = await verifyTokenAuthenticity(
+        getRPCUrlFromChainId(config.chainId),
+        config.collectionId,
+        chipEthereumAddress,
+        hashedMsg,
+        signature);
+
+    sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_POSITIVE",
+        tags: {"chipWallet": chipWalletAddress});
+  } catch (e) {
+    //TOKEN IS NOT AUTHENTIC
+    rethrow;
+  }
+}
+
+/*GET SIGNATURE OF A MESSAGE/HASH FROM A CHIP WHICH IS NOT PIN LOCKED*/
+Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
+    msgHashToSign, Function toggleLoading) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    EthereumAddress chipWalletAddress = createFirstKeyChipResponse[0];
+    MsgSignature signature = await signHash(
+        nfc, 0x01, chipWalletAddress, hexToBytes(msgHashToSign), true);
+    return signature;
+  }
+
+  return await scanClosure(context, ref, callback, "MAKE_CHIP_SIGNATURE",
+      context.loc.holdPhoneToNfcChip);
+}
+
+/* GET SIGNATURE A MESSAGE/HASH FORM CARD*/
+//returns MsgSignature if everything worked correctly
+//returns null if user cancels scan or error occurs
+Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
+    msgHashToSign, Function toggleLoading, String pin) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    bool pinVerified = await verifyPin(nfc, pin);
+    EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
+    MsgSignature signature = await signHash(
+        nfc, 0x01, cardWalletAddress, hexToBytes(msgHashToSign), false);
+    return signature;
+  }
+
+  return await scanClosure(context, ref, callback, "MAKE_CARD_SIGNATURE",
+      context.loc.holdPhoneToCard);
+}
+
+Future<void> authenticateCard(
+    WidgetRef ref, BuildContext context, String pin) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    String message =
+        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+    Uint8List msgHashToSign = keccakUtf8(message);
+    bool pinVerified = await verifyPin(nfc, pin);
+    EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
+    MsgSignature signature =
+        await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign, false);
+    await saveUserSession(sessionId, cardWalletAddress, signature, ref);
+  }
+
+  return await scanClosure(
+      context, ref, callback, "AUTHENTICATE_CARD", context.loc.holdPhoneToCard);
+}
+
+Future<String?> setPinOnCard(
+    BuildContext context, WidgetRef ref, String pin) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+    if (pubKeyZero.isNotEmpty) {
+      return await setPin(nfc, pin);
+    } else {
+      throw context.loc.cardNotInitializedByAdmin;
+    }
+  }
+
+  return await scanClosure(context, ref, callback, "SET_PIN_ON_CARD",
+      context.loc.holdPhoneCloseToOwnerCardToInit);
+}
+
+Future<String?> resetPinOnCard(
+    BuildContext context, WidgetRef ref, String puk, String pin) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    bool success = await unlockPin(nfc, puk);
+    if (success) {
+      return await setPin(nfc, pin);
+    }
+  }
+
+  return await scanClosure(
+      context, ref, callback, "RESET_PIN_ON_CARD", context.loc.holdPhoneToCard);
+}
+
+Future<dynamic> getFirstChipWalletAddress(
+    BuildContext context, WidgetRef ref) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    return createFirstKeyChipResponse[0];
+  }
+
+  return await scanClosure(context, ref, callback, "GET_CHIP_ADDR_FOR_TRANSFER",
+      context.loc.holdPhoneToCard);
+}
+
+Future<dynamic> getFirstChipWalletAddressForTransfer(
+    BuildContext context, WidgetRef ref) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    //get 0th key to check if it exists, so user can only send token to owner card
+    Uint8List cardWalletAddress0 = await getPubKeyN(nfc, 0);
+    if (cardWalletAddress0.isEmpty) {
+      throw context.loc.transferOnlyToOwnerCard;
+    }
+    return createFirstKeyChipResponse[0];
+  }
+
+  return await scanClosure(context, ref, callback, "GET_CHIP_ADDR_FOR_TRANSFER",
+      context.loc.holdPhoneToCard);
+}
+
+Future<dynamic> getAllChipWalletAddresses(
+    BuildContext context, WidgetRef ref) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    List<EthereumAddress> pubKeys = [];
+    for (int i = 0; i < 256; i++) {
+      Uint8List pubKey = await getPubKeyN(nfc, i);
+      if (pubKey.isEmpty && i == 0) {
+        //add zero addr if slot 0 is not initialized
+        pubKeys.add(zeroAddress);
+        continue;
+      }
+
+      if (pubKey.isEmpty && i != 0) {
+        break;
+      }
+      Uint8List addr = publicKeyToAddress(pubKey);
+      pubKeys.add(EthereumAddress(addr));
+    }
+    return pubKeys;
+  }
+
+  return await scanClosure(context, ref, callback, "GET_CHIP_WALLET_ADDRESSES",
+      context.loc.holdPhoneToNfcChip);
+}
+
+Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
+    String name, String telNr) async {
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    EthereumAddress chipEthereumAddress = createFirstKeyChipResponse[0];
+    String chipWalletAddress = chipEthereumAddress.toString();
+    BigInt chipTokenId = createFirstKeyChipResponse[1];
+    bool ndefTagInitialized = createFirstKeyChipResponse[2];
+    if (ndefTagInitialized) {
+      sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+    }
+
+    //set chip info data in provider
+    setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
+
+    //verify signature
+    List verificationResult = await verifySignatureAuthenticity(
+        nfc, sessionId, chipEthereumAddress, chipTokenId);
+    Uint8List hashedMsg = verificationResult[0];
+    MsgSignature signature = verificationResult[1];
+    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
+        SignatureData(hashedMsg: hashedMsg, signature: signature));
+
+    final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+    final TokenChainAndCollection tokenInfo =
+        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+    SignatureData chipSignature = ref.read(chipSignatureDataProvider);
+    if (tokenInfo.collectionId != zeroAddress) {
+      return await sendCardLostToBackend(createFirstKeyChipResponse[0],
+          tokenInfo.collectionId, chipSignature, sessionId, email, name, telNr);
+    } else {
+      throw context.loc.tokenDoesNotExist;
+    }
+  }
+
+  return await scanClosure(
+      context, ref, callback, "CARD_LOST", context.loc.scanToTriggerCardLost);
+}
+
+Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
+    Function setStateCallback, String customerId) async {
+  String identifier = generateOwnerCardIdentifier(
+      int.parse(customerId), dotenv.get('OWNERCARD_BASE_ID'));
+  Uint8List seed = hexToBytes(identifier);
+  Future callback(NFCPlatform nfc, String sessionId,
+      List createFirstKeyChipResponse) async {
+    var pubKeyZero;
+    pubKeyZero = await getPubKeyN(nfc, 0x00);
+    if (pubKeyZero.isEmpty) {
+      await writeKeyToSlotZero(nfc, seed);
+      pubKeyZero = await getPubKeyN(nfc, 0x00);
+    }
+    sendCardInitToBackend(customerId, createFirstKeyChipResponse[0]);
+
+    EthereumAddress cardWalletAddress = EthereumAddress.fromHex(
+        "0x${bytesToHex(publicKeyToAddress(pubKeyZero))}");
+
+    setStateCallback(cardWalletAddress);
+  }
+
+  return await scanClosure(context, ref, callback, "IMPORT_KEY_TO_SLOT_ZERO",
+      context.loc.holdPhoneToCard);
+}
+
+//this function takes a callback, executes the NFC scan and executes the callback (e.g. to get chip signature etc)
+Future<dynamic> scanClosure(
+    BuildContext context,
+    WidgetRef ref,
+    Future<dynamic> Function(NFCPlatform, String, List) callback,
+    String analyticsType,
+    String alertMessage) async {
+  await NfcManager.instance.stopSession();
+
+  if (!await checkInternetConnection()) {
+    throw "No internet connection";
+  }
+
+  Completer<void> completer = Completer();
+
+  //get saved session id if exists, else get new one from backend
+  String sessionId = ref.read(userSessionProvider) != null
+      ? ref.read(userSessionProvider)!.sessionId
+      : await getSessionId();
+
+  //start NFC scan
+  final scanProcess = Sentry.startTransaction('$analyticsType', 'task');
+  NFCOverlay nfcOverlay = NFCOverlay();
+  if (Platform.isAndroid) {
+    nfcOverlay.showNfcOverlay(context, alertMessage);
+  }
+
+  NfcManager.instance.startSession(
+      onError: (error) async {
+        //check if future is already completed
+        if (error.message.contains('Session invalidated by user')) {
+          //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
+          return;
+        } else {
+          completer.completeError(error);
+        }
+      },
+      alertMessage: alertMessage,
+      onDiscovered: (NfcTag tag) async {
+        try {
+          NFCPlatform nfc = NFCPlatform(tag);
+
+          //check if iso7816 or isodep is available and exit if not
+          await nfcPlatformCheck(context, sessionId, nfc);
+
+          //create first key if not existing
+          List createFirstKeyChipResponse =
+              await createFirstKeypairOnChip(nfc, true, sessionId);
+
+          final result =
+              await callback(nfc, sessionId, createFirstKeyChipResponse);
+
+          completer.complete(result);
+          stopNfcOniOSAndAndroid(nfcOverlay);
+          scanProcess.finish();
+          sendAnalyticsTrace(sessionId, '', analyticsType,
+              tags: {"chipWallet": createFirstKeyChipResponse[0].hex});
+        } catch (e, stackTrace) {
+          String errorMessage = e.toString();
+          print(errorMessage);
+          if (errorMessage.contains('Tag response error / no response') ||
+              errorMessage.contains('Tag was lost.')) {
+            errorMessage = context.loc.pleaseHoldPhoneLonger;
+          }
+          if (errorMessage.contains('RangeError')) {
+            errorMessage = context.loc.unableToReadChip;
+          }
+          NfcManager.instance.stopSession(
+              errorMessage: errorMessage); //the error is passed to onError here
+          stopNfcOniOSAndAndroid(nfcOverlay);
+          if (Platform.isAndroid) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              returnSnackBarWidget(
+                  context.loc.errorHeadingSnackBar,
+                  errorMessage.length > 40
+                      ? errorMessage.substring(0, 40) + '...'
+                      : errorMessage,
+                  'error'),
+            );
+          }
+          //LOG ERROR
+          print(e);
+          sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
+          scanProcess.throwable = e;
+          scanProcess.status = const SpanStatus.deadlineExceeded();
+          scanProcess.finish();
+          await Sentry.captureException(
+            e,
+            stackTrace: stackTrace,
+          );
+          rethrow;
+        }
+      });
+
+  return completer.future;
+}
+
+//function template
+Future<void> stopNfcOniOSAndAndroid(NFCOverlay nfcOverlay) async {
+  if (Platform.isIOS) {
     NfcManager.instance.stopSession();
-    ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(
-          context.loc.errorHeadingSnackBar, context.loc.noNfc, 'error'),
-    );
-    sendAnalyticsTrace(sessionId, "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
-    //delay for 1 second
-    await Future.delayed(const Duration(seconds: 1));
-    Navigator.pop(context);
-    throw Exception('Tag is not ISO-DEP.');
   }
-}
-
-/// returns PUK value (8 byte) or throws exception
-Future<String> setPin(NFCPlatform nfc, String pin) async {
-  if (pin.length != 4) {
-    throw Exception("PIN must be 4 characters long.");
+  if (Platform.isAndroid) {
+    nfcOverlay.removeNfcOverlay();
   }
 
-  Uint8List cmd = setPinCommand(pin);
-  List<dynamic> res = await nfc.sendCommand(cmd);
-  Uint8List puk = res[0];
-  int responseCode1 = res[1];
-  int responseCode2 = res[2];
-
-  // ERROR (0x69 0x85)
-  bool success = (responseCode1 == 0x90 && responseCode2 == 0x00);
-
-  if (success && puk.length == 8) {
-    //puk Uint8List to hex string
-    String pukHex = bytesToHex(puk, padToEvenLength: true);
-
-    return pukHex;
-  } else {
-    throw Exception("Error setting pin");
-  }
-}
-
-/// verify PIN, so that commands requiring authentication are allowed
-Future<bool> verifyPin(NFCPlatform nfc, String pin) async {
-  if (pin.length != 4) {
-    throw Exception("PIN must be 4 characters long.");
-  }
-
-  Uint8List cmd = verifyPinCommand(pin);
-  List<dynamic> res = await nfc.sendCommand(cmd);
-  Uint8List response = res[0];
-  int responseCode1 = res[1];
-  int responseCode2 = res[2];
-
-  // check if SUCCESS (0x90 0x00)
-  if (responseCode1 == 144 && responseCode2 == 0) {
-    return true;
-  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
-    throw Exception("PIN not set");
-  } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
-    throw Exception("PIN blocked. Please use PUK to unblock.");
-  } else {
-    throw Exception("Invalid PIN");
-  }
-}
-
-/// change PIN, returns PUK value (8 byte) or throws exception
-Future<String> changePin(NFCPlatform nfc, String oldPin, String newPin) async {
-  if (oldPin.length != 4) {
-    throw Exception("Old PIN must be 4 characters long.");
-  }
-  if (newPin.length != 4) {
-    throw Exception("New PIN must be 4 characters long.");
-  }
-
-  Uint8List cmd = changePinCommand(oldPin, newPin);
-  List<dynamic> res = await nfc.sendCommand(cmd);
-  Uint8List response = res[0];
-  int responseCode1 = res[1];
-  int responseCode2 = res[2];
-
-  // check if SUCCESS (0x90 0x00)
-  if (responseCode1 == 144 && responseCode2 == 0) {
-    Uint8List puk = response.sublist(0, 7);
-    Utf8Decoder decoder = const Utf8Decoder();
-    return decoder.convert(puk);
-  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
-    throw Exception("PIN not set");
-  } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
-    throw Exception("PIN blocked. Please use PUK to unblock.");
-  } else if (responseCode1 == 0x6A && responseCode2 == 0x80) {
-    throw Exception("Invalid new PIN");
-  } else {
-    throw Exception("Invalid old PIN");
-  }
-}
-
-/// remove PIN by entering a PUK (8 byte hex string)
-Future<bool> unlockPin(NFCPlatform nfc, String puk) async {
-  if (puk.length != 16) {
-    throw Exception("PUK must be 16 characters / 8 bytes long.");
-  }
-
-  Uint8List pukBytes = hexToBytes(puk);
-  Uint8List cmd = unlockPinCommand(pukBytes);
-  List<dynamic> res = await nfc.sendCommand(cmd);
-  Uint8List response = res[0];
-  int responseCode1 = res[1];
-  int responseCode2 = res[2];
-
-  // check if SUCCESS (0x90 0x00)
-  if (responseCode1 == 144 && responseCode2 == 0) {
-    return true;
-  } else if (responseCode1 == 0x69 && responseCode2 == 0x85) {
-    throw Exception("PIN not set");
-  } else if (responseCode1 == 0x69 && responseCode2 == 0x83) {
-    throw Exception("PUK blocked.");
-  } else {
-    throw Exception("Invalid PUK");
+  //delay stopping nfc session, to avoid reading the same tag twice
+  if (Platform.isAndroid) {
+    await Future.delayed(const Duration(seconds: 2));
+    NfcManager.instance.stopSession();
   }
 }
