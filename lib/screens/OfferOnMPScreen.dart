@@ -201,6 +201,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          ref,
           offerItemFunctionSignature,
           config.chainId,
           controllerContractAddress,

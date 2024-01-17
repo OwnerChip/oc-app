@@ -56,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   bool shippingPopupIsShown = false;
 
   Future<void> _setSessionProviderFromPersistedSession() async {
-    await initWcClient(ref);
+    await initWcClient(ref, context);
 
     final storage = await SharedPreferences.getInstance();
 

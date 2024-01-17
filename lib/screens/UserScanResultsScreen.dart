@@ -132,6 +132,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            ref,
             burnFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -245,6 +246,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            ref,
             transferFromFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -370,6 +372,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          ref,
           cancelOfferFunctionSignature,
           config.chainId,
           controllerContractAddress,
@@ -494,6 +497,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          ref,
             redeemItemFunctionSignature,
             config.chainId,
             controllerContractAddress,

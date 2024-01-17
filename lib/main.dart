@@ -87,7 +87,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    unsubscribeWcListeners(ref);
+    unsubscribeWcListeners(ref, context);
   }
 
   @override

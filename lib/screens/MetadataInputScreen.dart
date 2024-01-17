@@ -203,6 +203,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            ref,
             mintFunctionSignature,
             chainId,
             voucherCollectionId ?? collectionId,

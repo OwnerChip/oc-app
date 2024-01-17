@@ -121,6 +121,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            ref,
             approveFunctionSignature,
             config.chainId,
             config.collectionId,

@@ -30,7 +30,7 @@ Future<void> authPopupBuilder(
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
           title: Padding(
-            padding: EdgeInsets.only(),
+            padding: const EdgeInsets.only(),
             child: Text(
               context.loc.login,
               textAlign: TextAlign.center,
@@ -69,7 +69,6 @@ Future<void> authPopupBuilder(
               ),
               Row(
                 children: [
-                  //grey circle icon full, not outlined
                   const Icon(
                     Icons.check_circle_outline_rounded,
                     color: Colors.grey,
@@ -130,7 +129,7 @@ Future<void> onTapAuth(
       "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
 
   String hexSignature = await sendPersonalSignRequest(
-      message, userWalletAddress, wc, session, walletType);
+      ref, message, userWalletAddress, wc, session, walletType);
 
   MsgSignature signature = hexSignatureToRSV(hexSignature);
 
