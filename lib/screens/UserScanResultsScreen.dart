@@ -497,7 +497,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
-          ref,
+            ref,
             redeemItemFunctionSignature,
             config.chainId,
             controllerContractAddress,
@@ -921,7 +921,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                               style: Theme.of(context)
                                                                   .textTheme
                                                                   .bodyMedium)
-                                                          : Text(context.loc.youAreNotNftOwner,
+                                                          : Text(context.loc.youAreTheNewOwner,
                                                               textAlign: TextAlign
                                                                   .left,
                                                               style: Theme.of(context)

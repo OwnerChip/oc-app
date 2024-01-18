@@ -293,5 +293,6 @@
     "pleaseEnterLastName": "Bitte Nachname angeben.",
     "cancelOffer": "Angebot entfernen",
     "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten.",
-    "payoutWalletAddress": "Auszahlungs Wallet Adresse"
+    "payoutWalletAddress": "Auszahlungs Wallet Adresse",
+    "youAreTheNewOwner": "Du bist der neue Besitzer. Der Token kann jetzt in deine Wallet transferiert werden."
 }

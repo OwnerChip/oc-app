@@ -55,7 +55,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Web3App? wcClient;
   bool shippingPopupIsShown = false;
 
-  Future<void> _setSessionProviderFromPersistedSession() async {
+  Future<void> _setProviderStatesFromPersistedState() async {
     await initWcClient(ref, context);
 
     final storage = await SharedPreferences.getInstance();
@@ -106,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     WidgetsBinding.instance.addObserver(this);
 
     //read persisted session
-    _setSessionProviderFromPersistedSession();
+    _setProviderStatesFromPersistedState();
 
     super.initState();
   }
@@ -203,7 +203,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
     return Scaffold(
-      // key: ScaffoldKey.getScaffoldKey('HomeScreen'),
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
         showBackButton: false,

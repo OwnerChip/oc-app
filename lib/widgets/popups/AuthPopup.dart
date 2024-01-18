@@ -64,7 +64,7 @@ Future<void> authPopupBuilder(
                   )
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 15,
               ),
               Row(
@@ -91,13 +91,6 @@ Future<void> authPopupBuilder(
                   onPressed: () {
                     onTapAuth(context, 'insert_session_id', ref, wc);
                   }),
-              const SizedBox(height: 30),
-              if (walletName == 'Metamask')
-                Text(
-                  context.loc.whenSigningInWithMetamask,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
             ],
           ));
     },

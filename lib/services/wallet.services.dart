@@ -122,10 +122,12 @@ Future<String> makeAndSendGaslessTx(
       final W3MService? w3mService = ref.read(w3mServiceProvider);
       await w3mService!.launchConnectedWallet();
 
+      toggleLoading();
+
       signature = await wc!
           .request(
         topic: wcSession!.topic,
-        chainId: 'eip155:1',
+        chainId: 'eip155:$chainId',
         request: SessionRequestParams(
           method: 'eth_signTypedData_v4',
           params: [walletAddress.toString(), json.encode(typedData)],
@@ -226,7 +228,7 @@ Future<String> sendPersonalSignRequest(
 
   String signature = await wc.request(
     topic: wcSession.topic,
-    chainId: 'eip155:1',
+    chainId: 'eip155:${w3mService.selectedChain?.chainId}' ?? 'eip155:1',
     request: SessionRequestParams(
       method: 'personal_sign',
       params: [hexUtf8EncodedMessage, walletAddress.toString()],
@@ -292,8 +294,6 @@ void Function(SessionConnect?) wrapOnSessionConnect(
     storage.then((value) => value.setString('session', session));
     storage.then((value) => value.setString(
         'walletType', jsonEncode(walletConfig['walletConnect']!.toJson())));
-
-    // Navigator.pop(context);
 
     authPopupBuilder(context, ref, wc!, 'WalletConnect');
   };
