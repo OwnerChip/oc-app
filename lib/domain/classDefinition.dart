@@ -18,20 +18,17 @@ class MoreInfoButton {
 class WalletType {
   final String name;
   final String iconUri;
-  final String deeplinkUri;
 
-  WalletType(this.name, this.iconUri, this.deeplinkUri);
+  WalletType(this.name, this.iconUri);
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'iconUri': iconUri,
-        'deeplinkUri': deeplinkUri,
       };
 
   WalletType.fromJson(Map<String, dynamic> json)
       : name = json['name'],
-        iconUri = json['iconUri'],
-        deeplinkUri = json['deeplinkUri'];
+        iconUri = json['iconUri'];
 }
 
 class Collection {

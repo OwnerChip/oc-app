@@ -80,8 +80,6 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wc = ref.watch(wcProvider);
-
     final int? chainId = ref.watch(selectedChainIdProvider);
     final Collection? collection = ref.watch(selectedCollectionIdProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments

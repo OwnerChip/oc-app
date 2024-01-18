@@ -295,4 +295,5 @@
     "cancelOffer": "Cancel offer",
     "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on marketplace.",
     "payoutWalletAddress": "Payout Wallet Adresse"
+    "youAreTheNewOwner": "You are the new owner. The token can now be transferred into your wallet."
 }

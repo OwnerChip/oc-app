@@ -9,6 +9,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
@@ -23,8 +24,11 @@ import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:web3modal_flutter/web3modal_flutter.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 
 Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
+  final W3MService? w3mService = ref.read(w3mServiceProvider);
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -63,37 +67,21 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                   backgroundColor: CustomColors(dotenv.get('APP_ID'))
                       .ownerCardWalletIconBackgroundColor,
                 ),
-                // trust wallet
                 WalletIcon(
-                    iconPath: walletConfig['https://trustwallet.com']!.iconUri,
-                    walletName: walletConfig['https://trustwallet.com']!.name,
-                    onTap: () => onWalletPress(
-                          context: context,
-                          ref: ref,
-                          wallet: walletConfig['https://trustwallet.com']!,
-                        )),
+                  iconPath:
+                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/walletconnect.png",
+                  walletName: 'WalletConnect',
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await w3mService!.disconnect();
+                    await w3mService!.openModal(navigatorKey.currentContext!);
+                    w3mService.closeModal();
+                  },
+                  backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                      .ownerCardWalletIconBackgroundColor,
+                ),
               ]),
               const SizedBox(height: 20),
-              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                // metamask
-                WalletIcon(
-                  iconPath: walletConfig['https://metamask.io/']!.iconUri,
-                  walletName: walletConfig['https://metamask.io/']!.name,
-                  onTap: () => onWalletPress(
-                      context: context,
-                      ref: ref,
-                      wallet: walletConfig['https://metamask.io/']!),
-                ),
-
-                //1inch
-                WalletIcon(
-                    iconPath: walletConfig['https://1inch.io/wallet/']!.iconUri,
-                    walletName: walletConfig['https://1inch.io/wallet/']!.name,
-                    onTap: () => onWalletPress(
-                        context: context,
-                        ref: ref,
-                        wallet: walletConfig['https://1inch.io/wallet/']!)),
-              ]),
               Padding(
                 padding: const EdgeInsets.only(top: 30),
                 child: RichText(
@@ -132,40 +120,6 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
           ));
     },
   );
-}
-
-Future<void> onWalletPress(
-    {required BuildContext context,
-    required WidgetRef ref,
-    required WalletType wallet,
-    bool isDeepLink = false}) async {
-  try {
-    if (!await checkInternetConnection()) {
-      throw "No internet connection";
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        context.loc.errorNoInternetConnection,
-        'error'));
-    return;
-  }
-
-  try {
-    Web3App? wc = ref.read(wcProvider);
-    if (wc == null) {
-      wc = await initWcClient(ref);
-    }
-    ConnectResponse response =
-        await startWalletConnection(context, ref, wc, wallet, isDeepLink);
-    var futureRes = await response.session.future;
-    authPopupBuilder(context, ref, wc, wallet.name);
-
-    Navigator.pop(context);
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar, 'Error connecting wallet.', 'error'));
-  }
 }
 
 Future<void> onAddCardPress(

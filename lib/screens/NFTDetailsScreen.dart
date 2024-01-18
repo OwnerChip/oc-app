@@ -153,7 +153,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   color: CustomColors(dotenv.get('APP_ID'))
                                       .primaryColor,
                                 ),
-                                height: 95,
+                                height: 100,
                               ),
                             ),
                             const SizedBox(
@@ -171,7 +171,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                   color: CustomColors(dotenv.get('APP_ID'))
                                       .primaryColor,
                                 ),
-                                height: 95,
+                                height: 100,
                               ),
                             )
                           ],

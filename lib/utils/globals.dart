@@ -13,9 +13,7 @@ class ScaffoldKey {
       GlobalKey<ScaffoldState>();
   static final GlobalKey<ScaffoldState> _scaffoldKeyFifthScreen =
       GlobalKey<ScaffoldState>();
-  static final GlobalKey<ScaffoldState> _customPopupContext =
-      GlobalKey<ScaffoldState>();
-  static final GlobalKey<ScaffoldState> _homeScreen =
+  static final GlobalKey<ScaffoldState> _scaffoldKeySixthScreen =
       GlobalKey<ScaffoldState>();
 
   static GlobalKey<ScaffoldState> getScaffoldKey(String screenName) {
@@ -31,7 +29,21 @@ class ScaffoldKey {
       case 'EnterShippingAddressScreen':
         return _scaffoldKeyFifthScreen;
       case 'HomeScreen':
-        return _customPopupContext;
+        return _scaffoldKeySixthScreen;
+      default:
+        return GlobalKey<ScaffoldState>();
+    }
+  }
+}
+
+class PopupKey {
+  static final GlobalKey<ScaffoldState> _walletConnectPopup =
+      GlobalKey<ScaffoldState>();
+
+  static GlobalKey<ScaffoldState> getScaffoldKey(String screenName) {
+    switch (screenName) {
+      case 'WalletConnect':
+        return _walletConnectPopup;
       default:
         return GlobalKey<ScaffoldState>();
     }

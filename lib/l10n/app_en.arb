@@ -247,7 +247,7 @@
     "unableToReadChip": "Unable to read NFC chip.",
     "offerOnOpenSea": "Offer on OpenSea",
     "offerOnRarible": "Offer on Rarible",
-    "offeringToken": "'Offering token...",
+    "offeringToken": "Offering token...",
     "itemOffered": "Item offered",
     "itemOfferedOnMP": "Item offered on marketplace",
     "viewOnMP": "View on Marketplace",
@@ -258,7 +258,7 @@
     "enterSalePrice": "Enter sale price for your item",
     "listOnRarible": "List on Rarible",
     "offerNow": "Offer now",
-    "offerForSale": "Offer for sale",
+    "offerForSale": "Auf Marktplatz anbieten",
     "offerCanceled": "Offer canceled",
     "errorCancellingSale": "Error cancelling sale of token.",
     "redeemingtoken": "Redeeming token",
@@ -292,5 +292,6 @@
     "pleaseEnterLastName": "Please enter last name.",
     "cancelOffer": "Cancel offer",
     "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on marketplace.",
-    "payoutWalletAddress": "Payout Wallet Adresse"
+    "payoutWalletAddress": "Payout Wallet Adresse",
+    "youAreTheNewOwner": "You are the new owner. The token is can now be transferred into your wallet."
 }
