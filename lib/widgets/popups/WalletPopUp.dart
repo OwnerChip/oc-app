@@ -9,6 +9,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/scan.services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
@@ -66,13 +67,15 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                   backgroundColor: CustomColors(dotenv.get('APP_ID'))
                       .ownerCardWalletIconBackgroundColor,
                 ),
-                // walletconnect
                 WalletIcon(
                   iconPath:
                       "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/walletconnect.png",
                   walletName: 'WalletConnect',
                   onTap: () async {
-                    w3mService!.openModal(context);
+                    Navigator.pop(context);
+                    await w3mService!.disconnect();
+                    await w3mService!.openModal(navigatorKey.currentContext!);
+                    w3mService.closeModal();
                   },
                   backgroundColor: CustomColors(dotenv.get('APP_ID'))
                       .ownerCardWalletIconBackgroundColor,
