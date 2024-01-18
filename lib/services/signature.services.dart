@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ownerchip_whitelabel/utils/nfc.commands.dart';
+import 'package:ownerchip_whitelabel/utils/secora.commands.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/secora.services.dart';
 
 /// sign a hash with the private key of the chip
 Future<MsgSignature> signHash(
