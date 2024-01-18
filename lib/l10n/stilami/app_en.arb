@@ -134,7 +134,7 @@
     "enterWalletAddress": "Enter wallet address",
     "pleaseEnterValidWalletAddress": "Please enter a valid wallet address.",
     "creationOfTwin": "Creation of digital twin (NFT)",
-    "warningChainSelector": "All data that is entered on next screen \nwill be publicly visible.",
+    "warningPublicData": "All entered data is publicly visible.",
     "infoScreenText": "The Stilami Identity App verifies the authenticity and ownership of your jewellery piece.",
     "transferScreenText": "Transfer your token to another wallet.",
     "chooseWallet": "Select login method",

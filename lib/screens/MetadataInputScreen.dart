@@ -1,5 +1,6 @@
 //package imports
 import 'package:async/async.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -520,6 +521,21 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                               }
                             },
                           )),
+                      // const SizedBox(height: 60),
+                      Row(
+                        children: [
+                          const SizedBox(width: 20),
+                          SvgPicture.asset(
+                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg",
+                              width: 25,
+                              height: 25),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(context.loc.warningPublicData,
+                                style: Theme.of(context).textTheme.bodySmall!),
+                          ),
+                        ],
+                      )
                     ])
               ]))),
     );

@@ -228,7 +228,9 @@ Future<String> sendPersonalSignRequest(
 
   String signature = await wc.request(
     topic: wcSession.topic,
-    chainId: 'eip155:${w3mService.selectedChain?.chainId}' ?? 'eip155:1',
+    chainId: w3mService.selectedChain?.chainId == null
+        ? 'eip155:1'
+        : 'eip155:${w3mService.selectedChain?.chainId}',
     request: SessionRequestParams(
       method: 'personal_sign',
       params: [hexUtf8EncodedMessage, walletAddress.toString()],

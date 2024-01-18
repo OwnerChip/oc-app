@@ -151,26 +151,6 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                         context, mounted, navArgs.sessionId);
                   },
           ),
-          const SizedBox(height: 60),
-          Row(
-            children: [
-              //warning icon
-              const SizedBox(width: 20),
-              SvgPicture.asset(
-                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
-              SizedBox(width: 10),
-              //Text
-              Expanded(
-                child: Text(
-                  context.loc.warningChainSelector,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium!
-                      .copyWith(fontSize: 15, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          )
         ],
       ),
     );

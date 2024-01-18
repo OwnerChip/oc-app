@@ -133,7 +133,7 @@
     "enterWalletAddress": "Enter wallet address",
     "pleaseEnterValidWalletAddress": "Please enter a valid wallet address.",
     "creationOfTwin": "Creation of digital twin (NFT)",
-    "warningChainSelector": "All data that is entered on next screen \nwill be publicly visible.",
+    "warningPublicData": "All entered data is publicly visible.",
     "infoScreenText": "Check items for authenticity and ownership using your smartphone.",
     "transferScreenText": "Transfer your token to another wallet.",
     "chooseWallet": "Select login method",

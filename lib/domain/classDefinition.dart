@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:file_picker/file_picker.dart';
 
 class MoreInfoButton {
   final String text;
