@@ -127,7 +127,8 @@ Future<String> makeAndSendGaslessTx(
       signature = await wc!
           .request(
         topic: wcSession!.topic,
-        chainId: 'eip155:$chainId',
+        // chainId: 'eip155:$chainId',
+        chainId: 'eip155:1',
         request: SessionRequestParams(
           method: 'eth_signTypedData_v4',
           params: [walletAddress.toString(), json.encode(typedData)],
@@ -228,9 +229,10 @@ Future<String> sendPersonalSignRequest(
 
   String signature = await wc.request(
     topic: wcSession.topic,
-    chainId: w3mService.selectedChain?.chainId == null
-        ? 'eip155:1'
-        : 'eip155:${w3mService.selectedChain?.chainId}',
+    chainId: 'eip155:1',
+    // chainId: w3mService.selectedChain?.chainId == null
+    // ? 'eip155:1'
+    // : 'eip155:${w3mService.selectedChain?.chainId}',
     request: SessionRequestParams(
       method: 'personal_sign',
       params: [hexUtf8EncodedMessage, walletAddress.toString()],

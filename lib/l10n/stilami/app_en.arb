@@ -149,7 +149,7 @@
     "addDigitalContent": "Add Digital Content",
     "titleTooLong": "Title too long.",
     "titleCannotBeEmpty": "Title cannot be empty.",
-    "maxAttachmentsReached": "You can only add max. 10 attachments.",
+    "maxAttachmentsReached": "You can only add max. 50 attachments.",
     "enterValidUrl": "Please enter a valid URL starting with https://.",
     "urlCannotBeEmpty": "URL cannot be empty.",
     "public": "Public",
