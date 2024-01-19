@@ -38,13 +38,13 @@ class Purchase {
 }
 
 class Buyer {
-  EthereumAddress walletAddress;
-  String firstName;
-  String lastName;
-  String email;
-  String phoneNumber;
-  DateTime createdAt;
-  String companyName;
+  EthereumAddress? walletAddress;
+  String? firstName;
+  String? lastName;
+  String? email;
+  String? phoneNumber;
+  DateTime? createdAt;
+  String? companyName;
 
   Buyer({
     required this.walletAddress,

@@ -527,7 +527,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                 if (value!.isEmpty) {
                                   return context.loc.titleCannotBeEmpty;
                                 }
-                                if (attachmentList.length >= 10) {
+                                if (attachmentList.length >= 50) {
                                   return context.loc.maxAttachmentsReached;
                                 }
                               },
@@ -564,7 +564,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                     if (value.isEmpty) {
                                       return context.loc.urlCannotBeEmpty;
                                     }
-                                    if (attachmentList.length >= 10) {
+                                    if (attachmentList.length >= 50) {
                                       return context.loc.maxAttachmentsReached;
                                     }
                                   },

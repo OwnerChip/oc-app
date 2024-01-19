@@ -148,7 +148,7 @@
     "addDigitalContent": "Add Digital Content",
     "titleTooLong": "Title too long.",
     "titleCannotBeEmpty": "Title cannot be empty.",
-    "maxAttachmentsReached": "You can only add max. 10 attachments.",
+    "maxAttachmentsReached": "You can only add max. 50 attachments.",
     "enterValidUrl": "Please enter a valid URL starting with https://.",
     "urlCannotBeEmpty": "URL cannot be empty.",
     "public": "Public",
@@ -294,6 +294,6 @@
     "pleaseEnterLastName": "Please enter last name.",
     "cancelOffer": "Cancel offer",
     "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on marketplace.",
-    "payoutWalletAddress": "Payout Wallet Adresse"
+    "payoutWalletAddress": "Payout Wallet Adresse",
     "youAreTheNewOwner": "You are the new owner. The token can now be transferred into your wallet."
 }

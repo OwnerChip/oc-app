@@ -148,7 +148,7 @@
     "addDigitalContent": "Digital Content hinzufügen",
     "titleTooLong": "Titel zu lange.",
     "titleCannotBeEmpty": "Titel kann nicht leer sein.",
-    "maxAttachmentsReached": "Max. von 10 Anhängen erreicht.",
+    "maxAttachmentsReached": "Max. von 50 Anhängen erreicht.",
     "enterValidUrl": "Bitte gib eine URL mit Anfang 'https://' ein.",
     "urlCannotBeEmpty": "URL kann nicht leer sein.",
     "public": "Öffentlich",
