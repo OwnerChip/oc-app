@@ -259,6 +259,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         await ref.refresh(nftOwnerProvider.future);
         await ref.refresh(creatorDataProvider.future);
         await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        await ref.refresh(voucherTokenOwnerProvider.future);
 
         setState(() {
           isLoading = false;
