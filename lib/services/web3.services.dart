@@ -447,6 +447,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
       await ref.read(unredeemedVoucherNftsProvider.future);
   if (unredeemedPurchases.isNotEmpty &&
       unredeemedPurchases.first.shippingInfo == null) {
+    // ignore: use_build_context_synchronously
     await showCustomPopup(
         context,
         icon: Icon(Icons.local_shipping_outlined,

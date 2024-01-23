@@ -635,13 +635,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         nftMetadata.when(
                           loading: () => Text(context.loc.loading,
                               style: Theme.of(context).textTheme.displayLarge!),
-                          data: (data) => data['name'] != null
+                          data: (nftMetadataData) => nftMetadataData['name'] !=
+                                  null
                               ? GestureDetector(
                                   onTap: () {
                                     Navigator.of(context)
                                         .pushNamed(NFTDetailsScreen.routeName);
                                   },
-                                  child: Text(data['name'],
+                                  child: Text(nftMetadataData['name'],
                                       style: Theme.of(context)
                                           .textTheme
                                           .displayLarge!))
@@ -672,7 +673,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //AUTHENTICITY CHECK ICON
                                   tokenInfo.when(
-                                    data: ((data) => data.collectionId ==
+                                    data: ((tokenInfoData) => tokenInfoData
+                                                .collectionId ==
                                             zeroAddress
                                         ? SvgPicture.asset(
                                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
@@ -691,8 +693,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: tokenInfo.when(
-                                      data: (data) =>
-                                          data.collectionId == zeroAddress
+                                      data: (tokenInfoData) =>
+                                          tokenInfoData.collectionId ==
+                                                  zeroAddress
                                               // NFT DOES NOT EXIST
                                               ? Text(
                                                   context.loc
@@ -703,9 +706,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                       .bodyMedium)
                                               // NFT EXISTS
                                               : creatorData.when(
-                                                  data: (data) =>
+                                                  data: (creatorDataData) =>
                                                       CreatorDataBoxContent(
-                                                          creatorData: data),
+                                                          creatorData:
+                                                              creatorDataData),
                                                   loading: () =>
                                                       const CircularProgressIndicator(),
                                                   error: (e, s) => Text(
@@ -743,12 +747,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //OWNERSHIP CHECK ICON
                                   nftOwner.when(
-                                    data: ((data) => userSession == null
+                                    data: ((nftOwnerData) => userSession == null
                                         ?
                                         //NFT owner exists and wallet is NOT connected
                                         SvgPicture.asset(
                                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
-                                        : connectedWallet == data
+                                        : connectedWallet == nftOwnerData
                                             ?
                                             //NFT owner exists and wallet is connected and wallet is owner
                                             approval.value == zeroAddress
@@ -774,7 +778,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: nftOwner.when(
-                                      data: (data) => connectedWallet ==
+                                      data: (nftOwnerData) => connectedWallet ==
                                                   zeroAddress ||
                                               userSession == null
                                           ?
@@ -802,7 +806,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         }))
                                               ],
                                             )
-                                          : connectedWallet == data
+                                          : connectedWallet == nftOwnerData
                                               //NFT owner exists and wallet is connected and wallet is owner
                                               ? approval.value == zeroAddress ||
                                                       approval.value == null
@@ -841,11 +845,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         // BURN BUTTON
                                                         relevantCollections
                                                             .when(
-                                                                data: (data) {
+                                                                data:
+                                                                    (relevantCollectionsData) {
                                                                   //get collection where user is minter
-                                                                  Collection collection = data.collections[tokenInfo.value!.chainId] !=
+                                                                  Collection collection = relevantCollectionsData.collections[tokenInfo.value!.chainId] !=
                                                                           null
-                                                                      ? data.collections[tokenInfo.value!.chainId]!.firstWhere((element) => element.hasMinterRole!,
+                                                                      ? relevantCollectionsData.collections[tokenInfo.value!.chainId]!.firstWhere((element) => element.hasMinterRole!,
                                                                           orElse: () => Collection(
                                                                               zeroAddress,
                                                                               '',
@@ -904,29 +909,41 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                     alignment:
                                                         Alignment.centerLeft,
                                                     child:
-
                                                         //Wallet is not the TWIN token owner, because token is currently offered on MP
                                                         creatorData.when(
                                                       //if seller wallet address is equal to connected wallet address, show cancel order button
-                                                      data: (data) => data.hasActiveOffer &&
-                                                              EthereumAddress.fromHex(data
-                                                                      .tokenForWhichCreatorDataWasRequested
-                                                                      .activeOffers[
-                                                                          0]
-                                                                      .sellerAddress) ==
-                                                                  connectedWallet
-                                                          ? Text(context.loc.tokenCurrentlyOfferedForSale,
-                                                              textAlign: TextAlign
-                                                                  .left,
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyMedium)
-                                                          : Text(context.loc.youAreTheNewOwner,
-                                                              textAlign: TextAlign
-                                                                  .left,
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyMedium),
+                                                      data: (creatorDataData) =>
+                                                          creatorDataData.hasActiveOffer &&
+                                                                  EthereumAddress.fromHex(creatorDataData
+                                                                          .tokenForWhichCreatorDataWasRequested
+                                                                          .activeOffers[
+                                                                              0]
+                                                                          .sellerAddress) ==
+                                                                      connectedWallet
+                                                              ? Text(
+                                                                  context.loc
+                                                                      .tokenCurrentlyOfferedForSale,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .left,
+                                                                  style: Theme.of(context)
+                                                                      .textTheme
+                                                                      .bodyMedium)
+                                                              : voucherContractAddress
+                                                                  .when(
+                                                                      data:
+                                                                          (voucherContractAddressData) {
+                                                                        return vouchertokenOwner.when(
+                                                                            data: (voucherTokenOwnerData) => voucherTokenOwnerData == connectedWallet && voucherContractAddressData != null
+                                                                                ? Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)
+                                                                                : Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                            error: (e, s) => Container(),
+                                                                            loading: () => Container());
+                                                                      },
+                                                                      error: (e, s) =>
+                                                                          Container(),
+                                                                      loading: () =>
+                                                                          Container()),
                                                       loading: () =>
                                                           Container(),
                                                       error: (e, s) =>
@@ -936,9 +953,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                   const SizedBox(height: 10),
                                                   creatorData.when(
                                                     //if seller wallet address is equal to connected wallet address, show cancel order button
-                                                    data: (data) => data
+                                                    data: (creatorDataData) => creatorDataData
                                                                 .hasActiveOffer &&
-                                                            EthereumAddress.fromHex(data
+                                                            EthereumAddress.fromHex(creatorDataData
                                                                     .tokenForWhichCreatorDataWasRequested
                                                                     .activeOffers[
                                                                         0]
@@ -962,12 +979,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                   ),
                                                   //REDEEM twin token if you have a voucher token and voucherTokenOwner is connectedWalet
                                                   voucherContractAddress.when(
-                                                      data: (data) {
+                                                      data:
+                                                          (voucherContractAddressData) {
                                                         return vouchertokenOwner
                                                             .when(
-                                                                data: (tokenOwner) => tokenOwner ==
+                                                                data: (voucherTokenOwnerData) => voucherTokenOwnerData ==
                                                                             connectedWallet &&
-                                                                        data !=
+                                                                        voucherContractAddressData !=
                                                                             null
                                                                     ? Column(
                                                                         children: [
@@ -992,9 +1010,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                                   //CLAIM Ownership of twin token if it was transferred to user
                                                   approval.when(
-                                                      data: (data) {
+                                                      data: (approvalData) {
                                                         //check if a wallet can CLAIM OWNERSHIP
-                                                        return data ==
+                                                        return approvalData ==
                                                                 connectedWallet
                                                             ? Column(children: [
                                                                 const SizedBox(
@@ -1043,10 +1061,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           width: 130,
                           loading: false,
                         ),
-                        data: (data) => CustomImage(
+                        data: (nftImageUriData) => CustomImage(
                           width: 130,
                           loading: false,
-                          imagePath: data,
+                          imagePath: nftImageUriData,
                         ),
                       )),
                 ],
@@ -1055,25 +1073,26 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
               //if token does not exists
               tokenInfo.when(
-                  data: (data) => data.collectionId == zeroAddress &&
-                          connectedWallet != zeroAddress &&
-                          userSession != null &&
-                          relevantCollections.value!.collections.isNotEmpty
-                      ? CustomRoundedButton(
-                          text: context.loc.initializeChip,
-                          onPressed: () async {
-                            if (mounted) {
-                              await initializeItem(ref, context);
-                            }
-                          })
-                      : data.collectionId == zeroAddress
-                          ? Container()
-                          : CustomRoundedButton(
-                              text: context.loc.viewNftDetails,
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pushNamed(NFTDetailsScreen.routeName);
-                              }),
+                  data: (tokenInfoData) =>
+                      tokenInfoData.collectionId == zeroAddress &&
+                              connectedWallet != zeroAddress &&
+                              userSession != null &&
+                              relevantCollections.value!.collections.isNotEmpty
+                          ? CustomRoundedButton(
+                              text: context.loc.initializeChip,
+                              onPressed: () async {
+                                if (mounted) {
+                                  await initializeItem(ref, context);
+                                }
+                              })
+                          : tokenInfoData.collectionId == zeroAddress
+                              ? Container()
+                              : CustomRoundedButton(
+                                  text: context.loc.viewNftDetails,
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pushNamed(NFTDetailsScreen.routeName);
+                                  }),
                   error: (e, s) => Container(),
                   loading: () => Container()),
 

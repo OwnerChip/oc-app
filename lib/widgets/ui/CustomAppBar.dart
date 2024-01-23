@@ -74,7 +74,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         onPressed: () async {
                           Navigator.pushNamedAndRemoveUntil(
                               context, HomeScreen.routeName, (route) => false);
-                          // unsubscribeWcListeners(ref);
                           //only delete wc session if user is connected via wallet connect
                           if (wc != null && wcSession != null) {
                             wc.disconnectSession(

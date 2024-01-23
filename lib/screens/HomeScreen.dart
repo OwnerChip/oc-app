@@ -55,6 +55,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Web3App? wcClient;
   bool shippingPopupIsShown = false;
 
+  Future<void>
+      _checkAndRemovePersistedStorageDependingOnPreviousAppVersion() async {
+    final storage = await SharedPreferences.getInstance();
+
+    final storedAppVersion = storage.getString('appVersion');
+
+    if ((storedAppVersion == null) ||
+        (storedAppVersion != dotenv.get('VERSION_NUMBER'))) {
+      //remove session and wallet type from storage
+      storage.remove('session');
+      storage.remove('walletType');
+      storage.remove('userSession');
+    }
+    storage.setString('appVersion', dotenv.get('VERSION_NUMBER'));
+  }
+
   Future<void> _setProviderStatesFromPersistedState() async {
     await initWcClient(ref, context);
 
@@ -105,6 +121,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     WidgetsBinding.instance.addObserver(this);
 
+    //check if persisted session is from previous app version; has to be called before _setProviderStatesFromPersistedState()
+    _checkAndRemovePersistedStorageDependingOnPreviousAppVersion();
     //read persisted session
     _setProviderStatesFromPersistedState();
 
