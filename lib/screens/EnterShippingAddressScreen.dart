@@ -261,7 +261,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
           }),
       InputFieldModel(
           placeholder: context.loc.zip,
-          keyboardType: TextInputType.number,
+          keyboardType: TextInputType.text,
           setStateCallback: (value) {
             setState(() {
               zip = value;
