@@ -597,7 +597,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                               SizedBox(
                                 width: 300,
                                 child: Text(
-                                  'OwnerChip will notify you via email once the item is purchased. You are responsible for packaging and shipping the item to the buyer.',
+                                  context.loc
+                                      .ownerChipWillNotifyYouOnceTheItemIsPurchased,
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
