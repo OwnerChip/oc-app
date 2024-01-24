@@ -257,7 +257,7 @@
     "price": "Price",
     "enterSalePrice": "Enter sale price for your item",
     "listOnRarible": "List on Rarible",
-    "offerNow": "Offer now",
+    "offerNow": "Offer on Rarible",
     "offerForSale": "Sell",
     "offerCanceled": "Offer canceled",
     "errorCancellingSale": "Error cancelling sale of token.",
