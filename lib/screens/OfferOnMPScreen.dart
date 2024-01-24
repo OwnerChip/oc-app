@@ -541,36 +541,36 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           const SizedBox(
                             height: 40,
                           ),
-                          //checkbox
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Marketplace',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall!),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Checkbox(
-                                      activeColor: CustomColors(
-                                              dotenv.get('APP_ID').toString())
-                                          .accentColor,
-                                      value: raribleCheck,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          raribleCheck = value!;
-                                        });
-                                      }),
-                                  Text(
-                                    context.loc.listOnRarible,
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium,
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
+                          //TODO: checkbox for selecting Marketplace temporarily disabled
+                          // Column(
+                          //   crossAxisAlignment: CrossAxisAlignment.start,
+                          //   children: [
+                          //     Text('Marketplace',
+                          //         style: Theme.of(context)
+                          //             .textTheme
+                          //             .headlineSmall!),
+                          //     Row(
+                          //       mainAxisAlignment: MainAxisAlignment.start,
+                          //       children: [
+                          //         Checkbox(
+                          //             activeColor: CustomColors(
+                          //                     dotenv.get('APP_ID').toString())
+                          //                 .accentColor,
+                          //             value: raribleCheck,
+                          //             onChanged: (value) {
+                          //               setState(() {
+                          //                 raribleCheck = value!;
+                          //               });
+                          //             }),
+                          //         Text(
+                          //           context.loc.listOnRarible,
+                          //           style:
+                          //               Theme.of(context).textTheme.bodyMedium,
+                          //         )
+                          //       ],
+                          //     ),
+                          //   ],
+                          // ),
                           const SizedBox(
                             height: 20,
                           ),
