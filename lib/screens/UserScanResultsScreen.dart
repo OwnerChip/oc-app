@@ -165,10 +165,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         await Future.delayed(const Duration(seconds: 2));
 
-        Navigator.pushNamedAndRemoveUntil(
-            navigatorKey.currentContext!,
-            HomeScreen.routeName,
-            (route) => false);
+        Navigator.pushNamedAndRemoveUntil(navigatorKey.currentContext!,
+            HomeScreen.routeName, (route) => false);
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -278,7 +276,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         //wait for 2 seconds, to make sure corrrect data is fetched by providers
 
         try {
-                  await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2));
 
           //update providers for burn and transfer buttons
           await ref.refresh(nftApprovalProvider.future);
@@ -409,9 +407,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
         );
 
-
         try {
-                  await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2));
 
           //refresh providers for ownerchip check on ResultScreen
           await ref.refresh(nftOwnerProvider.future);
@@ -534,7 +531,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         );
 
         try {
-        await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2));
 
           //refresh providers for ownerchip check on ResultScreen
           await ref.refresh(nftOwnerProvider.future);
@@ -609,6 +606,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(voucherContractProvider);
     final AsyncValue<EthereumAddress?> vouchertokenOwner =
         ref.watch(voucherTokenOwnerProvider);
+    final AsyncValue<List<Purchase>> unredeemedVoucherNfts =
+        ref.watch(unredeemedVoucherNftsProvider);
 
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
@@ -911,38 +910,54 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         //Wallet is not the TWIN token owner, because token is currently offered on MP
                                                         creatorData.when(
                                                       //if seller wallet address is equal to connected wallet address, show cancel order button
-                                                      data: (creatorDataData) =>
-                                                          creatorDataData.hasActiveOffer &&
-                                                                  EthereumAddress.fromHex(creatorDataData
-                                                                          .tokenForWhichCreatorDataWasRequested
-                                                                          .activeOffers[
-                                                                              0]
-                                                                          .sellerAddress) ==
-                                                                      connectedWallet
-                                                              ? Text(
-                                                                  context.loc
-                                                                      .tokenCurrentlyOfferedForSale,
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .left,
-                                                                  style: Theme.of(context)
-                                                                      .textTheme
-                                                                      .bodyMedium)
-                                                              : voucherContractAddress
-                                                                  .when(
-                                                                      data:
-                                                                          (voucherContractAddressData) {
-                                                                        return vouchertokenOwner.when(
-                                                                            data: (voucherTokenOwnerData) => voucherTokenOwnerData == connectedWallet && voucherContractAddressData != null
-                                                                                ? Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)
-                                                                                : Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                            error: (e, s) => Container(),
-                                                                            loading: () => Container());
-                                                                      },
-                                                                      error: (e, s) =>
-                                                                          Container(),
-                                                                      loading: () =>
-                                                                          Container()),
+                                                      data: (creatorDataData) => creatorDataData
+                                                                  .hasActiveOffer &&
+                                                              EthereumAddress.fromHex(creatorDataData
+                                                                      .tokenForWhichCreatorDataWasRequested
+                                                                      .activeOffers[
+                                                                          0]
+                                                                      .sellerAddress) ==
+                                                                  connectedWallet
+                                                          ? Text(context.loc.tokenCurrentlyOfferedForSale,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .left,
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium)
+                                                          : voucherContractAddress
+                                                              .when(
+                                                                  data:
+                                                                      (voucherContractAddressData) {
+                                                                    return vouchertokenOwner.when(
+                                                                        data: (voucherTokenOwnerData) => voucherTokenOwnerData == connectedWallet && voucherContractAddressData != null
+                                                                            ? Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)
+                                                                            :
+
+                                                                            //futurebuilder with future getUnredeemedPurchases
+                                                                            FutureBuilder<List>(
+                                                                                future: getUnredeemedPurchases(chipInfo.tokenId),
+                                                                                builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+                                                                                  if (snapshot.hasData) {
+                                                                                    if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
+                                                                                      return Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                    } else {
+                                                                                      return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                    }
+                                                                                  } else if (snapshot.hasError) {
+                                                                                    return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                  } else {
+                                                                                    return const CircularProgressIndicator();
+                                                                                  }
+                                                                                }),
+                                                                        error: (e, s) => Container(),
+                                                                        loading: () => Container());
+                                                                  },
+                                                                  error: (e,
+                                                                          s) =>
+                                                                      Container(),
+                                                                  loading: () =>
+                                                                      Container()),
                                                       loading: () =>
                                                           Container(),
                                                       error: (e, s) =>

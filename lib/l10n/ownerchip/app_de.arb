@@ -296,5 +296,7 @@
     "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten.",
     "payoutWalletAddress": "Auszahlungs Wallet Adresse",
     "youAreTheNewOwner": "Du bist der neue Besitzer. Der Token kann jetzt in deine Wallet transferiert werden.",
-    "transfer": "Transferieren"
+    "transfer": "Transferieren",
+    "ownerChipWillNotifyYouOnceTheItemIsPurchased": "OwnerChip wird dich per E-Mail benachrichtigen, sobald der Artikel gekauft wurde. Du bist verantwortlich für das Verpacken und Versenden des Artikels an den Käufer.",
+    "thisItemHasBeenSold": "Dieses Objekt wurde verkauft. Du hast Versandanweisungen per E-Mail erhalten."
 }
