@@ -253,13 +253,17 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                   ref.read(chipInfoProvider).tokenId),
             });
 
-        await Future.delayed(Duration(seconds: 2));
-
-        //refresh providers for ownerchip check on ResultScreen
-        await ref.refresh(nftOwnerProvider.future);
-        await ref.refresh(creatorDataProvider.future);
-        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
-        await ref.refresh(voucherTokenOwnerProvider.future);
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+          //refresh providers for ownerchip check on ResultScreen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(creatorDataProvider.future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+          await ref.refresh(voucherTokenOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
 
         setState(() {
           isLoading = false;

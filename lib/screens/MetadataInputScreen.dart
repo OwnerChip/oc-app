@@ -228,15 +228,19 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           'gasStation': canUseGasStation
         });
 
-        await Future.delayed(const Duration(seconds: 2));
-
-        //refresh providers so offer for sale button is shown correctly on NFT Details
-        ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
-        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+          //refresh providers so offer for sale button is shown correctly on NFT Details
+          ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+          await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
 
         Navigator.pushNamedAndRemoveUntil(
-          ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
+          context,
           NFTDetailsScreen.routeName,
           (Route route) => route.isFirst,
         );
@@ -269,10 +273,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         isLoading = false;
       });
     }
-    //refresh tokenInfo so it can be loaded; This code is not supposed to be inside try block, so it does not trigger catch if it fails and use does not stay on metadatasecreen with error, despite token minting being successful. User can retrigger manually on next screen
-    final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-    TokenChainAndCollection tokenInfo =
-        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
   }
 
   void toggleTraitsForm() {

@@ -143,17 +143,24 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = context.loc.transferSuccess;
         });
-        //refresh provider state to update nft owner & approval for next screen
-        await ref.refresh(nftOwnerProvider.future);
-        await ref.refresh(nftApprovalProvider.future);
 
-        //wait for 1 second to show success icon
-        await Future.delayed(const Duration(seconds: 1));
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+          //refresh provider state to update nft owner & approval for next screen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(nftApprovalProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
+
         setState(() {
           isLoading = false;
         });
-        //navigate to user scan result screen
-        Navigator.pushNamed(context, UserScanResultsScreen.routeName);
+
+        //check if previous route is user scan result screen
+        Navigator.pop(navigatorKey.currentContext!);
+
         // send status to analytics
         transferProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
