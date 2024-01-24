@@ -86,11 +86,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       final session = SessionData.fromJson(jsonDecode(storedSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
       final userSession = UserSession.fromJson(jsonDecode(storedUserSession));
-      //check if the stored session is expired
-      double nowPlusOneHour =
-          DateTime.now().millisecondsSinceEpoch / 1000 + 3600;
-      if (session.expiry > nowPlusOneHour &&
-          userSession.expiryDate > nowPlusOneHour) {
+      //check if the stored session expires in less than three days; if yes, remove it
+      //Note: WalletConnect session duration is 7 days
+      double nowPlusThreeDays =
+          DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
+      if (session.expiry > nowPlusThreeDays &&
+          userSession.expiryDate > nowPlusThreeDays) {
         ref.read(wcSessionProvider.notifier).state = session;
         ref.read(walletTypeProvider.notifier).state = walletType;
         ref.read(userSessionProvider.notifier).state = userSession;
@@ -128,14 +129,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     super.initState();
   }
-
-  //remove lifecycle events listener
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   WidgetsBinding.instance.removeObserver(this);
-  //   unsubscribeWcListeners(ref);
-  // }
 
   //do stuff on app resume
   @override
@@ -231,21 +224,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
-                ? Column(children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                            padding:
-                                const EdgeInsets.only(left: 10, bottom: 15),
-                            child: Image.asset(
-                              'assets/images/ownerchip_infineon/infineon_logo.png',
-                              height: 40,
-                            ))
-                      ],
-                    ),
-                  ])
+            dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
+                ? const Text(
+                    'INTERNAL',
+                    style: TextStyle(color: Colors.red, fontSize: 20),
+                  )
                 : Container(),
 
             // MIDDLE CONTENT
