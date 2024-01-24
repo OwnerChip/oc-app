@@ -75,6 +75,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     List<Attachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
     final AsyncValue<List?> voucherContractAndTwinNftOwner =
         ref.watch(voucherContractAndTwinNftOwnerProvider);
+    final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -133,50 +134,73 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               indent: 0,
               endIndent: 0,
             ),
-
-            voucherContractAndTwinNftOwner.when(
-              data: (data) =>
-                  data != null && data[0] != null && data[1] == connectedWallet
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: BigIconButton(
-                                text: context.loc.offerForSale,
-                                onPressed: () => Navigator.pushNamed(
-                                    context, OfferOnMPScreen.routeName),
-                                icon: Icon(
-                                  Icons.euro,
-                                  size: 35,
-                                  color: CustomColors(dotenv.get('APP_ID'))
-                                      .primaryColor,
+            nftOwner.when(
+              data: (nftOwnerData) => connectedWallet == nftOwnerData
+                  ? approval.when(
+                      data: (approvalData) => approval.value == zeroAddress ||
+                              approval.value == null
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                voucherContractAndTwinNftOwner.when(
+                                  data: (data) => data != null &&
+                                          data[0] != null &&
+                                          data[1] == connectedWallet
+                                      ? Expanded(
+                                          flex: 1,
+                                          child: BigIconButton(
+                                            text: context.loc.offerForSale,
+                                            onPressed: () =>
+                                                Navigator.pushNamed(context,
+                                                    OfferOnMPScreen.routeName),
+                                            icon: Icon(
+                                              Icons.euro,
+                                              size: 35,
+                                              color: CustomColors(
+                                                      dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                            ),
+                                            height: 85,
+                                          ),
+                                        )
+                                      : Container(),
+                                  error: (e, s) => Container(),
+                                  loading: () => Container(),
                                 ),
-                                height: 100,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: BigIconButton(
-                                text: context.loc.transferToken,
-                                onPressed: () => Navigator.pushNamed(
-                                    context, TransferScreen.routeName),
-                                icon: Icon(
-                                  Icons.send,
-                                  size: 35,
-                                  color: CustomColors(dotenv.get('APP_ID'))
-                                      .primaryColor,
+                                voucherContractAndTwinNftOwner.when(
+                                  data: (data) => data != null &&
+                                          data[0] != null &&
+                                          data[1] == connectedWallet
+                                      ? const SizedBox(
+                                          width: 10,
+                                        )
+                                      : Container(),
+                                  error: (e, s) => Container(),
+                                  loading: () => Container(),
                                 ),
-                                height: 100,
-                              ),
+                                Expanded(
+                                  flex: 1,
+                                  child: BigIconButton(
+                                    text: context.loc.transfer,
+                                    onPressed: () => Navigator.pushNamed(
+                                        context, TransferScreen.routeName),
+                                    icon: Icon(
+                                      Icons.send,
+                                      size: 35,
+                                      color: CustomColors(dotenv.get('APP_ID'))
+                                          .primaryColor,
+                                    ),
+                                    height: 85,
+                                  ),
+                                )
+                              ],
                             )
-                          ],
-                        )
-                      : Container(),
+                          : Container(),
+                      error: (e, s) => Container(),
+                      loading: () => Container(),
+                    )
+                  : Container(),
               error: (e, s) => Container(),
               loading: () => Container(),
             ),

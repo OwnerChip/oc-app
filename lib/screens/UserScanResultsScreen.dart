@@ -166,7 +166,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         await Future.delayed(const Duration(seconds: 2));
 
         Navigator.pushNamedAndRemoveUntil(
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            navigatorKey.currentContext!,
             HomeScreen.routeName,
             (route) => false);
       } else {
@@ -276,15 +276,20 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         });
 
         //wait for 2 seconds, to make sure corrrect data is fetched by providers
-        await Future.delayed(const Duration(seconds: 2));
 
-        //update providers for burn and transfer buttons
-        await ref.refresh(nftApprovalProvider.future);
-        await ref.refresh(nftOwnerProvider.future);
-        //update providers so offer for sale button is shown correctly on NFT Details
-        ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-        await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
-        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        try {
+                  await Future.delayed(const Duration(seconds: 2));
+
+          //update providers for burn and transfer buttons
+          await ref.refresh(nftApprovalProvider.future);
+          await ref.refresh(nftOwnerProvider.future);
+          ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+          await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
 
         setState(() {
           isLoading = false;
@@ -404,21 +409,24 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
         );
 
-        await Future.delayed(const Duration(seconds: 2));
 
-        //refresh providers for ownerchip check on ResultScreen
-        await ref.refresh(nftOwnerProvider.future);
-        await ref.refresh(creatorDataProvider.future);
-        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        try {
+                  await Future.delayed(const Duration(seconds: 2));
+
+          //refresh providers for ownerchip check on ResultScreen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(creatorDataProvider.future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
 
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = context.loc.offerCanceled;
         });
-
-        //delay two seconds
-        await Future.delayed(const Duration(seconds: 2));
 
         setState(() {
           isLoading = false;
@@ -525,19 +533,23 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               context.loc.tokenRedeemed, 'success'),
         );
 
-        //refresh providers for ownerchip check on ResultScreen
-        await ref.refresh(nftOwnerProvider.future);
-        await ref.refresh(creatorDataProvider.future);
-        await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        try {
+        await Future.delayed(const Duration(seconds: 2));
+
+          //refresh providers for ownerchip check on ResultScreen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(creatorDataProvider.future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
 
         setState(() {
           isRotating = false;
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = context.loc.tokenRedeemed;
         });
-
-        //delay two seconds
-        await Future.delayed(const Duration(seconds: 2));
 
         setState(() {
           isLoading = false;
@@ -827,19 +839,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                         context)
                                                                     .textTheme
                                                                     .bodyMedium)),
-                                                        const SizedBox(
-                                                            height: 10),
-                                                        // TRANSFER BUTTON
-                                                        CustomRoundedButton(
-                                                            text: context.loc
-                                                                .transferToken,
-                                                            onPressed: (() => {
-                                                                  //navigate to transfer screen
-                                                                  Navigator.pushNamed(
-                                                                      context,
-                                                                      TransferScreen
-                                                                          .routeName)
-                                                                })),
                                                         const SizedBox(
                                                             height: 10),
                                                         // BURN BUTTON
