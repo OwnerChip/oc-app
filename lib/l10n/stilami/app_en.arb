@@ -127,7 +127,7 @@
     "unconfirmed": "Not confirmed",
     "confirmed": "Confirmed",
     "externalLinks": "External Links",
-    "transferToken": "Transfer Token",
+    "transferToken": "Transfer",
     "transferInProgress": "Transferring token",
     "transferSuccess":  "Token transferred",
     "transferError": "Error transferring token",
@@ -259,7 +259,7 @@
     "enterSalePrice": "Enter sale price for your item",
     "listOnRarible": "List on Rarible",
     "offerNow": "Offer now",
-    "offerForSale": "Offer for sale",
+    "offerForSale": "Sell",
     "offerCanceled": "Offer canceled",
     "errorCancellingSale": "Error cancelling sale of token.",
     "redeemingtoken": "Redeeming token",
@@ -294,5 +294,6 @@
     "cancelOffer": "Cancel offer",
     "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on marketplace.",
     "payoutWalletAddress": "Payout Wallet Adresse",
-    "youAreTheNewOwner": "You are the new owner. The token can now be transferred into your wallet."
+    "youAreTheNewOwner": "You are the new owner. The token can now be transferred into your wallet.",
+    "transfer": "Transfer"
 }

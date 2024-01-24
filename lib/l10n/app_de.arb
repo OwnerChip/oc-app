@@ -294,5 +294,6 @@
     "cancelOrder": "Angebot entfernen",
     "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten.",
     "payoutWalletAddress": "Auszahlungs Wallet Adresse",
-    "youAreTheNewOwner": "Du bist der neue Besitzer. Der Token kann jetzt in deine Wallet transferiert werden."
+    "youAreTheNewOwner": "Du bist der neue Besitzer. Der Token kann jetzt in deine Wallet transferiert werden.",
+    "transfer": "Versenden"
 }
