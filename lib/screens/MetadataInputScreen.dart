@@ -185,7 +185,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
-            mintFunctionSignature,
+            (voucherCollectionId != null)
+                ? mintVoucherFunctionSignature
+                : mintFunctionSignature,
             chainId,
             voucherCollectionId ?? collectionId,
             signatureData,
@@ -207,7 +209,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         }
         txnHash = await makeAndSendNormalTx(
           ref,
-          mintFunctionSignature,
+          (voucherCollectionId != null)
+              ? mintVoucherFunctionSignature
+              : mintFunctionSignature,
           chainId,
           voucherCollectionId ?? collectionId,
           signatureData,
