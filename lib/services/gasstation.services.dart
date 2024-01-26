@@ -53,6 +53,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     EthereumAddress to,
     EthereumAddress? toAccount,
     String? tokenURI,
+    String? voucherTokenURI,
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
@@ -66,7 +67,10 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   final String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
-        functionSignatureHash, randomValueHash, signature, tokenURI!);
+        functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == mintVoucherFunctionSignature) {
+    data = makeMintData(functionSignatureHash, randomValueHash, signature,
+        tokenURI!, voucherTokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
   } else if (functionSignatureHash == transferFromFunctionSignature) {
@@ -127,6 +131,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     required EthereumAddress to,
     EthereumAddress? toAccount,
     String? tokenURI,
+    String? voucherTokenURI,
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
@@ -146,6 +151,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
       to,
       toAccount,
       tokenURI,
+      voucherTokenURI,
       tokenId,
       enableRecovery,
       sellerPayoutAddress,

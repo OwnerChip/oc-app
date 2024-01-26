@@ -70,6 +70,7 @@ Future<String> makeAndSendGaslessTx(
     String? typedDataHash,
     EthereumAddress? toAccount,
     String? cid,
+    String? voucherTokenCID,
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
@@ -90,6 +91,8 @@ Future<String> makeAndSendGaslessTx(
           toAddress, //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null,
+      voucherTokenURI:
+          voucherTokenCID != null ? "ipfs://$voucherTokenCID" : null,
       tokenId: tokenId,
       enableRecovery: enableRecovery,
       sellerPayoutAddress: sellerPayoutAddress,
@@ -168,6 +171,7 @@ Future<String> makeAndSendNormalTx(
   EthereumAddress? toAccount,
   BigInt? tokenId,
   String? cid,
+  String? voucherTokenCID,
   EthereumAddress? sellerPayoutAddress,
   String? typedDataHash,
   String? offerHash,
@@ -186,6 +190,8 @@ Future<String> makeAndSendNormalTx(
       toAccount: toAccount,
       tokenId: tokenId,
       tokenURI: cid != null ? "ipfs://$cid" : null,
+      voucherTokenURI:
+          voucherTokenCID != null ? "ipfs://$voucherTokenCID" : null,
       enableRecovery: false,
       sellerPayoutAddress: sellerPayoutAddress,
       typedDataHash: typedDataHash,

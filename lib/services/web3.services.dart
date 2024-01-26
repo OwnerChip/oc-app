@@ -169,15 +169,34 @@ Future<bool> verifyTokenSigner(
 }
 
 String makeMintData(String functionSignatureHash, Uint8List hash,
-    MsgSignature signature, String tokenURI) {
-  String data = functionSignatureHash +
-      uint8ListTo32ByteHex(hash) + //bytes32
-      "a0".padLeft(64, '0') + //string prefix
-      signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
-      signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
-      signature.v.toRadixString(16).padLeft(64, '0') + //uint8
-      (tokenURI.length).toRadixString(16).padLeft(64, '0') +
-      stringToHex(tokenURI); //string;
+    MsgSignature signature, String tokenURI, String? voucherTokenURI) {
+  String data = (functionSignatureHash == mintVoucherFunctionSignature &&
+          voucherTokenURI != null &&
+          voucherTokenURI != "")
+      ?
+      // voucherToken mint calldata
+      functionSignatureHash +
+          uint8ListTo32ByteHex(hash) + //bytes32
+          "c0".padLeft(64, '0') + //string1 position
+          (224 + (tokenURI.length ~/ 2)) //TODO: check if this is correct
+              .toRadixString(16)
+              .padLeft(64, '0') + //string2 position
+          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
+          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(tokenURI) + //string1;
+          (voucherTokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(voucherTokenURI) //string2;
+      // twinToken mint calldata
+      : functionSignatureHash +
+          uint8ListTo32ByteHex(hash) + //bytes32
+          "a0".padLeft(64, '0') + //string prefix
+          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
+          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(tokenURI); //string;
   return data;
 }
 
@@ -190,6 +209,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     MsgSignature signature,
     {EthereumAddress? toAccount,
     String? tokenURI,
+    String? voucherTokenURI,
     String? gasPrice,
     BigInt? tokenId,
     bool? enableRecovery,
@@ -204,7 +224,10 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
-        functionSignatureHash, randomValueHash, signature, tokenURI!);
+        functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == mintVoucherFunctionSignature) {
+    data = makeMintData(functionSignatureHash, randomValueHash, signature,
+        tokenURI!, voucherTokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
   } else if (functionSignatureHash == transferFromFunctionSignature) {
