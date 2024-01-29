@@ -185,7 +185,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
-            mintFunctionSignature,
+            (voucherCollectionId != null)
+                ? mintVoucherFunctionSignature
+                : mintFunctionSignature,
             chainId,
             voucherCollectionId ?? collectionId,
             signatureData,
@@ -195,6 +197,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             metaTxAgreementId,
             walletType!,
             cid: cid,
+            voucherTokenCID:
+                cid, // TODO: change this to generated voucherTokenCID
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -204,16 +208,21 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
-            ref,
-            mintFunctionSignature,
-            chainId,
-            voucherCollectionId ?? collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession!,
-            walletType!,
-            cid: cid);
+          ref,
+          (voucherCollectionId != null)
+              ? mintVoucherFunctionSignature
+              : mintFunctionSignature,
+          chainId,
+          voucherCollectionId ?? collectionId,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession!,
+          walletType!,
+          cid: cid,
+          voucherTokenCID:
+              cid, // TODO: change this to generated voucherTokenCID
+        );
       }
 
       //wait until TX is succeeded or failed
