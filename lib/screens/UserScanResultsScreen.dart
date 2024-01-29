@@ -165,8 +165,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         await Future.delayed(const Duration(seconds: 2));
 
-        Navigator.pushNamedAndRemoveUntil(navigatorKey.currentContext!,
-            HomeScreen.routeName, (route) => false);
+                      Navigator.of(context)
+                          .popUntil((route) => route.isFirst);
       } else {
         throw Exception(context.loc.burnedError);
       }

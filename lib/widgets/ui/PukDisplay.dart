@@ -58,8 +58,7 @@ class PukDisplay extends ConsumerWidget {
                               context.loc.successHeadingSnackbar,
                               context.loc.successCardLogin,
                               'success'));
-                      Navigator.pushNamedAndRemoveUntil(
-                          context, HomeScreen.routeName, (route) => false);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     } catch (e) {
                       NfcManager.instance.stopSession();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,8 +69,7 @@ class PukDisplay extends ConsumerWidget {
               : CustomRoundedButton(
                   text: context.loc.done,
                   onPressed: (() async {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, HomeScreen.routeName, (route) => false);
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   }))
         ]);
   }

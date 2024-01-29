@@ -359,8 +359,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             setState(() {
               isLoading = false;
             });
-            Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (route) => false);
+            Navigator.of(context).popUntil((route) => route.isFirst);
           },
           loadingText: loadingText,
           rotateIcon: isRotating,

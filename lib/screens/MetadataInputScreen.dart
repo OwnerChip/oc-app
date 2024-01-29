@@ -337,17 +337,12 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                       setState(() {
                         isLoading = false;
                       });
-                      Navigator.pushNamedAndRemoveUntil(
-                          context, HomeScreen.routeName, (route) => false);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     }
                   : null,
               loadingText: loadingText,
               svgPath:
                   '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg',
-              // enable secondary button
-              // secondaryButton: true,
-              // secondaryButtonText: context.loc.troubleshoot,
-              // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL')
             )
           : CustomCard(
               mainAxisSize: MainAxisSize.min,
