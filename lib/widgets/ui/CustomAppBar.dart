@@ -73,8 +73,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             size: 35),
                         color: CustomColors(dotenv.get('APP_ID')).black,
                         onPressed: () async {
-                          Navigator.pushNamedAndRemoveUntil(
-                              context, HomeScreen.routeName, (route) => false);
+                          //navigate back until homescreen
+                          Navigator.of(context)
+                              .popUntil((route) => route.isFirst);
                           //reset providers
                           ref.read(userAddressProvider.notifier).state =
                               zeroAddress;

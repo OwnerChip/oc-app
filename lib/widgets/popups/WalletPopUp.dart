@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
@@ -11,21 +9,15 @@ import 'package:flutter/gestures.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import '../../utils/utils.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 
 Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
   final W3MService? w3mService = ref.read(w3mServiceProvider);
