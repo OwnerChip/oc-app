@@ -933,7 +933,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                         data: (voucherTokenOwnerData) => voucherTokenOwnerData == connectedWallet && voucherContractAddressData != null
                                                                             ? Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)
                                                                             :
-
                                                                             //futurebuilder with future getUnredeemedPurchases
                                                                             FutureBuilder<List>(
                                                                                 future: getUnredeemedPurchases(chipInfo.tokenId),
@@ -950,7 +949,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                     return const CircularProgressIndicator();
                                                                                   }
                                                                                 }),
-                                                                        error: (e, s) => Container(),
+                                                                        error: (e, s) => Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
                                                                         loading: () => Container());
                                                                   },
                                                                   error: (e,

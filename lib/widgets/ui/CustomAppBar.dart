@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -74,7 +75,19 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         onPressed: () async {
                           Navigator.pushNamedAndRemoveUntil(
                               context, HomeScreen.routeName, (route) => false);
-                          //only delete wc session if user is connected via wallet connect
+                          //reset providers
+                          ref.read(userAddressProvider.notifier).state =
+                              zeroAddress;
+                          ref.read(walletTypeProvider.notifier).state = null;
+                          ref.read(userSessionProvider.notifier).state = null;
+
+                          final storage = await SharedPreferences.getInstance();
+
+                          //remove session and wallet type from storage
+                          storage.remove('session');
+                          storage.remove('walletType');
+                          storage.remove('userSession');
+
                           if (wc != null && wcSession != null) {
                             wc.disconnectSession(
                                 topic: wcSession.topic,
@@ -83,14 +96,6 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                     message:
                                         'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
                           }
-
-                          //reset providers
-                          ref.read(userAddressProvider.notifier).state =
-                              zeroAddress; //delete user address from riverpod
-                          ref.read(walletTypeProvider.notifier).state =
-                              null; //delete wallet type from riverpod
-                          ref.read(userSessionProvider.notifier).state =
-                              null; //delete backend session from riverpod
                         },
                       )
                     : IconButton(

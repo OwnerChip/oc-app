@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -327,11 +328,12 @@ void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {
   final storage = SharedPreferences.getInstance();
   storage.then((value) => value.remove('session'));
   storage.then((value) => value.remove('walletType'));
+  storage.then((value) => value.remove('userSession'));
 
   ref.read(userSessionProvider.notifier).state = null;
   ref.read(wcSessionProvider.notifier).state = null;
   ref.read(walletTypeProvider.notifier).state = null;
-  // ref.read(wcProvider.notifier).state = null;
+  ref.read(userAddressProvider.notifier).state = zeroAddress;
 }
 
 void unsubscribeWcListeners(WidgetRef ref, BuildContext context) {

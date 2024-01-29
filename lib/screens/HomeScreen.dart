@@ -76,25 +76,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     final storage = await SharedPreferences.getInstance();
 
-    final storedSession = storage.getString('session');
+    final storedWcSession = storage.getString('session');
     final storedWalletType = storage.getString('walletType');
     final storedUserSession = storage.getString('userSession');
     //check if a session is stored
-    if (storedSession != null &&
+    if (storedWcSession != null &&
         storedWalletType != null &&
         storedUserSession != null) {
-      final session = SessionData.fromJson(jsonDecode(storedSession));
+      final wcSession = SessionData.fromJson(jsonDecode(storedWcSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
-      final userSession = UserSession.fromJson(jsonDecode(storedUserSession));
+      final backendSession =
+          UserSession.fromJson(jsonDecode(storedUserSession));
       //check if the stored session expires in less than three days; if yes, remove it
       //Note: WalletConnect session duration is 7 days
       double nowPlusThreeDays =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
-      if (session.expiry > nowPlusThreeDays &&
-          userSession.expiryDate > nowPlusThreeDays) {
-        ref.read(wcSessionProvider.notifier).state = session;
+      if (wcSession.expiry > nowPlusThreeDays &&
+          backendSession.expiryDate > nowPlusThreeDays) {
+        ref.read(wcSessionProvider.notifier).state = wcSession;
         ref.read(walletTypeProvider.notifier).state = walletType;
-        ref.read(userSessionProvider.notifier).state = userSession;
+        ref.read(userSessionProvider.notifier).state = backendSession;
       } else {
         //remove session and wallet type from storage
         storage.remove('session');
