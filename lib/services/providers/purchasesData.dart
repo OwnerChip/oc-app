@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -34,27 +35,6 @@ final unredeemedVoucherNftsProvider =
   return unredeemedPurchases;
 });
 
-//**** Voucher NFT DATA ****
-
-final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
-  List chainIds = chainConfig.keys.toList();
-  final UserSession? userSession = ref.read(userSessionProvider);
-  final EthereumAddress? walletAddress = userSession?.userWalletAddress;
-
-  //call fetchNFTsForOwner for each chainId; use Future.wait to wait for all futures to complete
-  final Map chainIdToNfts = {};
-  try {
-    var result = await Future.wait(chainIds.map((chainId) async {
-      final Map nftsForOwner = await fetchNFTsForOwner(walletAddress!, chainId);
-      chainIdToNfts[chainId] = nftsForOwner;
-      return chainIdToNfts;
-    }));
-    return chainIdToNfts;
-  } catch (err) {
-    rethrow;
-  }
-});
-
 final voucherNftsOwnedByUserProvider =
     FutureProvider.autoDispose<List<AlchemyNFTAsset>>((ref) async {
   final Map? nftsForOwnerByChainId =
@@ -77,7 +57,7 @@ final voucherNftsOwnedByUserProvider =
 
   List nftsForOwner = [];
   nftsForOwnerByChainId.forEach((chainId, nfts) {
-    nftsForOwner.addAll(nfts["ownedNfts"]);
+    nftsForOwner.addAll(nfts);
   });
   List voucherNftsOwnedByUser = nftsForOwner
       .where((nft) => voucherContractsAllChains.contains(

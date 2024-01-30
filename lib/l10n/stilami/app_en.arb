@@ -297,5 +297,8 @@
     "youAreTheNewOwner": "You are the new owner. The token can now be transferred into your wallet.",
     "transfer": "Transfer",
     "ownerChipWillNotifyYouOnceTheItemIsPurchased": "Stilami will notify you via email once the item is purchased. You are responsible for packaging and shipping the item to the buyer.",
-    "thisItemHasBeenSold": "This item has been sold. You have received shipping instructions via email."
+    "thisItemHasBeenSold": "This item has been sold. You have received shipping instructions via email.",
+    "pleaseScanChipAgainToCancel": "Please scan NFC chip again to cancel offer.",
+    "pleaseScanChipAgainToBurn": "Please scan NFC chip again to delete token.",
+    "attention": "Attention!"
 }

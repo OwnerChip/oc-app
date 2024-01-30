@@ -23,7 +23,9 @@ class CustomSnackBarContent extends StatelessWidget {
         decoration: BoxDecoration(
             color: alertType == 'success'
                 ? CustomColors(dotenv.get('APP_ID')).successColor
-                : CustomColors(dotenv.get('APP_ID')).errorColor,
+                : alertType == 'warning'
+                    ? Colors.amber
+                    : CustomColors(dotenv.get('APP_ID')).errorColor,
             borderRadius: const BorderRadius.all(Radius.circular(20))),
         child: Row(
           children: [

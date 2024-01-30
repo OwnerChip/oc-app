@@ -93,8 +93,12 @@ class ChipInfoModel {
 class SignatureData {
   Uint8List hashedMsg;
   MsgSignature signature;
+  bool hasBeenUsedInSmartContract;
 
-  SignatureData({required this.hashedMsg, required this.signature});
+  SignatureData(
+      {required this.hashedMsg,
+      required this.signature,
+      this.hasBeenUsedInSmartContract = false});
 }
 
 enum WCSignType {
