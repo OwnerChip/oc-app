@@ -985,8 +985,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                       Container()),
                                                       loading: () =>
                                                           Container(),
-                                                      error: (e, s) =>
-                                                          Container(),
+                                                      error: (e, s) => Text(
+                                                          context.loc
+                                                              .youAreNotNftOwner,
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          style:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 10),
