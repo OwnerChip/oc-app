@@ -347,6 +347,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       return;
     }
 
+    ref
+        .read(chipSignatureDataProvider.notifier)
+        .updateHasBeenUsedInSmartContract(true);
+
     try {
       setState(() {
         isLoading = true;
