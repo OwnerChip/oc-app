@@ -223,6 +223,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
+        ref
+            .read(chipSignatureDataProvider.notifier)
+            .updateHasBeenUsedInSmartContract(true);
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
         var response = await createRaribleOrder(config.chainId, order);

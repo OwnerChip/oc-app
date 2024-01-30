@@ -15,6 +15,10 @@ class SignatureDataNotifier extends StateNotifier<SignatureData> {
     state.hashedMsg = signatureData.hashedMsg;
     state.signature = signatureData.signature;
   }
+
+  void updateHasBeenUsedInSmartContract(bool hasBeenUsedInSmartContract) {
+    state.hasBeenUsedInSmartContract = hasBeenUsedInSmartContract;
+  }
 }
 
 final chipSignatureDataProvider =

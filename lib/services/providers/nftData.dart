@@ -156,7 +156,8 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
   final Map chainIdToNfts = {};
   try {
     var result = await Future.wait(chainIds.map((chainId) async {
-      final Map nftsForOwner = await fetchNFTsForOwner(walletAddress!, chainId);
+      final List nftsForOwner =
+          await fetchNFTsForOwner(walletAddress!, chainId);
       chainIdToNfts[chainId] = nftsForOwner;
       return chainIdToNfts;
     }));
@@ -188,7 +189,7 @@ final voucherNftsOwnedByUserProvider =
 
   List nftsForOwner = [];
   nftsForOwnerByChainId.forEach((chainId, nfts) {
-    nftsForOwner.addAll(nfts["ownedNfts"]);
+    nftsForOwner.addAll(nfts);
   });
   List voucherNftsOwnedByUser = nftsForOwner
       .where((nft) => voucherContractsAllChains.contains(

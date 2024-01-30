@@ -88,6 +88,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
+
+    if (signatureData.hasBeenUsedInSmartContract) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.attention,
+            context.loc.pleaseScanChipAgainToBurn, 'warning'),
+      );
+      return;
+    }
+
     try {
       setState(() {
         isLoading = true;
@@ -165,8 +174,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         await Future.delayed(const Duration(seconds: 2));
 
-                      Navigator.of(context)
-                          .popUntil((route) => route.isFirst);
+        Navigator.of(context).popUntil((route) => route.isFirst);
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -202,6 +210,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
+
+    ref
+        .read(chipSignatureDataProvider.notifier)
+        .updateHasBeenUsedInSmartContract(true);
+
     try {
       setState(() {
         isLoading = true;
@@ -325,6 +338,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
+
+    if (signatureData.hasBeenUsedInSmartContract) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.attention,
+            context.loc.pleaseScanChipAgainToCancel, 'warning'),
+      );
+      return;
+    }
+
     try {
       setState(() {
         isLoading = true;
