@@ -71,6 +71,7 @@ flutter:
     - assets/contracts/collection.abi.json
     - assets/contracts/registry.abi.json
     - assets/contracts/forwarder.abi.json
+    - assets/contracts/voucher.abi.json
     - .env
   generate: true
   uses-material-design: true

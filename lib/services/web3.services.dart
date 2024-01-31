@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:web3dart/json_rpc.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -98,6 +99,19 @@ Future<List<dynamic>> queryCollectionContract(
     String functionName,
     List<dynamic> args) async {
   DeployedContract contract = await getCollectionContract(collectionId);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  final result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
+Future<List<dynamic>> queryVoucherContract(
+    String chainRpcUrl,
+    EthereumAddress voucherContractAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract = await getVoucherContract(voucherContractAddress);
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client(chainRpcUrl);
   final result = await web3Client.call(
@@ -364,7 +378,7 @@ String makeOfferItemData(
   return data;
 }
 
-Future<dynamic> getOwner(
+Future<dynamic> getTwinOwner(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   try {
     var owner = await queryCollectionContract(
@@ -374,6 +388,25 @@ Future<dynamic> getOwner(
   } catch (e) {
     print('Error while fetching owner of tokenId $tokenId: $e');
     return e;
+  }
+}
+
+Future<dynamic> getVoucherOwner(String chainRpcUrl,
+    EthereumAddress voucherContractAddress, BigInt tokenId) async {
+  try {
+    var owner = await queryVoucherContract(
+        chainRpcUrl, voucherContractAddress, "ownerOf", [tokenId]);
+    return owner[0];
+  } on RPCError catch (e) {
+    //errorCode 3 == ERC721: invalid token ID; which means voucher token does not exist
+    if (e.errorCode == 3) {
+      //voucher token does not exist
+      return null;
+    }
+    rethrow;
+  } catch (e) {
+    print('Error while fetching owner of tokenId $tokenId: $e');
+    rethrow;
   }
 }
 
