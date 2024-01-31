@@ -48,9 +48,10 @@ RaribleV2Order makeRaribleV2Order(
       make: make,
       take: take,
       salt: salt,
-      start: 0,
-      //end now in 10 years
-      end: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 315360000,
+      //now in seconds
+      start: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      //end now in 10 months; 2629800 = 1 month in seconds
+      end: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 2629800 * 10,
       signature: signature ?? '');
   return raribleV2Order;
 }

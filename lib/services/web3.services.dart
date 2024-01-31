@@ -192,9 +192,8 @@ String makeMintData(String functionSignatureHash, Uint8List hash,
       functionSignatureHash +
           uint8ListTo32ByteHex(hash) + //bytes32
           "c0".padLeft(64, '0') + //string1 position
-          (0xc0 + 32 + tokenURI.length)
-              .toRadixString(16)
-              .padLeft(64, '0') + //string2 position
+          //position of string2 is string1 position + 96 bytes (3 lines below in call data)
+          (0xc0 + 96).toRadixString(16).padLeft(64, '0') + //string2 position
           signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
           signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
           signature.v.toRadixString(16).padLeft(64, '0') + //uint8
