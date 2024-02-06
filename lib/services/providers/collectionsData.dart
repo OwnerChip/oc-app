@@ -41,9 +41,9 @@ final voucherContractAndTwinNftOwnerProvider =
 
 final voucherContractProvider =
     FutureProvider.autoDispose<EthereumAddress?>((ref) async {
+  print('inside voucher contract provider');
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
 
-  //watch findTokenProvider
   final TokenChainAndCollection tokenInfo =
       await ref.read(findTokenProvider(chipInfo.tokenId).future);
 

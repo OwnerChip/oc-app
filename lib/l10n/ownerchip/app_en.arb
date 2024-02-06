@@ -301,5 +301,7 @@
     "thisItemHasBeenSold": "This item has been sold. You have received shipping instructions via email.",
     "pleaseScanChipAgainToCancel": "Please scan NFC chip again to cancel offer.",
     "pleaseScanChipAgainToBurn": "Please scan NFC chip again to delete token.",
-    "attention": "Attention!"
+    "attention": "Attention!",
+    "mintingVoucherToken": "Minting voucher token...",
+    "requestShipment": "Request the shipment now."
 }

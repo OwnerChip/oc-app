@@ -48,7 +48,7 @@ final nftOwnerProvider =
     return Future.error(
         'No owner found.'); //If you want to change the "No owner found." error message, please double check if no other code depends on this string
   }
-  EthereumAddress nftOwner = await getOwner(
+  EthereumAddress nftOwner = await getTwinOwner(
       getRPCUrlFromChainId(config.chainId),
       config.collectionId,
       chipInfo.tokenId);
@@ -140,7 +140,7 @@ final voucherTokenOwnerProvider =
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   final TokenChainAndCollection config =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
-  EthereumAddress voucherTokenOwner = await getOwner(
+  EthereumAddress voucherTokenOwner = await getVoucherOwner(
       getRPCUrlFromChainId(config.chainId),
       voucherContractAddress,
       chipInfo.tokenId);

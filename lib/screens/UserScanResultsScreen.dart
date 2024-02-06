@@ -211,10 +211,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
 
-    ref
-        .read(chipSignatureDataProvider.notifier)
-        .updateHasBeenUsedInSmartContract(true);
-
     try {
       setState(() {
         isLoading = true;
@@ -271,6 +267,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
+        ref
+            .read(chipSignatureDataProvider.notifier)
+            .updateHasBeenUsedInSmartContract(true);
         //this means claiming token succeeded
         setState(() {
           isRotating = false;
@@ -347,10 +346,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       return;
     }
 
-    ref
-        .read(chipSignatureDataProvider.notifier)
-        .updateHasBeenUsedInSmartContract(true);
-
     try {
       setState(() {
         isLoading = true;
@@ -419,6 +414,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
+        ref
+            .read(chipSignatureDataProvider.notifier)
+            .updateHasBeenUsedInSmartContract(true);
         await cancelOfferBackendRequest(offer.offerHash);
         sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
@@ -886,7 +884,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                           hasMinterRole:
                                                                               false);
                                                                   return collection
-                                                                          .hasMinterRole!
+                                                                          .hasMinterRole! && collection.id == tokenInfo.value!.collectionId
                                                                       ? Column(
                                                                           children: [
                                                                               // BURN BUTTON

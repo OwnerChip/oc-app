@@ -7,8 +7,8 @@
     "legalUrl": "https://www.steboart.com/_files/ugd/840bc2_6db003f7da5349a9b6bec9a437dd5e1e.pdf",
     "privacyUrl": "https://www.steboart.com/_files/ugd/840bc2_6db003f7da5349a9b6bec9a437dd5e1e.pdf",
     "initializeChip": "Chip initialisieren",
-    "youAreOwner": "Sie sind der Eigentümer",
-    "youAreNftOwner": "Sie sind der Token Eigentümer",
+    "youAreOwner": "Du bist der Eigentümer",
+    "youAreNftOwner": "Du bist der Token Eigentümer",
     "theOwnerIs": "Der Eigentümer ist",
     "walletAddress": "Wallet Adresse",
     "getWalletAddress": "Finde Wallet Adresse",
@@ -269,7 +269,7 @@
     "claimPhysicalItem": "Beanspruche ein physisches Objekt, welches mit einem NFT in deiner Wallet verknüpft ist.",
     "enterShippingAddress": "Versandadresse angeben",
     "shippingDataSuccessfullySent": "Versanddaten erfolgreich übermittelt.",
-    "youWillReceiveFurtherInformationViaEmail": "Sie erhalten weitere Infos via E-Mail.",
+    "youWillReceiveFurtherInformationViaEmail": "Du erhältst weitere Infos via E-Mail.",
     "firstName": "Vorname",
     "lastName": "Nachname",
     "company": "Unternehmen",
@@ -300,5 +300,7 @@
     "thisItemHasBeenSold": "Dieses Objekt wurde verkauft. Du hast Versandanweisungen per E-Mail erhalten.",
     "pleaseScanChipAgainToCancel": "Chip nochmal scannen, um Angebot abzubrechen.",
     "pleaseScanChipAgainToBurn": "Chip nochmal scannen, um Token zu löschen.",
-    "attention": "Achtung!"
+    "attention": "Achtung!",
+    "mintingVoucherToken": "Voucher-Token erstellen...",
+    "requestShipment": "Versand jetzt anfordern."
 }

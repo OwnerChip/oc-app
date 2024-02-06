@@ -357,14 +357,6 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
 
       if (status == 'OK') {
-        // Attachment attachment = Attachment(titleTextInput, urlTextInput,
-        //     AttachmentType.url, urlTextInput, fileUuid,
-        //     isPrivate: isPrivate, isFromCreator: hasMinterRole);
-        // ref.read(localAttachmentsProvider.notifier).state = [
-        //   ...ref.read(localAttachmentsProvider.notifier).state,
-        //   attachment
-        // ];
-
         sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {

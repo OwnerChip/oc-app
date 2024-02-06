@@ -9,8 +9,8 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -33,6 +33,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -74,10 +75,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   List<String> allDropdownValues = [
     'MATIC',
     'EUR'
-  ]; //attention: order of items is important
+  ]; //TODO: support other currencies //attention: order of items is important
   Future<bool>?
       _setCurrencyDropDownValuesFuture; //future used for currency dropdown FutureBuilder
-  //initState
+
   @override
   void initState() {
     super.initState();
@@ -114,12 +115,79 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     });
   }
 
+  Future<void> mintVoucherToken(
+      int chainId,
+      EthereumAddress twinCollectionId,
+      EthereumAddress voucherCollectionId,
+      TokenChainAndCollection config,
+      SignatureData signatureData,
+      EthereumAddress connectedWallet,
+      Web3App? wc,
+      SessionData? wcSession,
+      UserSession userSession,
+      WalletType? walletType) async {
+    //check if user is allowed to use gas station
+    final List response =
+        await checkMetaTx(twinCollectionId, mintFunctionSignature);
+    final bool canUseGasStation = response[0];
+    final metaTxAgreementId = response[1];
+
+    try {
+      String tokenUri = await getTokenUri(getRPCUrlFromChainId(config.chainId),
+          config.collectionId, config.tokenId);
+      String cid = getCidFromIpfsLink(tokenUri);
+
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
+            mintVoucherFunctionSignature,
+            chainId,
+            voucherCollectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            cid: cid,
+            voucherTokenCID:
+                cid, // TODO: change this to generated voucherTokenCID
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+          ref,
+          mintVoucherFunctionSignature,
+          chainId,
+          voucherCollectionId,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession!,
+          walletType!,
+          cid: cid,
+          voucherTokenCID:
+              cid, // TODO: change this to generated voucherTokenCID
+        );
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> offerToken() async {
     final Web3App? wc = ref.read(wcProvider);
     final SignatureData signatureData = ref.read(chipSignatureDataProvider);
     final UserSession userSession = ref.read(userSessionProvider)!;
-    final wcSession = ref.read(wcSessionProvider);
-    final walletType = ref.read(walletTypeProvider);
+    final SessionData? wcSession = ref.read(wcSessionProvider);
+    final WalletType? walletType = ref.read(walletTypeProvider);
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
     final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipInfo.tokenId).future);
@@ -135,9 +203,40 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     } else {
       priceInPrimaryChainCurrency = price * 1000000000000000000;
     }
+    setState(() {
+      isLoading = true;
+      overlayContentType = context.loc.loading;
+      loadingText = context.loc.mintingVoucherToken;
+    });
 
-    EthereumAddress? voucherContractAddress =
+    final voucherContractAddress =
         await ref.read(voucherContractProvider.future);
+
+    //check if voucher token exists
+    final voucherTokenOwner = await getVoucherOwner(
+      getRPCUrlFromChainId(config.chainId),
+      voucherContractAddress!,
+      config.tokenId,
+    );
+
+    if (voucherTokenOwner == null) {
+      await mintVoucherToken(
+          config.chainId,
+          config.collectionId,
+          voucherContractAddress,
+          config,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession,
+          userSession,
+          walletType);
+    }
+
+    setState(() {
+      loadingText = context.loc.offeringToken;
+    });
+
     RaribleV2Order raribleV2Order = makeRaribleV2Order(
         controllerContractAddress,
         controllerContractAddress,
@@ -156,12 +255,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final MsgSignature? chipSignature =
         await getChipSignature(ref, context, typedDataHash, toggleLoading);
     final String hexSignature = msgSignatureToHex(chipSignature!);
-
-    setState(() {
-      isLoading = true;
-      overlayContentType = context.loc.loading;
-      loadingText = context.loc.offeringToken;
-    });
 
     try {
       //check if user is allowed to use gas station
@@ -223,9 +316,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
-        ref
-            .read(chipSignatureDataProvider.notifier)
-            .updateHasBeenUsedInSmartContract(true);
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
         var response = await createRaribleOrder(config.chainId, order);

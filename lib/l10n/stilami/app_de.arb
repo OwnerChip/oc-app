@@ -295,11 +295,13 @@
     "cancelOffer": "Angebot entfernen",
     "tokenCurrentlyOfferedForSale": "Token wird auf Marktplatz angeboten.",
     "payoutWalletAddress": "Auszahlungs Wallet Adresse",
-    "youAreTheNewOwner": "Du bist der neue Besitzer. Der Token kann jetzt in deine Wallet transferiert werden.",
+    "youAreTheNewOwner": "Sie sind der neue Besitzer. Der Token kann jetzt in deine Wallet transferiert werden.",
     "transfer": "Transferieren",
-    "ownerChipWillNotifyYouOnceTheItemIsPurchased": "Stilami wird dich per E-Mail benachrichtigen, sobald der Artikel gekauft wurde. Du bist verantwortlich für das Verpacken und Versenden des Artikels an den Käufer.",
-    "thisItemHasBeenSold": "Dieses Objekt wurde verkauft. Du hast Versandanweisungen per E-Mail erhalten.",
+    "ownerChipWillNotifyYouOnceTheItemIsPurchased": "Stilami wird dich per E-Mail benachrichtigen, sobald der Artikel gekauft wurde. Sie sind verantwortlich für das Verpacken und Versenden des Artikels an den Käufer.",
+    "thisItemHasBeenSold": "Dieses Objekt wurde verkauft. Sie haben Versandanweisungen per E-Mail erhalten.",
     "pleaseScanChipAgainToCancel": "Chip nochmal scannen, um Angebot abzubrechen.",
     "pleaseScanChipAgainToBurn": "Chip nochmal scannen, um Token zu löschen.",
-    "attention": "Achtung!"
+    "attention": "Achtung!",
+    "mintingVoucherToken": "Voucher-Token erstellen...",
+    "requestShipment": "Versand jetzt anfordern."
 }

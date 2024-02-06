@@ -300,5 +300,7 @@
     "thisItemHasBeenSold": "Dieses Objekt wurde verkauft. Du hast Versandanweisungen per E-Mail erhalten.",
     "pleaseScanChipAgainToCancel": "Chip nochmal scannen, um Angebot abzubrechen.",
     "pleaseScanChipAgainToBurn": "Chip nochmal scannen, um Token zu löschen.",
-    "attention": "Achtung!"
+    "attention": "Achtung!",
+    "mintingVoucherToken": "Voucher-Token erstellen...",
+    "requestShipment": "Versand jetzt anfordern."
 }

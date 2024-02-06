@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:web3dart/json_rpc.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -105,6 +106,19 @@ Future<List<dynamic>> queryCollectionContract(
   return result;
 }
 
+Future<List<dynamic>> queryVoucherContract(
+    String chainRpcUrl,
+    EthereumAddress voucherContractAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract = await getVoucherContract(voucherContractAddress);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  final result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
 Future<List<dynamic>> queryForwarderContract(
     String chainRpcUrl,
     String registryForwarderAddress,
@@ -178,9 +192,8 @@ String makeMintData(String functionSignatureHash, Uint8List hash,
       functionSignatureHash +
           uint8ListTo32ByteHex(hash) + //bytes32
           "c0".padLeft(64, '0') + //string1 position
-          (0xc0 + 32 + tokenURI.length)
-              .toRadixString(16)
-              .padLeft(64, '0') + //string2 position
+          //position of string2 is string1 position + 96 bytes (3 lines below in call data)
+          (0xc0 + 96).toRadixString(16).padLeft(64, '0') + //string2 position
           signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
           signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
           signature.v.toRadixString(16).padLeft(64, '0') + //uint8
@@ -364,7 +377,7 @@ String makeOfferItemData(
   return data;
 }
 
-Future<dynamic> getOwner(
+Future<dynamic> getTwinOwner(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   try {
     var owner = await queryCollectionContract(
@@ -374,6 +387,25 @@ Future<dynamic> getOwner(
   } catch (e) {
     print('Error while fetching owner of tokenId $tokenId: $e');
     return e;
+  }
+}
+
+Future<dynamic> getVoucherOwner(String chainRpcUrl,
+    EthereumAddress voucherContractAddress, BigInt tokenId) async {
+  try {
+    var owner = await queryVoucherContract(
+        chainRpcUrl, voucherContractAddress, "ownerOf", [tokenId]);
+    return owner[0];
+  } on RPCError catch (e) {
+    //errorCode 3 == ERC721: invalid token ID; which means voucher token does not exist
+    if (e.errorCode == 3) {
+      //voucher token does not exist
+      return null;
+    }
+    rethrow;
+  } catch (e) {
+    print('Error while fetching owner of tokenId $tokenId: $e');
+    rethrow;
   }
 }
 
@@ -478,7 +510,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
         context.loc.claimPhysicalItem,
         Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Request the shipment now.',
+            context.loc.requestShipment,
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
