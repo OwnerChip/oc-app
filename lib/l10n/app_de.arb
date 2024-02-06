@@ -301,5 +301,6 @@
     "pleaseScanChipAgainToCancel": "Chip nochmal scannen, um Angebot abzubrechen.",
     "pleaseScanChipAgainToBurn": "Chip nochmal scannen, um Token zu löschen.",
     "attention": "Achtung!",
-    "mintingVoucherToken": "Voucher-Token erstellen..."
+    "mintingVoucherToken": "Voucher-Token erstellen...",
+    "requestShipment": "Versand jetzt anfordern."
 }

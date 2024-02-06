@@ -302,5 +302,6 @@
     "pleaseScanChipAgainToCancel": "Please scan NFC chip again to cancel offer.",
     "pleaseScanChipAgainToBurn": "Please scan NFC chip again to delete token.",
     "attention": "Attention!",
-    "mintingVoucherToken": "Minting voucher token..."
+    "mintingVoucherToken": "Minting voucher token...",
+    "requestShipment": "Request the shipment now."
 }

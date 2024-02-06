@@ -884,7 +884,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                           hasMinterRole:
                                                                               false);
                                                                   return collection
-                                                                          .hasMinterRole!
+                                                                          .hasMinterRole! && collection.id == tokenInfo.value!.collectionId
                                                                       ? Column(
                                                                           children: [
                                                                               // BURN BUTTON

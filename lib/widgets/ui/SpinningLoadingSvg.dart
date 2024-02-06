@@ -46,6 +46,7 @@ class SpinningLoadingSvg extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
+            textAlign: TextAlign.center,
             loadingText,
             style: Theme.of(context).textTheme.headlineMedium,
           ),

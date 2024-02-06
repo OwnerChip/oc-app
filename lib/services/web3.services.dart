@@ -510,7 +510,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
         context.loc.claimPhysicalItem,
         Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Request the shipment now.',
+            context.loc.requestShipment,
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
