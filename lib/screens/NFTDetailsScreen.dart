@@ -1,8 +1,12 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
+import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
@@ -27,6 +31,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/BigIconButton.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -53,7 +58,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
-    final AsyncValue<TokenInfoObject> tokenInfo =
+    final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final wc = ref.watch(wcProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
@@ -68,6 +73,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
     List<Attachment> attachments = ref.watch(localAttachmentsProvider);
     List<Attachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
     List<Attachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
+    final AsyncValue<List?> voucherContractAndTwinNftOwner =
+        ref.watch(voucherContractAndTwinNftOwnerProvider);
+    final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -125,6 +133,76 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
               thickness: 1,
               indent: 0,
               endIndent: 0,
+            ),
+            nftOwner.when(
+              data: (nftOwnerData) => connectedWallet == nftOwnerData
+                  ? approval.when(
+                      data: (approvalData) => approval.value == zeroAddress ||
+                              approval.value == null
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                voucherContractAndTwinNftOwner.when(
+                                  data: (data) => data != null &&
+                                          data[0] != null &&
+                                          data[1] == connectedWallet
+                                      ? Expanded(
+                                          flex: 1,
+                                          child: BigIconButton(
+                                            text: context.loc.offerForSale,
+                                            onPressed: () =>
+                                                Navigator.pushNamed(context,
+                                                    OfferOnMPScreen.routeName),
+                                            icon: Icon(
+                                              Icons.euro,
+                                              size: 35,
+                                              color: CustomColors(
+                                                      dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                            ),
+                                            height: 85,
+                                          ),
+                                        )
+                                      : Container(),
+                                  error: (e, s) => Container(),
+                                  loading: () => Container(),
+                                ),
+                                voucherContractAndTwinNftOwner.when(
+                                  data: (data) => data != null &&
+                                          data[0] != null &&
+                                          data[1] == connectedWallet
+                                      ? const SizedBox(
+                                          width: 10,
+                                        )
+                                      : Container(),
+                                  error: (e, s) => Container(),
+                                  loading: () => Container(),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: BigIconButton(
+                                    text: context.loc.transfer,
+                                    onPressed: () => Navigator.pushNamed(
+                                        context, TransferScreen.routeName),
+                                    icon: Icon(
+                                      Icons.send,
+                                      size: 35,
+                                      color: CustomColors(dotenv.get('APP_ID'))
+                                          .primaryColor,
+                                    ),
+                                    height: 85,
+                                  ),
+                                )
+                              ],
+                            )
+                          : Container(),
+                      error: (e, s) => Container(),
+                      loading: () => Container(),
+                    )
+                  : Container(),
+              error: (e, s) => Container(),
+              loading: () => Container(),
             ),
 
             /*** DESCRIPTION ***/

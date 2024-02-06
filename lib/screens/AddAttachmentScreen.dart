@@ -357,14 +357,6 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
 
       if (status == 'OK') {
-        // Attachment attachment = Attachment(titleTextInput, urlTextInput,
-        //     AttachmentType.url, urlTextInput, fileUuid,
-        //     isPrivate: isPrivate, isFromCreator: hasMinterRole);
-        // ref.read(localAttachmentsProvider.notifier).state = [
-        //   ...ref.read(localAttachmentsProvider.notifier).state,
-        //   attachment
-        // ];
-
         sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {
@@ -466,7 +458,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     ChipInfoModel chipInfo = ref.read(chipInfoProvider);
 
     //get correct chain and collection
-    TokenInfoObject tokenInfo =
+    TokenChainAndCollection tokenInfo =
         await ref.read(findTokenProvider(chipInfo.tokenId).future);
     int chainId = tokenInfo.chainId;
     EthereumAddress collectionId = tokenInfo.collectionId;
@@ -527,7 +519,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                 if (value!.isEmpty) {
                                   return context.loc.titleCannotBeEmpty;
                                 }
-                                if (attachmentList.length >= 10) {
+                                if (attachmentList.length >= 50) {
                                   return context.loc.maxAttachmentsReached;
                                 }
                               },
@@ -564,7 +556,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                     if (value.isEmpty) {
                                       return context.loc.urlCannotBeEmpty;
                                     }
-                                    if (attachmentList.length >= 10) {
+                                    if (attachmentList.length >= 50) {
                                       return context.loc.maxAttachmentsReached;
                                     }
                                   },

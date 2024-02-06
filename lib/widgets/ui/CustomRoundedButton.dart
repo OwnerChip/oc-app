@@ -16,6 +16,7 @@ class CustomRoundedButton extends StatelessWidget {
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.showShadow = true,
+    this.isLoading = false,
   });
 
   final String text;
@@ -29,6 +30,7 @@ class CustomRoundedButton extends StatelessWidget {
   final CrossAxisAlignment crossAxisAlignment;
   TextStyle? textStyle;
   final bool? showShadow;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -41,25 +43,35 @@ class CustomRoundedButton extends StatelessWidget {
             backgroundColor: backgroundColor ??
                 CustomColors(dotenv.get('APP_ID')).primaryColor,
             shape: RoundedRectangleBorder(
+              side: const BorderSide(width: 0),
               borderRadius: BorderRadius.circular(18),
             ),
             shadowColor: showShadow != null && showShadow!
                 ? CustomColors(dotenv.get('APP_ID')).shadowColor
-                : Colors.transparent,
+                : null,
           ),
-          child: Row(
-            mainAxisAlignment: mainAxisAlignment,
-            crossAxisAlignment: crossAxisAlignment,
-            children: [
-              icon != null ? icon! : Container(),
-              icon != null ? const SizedBox(width: 10) : Container(),
-              Text(text,
-                  style: textStyle ??
-                      Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: CustomColors(dotenv.get('APP_ID'))
-                              .customRoundedButtonColor)),
-            ],
-          )),
+          child: isLoading
+              ? Row(
+                  mainAxisAlignment: mainAxisAlignment,
+                  crossAxisAlignment: crossAxisAlignment,
+                  children: [
+                      CircularProgressIndicator(
+                        color: CustomColors(dotenv.get('APP_ID')).accentColor,
+                      ),
+                    ])
+              : Row(
+                  mainAxisAlignment: mainAxisAlignment,
+                  crossAxisAlignment: crossAxisAlignment,
+                  children: [
+                    icon != null ? icon! : Container(),
+                    icon != null ? const SizedBox(width: 10) : Container(),
+                    Text(text,
+                        style: textStyle ??
+                            Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                color: CustomColors(dotenv.get('APP_ID'))
+                                    .customRoundedButtonColor)),
+                  ],
+                )),
     );
   }
 }

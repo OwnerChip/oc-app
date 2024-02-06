@@ -7,7 +7,7 @@ import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 final blockchainExplorerUrlProvider =
     FutureProvider.autoDispose<Uri>((ref) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject tokenInfo =
+  final TokenChainAndCollection tokenInfo =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   final String baseUrl = chainConfig[tokenInfo.chainId]!.blockchainExplorerUrl;
   final String contractAddress = tokenInfo.collectionId.toString();
@@ -17,7 +17,7 @@ final blockchainExplorerUrlProvider =
 
 final openseaUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject tokenInfo =
+  final TokenChainAndCollection tokenInfo =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   final String baseUrl = chainConfig[tokenInfo.chainId]!.openseaUrl;
   final String contractAddress = tokenInfo.collectionId.toString();
@@ -27,7 +27,7 @@ final openseaUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
 
 final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject tokenInfo =
+  final TokenChainAndCollection tokenInfo =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   final String baseUrl = chainConfig[tokenInfo.chainId]!.raribleUrl;
   final String contractAddress = tokenInfo.collectionId.toString();

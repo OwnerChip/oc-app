@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -35,7 +36,6 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
     'domain': {
       'name': 'MinimalForwarder',
       'version': '0.0.2',
-      //'chainId': chainId,
       'verifyingContract': verifyingContract,
     },
     'primaryType': 'ForwardRequest',
@@ -53,13 +53,24 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     EthereumAddress to,
     EthereumAddress? toAccount,
     String? tokenURI,
+    String? voucherTokenURI,
     BigInt? tokenId,
-    bool? enableRecovery) async {
+    bool? enableRecovery,
+    EthereumAddress? sellerPayoutAddress,
+    BigInt? salt,
+    int? endTimestamp,
+    BigInt? price,
+    String? encodedOfferData,
+    String? typedDataHash,
+    String? offerHash) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
-        functionSignatureHash, randomValueHash, signature, tokenURI!);
+        functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == mintVoucherFunctionSignature) {
+    data = makeMintData(functionSignatureHash, randomValueHash, signature,
+        tokenURI!, voucherTokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
   } else if (functionSignatureHash == transferFromFunctionSignature) {
@@ -67,6 +78,20 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
+  } else if (functionSignatureHash == offerItemFunctionSignature) {
+    data = makeOfferItemData(
+        functionSignatureHash,
+        tokenId!,
+        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
+        sellerPayoutAddress!,
+        price!,
+        typedDataHash!);
+  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
+    data = makeCancelOfferData(functionSignatureHash, randomValueHash,
+        signature, salt!, endTimestamp!, encodedOfferData!);
+  } else if (functionSignatureHash == redeemItemFunctionSignature) {
+    data = makeRedeemTwinTokenData(
+        functionSignatureHash, randomValueHash, signature, offerHash!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -78,7 +103,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     'to': to.hex,
     'value': 0,
     'gas':
-        300000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
+        500000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
     'nonce': nonce.toInt(),
     'data': data,
   };
@@ -106,8 +131,16 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
     required EthereumAddress to,
     EthereumAddress? toAccount,
     String? tokenURI,
+    String? voucherTokenURI,
     BigInt? tokenId,
-    bool? enableRecovery}) async {
+    bool? enableRecovery,
+    EthereumAddress? sellerPayoutAddress,
+    BigInt? salt,
+    int? endTimestamp,
+    BigInt? price,
+    String? encodedOfferData,
+    String? typedDataHash,
+    String? offerHash}) async {
   final request = await buildTypedV4Request(
       functionSignatureHash,
       chainRpcUrl,
@@ -118,8 +151,16 @@ Future<List<Map<String, dynamic>>> makeGaslessParams(
       to,
       toAccount,
       tokenURI,
+      voucherTokenURI,
       tokenId,
-      enableRecovery);
+      enableRecovery,
+      sellerPayoutAddress,
+      salt,
+      endTimestamp,
+      price,
+      encodedOfferData,
+      typedDataHash,
+      offerHash);
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

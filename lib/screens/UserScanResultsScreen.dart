@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -27,6 +29,7 @@ import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
@@ -82,9 +85,18 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
     String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
+
+    if (signatureData.hasBeenUsedInSmartContract) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.attention,
+            context.loc.pleaseScanChipAgainToBurn, 'warning'),
+      );
+      return;
+    }
+
     try {
       setState(() {
         isLoading = true;
@@ -129,6 +141,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            ref,
             burnFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -161,10 +174,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         await Future.delayed(const Duration(seconds: 2));
 
-        Navigator.pushNamedAndRemoveUntil(
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            HomeScreen.routeName,
-            (route) => false);
+        Navigator.of(context).popUntil((route) => route.isFirst);
       } else {
         throw Exception(context.loc.burnedError);
       }
@@ -197,9 +207,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final walletType = ref.read(walletTypeProvider);
     UserSession userSession = ref.read(userSessionProvider)!;
     String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
+
     try {
       setState(() {
         isLoading = true;
@@ -242,6 +253,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            ref,
             transferFromFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -255,6 +267,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
+        ref
+            .read(chipSignatureDataProvider.notifier)
+            .updateHasBeenUsedInSmartContract(true);
         //this means claiming token succeeded
         setState(() {
           isRotating = false;
@@ -271,11 +286,20 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         });
 
         //wait for 2 seconds, to make sure corrrect data is fetched by providers
-        await Future.delayed(const Duration(seconds: 2));
 
-        // update providers
-        await ref.refresh(nftApprovalProvider.future);
-        await ref.refresh(nftOwnerProvider.future);
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+
+          //update providers for burn and transfer buttons
+          await ref.refresh(nftApprovalProvider.future);
+          await ref.refresh(nftOwnerProvider.future);
+          ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+          await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
 
         setState(() {
           isLoading = false;
@@ -305,6 +329,274 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
+  Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
+    final TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(tokenId).future);
+
+    if (signatureData.hasBeenUsedInSmartContract) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.attention,
+            context.loc.pleaseScanChipAgainToCancel, 'warning'),
+      );
+      return;
+    }
+
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.cancelOffer;
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, cancelOfferFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+          chainConfig[config.chainId]!.controllerContract);
+
+      //fetch order data from backend
+      CreatorData creatorData = await ref.read(creatorDataProvider.future);
+      final allOffers =
+          creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
+      final offer = allOffers.firstWhere((o) => o.isCancelled == false);
+
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            cancelOfferFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            controllerContractId: controllerContractAddress,
+            salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
+            encodedOfferData: offer.encodedData,
+            endTimestamp: offer.validUntil,
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+          ref,
+          cancelOfferFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession!,
+          walletType!,
+          salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
+          encodedOfferData: offer.encodedData,
+          endTimestamp: offer.validUntil,
+        );
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        ref
+            .read(chipSignatureDataProvider.notifier)
+            .updateHasBeenUsedInSmartContract(true);
+        await cancelOfferBackendRequest(offer.offerHash);
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
+        );
+
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+
+          //refresh providers for ownerchip check on ResultScreen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(creatorDataProvider.future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
+
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = context.loc.offerCanceled;
+        });
+
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Error cancelling sale of token.');
+      }
+    } catch (e, s) {
+      Sentry.captureException(e);
+      setState(() {
+        isLoading = false;
+      });
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorCancellingSale, 'error'),
+      );
+    }
+  }
+
+  Future<void> redeemTwinToken(Web3App? wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    final TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.redeemingtoken;
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, redeemItemFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+          chainConfig[config.chainId]!.controllerContract);
+
+      final List<Purchase> unredeemedVoucherNfts =
+          await ref.watch(unredeemedVoucherNftsProvider.future);
+      final String offerHash = unredeemedVoucherNfts.first.offer.offerHash;
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            redeemItemFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            controllerContractId: controllerContractAddress,
+            offerHash: offerHash,
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+            ref,
+            redeemItemFunctionSignature,
+            config.chainId,
+            controllerContractAddress,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            walletType!,
+            offerHash: offerHash);
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.tokenRedeemed, 'success'),
+        );
+
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+
+          //refresh providers for ownerchip check on ResultScreen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(creatorDataProvider.future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
+
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = context.loc.tokenRedeemed;
+        });
+
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        throw Exception(context.loc.errorRedeemingToken);
+      }
+    } catch (e, s) {
+      Sentry.captureException(e);
+      setState(() {
+        isLoading = false;
+      });
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_REDEMPTION_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.errorRedeemingToken, 'error'),
+      );
+    }
+  }
+
   Future<void> launchWallet() async {
     await launchUrlString('wc:', mode: LaunchMode.externalApplication);
   }
@@ -325,7 +617,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
-    final AsyncValue<TokenInfoObject> tokenInfo =
+    final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
@@ -334,6 +626,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final wc = ref.watch(wcProvider);
     final AsyncValue<CreatorData> creatorData = ref.watch(creatorDataProvider);
+    final AsyncValue<EthereumAddress?> voucherContractAddress =
+        ref.watch(voucherContractProvider);
+    final AsyncValue<EthereumAddress?> vouchertokenOwner =
+        ref.watch(voucherTokenOwnerProvider);
+    final AsyncValue<List<Purchase>> unredeemedVoucherNfts =
+        ref.watch(unredeemedVoucherNftsProvider);
+
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
     );
@@ -352,10 +651,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
             key: ScaffoldKey.getScaffoldKey('UserScanResultsScreen'),
@@ -375,13 +670,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                         nftMetadata.when(
                           loading: () => Text(context.loc.loading,
                               style: Theme.of(context).textTheme.displayLarge!),
-                          data: (data) => data['name'] != null
+                          data: (nftMetadataData) => nftMetadataData['name'] !=
+                                  null
                               ? GestureDetector(
                                   onTap: () {
                                     Navigator.of(context)
                                         .pushNamed(NFTDetailsScreen.routeName);
                                   },
-                                  child: Text(data['name'],
+                                  child: Text(nftMetadataData['name'],
                                       style: Theme.of(context)
                                           .textTheme
                                           .displayLarge!))
@@ -412,7 +708,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //AUTHENTICITY CHECK ICON
                                   tokenInfo.when(
-                                    data: ((data) => data.collectionId ==
+                                    data: ((tokenInfoData) => tokenInfoData
+                                                .collectionId ==
                                             zeroAddress
                                         ? SvgPicture.asset(
                                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")
@@ -431,8 +728,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: tokenInfo.when(
-                                      data: (data) =>
-                                          data.collectionId == zeroAddress
+                                      data: (tokenInfoData) =>
+                                          tokenInfoData.collectionId ==
+                                                  zeroAddress
                                               // NFT DOES NOT EXIST
                                               ? Text(
                                                   context.loc
@@ -443,9 +741,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                       .bodyMedium)
                                               // NFT EXISTS
                                               : creatorData.when(
-                                                  data: (data) =>
+                                                  data: (creatorDataData) =>
                                                       CreatorDataBoxContent(
-                                                          creatorData: data),
+                                                          creatorData:
+                                                              creatorDataData),
                                                   loading: () =>
                                                       const CircularProgressIndicator(),
                                                   error: (e, s) => Text(
@@ -483,13 +782,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
                                   //OWNERSHIP CHECK ICON
                                   nftOwner.when(
-                                    data: ((data) => connectedWallet ==
-                                            zeroAddress
+                                    data: ((nftOwnerData) => userSession == null
                                         ?
                                         //NFT owner exists and wallet is NOT connected
                                         SvgPicture.asset(
                                             "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
-                                        : connectedWallet == data
+                                        : connectedWallet == nftOwnerData
                                             ?
                                             //NFT owner exists and wallet is connected and wallet is owner
                                             approval.value == zeroAddress
@@ -515,7 +813,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: nftOwner.when(
-                                      data: (data) => connectedWallet ==
+                                      data: (nftOwnerData) => connectedWallet ==
                                                   zeroAddress ||
                                               userSession == null
                                           ?
@@ -543,9 +841,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         }))
                                               ],
                                             )
-                                          : connectedWallet == data
+                                          : connectedWallet == nftOwnerData
                                               //NFT owner exists and wallet is connected and wallet is owner
-                                              ? approval.value == zeroAddress
+                                              ? approval.value == zeroAddress ||
+                                                      approval.value == null
                                                   // show transfer / burn Token buttons only if token is not approved
                                                   ? Column(
                                                       children: [
@@ -565,27 +864,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                     .bodyMedium)),
                                                         const SizedBox(
                                                             height: 10),
-                                                        // TRANSFER BUTTON
-                                                        CustomRoundedButton(
-                                                            text: context.loc
-                                                                .transferToken,
-                                                            onPressed: (() => {
-                                                                  //navigate to transfer screen
-                                                                  Navigator.pushNamed(
-                                                                      context,
-                                                                      TransferScreen
-                                                                          .routeName)
-                                                                })),
-                                                        const SizedBox(
-                                                            height: 10),
                                                         // BURN BUTTON
                                                         relevantCollections
                                                             .when(
-                                                                data: (data) {
+                                                                data:
+                                                                    (relevantCollectionsData) {
                                                                   //get collection where user is minter
-                                                                  Collection collection = data.collections[tokenInfo.value!.chainId] !=
+                                                                  Collection collection = relevantCollectionsData.collections[tokenInfo.value!.chainId] !=
                                                                           null
-                                                                      ? data.collections[tokenInfo.value!.chainId]!.firstWhere((element) => element.hasMinterRole!,
+                                                                      ? relevantCollectionsData.collections[tokenInfo.value!.chainId]!.firstWhere((element) => element.hasMinterRole!,
                                                                           orElse: () => Collection(
                                                                               zeroAddress,
                                                                               '',
@@ -597,7 +884,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                           hasMinterRole:
                                                                               false);
                                                                   return collection
-                                                                          .hasMinterRole!
+                                                                          .hasMinterRole! && collection.id == tokenInfo.value!.collectionId
                                                                       ? Column(
                                                                           children: [
                                                                               // BURN BUTTON
@@ -641,9 +928,62 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               //NFT owner exists and wallet is connected and wallet is NOT owner
                                               Column(children: [
                                                   Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: Text(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child:
+                                                        //Wallet is not the TWIN token owner, because token is currently offered on MP
+                                                        creatorData.when(
+                                                      //if seller wallet address is equal to connected wallet address, show cancel order button
+                                                      data: (creatorDataData) => creatorDataData
+                                                                  .hasActiveOffer &&
+                                                              EthereumAddress.fromHex(creatorDataData
+                                                                      .tokenForWhichCreatorDataWasRequested
+                                                                      .activeOffers[
+                                                                          0]
+                                                                      .sellerAddress) ==
+                                                                  connectedWallet
+                                                          ? Text(context.loc.tokenCurrentlyOfferedForSale,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .left,
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium)
+                                                          : voucherContractAddress
+                                                              .when(
+                                                                  data:
+                                                                      (voucherContractAddressData) {
+                                                                    return vouchertokenOwner.when(
+                                                                        data: (voucherTokenOwnerData) => voucherTokenOwnerData == connectedWallet && voucherContractAddressData != null
+                                                                            ? Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)
+                                                                            :
+                                                                            //futurebuilder with future getUnredeemedPurchases
+                                                                            FutureBuilder<List>(
+                                                                                future: getUnredeemedPurchases(chipInfo.tokenId),
+                                                                                builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+                                                                                  if (snapshot.hasData) {
+                                                                                    if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
+                                                                                      return Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                    } else {
+                                                                                      return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                    }
+                                                                                  } else if (snapshot.hasError) {
+                                                                                    return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                  } else {
+                                                                                    return const CircularProgressIndicator();
+                                                                                  }
+                                                                                }),
+                                                                        error: (e, s) => Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                        loading: () => Container());
+                                                                  },
+                                                                  error: (e,
+                                                                          s) =>
+                                                                      Container(),
+                                                                  loading: () =>
+                                                                      Container()),
+                                                      loading: () =>
+                                                          Container(),
+                                                      error: (e, s) => Text(
                                                           context.loc
                                                               .youAreNotNftOwner,
                                                           textAlign:
@@ -651,11 +991,72 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
-                                                                  .bodyMedium)),
+                                                                  .bodyMedium),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 10),
+                                                  creatorData.when(
+                                                    //if seller wallet address is equal to connected wallet address, show cancel order button
+                                                    data: (creatorDataData) => creatorDataData
+                                                                .hasActiveOffer &&
+                                                            EthereumAddress.fromHex(creatorDataData
+                                                                    .tokenForWhichCreatorDataWasRequested
+                                                                    .activeOffers[
+                                                                        0]
+                                                                    .sellerAddress) ==
+                                                                connectedWallet
+                                                        ? CustomRoundedButton(
+                                                            text: context.loc
+                                                                .cancelOffer,
+                                                            onPressed: () {
+                                                              fromCancelable(cancelOffer(
+                                                                  wc,
+                                                                  chipInfo
+                                                                      .tokenId,
+                                                                  signatureData,
+                                                                  connectedWallet));
+                                                            })
+                                                        : Container(),
+                                                    loading: () => Container(),
+                                                    error: (e, s) =>
+                                                        Container(),
+                                                  ),
+                                                  //REDEEM twin token if you have a voucher token and voucherTokenOwner is connectedWalet
+                                                  voucherContractAddress.when(
+                                                      data:
+                                                          (voucherContractAddressData) {
+                                                        return vouchertokenOwner
+                                                            .when(
+                                                                data: (voucherTokenOwnerData) => voucherTokenOwnerData ==
+                                                                            connectedWallet &&
+                                                                        voucherContractAddressData !=
+                                                                            null
+                                                                    ? Column(
+                                                                        children: [
+                                                                            const SizedBox(height: 15),
+                                                                            CustomRoundedButton(
+                                                                                width: double.infinity,
+                                                                                text: context.loc.redeemToken,
+                                                                                onPressed: (() => {
+                                                                                      fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                    })),
+                                                                          ])
+                                                                    : Container(),
+                                                                error: (e, s) =>
+                                                                    Container(),
+                                                                loading: () =>
+                                                                    Container());
+                                                      },
+                                                      error: (e, s) =>
+                                                          Container(),
+                                                      loading: () =>
+                                                          Container()),
+
+                                                  //CLAIM Ownership of twin token if it was transferred to user
                                                   approval.when(
-                                                      data: (data) {
+                                                      data: (approvalData) {
                                                         //check if a wallet can CLAIM OWNERSHIP
-                                                        return data ==
+                                                        return approvalData ==
                                                                 connectedWallet
                                                             ? Column(children: [
                                                                 const SizedBox(
@@ -704,10 +1105,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                           width: 130,
                           loading: false,
                         ),
-                        data: (data) => CustomImage(
+                        data: (nftImageUriData) => CustomImage(
                           width: 130,
                           loading: false,
-                          imagePath: data,
+                          imagePath: nftImageUriData,
                         ),
                       )),
                 ],
@@ -716,25 +1117,26 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
               //if token does not exists
               tokenInfo.when(
-                  data: (data) => data.collectionId == zeroAddress &&
-                          connectedWallet != zeroAddress &&
-                          userSession != null &&
-                          relevantCollections.value!.collections.isNotEmpty
-                      ? CustomRoundedButton(
-                          text: context.loc.initializeChip,
-                          onPressed: () async {
-                            if (mounted) {
-                              await initializeItem(ref, context);
-                            }
-                          })
-                      : data.collectionId == zeroAddress
-                          ? Container()
-                          : CustomRoundedButton(
-                              text: context.loc.viewNftDetails,
-                              onPressed: () {
-                                Navigator.of(context)
-                                    .pushNamed(NFTDetailsScreen.routeName);
-                              }),
+                  data: (tokenInfoData) =>
+                      tokenInfoData.collectionId == zeroAddress &&
+                              connectedWallet != zeroAddress &&
+                              userSession != null &&
+                              relevantCollections.value!.collections.isNotEmpty
+                          ? CustomRoundedButton(
+                              text: context.loc.initializeChip,
+                              onPressed: () async {
+                                if (mounted) {
+                                  await initializeItem(ref, context);
+                                }
+                              })
+                          : tokenInfoData.collectionId == zeroAddress
+                              ? Container()
+                              : CustomRoundedButton(
+                                  text: context.loc.viewNftDetails,
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pushNamed(NFTDetailsScreen.routeName);
+                                  }),
                   error: (e, s) => Container(),
                   loading: () => Container()),
 

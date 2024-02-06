@@ -62,7 +62,8 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
         if (chainId != null && collection != null) {
           Navigator.pushNamed(context, MetadataScreen.routeName,
               arguments: MetadataInputScreenArguments(
-                  sessionId, chainId, collection.id));
+                  sessionId, chainId, collection.id,
+                  voucherAddress: collection.voucherAddress));
         }
       }
     } catch (e, s) {
@@ -79,8 +80,6 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wc = ref.watch(wcProvider);
-
     final int? chainId = ref.watch(selectedChainIdProvider);
     final Collection? collection = ref.watch(selectedCollectionIdProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments
@@ -152,26 +151,6 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
                         context, mounted, navArgs.sessionId);
                   },
           ),
-          const SizedBox(height: 60),
-          Row(
-            children: [
-              //warning icon
-              const SizedBox(width: 20),
-              SvgPicture.asset(
-                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
-              SizedBox(width: 10),
-              //Text
-              Expanded(
-                child: Text(
-                  context.loc.warningChainSelector,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium!
-                      .copyWith(fontSize: 15, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          )
         ],
       ),
     );

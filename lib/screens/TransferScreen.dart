@@ -4,7 +4,7 @@ import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -72,7 +72,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       EthereumAddress connectedWallet,
       String sessionId) async {
     final wcSession = ref.read(wcSessionProvider);
-    final TokenInfoObject config =
+    final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final UserSession userSession = ref.read(userSessionProvider)!;
     final isOwnerCard = userSession?.isOwnerCard;
@@ -121,6 +121,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            ref,
             approveFunctionSignature,
             config.chainId,
             config.collectionId,
@@ -142,17 +143,24 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
           loadingText = context.loc.transferSuccess;
         });
-        //refresh provider state to update nft owner & approval for next screen
-        await ref.refresh(nftOwnerProvider.future);
-        await ref.refresh(nftApprovalProvider.future);
 
-        //wait for 1 second to show success icon
-        await Future.delayed(const Duration(seconds: 1));
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+          //refresh provider state to update nft owner & approval for next screen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(nftApprovalProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
+
         setState(() {
           isLoading = false;
         });
-        //navigate to user scan result screen
-        Navigator.pushNamed(context, UserScanResultsScreen.routeName);
+
+        //check if previous route is user scan result screen
+        Navigator.pop(navigatorKey.currentContext!);
+
         // send status to analytics
         transferProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
@@ -222,10 +230,9 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           loadingText: loadingText,
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
-          // enable secondary button
-          secondaryButton: true,
-          secondaryButtonText: context.loc.troubleshoot,
-          secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
+          // secondaryButton: true,
+          // secondaryButtonText: context.loc.troubleshoot,
+          // secondaryButtonUrl: dotenv.get('SUPPORT_PAGE_URL'),
         ),
         child: Scaffold(
           key: ScaffoldKey.getScaffoldKey('TransferScreen'),

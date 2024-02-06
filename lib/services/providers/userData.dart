@@ -24,7 +24,7 @@ final userSessionProvider = StateProvider<UserSession?>((ref) {
 
 final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenInfoObject tokenInfo =
+  final TokenChainAndCollection tokenInfo =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   final EthereumAddress userWalletAddress = ref.read(userAddressProvider);
   bool hasMinterRole = await checkMinterRole(

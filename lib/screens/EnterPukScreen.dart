@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
@@ -15,6 +15,7 @@ import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
 
 class EnterPukScreen extends ConsumerStatefulWidget {
   const EnterPukScreen({Key? key}) : super(key: key);
@@ -26,6 +27,8 @@ class EnterPukScreen extends ConsumerStatefulWidget {
 }
 
 class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
+  final _pukController = TextEditingController();
+  final _pinController = TextEditingController();
   String puk = '';
   String pin = '';
 
@@ -42,76 +45,34 @@ class _EnterPukScreen extends ConsumerState<EnterPukScreen> {
           Column(
             children: [
               Container(
-                margin: EdgeInsets.only(top: 20),
-                child: TextFormField(
-                  maxLength: 16,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  cursorColor:
-                      CustomColors(dotenv.get('APP_ID').toString()).accentColor,
-                  decoration: InputDecoration(
-                    labelText: context.loc.enterPUK,
-                    labelStyle: Theme.of(context).textTheme.bodyMedium,
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                          color: CustomColors(dotenv.get('APP_ID').toString())
-                              .primaryColor,
-                          width: 2.0), // normal border color
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                          color: CustomColors(dotenv.get('APP_ID').toString())
-                              .primaryColor,
-                          width: 2.0), // focused border color
-                    ),
-                  ),
-                  keyboardType: TextInputType.text,
-                  obscureText: false,
-                  onChanged: (value) {
-                    setState(() {
-                      puk = value;
-                    });
-                  },
-                ),
-              ),
+                  margin: EdgeInsets.only(top: 20),
+                  child: StyledTextInputBox(
+                    controller: _pukController,
+                    fillColor: CustomColors(dotenv.get('APP_ID')).cardColor,
+                    setText: (input) {
+                      setState(() {
+                        puk = input;
+                      });
+                    },
+                    hintText: context.loc.enterPUK,
+                  )),
               const SizedBox(
                 height: 30,
               ),
               Container(
-                margin: EdgeInsets.only(top: 20),
-                child: TextFormField(
-                  maxLength: 4,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  cursorColor:
-                      CustomColors(dotenv.get('APP_ID').toString()).accentColor,
-                  decoration: InputDecoration(
-                    labelText: context.loc.enterFourDigitPin,
-                    labelStyle: Theme.of(context).textTheme.bodyMedium,
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                          color: CustomColors(dotenv.get('APP_ID').toString())
-                              .primaryColor,
-                          width: 2.0), // normal border color
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                          color: CustomColors(dotenv.get('APP_ID').toString())
-                              .primaryColor,
-                          width: 2.0), // focused border color
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  obscureText: false,
-                  onChanged: (value) {
-                    setState(() {
-                      pin = value;
-                    });
-                  },
-                ),
-              ),
+                  margin: const EdgeInsets.only(top: 20),
+                  child: StyledTextInputBox(
+                    controller: _pinController,
+                    fillColor: CustomColors(dotenv.get('APP_ID')).cardColor,
+                    setText: (input) {
+                      setState(() {
+                        pin = input;
+                      });
+                    },
+                    hintText: context.loc.enterFourDigitPin,
+                    maxLength: 4,
+                    keyboardType: TextInputType.number,
+                  )),
             ],
           ),
           const SizedBox(

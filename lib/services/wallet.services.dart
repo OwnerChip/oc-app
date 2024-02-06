@@ -5,19 +5,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -28,65 +25,7 @@ import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-
 import '../widgets/popups/AuthPopup.dart';
-
-// This function starts a wallet connection with the WalletConnect connector.
-Future<ConnectResponse> startWalletConnection(BuildContext context,
-    WidgetRef ref, Web3App wc, WalletType wallet, bool isDeepLink) async {
-  try {
-    List<String> chains = [];
-
-    // store walletType
-    ref.read(walletTypeProvider.notifier).state = wallet;
-    final storage = SharedPreferences.getInstance();
-    storage.then(
-        (value) => value.setString('walletType', jsonEncode(wallet.toJson())));
-
-    //TODO: connect to all supported chainIds ... once MetaMask complies with WC2
-    switch (wallet.name) {
-      case 'Metamask':
-        chains = ['eip155:1'];
-        break;
-      case 'Trust Wallet':
-        chains = ['eip155:1', 'eip155:137'];
-        break;
-      case '1inch Wallet':
-        chains = ['eip155:1'];
-        break;
-      default:
-        chains = ['eip155:1', 'eip155:137', 'eip155:80001'];
-        break;
-    }
-    ConnectResponse wcResp = await wc.connect(requiredNamespaces: {
-      'eip155': RequiredNamespace(
-          chains: chains,
-          methods: [
-            'eth_sendTransaction',
-            'eth_signTypedData_v4',
-            'personal_sign'
-          ],
-          events: EIP155.events.values.toList()),
-    });
-    String? uri = wcResp.uri.toString();
-    Uri walletDeepLink = convertToWcLink(
-        appLink: wallet.deeplinkUri, wcUri: uri, isDeepLink: isDeepLink);
-
-    launchUrlString(walletDeepLink.toString(),
-        mode: LaunchMode.externalApplication);
-    SessionData session = await wcResp.session.future
-        .onError((error, stackTrace) => throw 'error connecting wallet');
-    Navigator.pop(context);
-    authPopupBuilder(context, ref, wc, wallet.name);
-
-    return wcResp;
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
-  }
-}
 
 Uri convertToWcLink({
   required String appLink,
@@ -113,18 +52,27 @@ Future<String> makeAndSendGaslessTx(
     BuildContext context,
     String functionSignatureHash,
     int chainId,
-    EthereumAddress collectionId,
+    EthereumAddress toAddress,
     SignatureData signatureData,
     EthereumAddress walletAddress,
     Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
     SessionData? wcSession,
     String metaTxAgreementId,
     WalletType walletType,
-    {EthereumAddress? toAccount,
+    {EthereumAddress? controllerContractId,
+    String? typedDataHash,
+    EthereumAddress? toAccount,
     String? cid,
+    String? voucherTokenCID,
     BigInt? tokenId,
     bool? enableRecovery,
-    required Function toggleLoading}) async {
+    EthereumAddress? sellerPayoutAddress,
+    BigInt? salt,
+    int? endTimestamp,
+    BigInt? price,
+    String? encodedOfferData,
+    required Function toggleLoading,
+    String? offerHash}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
       functionSignatureHash: functionSignatureHash,
       chainRpcUrl: getRPCUrlFromChainId(chainId),
@@ -132,18 +80,28 @@ Future<String> makeAndSendGaslessTx(
       randomValueHash: signatureData.hashedMsg,
       signature: signatureData.signature,
       from: walletAddress,
-      to: collectionId,
+      to: controllerContractId ??
+          toAddress, //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
       toAccount: toAccount,
       tokenURI: cid != null ? "ipfs://$cid" : null,
+      voucherTokenURI:
+          voucherTokenCID != null ? "ipfs://$voucherTokenCID" : null,
       tokenId: tokenId,
-      enableRecovery: enableRecovery);
+      enableRecovery: enableRecovery,
+      sellerPayoutAddress: sellerPayoutAddress,
+      salt: salt,
+      endTimestamp: endTimestamp,
+      price: price,
+      encodedOfferData: encodedOfferData,
+      typedDataHash: typedDataHash,
+      offerHash: offerHash);
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
   try {
     String signature;
     if (walletType.name == 'OwnerCard') {
-      String hash = await getGaslessTxHash(request, collectionId);
+      String hash = await getGaslessTxHash(request, toAddress);
 
       var cardSignature =
           // ignore: use_build_context_synchronously
@@ -157,30 +115,30 @@ Future<String> makeAndSendGaslessTx(
 
       signature = msgSignatureToHex(cardSignature);
     } else {
-      String walletLink = walletType.deeplinkUri;
-      Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
+      final W3MService? w3mService = ref.read(w3mServiceProvider);
+      await w3mService!.launchConnectedWallet();
 
-      //turn off loading while user is in Metamask/Other Wallet
       toggleLoading();
-      await launchUrlString(walletDeepLink.toString(),
-          mode: LaunchMode.externalApplication);
 
       signature = await wc!
           .request(
-            topic: wcSession!.topic,
-            chainId: 'eip155:1',
-            request: SessionRequestParams(
-              method: 'eth_signTypedData_v4',
-              params: [walletAddress.toString(), json.encode(typedData)],
-            ),
-          )
-          .onError((error, stackTrace) => throw 'error signing gasless tx');
+        topic: wcSession!.topic,
+        // chainId: 'eip155:$chainId',
+        chainId: 'eip155:1',
+        request: SessionRequestParams(
+          method: 'eth_signTypedData_v4',
+          params: [walletAddress.toString(), json.encode(typedData)],
+        ),
+      )
+          .onError((error, stackTrace) {
+        throw 'error signing gasless tx';
+      });
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     }
 
     String txnHash = await sendGaslessRequest(
-        collectionId, signature, metaTxAgreementId, request);
+        toAddress, signature, metaTxAgreementId, request);
     return txnHash;
   } catch (e) {
     print(e);
@@ -194,20 +152,30 @@ Future<String> makeAndSendGaslessTx(
 //It then returns the txnHash.
 
 Future<String> makeAndSendNormalTx(
-    String functionSignatureHash,
-    int chainId,
-    EthereumAddress collectionId,
-    SignatureData signatureData,
-    EthereumAddress walletAddress,
-    Web3App wc,
-    SessionData wcSession,
-    WalletType walletType,
-    {EthereumAddress? toAccount,
-    BigInt? tokenId,
-    String? cid}) async {
+  WidgetRef ref,
+  String functionSignatureHash,
+  int chainId,
+  EthereumAddress toAddress,
+  SignatureData signatureData,
+  EthereumAddress walletAddress,
+  Web3App wc,
+  SessionData wcSession,
+  WalletType walletType, {
+  EthereumAddress? toAccount,
+  BigInt? tokenId,
+  String? cid,
+  String? voucherTokenCID,
+  EthereumAddress? sellerPayoutAddress,
+  String? typedDataHash,
+  String? offerHash,
+  BigInt? price,
+  BigInt? salt,
+  int? endTimestamp,
+  String? encodedOfferData,
+}) async {
   var txParams = await buildEthSendTransactionRequest(
       getRPCUrlFromChainId(chainId),
-      collectionId,
+      toAddress,
       walletAddress,
       functionSignatureHash,
       signatureData.hashedMsg,
@@ -215,12 +183,20 @@ Future<String> makeAndSendNormalTx(
       toAccount: toAccount,
       tokenId: tokenId,
       tokenURI: cid != null ? "ipfs://$cid" : null,
-      enableRecovery: false);
+      voucherTokenURI:
+          voucherTokenCID != null ? "ipfs://$voucherTokenCID" : null,
+      enableRecovery: false,
+      sellerPayoutAddress: sellerPayoutAddress,
+      typedDataHash: typedDataHash,
+      chainId: chainId,
+      offerHash: offerHash,
+      offerPrice: price,
+      salt: salt,
+      end: endTimestamp,
+      encodedOfferData: encodedOfferData);
 
-  String walletLink = walletType.deeplinkUri;
-  Uri walletDeepLink = convertToWcLink(appLink: walletLink, wcUri: "wc:");
-  await launchUrlString(walletDeepLink.toString(),
-      mode: LaunchMode.externalApplication);
+  final W3MService? w3mService = ref.read(w3mServiceProvider);
+  await w3mService!.launchConnectedWallet();
 
   String txnHash = await wc.request(
     topic: wcSession.topic,
@@ -236,17 +212,15 @@ Future<String> makeAndSendNormalTx(
 
 //personal sign
 Future<String> sendPersonalSignRequest(
+  WidgetRef ref,
   String message,
   EthereumAddress walletAddress,
   Web3App wc,
   SessionData wcSession,
   WalletType walletType,
 ) async {
-  Uri walletDeepLink =
-      convertToWcLink(appLink: walletType.deeplinkUri, wcUri: "wc:");
-
-  await launchUrlString(walletDeepLink.toString(),
-      mode: LaunchMode.externalApplication);
+  final W3MService? w3mService = ref.read(w3mServiceProvider);
+  await w3mService!.launchConnectedWallet();
 
   List<int> utf8CodeUnits = utf8.encode(message);
   String hexUtf8EncodedMessage =
@@ -255,6 +229,9 @@ Future<String> sendPersonalSignRequest(
   String signature = await wc.request(
     topic: wcSession.topic,
     chainId: 'eip155:1',
+    // chainId: w3mService.selectedChain?.chainId == null
+    // ? 'eip155:1'
+    // : 'eip155:${w3mService.selectedChain?.chainId}',
     request: SessionRequestParams(
       method: 'personal_sign',
       params: [hexUtf8EncodedMessage, walletAddress.toString()],
@@ -270,7 +247,7 @@ Future<String> getGaslessTxHash(request, collectionId) async {
   return hash;
 }
 
-Future<Web3App> initWcClient(WidgetRef ref) async {
+Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
   Web3App wcClient = await Web3App.createInstance(
     relayUrl: 'wss://relay.walletconnect.com',
     projectId: dotenv.env['WC_PROJECT_ID']!,
@@ -284,6 +261,11 @@ Future<Web3App> initWcClient(WidgetRef ref) async {
   //set walletconnect client provider
   ref.read(wcProvider.notifier).state = wcClient;
 
+  //create Web3Modal service and set provider
+  final W3MService w3mService = W3MService(web3App: wcClient);
+  await w3mService.init();
+  ref.read(w3mServiceProvider.notifier).state = w3mService;
+
   // Register event handlers
   final events = EIP155.events.values.toList();
   for (int chainId in chainConfig.keys) {
@@ -293,21 +275,30 @@ Future<Web3App> initWcClient(WidgetRef ref) async {
   }
 
   wcClient.onSessionEvent.subscribe(wrapOnSessionEvent(ref));
-  wcClient.onSessionConnect.subscribe(wrapOnSessionConnect(ref));
+  wcClient.onSessionConnect.subscribe(wrapOnSessionConnect(ref, context));
   wcClient.onSessionDelete.subscribe(wrapOnSessionDisconnect(ref));
   wcClient.onSessionExpire.subscribe(wrapOnSessionExpire(ref));
 
   return wcClient;
 }
 
-void Function(SessionConnect?) wrapOnSessionConnect(WidgetRef ref) {
+void Function(SessionConnect?) wrapOnSessionConnect(
+    WidgetRef ref, BuildContext context) {
   return (SessionConnect? args) {
-    // WalletType? walletType = walletConfig[args?.session.peer.metadata.url];
-    // ref.read(walletTypeProvider.notifier).state = walletType;
+    Web3App? wc = ref.read(wcProvider);
+
+    //set session and wallet type provider
     ref.read(wcSessionProvider.notifier).state = args?.session;
+    ref.read(walletTypeProvider.notifier).state = walletConfig['walletConnect'];
+
+    //store session and wallet type
     final storage = SharedPreferences.getInstance();
     final session = jsonEncode(args?.session);
     storage.then((value) => value.setString('session', session));
+    storage.then((value) => value.setString(
+        'walletType', jsonEncode(walletConfig['walletConnect']!.toJson())));
+
+    authPopupBuilder(context, ref, wc!, 'WalletConnect');
   };
 }
 
@@ -327,23 +318,7 @@ void Function(SessionExpire?) wrapOnSessionExpire(WidgetRef ref) {
 }
 
 void Function(SessionEvent?) wrapOnSessionEvent(WidgetRef ref) {
-  return (SessionEvent? args) {
-    // if (args?.name == "accountsChanged") {
-    //   EthereumAddress currentWalletAddr = ref.read(userAddressProvider);
-
-    //   EthereumAddress newWalletAddr =
-    //       EthereumAddress.fromHex(args?.data[0].split(':')[2]);
-    //   if (currentWalletAddr != zeroAddress &&
-    //       currentWalletAddr != newWalletAddr) {
-    //     // simply disconnect?
-    //     //TODO: remove session from connected wallet as well!
-    //     SessionDelete deleteArgs = SessionDelete(args!.topic);
-    //     onSessionDisconnect(deleteArgs, ref);
-    //   }
-    // } else {
-    //   //do nothing?
-    // }
-  };
+  return (SessionEvent? args) {};
 }
 
 void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {
@@ -351,17 +326,18 @@ void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {
   final storage = SharedPreferences.getInstance();
   storage.then((value) => value.remove('session'));
   storage.then((value) => value.remove('walletType'));
+  storage.then((value) => value.remove('userSession'));
 
   ref.read(userSessionProvider.notifier).state = null;
   ref.read(wcSessionProvider.notifier).state = null;
   ref.read(walletTypeProvider.notifier).state = null;
-  // ref.read(wcProvider.notifier).state = null;
+  ref.read(userAddressProvider.notifier).state = zeroAddress;
 }
 
-void unsubscribeWcListeners(WidgetRef ref) {
+void unsubscribeWcListeners(WidgetRef ref, BuildContext context) {
   Web3App? wcClient = ref.read(wcProvider);
   if (wcClient != null) {
-    wcClient.onSessionConnect.unsubscribe(wrapOnSessionConnect(ref));
+    wcClient.onSessionConnect.unsubscribe(wrapOnSessionConnect(ref, context));
     wcClient.onSessionDelete.unsubscribe(wrapOnSessionDisconnect(ref));
     wcClient.onSessionEvent.unsubscribe(wrapOnSessionEvent(ref));
     wcClient.onSessionExpire.unsubscribe(wrapOnSessionExpire(ref));

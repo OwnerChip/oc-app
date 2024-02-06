@@ -6,8 +6,9 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
-import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -45,11 +46,12 @@ class _RefreshMetadataButtonState extends ConsumerState<RefreshMetadataButton> {
                   loading = true;
                 });
                 final chipInfo = ref.read(chipInfoProvider);
-                var i = await ref
-                    .refresh(findTokenProvider(chipInfo.tokenId).future);
-                var d = await ref
-                    .refresh(nftMetadataProvider(chipInfo.tokenId).future);
-                var a = await ref.refresh(fetchAttachmentsProvider.future);
+                await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+                await ref.refresh(nftMetadataProvider(chipInfo.tokenId).future);
+                await ref.refresh(fetchAttachmentsProvider.future);
+                await ref
+                    .refresh(voucherContractAndTwinNftOwnerProvider.future);
+
                 setState(() {
                   loading = true;
                 });

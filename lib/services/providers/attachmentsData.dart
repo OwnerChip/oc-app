@@ -14,7 +14,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   //get tokenId from provider
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  TokenInfoObject tokenInfo =
+  TokenChainAndCollection tokenInfo =
       await ref.read(findTokenProvider(chipInfo.tokenId).future);
 
   bool tokenExists = true;
@@ -22,7 +22,6 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   try {
     //check if connected wallet is nft owner
     nftOwner = await ref.read(nftOwnerProvider.future);
-    print('nftOwner: $nftOwner');
   } catch (e) {
     print(e);
     if (e == 'No owner found.') {

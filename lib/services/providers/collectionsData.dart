@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:web3dart/web3dart.dart';
@@ -18,7 +20,8 @@ final appCollectionProvider =
 
   // first, try to get the collections from the backend
   try {
-    final rawCollections = await getAppCollections();
+    final data = await getAppCollections();
+    final rawCollections = data['collections'];
     collections =
         BlockchainCollectionList(groupCollectionsByChainId(rawCollections));
   } catch (e) {
@@ -27,6 +30,33 @@ final appCollectionProvider =
     collections = BlockchainCollectionList({});
   }
   return collections;
+});
+
+final voucherContractAndTwinNftOwnerProvider =
+    FutureProvider.autoDispose<List>((ref) async {
+  final voucherContractAddress = await ref.read(voucherContractProvider.future);
+  final twinNftOwner = await ref.read(nftOwnerProvider.future);
+  return [voucherContractAddress, twinNftOwner];
+});
+
+final voucherContractProvider =
+    FutureProvider.autoDispose<EthereumAddress?>((ref) async {
+  print('inside voucher contract provider');
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+
+  final TokenChainAndCollection tokenInfo =
+      await ref.read(findTokenProvider(chipInfo.tokenId).future);
+
+  final BlockchainCollectionList collections =
+      await ref.read(appCollectionProvider.future);
+
+  // get collection in collections.collections[tokenInfo.chainId] with id == tokenInfo.collectionAddress
+  final Collection collection = collections.collections[tokenInfo.chainId]!
+      .firstWhere((element) => element.id == tokenInfo.collectionId);
+
+  final EthereumAddress? voucherContractAddress = collection.voucherAddress;
+
+  return voucherContractAddress;
 });
 
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
@@ -47,7 +77,8 @@ final findAllMinterRolesProvider =
       Future<bool> hasMinterRoleFuture = checkMinterRole(
           getRPCUrlFromChainId(chainId), collection.id, userWalletAddress);
       futures.add(hasMinterRoleFuture);
-      res.add(Collection(collection.id, collection.name, chainId: chainId));
+      res.add(Collection(collection.id, collection.name,
+          voucherAddress: collection.voucherAddress, chainId: chainId));
     }
   });
   var resRaw = await Future.wait(futures);

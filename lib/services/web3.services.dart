@@ -1,15 +1,39 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
+import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:web3dart/json_rpc.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 Web3Client getWeb3Client(String chainRpcUrl) {
   var client = Web3Client(chainRpcUrl, Client());
   return client;
+}
+
+Future<DeployedContract> getControllerContract(
+    EthereumAddress collectionId) async {
+  String abi =
+      await rootBundle.loadString("assets/contracts/controller.abi.json");
+  DeployedContract contract = DeployedContract(
+    ContractAbi.fromJson(abi, 'OwnerChipController'),
+    collectionId,
+  );
+  return contract;
 }
 
 Future<DeployedContract> getCollectionContract(
@@ -18,6 +42,16 @@ Future<DeployedContract> getCollectionContract(
       await rootBundle.loadString("assets/contracts/collection.abi.json");
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, 'OwnerChipDemo'),
+    collectionId,
+  );
+  return contract;
+}
+
+Future<DeployedContract> getVoucherContract(
+    EthereumAddress collectionId) async {
+  String abi = await rootBundle.loadString("assets/contracts/voucher.abi.json");
+  DeployedContract contract = DeployedContract(
+    ContractAbi.fromJson(abi, 'OwnerChipVoucher'),
     collectionId,
   );
   return contract;
@@ -67,7 +101,20 @@ Future<List<dynamic>> queryCollectionContract(
   DeployedContract contract = await getCollectionContract(collectionId);
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client(chainRpcUrl);
-  List<dynamic> result = await web3Client.call(
+  final result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
+Future<List<dynamic>> queryVoucherContract(
+    String chainRpcUrl,
+    EthereumAddress voucherContractAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract = await getVoucherContract(voucherContractAddress);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  final result = await web3Client.call(
       contract: contract, function: function, params: args);
   return result;
 }
@@ -136,35 +183,64 @@ Future<bool> verifyTokenSigner(
 }
 
 String makeMintData(String functionSignatureHash, Uint8List hash,
-    MsgSignature signature, String tokenURI) {
-  String data = functionSignatureHash +
-      uint8ListTo32ByteHex(hash) + //bytes32
-      "a0".padLeft(64, '0') + //string prefix
-      signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
-      signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
-      signature.v.toRadixString(16).padLeft(64, '0') + //uint8
-      (tokenURI.length).toRadixString(16).padLeft(64, '0') +
-      stringToHex(tokenURI); //string;
+    MsgSignature signature, String tokenURI, String? voucherTokenURI) {
+  String data = (functionSignatureHash == mintVoucherFunctionSignature &&
+          voucherTokenURI != null &&
+          voucherTokenURI != "")
+      ?
+      // voucherToken mint calldata
+      functionSignatureHash +
+          uint8ListTo32ByteHex(hash) + //bytes32
+          "c0".padLeft(64, '0') + //string1 position
+          //position of string2 is string1 position + 96 bytes (3 lines below in call data)
+          (0xc0 + 96).toRadixString(16).padLeft(64, '0') + //string2 position
+          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
+          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(tokenURI) + //string1;
+          (voucherTokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(voucherTokenURI) //string2;
+      // twinToken mint calldata
+      : functionSignatureHash +
+          uint8ListTo32ByteHex(hash) + //bytes32
+          "a0".padLeft(64, '0') + //string prefix
+          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
+          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(tokenURI); //string;
   return data;
 }
 
 Future<List<dynamic>> buildEthSendTransactionRequest(
-  String chainRpcUrl,
-  EthereumAddress collectionId,
-  EthereumAddress? from,
-  String functionSignatureHash,
-  Uint8List randomValueHash,
-  MsgSignature signature, {
-  EthereumAddress? toAccount,
-  String? tokenURI,
-  String? gasPrice,
-  BigInt? tokenId,
-  bool? enableRecovery,
-}) async {
+    String chainRpcUrl,
+    EthereumAddress collectionId,
+    EthereumAddress? from,
+    String functionSignatureHash,
+    Uint8List randomValueHash,
+    MsgSignature signature,
+    {EthereumAddress? toAccount,
+    String? tokenURI,
+    String? voucherTokenURI,
+    String? gasPrice,
+    BigInt? tokenId,
+    bool? enableRecovery,
+    EthereumAddress? sellerPayoutAddress,
+    BigInt? offerPrice,
+    String? typedDataHash,
+    BigInt? salt,
+    int? end,
+    String? encodedOfferData,
+    int? chainId,
+    String? offerHash}) async {
   String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
-        functionSignatureHash, randomValueHash, signature, tokenURI!);
+        functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == mintVoucherFunctionSignature) {
+    data = makeMintData(functionSignatureHash, randomValueHash, signature,
+        tokenURI!, voucherTokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
     data = makeBurnData(functionSignatureHash, randomValueHash, signature);
   } else if (functionSignatureHash == transferFromFunctionSignature) {
@@ -172,11 +248,25 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
+  } else if (functionSignatureHash == offerItemFunctionSignature) {
+    data = makeOfferItemData(
+        functionSignatureHash,
+        tokenId!,
+        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
+        sellerPayoutAddress!,
+        offerPrice!,
+        typedDataHash!);
+  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
+    data = makeCancelOfferData(functionSignatureHash, randomValueHash,
+        signature, salt!, end!, encodedOfferData!);
+  } else if (functionSignatureHash == redeemItemFunctionSignature) {
+    data = makeRedeemTwinTokenData(
+        functionSignatureHash, randomValueHash, signature, offerHash!);
   } else {
     throw Exception('Invalid function signature hash');
   }
 
-  String gasAmount = "0x493E0"; // fallback: 300000 gas
+  String gasAmount = "0x55730"; // fallback: 300000 gas
   try {
     BigInt gasAmountEst =
         await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
@@ -196,7 +286,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
       gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
     }
   }
-
+  gasAmount = "0x55730"; // fallback: 350000 gas
   final params = [
     {
       "from": from.toString(),
@@ -216,6 +306,38 @@ String makeBurnData(
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+String makeRedeemTwinTokenData(String functionSignatureHash, Uint8List hash,
+    MsgSignature signature, String offerHash) {
+  String data = functionSignatureHash +
+      uint8ListTo32ByteHex(hash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0') +
+      offerHash.substring(2).padLeft(64, '0');
+  return data;
+}
+
+String makeCancelOfferData(
+    String functionSignatureHash,
+    Uint8List hash,
+    MsgSignature signature,
+    BigInt offerSalt,
+    int offerEnd,
+    String encodedOfferData) {
+  String data = functionSignatureHash +
+      uint8ListTo32ByteHex(hash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0') +
+      offerSalt.toRadixString(16).padLeft(64, '0') +
+      offerEnd.toRadixString(16).padLeft(64, '0') +
+      (encodedOfferData.substring(2).length ~/ 2)
+          .toRadixString(16)
+          .padLeft(64, '0') +
+      encodedOfferData.substring(2);
   return data;
 }
 
@@ -239,9 +361,24 @@ String makeApproveData(
   return data;
 }
 
-Future<dynamic> getOwner(
+String makeOfferItemData(
+    String functionSignatureHash,
+    BigInt tokenId,
+    EthereumAddress marketplaceContract,
+    EthereumAddress sellerPayoutAddress,
+    BigInt offerPrice,
+    String typedDataHash) {
+  String data = functionSignatureHash +
+      tokenId.toRadixString(16).padLeft(64, '0') +
+      marketplaceContract.toString().substring(2).padLeft(64, '0') +
+      sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
+      offerPrice.toRadixString(16).padLeft(64, '0') +
+      typedDataHash.substring(2).padLeft(64, '0');
+  return data;
+}
+
+Future<dynamic> getTwinOwner(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
-  print('checking owner of tokenId $tokenId on chain $chainRpcUrl');
   try {
     var owner = await queryCollectionContract(
         chainRpcUrl, collectionId, "ownerOf", [tokenId]);
@@ -250,6 +387,25 @@ Future<dynamic> getOwner(
   } catch (e) {
     print('Error while fetching owner of tokenId $tokenId: $e');
     return e;
+  }
+}
+
+Future<dynamic> getVoucherOwner(String chainRpcUrl,
+    EthereumAddress voucherContractAddress, BigInt tokenId) async {
+  try {
+    var owner = await queryVoucherContract(
+        chainRpcUrl, voucherContractAddress, "ownerOf", [tokenId]);
+    return owner[0];
+  } on RPCError catch (e) {
+    //errorCode 3 == ERC721: invalid token ID; which means voucher token does not exist
+    if (e.errorCode == 3) {
+      //voucher token does not exist
+      return null;
+    }
+    rethrow;
+  } catch (e) {
+    print('Error while fetching owner of tokenId $tokenId: $e');
+    rethrow;
   }
 }
 
@@ -331,5 +487,44 @@ Future<dynamic> getTxnReceipt(String chainRpcUrl, String txnHash) async {
   } catch (e) {
     print('Error while fetching txn receipt: $e');
     return e;
+  }
+}
+
+Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
+    {VoidCallback? setShippingPopupIsShownState}) async {
+  final UserSession? userSession = ref.read(userSessionProvider);
+
+  if (userSession == null) {
+    return;
+  }
+
+  final List<Purchase> unredeemedPurchases =
+      await ref.read(unredeemedVoucherNftsProvider.future);
+  if (unredeemedPurchases.isNotEmpty &&
+      unredeemedPurchases.first.shippingInfo == null) {
+    // ignore: use_build_context_synchronously
+    await showCustomPopup(
+        context,
+        icon: Icon(Icons.local_shipping_outlined,
+            size: 90, color: CustomColors(dotenv.get('APP_ID')).accentColor),
+        context.loc.claimPhysicalItem,
+        Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+            context.loc.requestShipment,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          CustomRoundedButton(
+            text: context.loc.enterShippingAddress,
+            onPressed: () {
+              Navigator.pushNamed(
+                  context, EnterShippingAddressScreen.routeName);
+            },
+          )
+        ]),
+        setShippingPopupIsShownState: setShippingPopupIsShownState);
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
-import 'package:ownerchip_whitelabel/services/scan.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -58,8 +58,7 @@ class PukDisplay extends ConsumerWidget {
                               context.loc.successHeadingSnackbar,
                               context.loc.successCardLogin,
                               'success'));
-                      Navigator.pushNamedAndRemoveUntil(
-                          context, HomeScreen.routeName, (route) => false);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     } catch (e) {
                       NfcManager.instance.stopSession();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,8 +69,7 @@ class PukDisplay extends ConsumerWidget {
               : CustomRoundedButton(
                   text: context.loc.done,
                   onPressed: (() async {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, HomeScreen.routeName, (route) => false);
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   }))
         ]);
   }
