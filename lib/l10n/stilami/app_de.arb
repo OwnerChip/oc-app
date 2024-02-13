@@ -303,5 +303,6 @@
     "pleaseScanChipAgainToBurn": "Chip nochmal scannen, um Token zu löschen.",
     "attention": "Achtung!",
     "mintingVoucherToken": "Voucher-Token erstellen...",
-    "requestShipment": "Versand jetzt anfordern."
+    "requestShipment": "Versand jetzt anfordern.",
+    "manualHandover": "Händische Übergabe"
 }

@@ -346,3 +346,18 @@ Future<void> postShippingInfoToBackend(
     rethrow;
   }
 }
+
+// POST /token/:tokenId/purchase/:purchaseId/manualHandover with empty body
+
+Future<void> postManualHandoverToBackend(Purchase purchase) async {
+  final Dio dio = getBackendClient();
+  final String url =
+      '/token/${convertTokenIdToEthereumAddress(purchase.token.id)}/purchase/${purchase.purchaseTxHash}/manualHandover';
+  try {
+    await dio.post(url);
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
+  }
+}

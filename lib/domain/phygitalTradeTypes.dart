@@ -9,6 +9,7 @@ class Purchase {
   PurchaseTokenData token;
   Offer offer;
   ShippingInfo? shippingInfo;
+  bool manualHandover = false;
 
   Purchase({
     required this.purchaseTxHash,
@@ -19,6 +20,7 @@ class Purchase {
     required this.token,
     required this.offer,
     this.shippingInfo,
+    this.manualHandover = false,
   });
 
   factory Purchase.fromJson(Map<String, dynamic> json) => Purchase(
@@ -34,6 +36,7 @@ class Purchase {
         shippingInfo: json["shipping_info"] == null
             ? null
             : ShippingInfo.fromJson(json["shipping_info"]),
+        manualHandover: json["manual_handover"] ?? false,
       );
 }
 

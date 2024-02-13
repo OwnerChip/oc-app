@@ -501,6 +501,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
   final List<Purchase> unredeemedPurchases =
       await ref.read(unredeemedVoucherNftsProvider.future);
   if (unredeemedPurchases.isNotEmpty &&
+      !unredeemedPurchases.first.manualHandover &&
       unredeemedPurchases.first.shippingInfo == null) {
     // ignore: use_build_context_synchronously
     await showCustomPopup(
@@ -523,7 +524,16 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
               Navigator.pushNamed(
                   context, EnterShippingAddressScreen.routeName);
             },
-          )
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          CustomRoundedButton(
+            text: context.loc.manualHandover,
+            onPressed: () async {
+              await postManualHandoverToBackend(unredeemedPurchases.first);
+            },
+          ),
         ]),
         setShippingPopupIsShownState: setShippingPopupIsShownState);
   }
