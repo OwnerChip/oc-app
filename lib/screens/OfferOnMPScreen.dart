@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:info_popup/info_popup.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -206,7 +207,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     setState(() {
       isLoading = true;
       overlayContentType = context.loc.loading;
-      loadingText = context.loc.mintingVoucherToken;
     });
 
     final voucherContractAddress =
@@ -220,6 +220,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     );
 
     if (voucherTokenOwner == null) {
+      setState(() {
+        loadingText = context.loc.mintingVoucherToken;
+      });
       await mintVoucherToken(
           config.chainId,
           config.collectionId,
@@ -562,10 +565,31 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(context.loc.price,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall!),
+                                Row(
+                                  children: [
+                                    Text(context.loc.price,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall!),
+                                    const SizedBox(width: 5),
+                                    InfoPopupWidget(
+                                      key: const Key('feeInfoPopup'),
+                                      arrowTheme: InfoPopupArrowTheme(
+                                        arrowDirection: ArrowDirection.down,
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                      ),
+                                      contentTitle: context.loc.feesInfo,
+                                      child: Icon(
+                                          color:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                          Icons.info,
+                                          size: 18),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(
                                   height: 5,
                                 ),

@@ -304,5 +304,7 @@
     "attention": "Achtung!",
     "mintingVoucherToken": "Voucher-Token erstellen...",
     "requestShipment": "Versand jetzt anfordern.",
-    "manualHandover": "Händische Übergabe"
+    "manualHandover": "Händische Übergabe",
+    "feesInfo": "5% Protokollgebühr + Marktplatzgebühr wird vom Verkaufspreis abgezogen. \n \n EUR Wert variiert mit Wechselkurs.",
+    "successManualHandover": "Chip scannen, um Digital Twin zu beanspruchen.."
 }
