@@ -10,6 +10,8 @@ import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:web3dart/json_rpc.dart';
 import 'package:web3dart/web3dart.dart';
@@ -98,12 +100,16 @@ Future<List<dynamic>> queryCollectionContract(
     EthereumAddress collectionId,
     String functionName,
     List<dynamic> args) async {
-  DeployedContract contract = await getCollectionContract(collectionId);
-  ContractFunction function = contract.function(functionName);
-  final web3Client = getWeb3Client(chainRpcUrl);
-  final result = await web3Client.call(
-      contract: contract, function: function, params: args);
-  return result;
+  try {
+    DeployedContract contract = await getCollectionContract(collectionId);
+    ContractFunction function = contract.function(functionName);
+    final web3Client = getWeb3Client(chainRpcUrl);
+    final result = await web3Client.call(
+        contract: contract, function: function, params: args);
+    return result;
+  } catch (e) {
+    rethrow;
+  }
 }
 
 Future<List<dynamic>> queryVoucherContract(
@@ -450,6 +456,20 @@ Future<String> getContractName(
   }
 }
 
+Future<EthereumAddress> getVoucherContractFromTwin(
+    String chainRpcUrl, EthereumAddress collectionId) async {
+  try {
+    var result = await queryCollectionContract(
+        chainRpcUrl, collectionId, "voucherNFTCollectionAddress", []);
+    return result[0];
+  } catch (e) {
+    print(
+        'Error while fetching voucher contract address of collection $collectionId: $e');
+    throw Exception(
+        'Error while fetching voucher contract address of collection $collectionId: $e');
+  }
+}
+
 Future<dynamic> getTokenUri(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   try {
@@ -528,10 +548,23 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
           const SizedBox(
             height: 10,
           ),
-          CustomRoundedButton(
-            text: context.loc.manualHandover,
+          CustomOutlinedButton(
+            width: double.infinity,
+            buttonText: context.loc.manualHandover,
             onPressed: () async {
-              await postManualHandoverToBackend(unredeemedPurchases.first);
+              try {
+                await postManualHandoverToBackend(unredeemedPurchases.first);
+                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+                    context.loc.successHeadingSnackbar,
+                    context.loc.successManualHandover,
+                    'success'));
+                Navigator.pop(context);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                      context.loc.pleaseTryAgainLater, 'error'),
+                );
+              }
             },
           ),
         ]),
