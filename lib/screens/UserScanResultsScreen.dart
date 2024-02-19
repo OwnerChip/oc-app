@@ -5,12 +5,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CreatorDataBoxContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -610,6 +612,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
@@ -812,283 +815,362 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               //OWNERSHIP CHECK BODY
                               Align(
                                   alignment: Alignment.centerLeft,
-                                  child: nftOwner.when(
-                                      data: (nftOwnerData) => connectedWallet ==
-                                                  zeroAddress ||
-                                              userSession == null
-                                          ?
-                                          //NFT owner exists and wallet is NOT connected
-                                          Column(
-                                              children: [
-                                                Align(
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Text(
-                                                        context.loc
-                                                            .noWalletConnected,
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyMedium)),
-                                                const SizedBox(height: 10),
-                                                CustomRoundedButton(
-                                                    text: context
-                                                        .loc.connectWallet,
-                                                    onPressed: (() => {
-                                                          walletPopupBuilder(
-                                                              context, ref)
-                                                        }))
-                                              ],
-                                            )
-                                          : connectedWallet == nftOwnerData
-                                              //NFT owner exists and wallet is connected and wallet is owner
-                                              ? approval.value == zeroAddress ||
-                                                      approval.value == null
-                                                  // show transfer / burn Token buttons only if token is not approved
-                                                  ? Column(
-                                                      children: [
-                                                        // YOU ARE THE OWNER TEXT
-                                                        Align(
-                                                            alignment: Alignment
-                                                                .centerLeft,
-                                                            child: Text(
-                                                                context.loc
-                                                                    .youAreNftOwner,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .left,
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .bodyMedium)),
-                                                        const SizedBox(
-                                                            height: 10),
-                                                        // BURN BUTTON
-                                                        relevantCollections
-                                                            .when(
-                                                                data:
-                                                                    (relevantCollectionsData) {
-                                                                  //get collection where user is minter
-                                                                  Collection collection = relevantCollectionsData.collections[tokenInfo.value!.chainId] !=
-                                                                          null
-                                                                      ? relevantCollectionsData.collections[tokenInfo.value!.chainId]!.firstWhere((element) => element.hasMinterRole!,
-                                                                          orElse: () => Collection(
-                                                                              zeroAddress,
-                                                                              '',
-                                                                              hasMinterRole:
-                                                                                  false))
-                                                                      : Collection(
-                                                                          zeroAddress,
-                                                                          '',
-                                                                          hasMinterRole:
-                                                                              false);
-                                                                  return collection
-                                                                          .hasMinterRole! && collection.id == tokenInfo.value!.collectionId
-                                                                      ? Column(
-                                                                          children: [
-                                                                              // BURN BUTTON
-                                                                              CustomOutlinedButton(
-                                                                                  width: double
-                                                                                      .infinity,
-                                                                                  buttonText: context
-                                                                                      .loc.burnToken,
-                                                                                  onPressed: (() => {
-                                                                                        fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                                      })),
-                                                                            ])
-                                                                      : Container();
-                                                                },
-                                                                error: (e, s) =>
-                                                                    Container(),
-                                                                loading: () =>
-                                                                    Container())
-                                                      ],
-                                                    )
-                                                  // if token is already approved, show hint
-                                                  : Column(
-                                                      children: [
-                                                        Text(
+                                  child: creatorData.when(
+                                    data: (creatorDataData) {
+                                      if (!creatorDataData.hasActiveOffer) {
+                                        //TOKEN IS NOT FOR SALE
+                                        return nftOwner.when(
+                                            data: (nftOwnerData) {
+                                              if (connectedWallet ==
+                                                      zeroAddress ||
+                                                  userSession == null) {
+                                                //USER IS NOT CONNECTED
+                                                return Column(
+                                                  children: [
+                                                    Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: Text(
                                                             context.loc
-                                                                    .tokenWasTransferred +
-                                                                getEthAddressSubstring(
-                                                                    approval
-                                                                        .value!) +
-                                                                context.loc
-                                                                    .tokenNotYetClaimed,
-                                                            textAlign:
-                                                                TextAlign.left,
+                                                                .noWalletConnected,
+                                                            textAlign: TextAlign
+                                                                .center,
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
-                                                                .bodyMedium),
-                                                      ],
-                                                    )
-                                              :
-                                              //NFT owner exists and wallet is connected and wallet is NOT owner
-                                              Column(children: [
-                                                  Align(
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child:
-                                                        //Wallet is not the TWIN token owner, because token is currently offered on MP
-                                                        creatorData.when(
-                                                      //if seller wallet address is equal to connected wallet address, show cancel order button
-                                                      data: (creatorDataData) => creatorDataData
-                                                                  .hasActiveOffer &&
-                                                              EthereumAddress.fromHex(creatorDataData
-                                                                      .tokenForWhichCreatorDataWasRequested
-                                                                      .activeOffers[
-                                                                          0]
-                                                                      .sellerAddress) ==
-                                                                  connectedWallet
-                                                          ? Text(context.loc.tokenCurrentlyOfferedForSale,
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .left,
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyMedium)
-                                                          : voucherContractAddress
+                                                                .bodyMedium)),
+                                                    const SizedBox(height: 10),
+                                                    CustomRoundedButton(
+                                                        text: context
+                                                            .loc.connectWallet,
+                                                        onPressed: (() => {
+                                                              walletPopupBuilder(
+                                                                  context, ref)
+                                                            }))
+                                                  ],
+                                                );
+                                              } else {
+                                                //USER IS CONNECTED
+                                                if (connectedWallet ==
+                                                    nftOwnerData) {
+                                                  //USER IS OWNER
+                                                  return relevantCollections
+                                                      .when(
+                                                          data:
+                                                              (relevantCollectionsData) {
+                                                            late Collection
+                                                                collection;
+                                                            if (relevantCollectionsData
+                                                                        .collections[
+                                                                    tokenInfo
+                                                                        .value!
+                                                                        .chainId] !=
+                                                                null) {
+                                                              // USER HAS MINTERROLE FOR SOME COLLECTION
+                                                              collection = relevantCollectionsData
+                                                                  .collections[
+                                                                      tokenInfo
+                                                                          .value!
+                                                                          .chainId]!
+                                                                  .firstWhere(
+                                                                      (element) =>
+                                                                          element
+                                                                              .hasMinterRole!,
+                                                                      orElse: () => Collection(
+                                                                          zeroAddress,
+                                                                          '',
+                                                                          hasMinterRole:
+                                                                              false));
+                                                            } else {
+                                                              //USER DOES NOT HAVE MINTERROLE ANYWHERE
+                                                              collection = Collection(
+                                                                  zeroAddress,
+                                                                  '',
+                                                                  hasMinterRole:
+                                                                      false);
+                                                            }
+                                                            if (collection
+                                                                    .hasMinterRole! &&
+                                                                collection.id ==
+                                                                    tokenInfo
+                                                                        .value!
+                                                                        .collectionId) {
+                                                              // USER HAS MINTER ROLE FOR THIS TOKENS COLLECTION
+                                                              return Column(
+                                                                children: [
+                                                                  Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .centerLeft,
+                                                                      child: Text(
+                                                                          context
+                                                                              .loc
+                                                                              .youAreNFTOwner,
+                                                                          textAlign: TextAlign
+                                                                              .center,
+                                                                          style: Theme.of(context)
+                                                                              .textTheme
+                                                                              .bodyMedium)),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          10),
+                                                                  CustomOutlinedButton(
+                                                                      width: double
+                                                                          .infinity,
+                                                                      buttonText:
+                                                                          context
+                                                                              .loc
+                                                                              .burnToken,
+                                                                      onPressed:
+                                                                          (() =>
+                                                                              {
+                                                                                fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                              }))
+                                                                ],
+                                                              );
+                                                            } else {
+                                                              // USER DOES NOT HAVE MINTER ROLE FOR THIS TOKENS COLLECTION
+                                                              return Column(
+                                                                children: [
+                                                                  Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .centerLeft,
+                                                                      child: Text(
+                                                                          context
+                                                                              .loc
+                                                                              .youAreNFTOwner,
+                                                                          textAlign: TextAlign
+                                                                              .center,
+                                                                          style: Theme.of(context)
+                                                                              .textTheme
+                                                                              .bodyMedium)),
+                                                                ],
+                                                              );
+                                                            }
+                                                          },
+                                                          error: (e, s) =>
+                                                              Container(),
+                                                          loading: () =>
+                                                              Container());
+                                                } else {
+                                                  //USER IS NOT OWNER
+                                                  return approval.when(
+                                                      data: (approvalData) {
+                                                        if (approvalData ==
+                                                            zeroAddress) {
+                                                          //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED
+                                                          return voucherContractAddress
                                                               .when(
-                                                                  data:
-                                                                      (voucherContractAddressData) {
-                                                                    return vouchertokenOwner.when(
-                                                                        data: (voucherTokenOwnerData) => voucherTokenOwnerData == connectedWallet && voucherContractAddressData != null
-                                                                            ? Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)
-                                                                            :
-                                                                            //futurebuilder with future getUnredeemedPurchases
-                                                                            FutureBuilder<List>(
-                                                                                future: getUnredeemedPurchases(chipInfo.tokenId),
-                                                                                builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
-                                                                                  if (snapshot.hasData) {
-                                                                                    if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
-                                                                                      return Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
-                                                                                    } else {
-                                                                                      return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
-                                                                                    }
-                                                                                  } else if (snapshot.hasError) {
-                                                                                    return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                            data:
+                                                                (voucherContractData) {
+                                                              // VOUCHER CONTRACT EXISTS
+                                                              return vouchertokenOwner
+                                                                  .when(
+                                                                      data:
+                                                                          (voucherTokenOwnerData) {
+                                                                        if (voucherTokenOwnerData ==
+                                                                                connectedWallet &&
+                                                                            voucherContractData !=
+                                                                                null) {
+                                                                          //USER IS VOUCHER OWNER AND CAN REDEEM TWIN
+                                                                          return Text(
+                                                                              context.loc.youAreTheNewOwner,
+                                                                              textAlign: TextAlign.left,
+                                                                              style: Theme.of(context).textTheme.bodyMedium);
+                                                                        } else {
+                                                                          return FutureBuilder<List>(
+                                                                              future: getUnredeemedPurchases(chipInfo.tokenId),
+                                                                              builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+                                                                                if (snapshot.hasData) {
+                                                                                  if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
+                                                                                    //USER IS SELLER AND ITEM HAS NOT BEEN REDEEMED YET
+
+                                                                                    return Column(children: [
+                                                                                      Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                                      const SizedBox(height: 15),
+                                                                                      CustomRoundedButton(
+                                                                                          width: double.infinity,
+                                                                                          text: context.loc.redeemToken,
+                                                                                          onPressed: (() => {
+                                                                                                fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                              })),
+                                                                                    ]);
                                                                                   } else {
-                                                                                    return const CircularProgressIndicator();
+                                                                                    //USER IS NOT SELLER AND ITEM HAS NOT BEEN REDEEMED YET
+                                                                                    return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
                                                                                   }
-                                                                                }),
-                                                                        error: (e, s) => Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                        loading: () => Container());
-                                                                  },
-                                                                  error: (e,
-                                                                          s) =>
-                                                                      Container(),
-                                                                  loading: () =>
-                                                                      Container()),
+                                                                                } else if (snapshot.hasError) {
+                                                                                  return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                } else {
+                                                                                  return const CircularProgressIndicator();
+                                                                                }
+                                                                              });
+                                                                        }
+                                                                      },
+                                                                      error: (e, s) => Text(
+                                                                          context
+                                                                              .loc
+                                                                              .youAreNotNftOwner,
+                                                                          textAlign: TextAlign
+                                                                              .left,
+                                                                          style: Theme.of(context)
+                                                                              .textTheme
+                                                                              .bodyMedium),
+                                                                      loading: () =>
+                                                                          Container());
+                                                            },
+                                                            loading: () =>
+                                                                Container(),
+                                                            error: (e, s) {
+                                                              return Column(
+                                                                children: [
+                                                                  Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .centerLeft,
+                                                                      child: Text(
+                                                                          context
+                                                                              .loc
+                                                                              .youAreNFTOwner,
+                                                                          textAlign: TextAlign
+                                                                              .center,
+                                                                          style: Theme.of(context)
+                                                                              .textTheme
+                                                                              .bodyMedium)),
+                                                                ],
+                                                              );
+                                                            },
+                                                          );
+                                                        } else {
+                                                          //TOKEN IS APPROVED / IS READY TO BE CLAIMED
+                                                          return Column(
+                                                            children: [
+                                                              Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .centerLeft,
+                                                                  child: Text(
+                                                                      context
+                                                                          .loc
+                                                                          .tokenNotYetClaimed,
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                      style: Theme.of(
+                                                                              context)
+                                                                          .textTheme
+                                                                          .bodyMedium)),
+                                                              const SizedBox(
+                                                                  height: 10),
+                                                              CustomRoundedButton(
+                                                                  width: double
+                                                                      .infinity,
+                                                                  text: context
+                                                                      .loc
+                                                                      .claimOwnership,
+                                                                  onPressed:
+                                                                      (() => {
+                                                                            fromCancelable(claimToken(
+                                                                                wc,
+                                                                                chipInfo.tokenId,
+                                                                                signatureData,
+                                                                                connectedWallet))
+                                                                          }))
+                                                            ],
+                                                          );
+                                                        }
+                                                      },
                                                       loading: () =>
                                                           Container(),
-                                                      error: (e, s) => Text(
-                                                          context.loc
-                                                              .youAreNotNftOwner,
-                                                          textAlign:
-                                                              TextAlign.left,
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyMedium),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  creatorData.when(
-                                                    //if seller wallet address is equal to connected wallet address, show cancel order button
-                                                    data: (creatorDataData) => creatorDataData
-                                                                .hasActiveOffer &&
-                                                            EthereumAddress.fromHex(creatorDataData
-                                                                    .tokenForWhichCreatorDataWasRequested
-                                                                    .activeOffers[
-                                                                        0]
-                                                                    .sellerAddress) ==
-                                                                connectedWallet
-                                                        ? CustomRoundedButton(
-                                                            text: context.loc
-                                                                .cancelOffer,
-                                                            onPressed: () {
-                                                              fromCancelable(cancelOffer(
+                                                      error: (e, s) =>
+                                                          Container());
+                                                }
+                                              }
+                                            },
+                                            loading: () => Container(),
+                                            error: (e, s) => Container());
+                                      } else {
+                                        //TOKEN IS FOR SALE
+                                        return creatorData.when(
+                                            data: (creatorDataData) {
+                                              if (creatorDataData
+                                                      .hasActiveOffer &&
+                                                  EthereumAddress.fromHex(
+                                                          creatorDataData
+                                                              .tokenForWhichCreatorDataWasRequested
+                                                              .activeOffers[0]
+                                                              .sellerAddress) ==
+                                                      connectedWallet) {
+                                                //USER IS SELLER
+                                                return Column(
+                                                  children: [
+                                                    Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: Text(
+                                                            context.loc
+                                                                .youAreNotNftOwner,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyMedium)),
+                                                    const SizedBox(height: 10),
+                                                    CustomRoundedButton(
+                                                        text: context
+                                                            .loc.cancelOffer,
+                                                        onPressed: () {
+                                                          fromCancelable(
+                                                              cancelOffer(
                                                                   wc,
                                                                   chipInfo
                                                                       .tokenId,
                                                                   signatureData,
                                                                   connectedWallet));
-                                                            })
-                                                        : Container(),
-                                                    loading: () => Container(),
-                                                    error: (e, s) =>
-                                                        Container(),
-                                                  ),
-                                                  //REDEEM twin token if you have a voucher token and voucherTokenOwner is connectedWalet
-                                                  voucherContractAddress.when(
-                                                      data:
-                                                          (voucherContractAddressData) {
-                                                        return vouchertokenOwner
-                                                            .when(
-                                                                data: (voucherTokenOwnerData) => voucherTokenOwnerData ==
-                                                                            connectedWallet &&
-                                                                        voucherContractAddressData !=
-                                                                            null
-                                                                    ? Column(
-                                                                        children: [
-                                                                            const SizedBox(height: 15),
-                                                                            CustomRoundedButton(
-                                                                                width: double.infinity,
-                                                                                text: context.loc.redeemToken,
-                                                                                onPressed: (() => {
-                                                                                      fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                                    })),
-                                                                          ])
-                                                                    : Container(),
-                                                                error: (e, s) =>
-                                                                    Container(),
-                                                                loading: () =>
-                                                                    Container());
+                                                        })
+                                                  ],
+                                                );
+                                              } else {
+                                                //USER IS NOT SELLER
+                                                return Column(
+                                                  children: [
+                                                    Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: Text(
+                                                            context.loc
+                                                                .itemAvailableForSale,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyMedium)),
+                                                    const SizedBox(height: 10),
+                                                    CustomRoundedButton(
+                                                      text: context
+                                                          .loc.buyOnRarible,
+                                                      onPressed: () => {
+                                                        launchUrl(
+                                                            raribleUrl
+                                                                .asData!.value,
+                                                            mode: LaunchMode
+                                                                .externalApplication)
                                                       },
-                                                      error: (e, s) =>
-                                                          Container(),
-                                                      loading: () =>
-                                                          Container()),
-
-                                                  //CLAIM Ownership of twin token if it was transferred to user
-                                                  approval.when(
-                                                      data: (approvalData) {
-                                                        //check if a wallet can CLAIM OWNERSHIP
-                                                        return approvalData ==
-                                                                connectedWallet
-                                                            ? Column(children: [
-                                                                const SizedBox(
-                                                                    height: 15),
-                                                                CustomRoundedButton(
-                                                                    width: double
-                                                                        .infinity,
-                                                                    text: context
-                                                                        .loc
-                                                                        .claimOwnership,
-                                                                    onPressed:
-                                                                        (() => {
-                                                                              fromCancelable(claimToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                            })),
-                                                              ])
-                                                            : Container();
-                                                      },
-                                                      error: (e, s) =>
-                                                          Container(),
-                                                      loading: () =>
-                                                          Container())
-                                                ]),
-                                      error: (e, s) => Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                              context.loc.youAreNotNftOwner,
-                                              textAlign: TextAlign.left,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium)),
-                                      loading: () =>
-                                          const CircularProgressIndicator())),
+                                                    )
+                                                  ],
+                                                );
+                                              }
+                                            },
+                                            loading: () => Container(),
+                                            error: (e, s) => Container());
+                                      }
+                                    },
+                                    loading: () => Container(),
+                                    error: (e, s) => Container(),
+                                  ))
                             ]),
                       ]),
                   GestureDetector(
