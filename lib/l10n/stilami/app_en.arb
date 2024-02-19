@@ -305,5 +305,7 @@
     "requestShipment": "Request the shipment now.",
     "manualHandover": "Manual handover",
     "feesInfo": "5% protocol fees + marketplace fees will be deducted from payout amount. \n \n EUR value may fluctuate with crypto exchange rates.",
-    "successManualHandover": "Scan the chip to claim your digital twin."
+    "successManualHandover": "Scan the chip to claim your digital twin.",
+    "itemAvailableForSale": "This item is available for sale.",
+    "buyOnRarible": "Buy on Rarible"
 }
