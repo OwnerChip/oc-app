@@ -62,8 +62,8 @@ Future<String> makeAndSendGaslessTx(
     {EthereumAddress? controllerContractId,
     String? typedDataHash,
     EthereumAddress? toAccount,
-    String? cid,
-    String? voucherTokenCID,
+    String? twinTokenMetadataCID,
+    String? voucherTokenMetadataCID,
     BigInt? tokenId,
     bool? enableRecovery,
     EthereumAddress? sellerPayoutAddress,
@@ -83,9 +83,11 @@ Future<String> makeAndSendGaslessTx(
       to: controllerContractId ??
           toAddress, //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
       toAccount: toAccount,
-      tokenURI: cid != null ? "ipfs://$cid" : null,
-      voucherTokenURI:
-          voucherTokenCID != null ? "ipfs://$voucherTokenCID" : null,
+      tokenURI:
+          twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
+      voucherTokenURI: voucherTokenMetadataCID != null
+          ? "ipfs://$voucherTokenMetadataCID"
+          : null,
       tokenId: tokenId,
       enableRecovery: enableRecovery,
       sellerPayoutAddress: sellerPayoutAddress,
@@ -163,8 +165,8 @@ Future<String> makeAndSendNormalTx(
   WalletType walletType, {
   EthereumAddress? toAccount,
   BigInt? tokenId,
-  String? cid,
-  String? voucherTokenCID,
+  String? twinTokenMetadataCID,
+  String? voucherTokenMetadataCID,
   EthereumAddress? sellerPayoutAddress,
   String? typedDataHash,
   String? offerHash,
@@ -182,9 +184,11 @@ Future<String> makeAndSendNormalTx(
       signatureData.signature,
       toAccount: toAccount,
       tokenId: tokenId,
-      tokenURI: cid != null ? "ipfs://$cid" : null,
-      voucherTokenURI:
-          voucherTokenCID != null ? "ipfs://$voucherTokenCID" : null,
+      tokenURI:
+          twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
+      voucherTokenURI: voucherTokenMetadataCID != null
+          ? "ipfs://$voucherTokenMetadataCID"
+          : null,
       enableRecovery: false,
       sellerPayoutAddress: sellerPayoutAddress,
       typedDataHash: typedDataHash,

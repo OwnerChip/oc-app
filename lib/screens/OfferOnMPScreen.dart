@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:info_popup/info_popup.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
@@ -134,9 +135,21 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final metaTxAgreementId = response[1];
 
     try {
-      String tokenUri = await getTokenUri(getRPCUrlFromChainId(config.chainId),
-          config.collectionId, config.tokenId);
-      String cid = getCidFromIpfsLink(tokenUri);
+      // get tokenUri from twin token
+      String twinTokenUri = await getTokenUri(
+          getRPCUrlFromChainId(config.chainId),
+          config.collectionId,
+          config.tokenId);
+      String twinTokenMetadataCID = getCidFromIpfsLink(twinTokenUri);
+      Map<String, dynamic> twinTokenMetadata =
+          await downloadMetadataFromIPFS(twinTokenMetadataCID);
+
+      // generate voucher token metadata and upload to IPFS
+      String voucherTokenMetadataCID = '';
+      XFile jsonFileVoucher =
+          await generateVoucherMetadataFile(twinTokenMetadata, context);
+      voucherTokenMetadataCID =
+          await uploadFileToIPFS(jsonFileVoucher, 'application/json');
 
       String txnHash;
       if (canUseGasStation) {
@@ -152,9 +165,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             wcSession,
             metaTxAgreementId,
             walletType!,
-            cid: cid,
-            voucherTokenCID:
-                cid, // TODO: change this to generated voucherTokenCID
+            twinTokenMetadataCID: twinTokenMetadataCID,
+            voucherTokenMetadataCID: voucherTokenMetadataCID,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -173,9 +185,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           wc,
           wcSession!,
           walletType!,
-          cid: cid,
-          voucherTokenCID:
-              cid, // TODO: change this to generated voucherTokenCID
+          twinTokenMetadataCID: twinTokenMetadataCID,
+          voucherTokenMetadataCID: voucherTokenMetadataCID,
         );
       }
     } catch (e) {
