@@ -291,7 +291,7 @@
     "pleaseEnterFirstName": "Please enter first name.",
     "pleaseEnterLastName": "Please enter last name.",
     "cancelOffer": "Cancel offer",
-    "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on marketplace.",
+    "tokenCurrentlyOfferedForSale": "Token is currently offered for sale on a marketplace.",
     "payoutWalletAddress": "Payout wallet address",
     "youAreTheNewOwner": "You are the new owner. The token can now be transferred into your wallet.",
     "transfer": "Transfer",

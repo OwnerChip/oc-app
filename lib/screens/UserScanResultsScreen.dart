@@ -854,105 +854,107 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                 if (connectedWallet ==
                                                     nftOwnerData) {
                                                   //USER IS OWNER
-                                                  return relevantCollections
-                                                      .when(
-                                                          data:
-                                                              (relevantCollectionsData) {
-                                                            late Collection
-                                                                collection;
-                                                            if (relevantCollectionsData
-                                                                        .collections[
-                                                                    tokenInfo
-                                                                        .value!
-                                                                        .chainId] !=
-                                                                null) {
-                                                              // USER HAS MINTERROLE FOR SOME COLLECTION
-                                                              collection = relevantCollectionsData
-                                                                  .collections[
-                                                                      tokenInfo
-                                                                          .value!
-                                                                          .chainId]!
-                                                                  .firstWhere(
-                                                                      (element) =>
-                                                                          element
+                                                  return approval.when(
+                                                      data: (approvalData) {
+                                                        if (approvalData ==
+                                                            zeroAddress) {
+                                                          //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED BY NEW OWNER
+                                                          return relevantCollections
+                                                              .when(
+                                                                  data:
+                                                                      (relevantCollectionsData) {
+                                                                    late Collection
+                                                                        collection;
+                                                                    if (relevantCollectionsData.collections[tokenInfo
+                                                                            .value!
+                                                                            .chainId] !=
+                                                                        null) {
+                                                                      // USER HAS MINTERROLE FOR SOME COLLECTION
+                                                                      collection = relevantCollectionsData.collections[tokenInfo.value!.chainId]!.firstWhere(
+                                                                          (element) => element
                                                                               .hasMinterRole!,
-                                                                      orElse: () => Collection(
+                                                                          orElse: () => Collection(
+                                                                              zeroAddress,
+                                                                              '',
+                                                                              hasMinterRole: false));
+                                                                    } else {
+                                                                      //USER DOES NOT HAVE MINTERROLE ANYWHERE
+                                                                      collection = Collection(
                                                                           zeroAddress,
                                                                           '',
                                                                           hasMinterRole:
-                                                                              false));
-                                                            } else {
-                                                              //USER DOES NOT HAVE MINTERROLE ANYWHERE
-                                                              collection = Collection(
-                                                                  zeroAddress,
-                                                                  '',
-                                                                  hasMinterRole:
-                                                                      false);
-                                                            }
-                                                            if (collection
-                                                                    .hasMinterRole! &&
-                                                                collection.id ==
-                                                                    tokenInfo
-                                                                        .value!
-                                                                        .collectionId) {
-                                                              // USER HAS MINTER ROLE FOR THIS TOKENS COLLECTION
-                                                              return Column(
-                                                                children: [
-                                                                  Align(
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .centerLeft,
-                                                                      child: Text(
+                                                                              false);
+                                                                    }
+                                                                    if (collection
+                                                                            .hasMinterRole! &&
+                                                                        collection.id ==
+                                                                            tokenInfo.value!.collectionId) {
+                                                                      // USER HAS MINTER ROLE FOR THIS TOKENS COLLECTION
+                                                                      return Column(
+                                                                        children: [
+                                                                          Align(
+                                                                              alignment: Alignment.centerLeft,
+                                                                              child: Text(context.loc.youAreNFTOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)),
+                                                                          const SizedBox(
+                                                                              height: 10),
+                                                                          CustomOutlinedButton(
+                                                                              width: double
+                                                                                  .infinity,
+                                                                              buttonText: context
+                                                                                  .loc.burnToken,
+                                                                              onPressed: (() => {
+                                                                                    fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                  }))
+                                                                        ],
+                                                                      );
+                                                                    } else {
+                                                                      // USER DOES NOT HAVE MINTER ROLE FOR THIS TOKENS COLLECTION
+                                                                      return Column(
+                                                                        children: [
+                                                                          Align(
+                                                                              alignment: Alignment.centerLeft,
+                                                                              child: Text(context.loc.youAreNFTOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)),
+                                                                        ],
+                                                                      );
+                                                                    }
+                                                                  },
+                                                                  error: (e,
+                                                                          s) =>
+                                                                      Container(),
+                                                                  loading: () =>
+                                                                      Container());
+                                                        } else {
+                                                          //TOKEN IS APPROVED / IS READY TO BE CLAIMED BY NEW OWNER
+                                                          return Column(
+                                                            children: [
+                                                              Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .centerLeft,
+                                                                  child: Text(
+                                                                      context
+                                                                              .loc
+                                                                              .tokenWasTransferred +
+                                                                          getEthAddressSubstring(approval
+                                                                              .value!) +
                                                                           context
                                                                               .loc
-                                                                              .youAreNFTOwner,
-                                                                          textAlign: TextAlign
+                                                                              .tokenNotYetClaimed,
+                                                                      textAlign:
+                                                                          TextAlign
                                                                               .center,
-                                                                          style: Theme.of(context)
-                                                                              .textTheme
-                                                                              .bodyMedium)),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          10),
-                                                                  CustomOutlinedButton(
-                                                                      width: double
-                                                                          .infinity,
-                                                                      buttonText:
-                                                                          context
-                                                                              .loc
-                                                                              .burnToken,
-                                                                      onPressed:
-                                                                          (() =>
-                                                                              {
-                                                                                fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                              }))
-                                                                ],
-                                                              );
-                                                            } else {
-                                                              // USER DOES NOT HAVE MINTER ROLE FOR THIS TOKENS COLLECTION
-                                                              return Column(
-                                                                children: [
-                                                                  Align(
-                                                                      alignment:
-                                                                          Alignment
-                                                                              .centerLeft,
-                                                                      child: Text(
-                                                                          context
-                                                                              .loc
-                                                                              .youAreNFTOwner,
-                                                                          textAlign: TextAlign
-                                                                              .center,
-                                                                          style: Theme.of(context)
-                                                                              .textTheme
-                                                                              .bodyMedium)),
-                                                                ],
-                                                              );
-                                                            }
-                                                          },
-                                                          error: (e, s) =>
-                                                              Container(),
-                                                          loading: () =>
-                                                              Container());
+                                                                      style: Theme.of(
+                                                                              context)
+                                                                          .textTheme
+                                                                          .bodyMedium)),
+                                                            ],
+                                                          );
+                                                        }
+                                                      },
+                                                      loading: () =>
+                                                          Container(),
+                                                      error: (e, s) =>
+                                                          Container());
                                                 } else {
                                                   //USER IS NOT OWNER
                                                   return approval.when(
@@ -974,10 +976,17 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                             voucherContractData !=
                                                                                 null) {
                                                                           //USER IS VOUCHER OWNER AND CAN REDEEM TWIN
-                                                                          return Text(
-                                                                              context.loc.youAreTheNewOwner,
-                                                                              textAlign: TextAlign.left,
-                                                                              style: Theme.of(context).textTheme.bodyMedium);
+                                                                          return Column(
+                                                                              children: [
+                                                                                Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                                const SizedBox(height: 15),
+                                                                                CustomRoundedButton(
+                                                                                    width: double.infinity,
+                                                                                    text: context.loc.redeemToken,
+                                                                                    onPressed: (() => {
+                                                                                          fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                        })),
+                                                                              ]);
                                                                         } else {
                                                                           return FutureBuilder<List>(
                                                                               future: getUnredeemedPurchases(chipInfo.tokenId),
@@ -985,16 +994,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                 if (snapshot.hasData) {
                                                                                   if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
                                                                                     //USER IS SELLER AND ITEM HAS NOT BEEN REDEEMED YET
-
                                                                                     return Column(children: [
                                                                                       Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                                      const SizedBox(height: 15),
-                                                                                      CustomRoundedButton(
-                                                                                          width: double.infinity,
-                                                                                          text: context.loc.redeemToken,
-                                                                                          onPressed: (() => {
-                                                                                                fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                                              })),
                                                                                     ]);
                                                                                   } else {
                                                                                     //USER IS NOT SELLER AND ITEM HAS NOT BEEN REDEEMED YET
@@ -1110,9 +1111,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                             .centerLeft,
                                                         child: Text(
                                                             context.loc
-                                                                .youAreNotNftOwner,
-                                                            textAlign: TextAlign
-                                                                .center,
+                                                                .tokenCurrentlyOfferedForSale,
+                                                            textAlign:
+                                                                TextAlign.left,
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
@@ -1142,8 +1143,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                         child: Text(
                                                             context.loc
                                                                 .itemAvailableForSale,
-                                                            textAlign: TextAlign
-                                                                .center,
+                                                            textAlign:
+                                                                TextAlign.left,
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
