@@ -191,6 +191,16 @@ Future<XFile> saveMetadataAsJSONFile(Map<String, dynamic> metadata) async {
   return jsonFile;
 }
 
+// generate voucher metadata file
+Future<XFile> generateVoucherMetadataFile(
+    Map<String, dynamic> twinMetadata, context) async {
+  Map<String, dynamic> voucherMetadata = twinMetadata;
+  voucherMetadata['description'] +=
+      "\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+  XFile jsonFileVoucher = await saveMetadataAsJSONFile(voucherMetadata);
+  return jsonFileVoucher;
+}
+
 //function that returns a file name substring
 String getFileNameSubstring(String fileName) {
   //if fileName is short, return full file name
