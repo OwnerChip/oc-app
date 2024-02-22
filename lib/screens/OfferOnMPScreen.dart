@@ -146,8 +146,11 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       // generate voucher token metadata and upload to IPFS
       String voucherTokenMetadataCID = '';
+      Map<String, dynamic> voucherTokenMetadata = twinTokenMetadata;
+      voucherTokenMetadata['description'] +=
+          "\n\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
       XFile jsonFileVoucher =
-          await generateVoucherMetadataFile(twinTokenMetadata, context);
+          await saveMetadataAsJSONFile(voucherTokenMetadata);
       voucherTokenMetadataCID =
           await uploadFileToIPFS(jsonFileVoucher, 'application/json');
 

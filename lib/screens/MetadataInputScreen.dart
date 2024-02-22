@@ -163,8 +163,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       /////////// VOUCHER METADATA ///////////
 
       String voucherTokenMetadataCID = '';
-      XFile jsonFileVoucher =
-          await generateVoucherMetadataFile(metadata, context);
+      Map<String, dynamic> voucherMetadata = metadata;
+      voucherMetadata['description'] +=
+          "\n\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+      XFile jsonFileVoucher = await saveMetadataAsJSONFile(voucherMetadata);
       voucherTokenMetadataCID =
           await uploadFileToIPFS(jsonFileVoucher, 'application/json');
 
