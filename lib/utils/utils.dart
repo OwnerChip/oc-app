@@ -214,6 +214,18 @@ Future<String> getSha256HashOfFile(File file) async {
   return hash.toString();
 }
 
+Future<XFile> generateVoucherMetadataFile(
+    Map<String, dynamic> twinMetadata, BuildContext context) async {
+  Map<String, dynamic> voucherMetadata = twinMetadata;
+  if (voucherMetadata['description'] == null) {
+    voucherMetadata['description'] = '';
+  }
+  voucherMetadata['description'] +=
+      "\n \n${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+  XFile jsonFileVoucher = await saveMetadataAsJSONFile(voucherMetadata);
+  return jsonFileVoucher;
+}
+
 // generate OwnerCard identifier [from customer 100 to 3582]
 String generateOwnerCardIdentifier(int customerId, String baseIdentifier) {
   return (customerId == 103)

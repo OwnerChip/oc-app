@@ -1090,7 +1090,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                               }
                                             },
                                             loading: () => Container(),
-                                            error: (e, s) => Container());
+                                            error: (e, s) => Text(
+                                                context.loc.youAreNotNftOwner,
+                                                textAlign: TextAlign.left,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium));
                                       } else {
                                         //TOKEN IS FOR SALE
                                         return creatorData.when(
