@@ -351,7 +351,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             encodedData: typedDataHashAndEncodedData.encodedData,
             typedDataHash: typedDataHash,
             chipSignature: hexSignature,
-            marketplaceContract: raribleExchangeV2Contracts[config.chainId]!);
+            marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
+            offchainOfferId: response['id']);
 
         await sendOfferItemInfoToBackend(offerItemInputData);
 
