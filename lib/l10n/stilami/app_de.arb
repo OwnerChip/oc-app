@@ -310,5 +310,6 @@
     "itemAvailableForSale": "Dieser Gegenstand steht zum Verkauf.",
     "buyOnRarible": "Auf Rarible kaufen",
     "voucherNftDescriptionGeneral": "This NFT includes the ownership of a physical jewel. This can be redeemed after the purchase of the NFT",
-    "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore.\nFor more information visit www.stilami.com"
+    "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore.\nFor more information visit www.stilami.com",
+    "transferred": "Transferiert"
 }

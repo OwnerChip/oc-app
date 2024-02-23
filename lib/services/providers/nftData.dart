@@ -3,6 +3,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -198,4 +199,16 @@ final voucherNftsOwnedByUserProvider =
   final List<AlchemyNFTAsset> alchemyVoucherNftsOwnedByUser =
       voucherNftsOwnedByUser.map((e) => AlchemyNFTAsset.fromJson(e)).toList();
   return alchemyVoucherNftsOwnedByUser;
+});
+
+// OFFER DATA
+
+final activeOffersProvider =
+    FutureProvider.autoDispose<List<ActiveOffer>>((ref) async {
+  try {
+    final CreatorData creatorData = await ref.read(creatorDataProvider.future);
+    return creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
+  } catch (err) {
+    return [];
+  }
 });

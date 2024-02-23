@@ -86,7 +86,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
-    String sessionId = ref.read(userSessionProvider)!.sessionId;
+    final String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
@@ -440,6 +440,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           await ref.refresh(nftOwnerProvider.future);
           await ref.refresh(creatorDataProvider.future);
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+          await ref.refresh(activeOffersProvider.future);
         } catch (e) {
           print(e);
           Sentry.captureException(e);
@@ -614,6 +615,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
   Widget build(BuildContext context) {
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+    final activeOffers = ref.watch(activeOffersProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
     final AsyncValue<Map<String, dynamic>> nftMetadata =
@@ -815,9 +817,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                               //OWNERSHIP CHECK BODY
                               Align(
                                   alignment: Alignment.centerLeft,
-                                  child: creatorData.when(
-                                    data: (creatorDataData) {
-                                      if (!creatorDataData.hasActiveOffer) {
+                                  child: activeOffers.when(
+                                    data: (activeOffersData) {
+                                      if (activeOffersData.isEmpty) {
                                         //TOKEN IS NOT FOR SALE
                                         return nftOwner.when(
                                             data: (nftOwnerData) {
@@ -927,26 +929,21 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                           //TOKEN IS APPROVED / IS READY TO BE CLAIMED BY NEW OWNER
                                                           return Column(
                                                             children: [
-                                                              Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .centerLeft,
-                                                                  child: Text(
-                                                                      context
-                                                                              .loc
-                                                                              .tokenWasTransferred +
-                                                                          getEthAddressSubstring(approval
+                                                              Text(
+                                                                  context.loc
+                                                                          .tokenWasTransferred +
+                                                                      getEthAddressSubstring(
+                                                                          approval
                                                                               .value!) +
-                                                                          context
-                                                                              .loc
-                                                                              .tokenNotYetClaimed,
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                      style: Theme.of(
-                                                                              context)
-                                                                          .textTheme
-                                                                          .bodyMedium)),
+                                                                      context.loc
+                                                                          .tokenNotYetClaimed,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .left,
+                                                                  style: Theme.of(
+                                                                          context)
+                                                                      .textTheme
+                                                                      .bodyMedium),
                                                             ],
                                                           );
                                                         }
@@ -1045,41 +1042,55 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                           );
                                                         } else {
                                                           //TOKEN IS APPROVED / IS READY TO BE CLAIMED
-                                                          return Column(
-                                                            children: [
-                                                              Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .centerLeft,
-                                                                  child: Text(
+                                                          return approval.when(
+                                                              data:
+                                                                  (approvalData) {
+                                                                if (approvalData ==
+                                                                    connectedWallet) {
+                                                                  //USER IS APPROVED TO CLAIM
+                                                                  return Column(
+                                                                    children: [
+                                                                      Align(
+                                                                          alignment: Alignment
+                                                                              .centerLeft,
+                                                                          child: Text(
+                                                                              context.loc.youAreTheNewOwner,
+                                                                              textAlign: TextAlign.left,
+                                                                              style: Theme.of(context).textTheme.bodyMedium)),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              10),
+                                                                      CustomRoundedButton(
+                                                                          width: double
+                                                                              .infinity,
+                                                                          text: context
+                                                                              .loc
+                                                                              .claimOwnership,
+                                                                          onPressed: (() =>
+                                                                              {
+                                                                                fromCancelable(claimToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                              }))
+                                                                    ],
+                                                                  );
+                                                                } else {
+                                                                  //USER IS NOT APPROVED TO CLAIM
+                                                                  return Text(
                                                                       context
                                                                           .loc
-                                                                          .tokenNotYetClaimed,
+                                                                          .youAreNotNftOwner,
                                                                       textAlign:
                                                                           TextAlign
-                                                                              .center,
+                                                                              .left,
                                                                       style: Theme.of(
                                                                               context)
                                                                           .textTheme
-                                                                          .bodyMedium)),
-                                                              const SizedBox(
-                                                                  height: 10),
-                                                              CustomRoundedButton(
-                                                                  width: double
-                                                                      .infinity,
-                                                                  text: context
-                                                                      .loc
-                                                                      .claimOwnership,
-                                                                  onPressed:
-                                                                      (() => {
-                                                                            fromCancelable(claimToken(
-                                                                                wc,
-                                                                                chipInfo.tokenId,
-                                                                                signatureData,
-                                                                                connectedWallet))
-                                                                          }))
-                                                            ],
-                                                          );
+                                                                          .bodyMedium);
+                                                                }
+                                                              },
+                                                              loading: () =>
+                                                                  Container(),
+                                                              error: (e, s) =>
+                                                                  Container());
                                                         }
                                                       },
                                                       loading: () =>
@@ -1098,80 +1109,63 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                     .bodyMedium));
                                       } else {
                                         //TOKEN IS FOR SALE
-                                        return creatorData.when(
-                                            data: (creatorDataData) {
-                                              if (creatorDataData
-                                                      .hasActiveOffer &&
-                                                  EthereumAddress.fromHex(
-                                                          creatorDataData
-                                                              .tokenForWhichCreatorDataWasRequested
-                                                              .activeOffers[0]
-                                                              .sellerAddress) ==
-                                                      connectedWallet) {
-                                                //USER IS SELLER
-                                                return Column(
-                                                  children: [
-                                                    Align(
-                                                        alignment: Alignment
-                                                            .centerLeft,
-                                                        child: Text(
-                                                            context.loc
-                                                                .tokenCurrentlyOfferedForSale,
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodyMedium)),
-                                                    const SizedBox(height: 10),
-                                                    CustomRoundedButton(
-                                                        text: context
-                                                            .loc.cancelOffer,
-                                                        onPressed: () {
-                                                          fromCancelable(
-                                                              cancelOffer(
-                                                                  wc,
-                                                                  chipInfo
-                                                                      .tokenId,
-                                                                  signatureData,
-                                                                  connectedWallet));
-                                                        })
-                                                  ],
-                                                );
-                                              } else {
-                                                //USER IS NOT SELLER
-                                                return Column(
-                                                  children: [
-                                                    Align(
-                                                        alignment: Alignment
-                                                            .centerLeft,
-                                                        child: Text(
-                                                            context.loc
-                                                                .itemAvailableForSale,
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodyMedium)),
-                                                    const SizedBox(height: 10),
-                                                    CustomRoundedButton(
-                                                      text: context
-                                                          .loc.buyOnRarible,
-                                                      onPressed: () => {
-                                                        launchUrl(
-                                                            raribleUrl
-                                                                .asData!.value,
-                                                            mode: LaunchMode
-                                                                .externalApplication)
-                                                      },
-                                                    )
-                                                  ],
-                                                );
-                                              }
-                                            },
-                                            loading: () => Container(),
-                                            error: (e, s) => Container());
+                                        if (activeOffersData.isNotEmpty &&
+                                            EthereumAddress.fromHex(
+                                                    activeOffersData[0]
+                                                        .sellerAddress) ==
+                                                connectedWallet) {
+                                          //USER IS SELLER
+                                          return Column(
+                                            children: [
+                                              Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                      context.loc
+                                                          .tokenCurrentlyOfferedForSale,
+                                                      textAlign: TextAlign.left,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium)),
+                                              const SizedBox(height: 10),
+                                              CustomRoundedButton(
+                                                  text: context.loc.cancelOffer,
+                                                  onPressed: () {
+                                                    fromCancelable(cancelOffer(
+                                                        wc,
+                                                        chipInfo.tokenId,
+                                                        signatureData,
+                                                        connectedWallet));
+                                                  })
+                                            ],
+                                          );
+                                        } else {
+                                          //USER IS NOT SELLER
+                                          return Column(
+                                            children: [
+                                              Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                      context.loc
+                                                          .itemAvailableForSale,
+                                                      textAlign: TextAlign.left,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium)),
+                                              const SizedBox(height: 10),
+                                              CustomRoundedButton(
+                                                text: context.loc.buyOnRarible,
+                                                onPressed: () => {
+                                                  launchUrl(
+                                                      raribleUrl.asData!.value,
+                                                      mode: LaunchMode
+                                                          .externalApplication)
+                                                },
+                                              )
+                                            ],
+                                          );
+                                        }
                                       }
                                     },
                                     loading: () => Container(),

@@ -370,6 +370,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           await ref.refresh(creatorDataProvider.future);
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
           await ref.refresh(voucherTokenOwnerProvider.future);
+          await ref.refresh(activeOffersProvider.future);
         } catch (e) {
           print(e);
           Sentry.captureException(e);

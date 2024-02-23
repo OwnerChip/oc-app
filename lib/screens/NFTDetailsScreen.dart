@@ -417,21 +417,20 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                             loading: () => context.loc.loading,
                           ),
                           // ownership
-
                           nftOwner.when(
-                            data: ((nftOwnerData) => ref
-                                        .read(userAddressProvider) ==
-                                    zeroAddress
-                                ?
-                                //NFT owner exists and wallet is NOT connected
-                                context.loc.unconfirmed
-                                : connectedWallet == nftOwnerData
-                                    ?
-                                    //NFT owner exists and wallet is connected and wallet is owner
-                                    context.loc.confirmed
-                                    :
-                                    //NFT owner exists and wallet is connected and wallet is NOT owner
-                                    context.loc.unconfirmed),
+                            data: (nftOwnerData) {
+                              if (ref.read(userAddressProvider) ==
+                                  zeroAddress) {
+                                return context.loc.unconfirmed;
+                              } else if (approval.value != zeroAddress &&
+                                  approval.value != null) {
+                                return context.loc.transferred;
+                              } else if (connectedWallet == nftOwnerData) {
+                                return context.loc.confirmed;
+                              } else {
+                                return context.loc.unconfirmed;
+                              }
+                            },
                             error: (e, s) => context.loc.ownerError,
                             loading: () => context.loc.loading,
                           ),
