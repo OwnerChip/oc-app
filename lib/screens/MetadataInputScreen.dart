@@ -162,7 +162,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       /////////// VOUCHER METADATA ///////////
 
-      Map<String, dynamic> voucherMetadata = metadata;
+      Map<String, dynamic> voucherMetadata = {...metadata};
       XFile jsonFileVoucher =
           await generateVoucherMetadataFile(voucherMetadata, context);
       String voucherTokenMetadataCID =
