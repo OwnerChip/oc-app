@@ -520,7 +520,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            cancelOfferFunctionSignature,
+            cancelMarketplaceOfferSignature,
             config.chainId,
             config.collectionId,
             signatureData,
@@ -530,9 +530,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             metaTxAgreementId,
             walletType!,
             controllerContractId: controllerContractAddress,
-            salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
             encodedOfferData: offer.encodedData,
-            endTimestamp: offer.validUntil,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -542,19 +540,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
-          ref,
-          cancelOfferFunctionSignature,
-          config.chainId,
-          controllerContractAddress,
-          signatureData,
-          connectedWallet,
-          wc,
-          wcSession!,
-          walletType!,
-          salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
-          encodedOfferData: offer.encodedData,
-          endTimestamp: offer.validUntil,
-        );
+            ref,
+            cancelMarketplaceOfferSignature,
+            config.chainId,
+            controllerContractAddress,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            walletType!,
+            encodedOfferData: cancelTxCalldata);
       }
 
       var txnReceipt =

@@ -21,6 +21,7 @@ const String offerItemFunctionSignature = '0xc8f1044d';
 
 //cancelOffer
 const String cancelOfferFunctionSignature = '0x32864096';
+const String cancelMarketplaceOfferSignature = '0x6970cc68';
 
 //redeemItem
 const String redeemItemFunctionSignature = '0x1247fcb5';
