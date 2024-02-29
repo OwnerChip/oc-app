@@ -55,6 +55,7 @@ class BlockchainConfig {
   final String controllerContract;
   final String openseaUrl;
   final String raribleUrl;
+  final String raribleEnum;
   final String blockchainExplorerUrl;
   final String alchemyBaseUrl;
   final String? forwarderContract;
@@ -67,6 +68,7 @@ class BlockchainConfig {
       required this.controllerContract,
       required this.openseaUrl,
       required this.raribleUrl,
+      required this.raribleEnum,
       required this.blockchainExplorerUrl,
       required this.alchemyBaseUrl,
       this.forwarderContract});

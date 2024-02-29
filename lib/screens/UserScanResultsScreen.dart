@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
+import 'package:ownerchip_whitelabel/services/rarible.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -504,6 +505,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final allOffers =
           creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
       final offer = allOffers.firstWhere((o) => o.isCancelled == false);
+
+      //get calldata from rarible API (prepareCancelTx)
+      String cancelTxCalldata = await prepareRaribleOrderCancellation(
+          config.chainId, offer.offchainOfferId);
+
+      print("---------------------------------------------------");
+      print("cancelTxCalldata: $cancelTxCalldata");
+
+      //TODO: use calldata from Rarible API to cancel offer
 
       String txnHash;
       if (canUseGasStation) {
