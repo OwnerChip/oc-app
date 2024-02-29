@@ -24,3 +24,6 @@ const String cancelOfferFunctionSignature = '0x32864096';
 
 //redeemItem
 const String redeemItemFunctionSignature = '0x1247fcb5';
+
+//recoverToken
+const String recoverTokenFunctionSignature = '0x41b49312';

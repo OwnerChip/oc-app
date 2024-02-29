@@ -92,6 +92,9 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   } else if (functionSignatureHash == redeemItemFunctionSignature) {
     data = makeRedeemTwinTokenData(
         functionSignatureHash, randomValueHash, signature, offerHash!);
+  } else if (functionSignatureHash == recoverTokenFunctionSignature) {
+    data =
+        makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
   }

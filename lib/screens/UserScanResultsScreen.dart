@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -331,6 +332,139 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
+  Future<void> recoverToken(Web3App? wc, BigInt tokenId,
+      SignatureData signatureData, EthereumAddress connectedWallet) async {
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+    String sessionId = ref.read(userSessionProvider)!.sessionId;
+    final TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(tokenId).future);
+
+    if (signatureData.hasBeenUsedInSmartContract) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.attention,
+            context.loc.pleaseScanChipAgainToCancel, 'warning'),
+      );
+      return;
+    }
+
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = 'Recover token';
+        isRotating = true;
+        loadingSvgPath =
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+      });
+
+      final List response =
+          await checkMetaTx(config.collectionId, recoverTokenFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
+          chainConfig[config.chainId]!.controllerContract);
+
+      String txnHash;
+      if (canUseGasStation) {
+        txnHash = await makeAndSendGaslessTx(
+            ref,
+            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+            recoverTokenFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            controllerContractId: controllerContractAddress,
+            toggleLoading: toggleLoading);
+      } else {
+        if (userSession.isOwnerCard) {
+          throw 'Gas station needed for TX with OwnerCard.';
+        }
+        if (wc == null) {
+          throw 'Please connect with MetaMask or similar wallet.';
+        }
+        txnHash = await makeAndSendNormalTx(
+          ref,
+          recoverTokenFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc,
+          wcSession!,
+          walletType!,
+        );
+      }
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status) {
+        ref
+            .read(chipSignatureDataProvider.notifier)
+            .updateHasBeenUsedInSmartContract(true);
+        sendAnalyticsTrace(
+            userSession.sessionId, txnHash, "TOKEN_RECOVERY_SUCCESS",
+            tags: {
+              'connectedWallet': ref.read(userAddressProvider).hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+            });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+              context.loc.successHeadingSnackbar, 'Token recovered', 'success'),
+        );
+
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+
+          //refresh providers for ownerchip check on ResultScreen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(creatorDataProvider.future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+          await ref.refresh(activeOffersProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
+
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = context.loc.offerCanceled;
+        });
+
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Error recovering token.');
+      }
+    } catch (e, s) {
+      Sentry.captureException(e);
+      setState(() {
+        isLoading = false;
+      });
+      sendAnalyticsTrace(
+          userSession.sessionId, e.toString(), "TOKEN_RECOVERY_ERROR",
+          tags: {
+            'connectedWallet': ref.read(userAddressProvider).hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+          });
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            'Error recovering token', 'error'),
+      );
+    }
+  }
+
   Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
@@ -637,6 +771,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref.watch(voucherTokenOwnerProvider);
     final AsyncValue<List<Purchase>> unredeemedVoucherNfts =
         ref.watch(unredeemedVoucherNftsProvider);
+    final AsyncValue<EthereumAddress> lastSellerAddress =
+        ref.watch(lastSellerAddressProvider);
 
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
@@ -985,25 +1121,62 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                         })),
                                                                               ]);
                                                                         } else {
-                                                                          return FutureBuilder<List>(
-                                                                              future: getUnredeemedPurchases(chipInfo.tokenId),
-                                                                              builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
-                                                                                if (snapshot.hasData) {
-                                                                                  if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
-                                                                                    //USER IS SELLER AND ITEM HAS NOT BEEN REDEEMED YET
-                                                                                    return Column(children: [
-                                                                                      Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                                    ]);
-                                                                                  } else {
-                                                                                    //USER IS NOT SELLER AND ITEM HAS NOT BEEN REDEEMED YET
-                                                                                    return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
-                                                                                  }
-                                                                                } else if (snapshot.hasError) {
-                                                                                  return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                          //USER IS NOT VOUCHER OWNER
+                                                                          return tokenInfo.when(
+                                                                              data: (tokenInfoData) {
+                                                                                final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(chainConfig[tokenInfoData.chainId]!.controllerContract);
+                                                                                if (voucherTokenOwnerData == controllerContractAddress && nftOwnerData == controllerContractAddress && activeOffersData.isEmpty) {
+                                                                                  //ERROR HAPPENED WHEN TOKEN WAS OFFERED; NO OFFER IN BACKEND
+                                                                                  return lastSellerAddress.when(
+                                                                                      data: (lastSellerData) {
+                                                                                        if (lastSellerData == connectedWallet) {
+                                                                                          return Column(
+                                                                                            children: [
+                                                                                              Text(context.loc.errorWhenOffering, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                                              const SizedBox(height: 15),
+                                                                                              CustomRoundedButton(
+                                                                                                width: double.infinity,
+                                                                                                text: context.loc.recoverToken,
+                                                                                                onPressed: (() => {
+                                                                                                      fromCancelable(recoverToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
+                                                                                                    }),
+                                                                                              )
+                                                                                            ],
+                                                                                          );
+                                                                                        } else {
+                                                                                          return Column(
+                                                                                            children: [
+                                                                                              Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                                            ],
+                                                                                          );
+                                                                                        }
+                                                                                      },
+                                                                                      error: (e, s) => Container(),
+                                                                                      loading: () => Container());
                                                                                 } else {
-                                                                                  return const CircularProgressIndicator();
+                                                                                  return FutureBuilder<List>(
+                                                                                      future: getUnredeemedPurchases(chipInfo.tokenId),
+                                                                                      builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+                                                                                        if (snapshot.hasData) {
+                                                                                          if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
+                                                                                            //USER IS SELLER AND ITEM HAS NOT BEEN REDEEMED YET
+                                                                                            return Column(children: [
+                                                                                              Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                                            ]);
+                                                                                          } else {
+                                                                                            //USER IS NOT SELLER AND ITEM HAS NOT BEEN REDEEMED YET
+                                                                                            return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                          }
+                                                                                        } else if (snapshot.hasError) {
+                                                                                          return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                        } else {
+                                                                                          return const CircularProgressIndicator();
+                                                                                        }
+                                                                                      });
                                                                                 }
-                                                                              });
+                                                                              },
+                                                                              error: (e, s) => Container(),
+                                                                              loading: () => Container());
                                                                         }
                                                                       },
                                                                       error: (e, s) => Text(

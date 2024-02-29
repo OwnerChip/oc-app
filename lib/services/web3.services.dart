@@ -139,6 +139,20 @@ Future<List<dynamic>> queryForwarderContract(
   return result;
 }
 
+Future<List<dynamic>> queryControllerContract(
+    String chainRpcUrl,
+    EthereumAddress controllerContractAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract =
+      await getControllerContract(controllerContractAddress);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  List<dynamic> result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
 Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
     Uint8List txData, EthereumAddress fromAddress) async {
   final web3Client = getWeb3Client(chainRpcUrl);
@@ -344,6 +358,16 @@ String makeCancelOfferData(
           .toRadixString(16)
           .padLeft(64, '0') +
       encodedOfferData.substring(2);
+  return data;
+}
+
+String makeRecoverTokenData(
+    String functionSignatureHash, Uint8List hash, MsgSignature signature) {
+  String data = functionSignatureHash +
+      uint8ListTo32ByteHex(hash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0');
   return data;
 }
 
@@ -569,5 +593,19 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
           ),
         ]),
         setShippingPopupIsShownState: setShippingPopupIsShownState);
+  }
+}
+
+Future<EthereumAddress> getLastSellerAddress(String chainRpcUrl,
+    EthereumAddress controllerContractAddress, BigInt tokenId) async {
+  try {
+    final List result = await queryControllerContract(chainRpcUrl,
+        controllerContractAddress, "getLastSellerAddress", [tokenId]);
+    print(result);
+    return result[0];
+  } catch (e) {
+    print('Error while fetching last seller address of tokenId $tokenId: $e');
+    throw Exception(
+        'Error while fetching last seller address of tokenId $tokenId: $e');
   }
 }

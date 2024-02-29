@@ -311,5 +311,7 @@
     "buyOnRarible": "Auf Rarible kaufen",
     "voucherNftDescriptionGeneral": "This NFT includes the ownership of a physical artwork which can be redeemed after the purchase of the NFT",
     "voucherNftDescriptionAppSpecific": "via the Ownerchip-App, downloadable in the Google Playstore and Apple AppStore. \n For more information visit https://ownerchip.com",
-    "transferred": "Transferiert"
+    "transferred": "Transferiert",
+    "errorWhenOffering": "Beim anbieten des Tokens ist ein Fehler passiert. Bitte drücke Token wiederherstellen oder kontaktiere den Support.",
+    "recoverToken": "Token wiederherstellen"
 }
