@@ -150,6 +150,8 @@ final voucherTokenOwnerProvider =
 
 final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
   List chainIds = chainConfig.keys.toList();
+  //remove polygon mumbai testnet from chainIds, so that we do not use alchemy APIs for this chain
+  chainIds.remove(80001);
   final UserSession? userSession = ref.read(userSessionProvider);
   final EthereumAddress? walletAddress = userSession?.userWalletAddress;
 
