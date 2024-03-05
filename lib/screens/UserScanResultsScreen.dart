@@ -492,8 +492,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, cancelMarketplaceOfferSignature);
+      final List response = await checkMetaTx(
+          config.collectionId, cancelMarketplaceOfferSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -530,7 +530,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             metaTxAgreementId,
             walletType!,
             controllerContractId: controllerContractAddress,
-            encodedOfferData: offer.encodedData,
+            encodedOfferData: cancelTxCalldata,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
