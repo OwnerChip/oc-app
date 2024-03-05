@@ -276,13 +276,6 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         sellerPayoutAddress!,
         offerPrice!,
         typedDataHash!);
-  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
-    data = makeCancelOfferData(
-        functionSignatureHash,
-        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
-        randomValueHash,
-        signature,
-        encodedOfferData!);
   } else if (functionSignatureHash == redeemItemFunctionSignature) {
     data = makeRedeemTwinTokenData(
         functionSignatureHash, randomValueHash, signature, offerHash!);
