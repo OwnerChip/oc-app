@@ -493,7 +493,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, cancelOfferFunctionSignature);
+          await checkMetaTx(config.collectionId, cancelMarketplaceOfferSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
