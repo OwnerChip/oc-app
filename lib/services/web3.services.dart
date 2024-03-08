@@ -352,6 +352,7 @@ String makeCancelOfferData(
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0') +
+      "00000000000000000000000000000000000000000000000000000000000000c0" +
       (encodedOfferData.substring(2).length ~/ 2)
           .toRadixString(16)
           .padLeft(64, '0') +

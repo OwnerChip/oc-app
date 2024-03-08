@@ -510,11 +510,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       String cancelTxCalldata = await prepareRaribleOrderCancellation(
           config.chainId, offer.offchainOfferId);
 
-      print("---------------------------------------------------");
-      print("cancelTxCalldata: $cancelTxCalldata");
-
-      //TODO: use calldata from Rarible API to cancel offer
-
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
