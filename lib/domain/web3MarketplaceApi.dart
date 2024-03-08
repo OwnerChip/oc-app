@@ -8,6 +8,8 @@ final Map<int, String> raribleUpsertOrderApiUrls = {
   80001: 'https://testnet-api.rarible.org/v0.1/order/orders/'
 };
 
+const String raribleNewApiBaseUrl = 'https://api.rarible.org/v0.1/';
+
 final Map<int, String> raribleExchangeV2Contracts = {
   1: '0x9757F2d2b135150BBeb65308D4a91804107cd8D6',
   137: '0x12b3897a36fDB436ddE2788C06Eff0ffD997066e',

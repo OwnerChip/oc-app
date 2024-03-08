@@ -276,9 +276,6 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         sellerPayoutAddress!,
         offerPrice!,
         typedDataHash!);
-  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
-    data = makeCancelOfferData(functionSignatureHash, randomValueHash,
-        signature, salt!, end!, encodedOfferData!);
   } else if (functionSignatureHash == redeemItemFunctionSignature) {
     data = makeRedeemTwinTokenData(
         functionSignatureHash, randomValueHash, signature, offerHash!);
@@ -345,18 +342,17 @@ String makeRedeemTwinTokenData(String functionSignatureHash, Uint8List hash,
 
 String makeCancelOfferData(
     String functionSignatureHash,
+    EthereumAddress marketplaceContract,
     Uint8List hash,
     MsgSignature signature,
-    BigInt offerSalt,
-    int offerEnd,
     String encodedOfferData) {
   String data = functionSignatureHash +
+      marketplaceContract.toString().substring(2).padLeft(64, '0') +
       uint8ListTo32ByteHex(hash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0') +
-      offerSalt.toRadixString(16).padLeft(64, '0') +
-      offerEnd.toRadixString(16).padLeft(64, '0') +
+      "00000000000000000000000000000000000000000000000000000000000000c0" +
       (encodedOfferData.substring(2).length ~/ 2)
           .toRadixString(16)
           .padLeft(64, '0') +

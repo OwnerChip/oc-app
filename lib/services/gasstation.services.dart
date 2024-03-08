@@ -86,9 +86,13 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         sellerPayoutAddress!,
         price!,
         typedDataHash!);
-  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
-    data = makeCancelOfferData(functionSignatureHash, randomValueHash,
-        signature, salt!, endTimestamp!, encodedOfferData!);
+  } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
+    data = makeCancelOfferData(
+        functionSignatureHash,
+        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
+        randomValueHash,
+        signature,
+        encodedOfferData!);
   } else if (functionSignatureHash == redeemItemFunctionSignature) {
     data = makeRedeemTwinTokenData(
         functionSignatureHash, randomValueHash, signature, offerHash!);
