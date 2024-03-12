@@ -70,6 +70,7 @@ class ActiveOffer {
     required this.encodedData,
     required this.marketplaceContract,
     required this.isCancelled,
+    required this.offchainOfferId,
   });
 
   String offerHash;
@@ -83,6 +84,7 @@ class ActiveOffer {
   String encodedData;
   String marketplaceContract;
   bool isCancelled;
+  String offchainOfferId;
 
   factory ActiveOffer.fromJson(Map<String, dynamic> json) => ActiveOffer(
         offerHash: json["offer_hash"],
@@ -96,6 +98,7 @@ class ActiveOffer {
         encodedData: json["encoded_data"],
         marketplaceContract: json["marketplace_contract"],
         isCancelled: json["is_cancelled"],
+        offchainOfferId: json["offchain_id"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -110,5 +113,6 @@ class ActiveOffer {
         "encoded_data": encodedData,
         "marketplace_contract": marketplaceContract,
         "is_cancelled": isCancelled,
+        "offchain_id": offchainOfferId,
       };
 }

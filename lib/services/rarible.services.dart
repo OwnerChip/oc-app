@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
@@ -96,6 +97,26 @@ Future createRaribleOrder(int chainId, RaribleV2Order order) async {
       stackTrace: s,
     );
     print(e);
+  }
+}
+
+// create rarible order api call
+Future<String> prepareRaribleOrderCancellation(
+    int chainId, String offchainOrderId) async {
+  try {
+    final Dio dio = Dio();
+    dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
+    Response result = await dio.post(
+      '${raribleNewApiBaseUrl}orders/${chainConfig[chainId]!.raribleEnum}:$offchainOrderId/prepareCancelTx',
+    );
+    return result.data["data"];
+  } catch (e, s) {
+    Sentry.captureException(
+      e,
+      stackTrace: s,
+    );
+    print(e);
+    return "";
   }
 }
 

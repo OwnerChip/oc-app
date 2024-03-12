@@ -9,6 +9,7 @@ final polygonMumbaiTestnet = BlockchainConfig(
   controllerContract: "0x99a0EEBe6D5Abd437485B2c61522A0E5770fc681",
   openseaUrl: "https://testnets.opensea.io/assets/mumbai",
   raribleUrl: "https://testnet.rarible.com/token/polygon",
+  raribleEnum: "POLYGON",
   blockchainExplorerUrl: "https://mumbai.polygonscan.com/token",
   alchemyBaseUrl: "https://polygon-mumbai.g.alchemy.com/",
   forwarderContract: "0xE3116Ba52ba63573ecB5964187A711ef7eF74107",
@@ -23,6 +24,7 @@ final polygonMainnet = BlockchainConfig(
     controllerContract: "0x7F15F01af90Fd8c1AA32264f44DB02E6bEd259aF",
     openseaUrl: "https://opensea.io/assets/matic",
     raribleUrl: "https://rarible.com/token/polygon",
+    raribleEnum: "POLYGON",
     blockchainExplorerUrl: "https://polygonscan.com/token",
     alchemyBaseUrl: "https://polygon-mainnet.g.alchemy.com/",
     forwarderContract: "0x65CDf66C6FDDCD0a43042F237Aa871414b724f4d");
@@ -35,6 +37,7 @@ final ethereumMainnet = BlockchainConfig(
     controllerContract: "",
     openseaUrl: "https://opensea.io/assets",
     raribleUrl: "https://rarible.com/token",
+    raribleEnum: "ETHEREUM",
     alchemyBaseUrl: "https://eth-mainnet.g.alchemy.com/",
     blockchainExplorerUrl: "https://etherscan.com/token");
 

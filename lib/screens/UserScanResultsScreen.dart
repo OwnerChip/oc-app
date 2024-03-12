@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
+import 'package:ownerchip_whitelabel/services/rarible.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -491,8 +492,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, cancelOfferFunctionSignature);
+      final List response = await checkMetaTx(
+          config.collectionId, cancelMarketplaceOfferSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -505,12 +506,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
       final offer = allOffers.firstWhere((o) => o.isCancelled == false);
 
+      //get calldata from rarible API (prepareCancelTx)
+      String cancelTxCalldata = await prepareRaribleOrderCancellation(
+          config.chainId, offer.offchainOfferId);
+
       String txnHash;
       if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            cancelOfferFunctionSignature,
+            cancelMarketplaceOfferSignature,
             config.chainId,
             config.collectionId,
             signatureData,
@@ -520,9 +525,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             metaTxAgreementId,
             walletType!,
             controllerContractId: controllerContractAddress,
-            salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
-            encodedOfferData: offer.encodedData,
-            endTimestamp: offer.validUntil,
+            encodedOfferData: cancelTxCalldata,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -532,19 +535,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
-          ref,
-          cancelOfferFunctionSignature,
-          config.chainId,
-          controllerContractAddress,
-          signatureData,
-          connectedWallet,
-          wc,
-          wcSession!,
-          walletType!,
-          salt: BigInt.from(DateTime.now().millisecondsSinceEpoch),
-          encodedOfferData: offer.encodedData,
-          endTimestamp: offer.validUntil,
-        );
+            ref,
+            cancelMarketplaceOfferSignature,
+            config.chainId,
+            controllerContractAddress,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            walletType!,
+            encodedOfferData: cancelTxCalldata);
       }
 
       var txnReceipt =
