@@ -1009,8 +1009,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                         null) {
                                                                       // USER HAS MINTERROLE FOR SOME COLLECTION
                                                                       collection = relevantCollectionsData.collections[tokenInfo.value!.chainId]!.firstWhere(
-                                                                          (element) => element
-                                                                              .hasMinterRole!,
+                                                                          (element) =>
+                                                                              element.id ==
+                                                                              tokenInfo
+                                                                                  .value!.collectionId,
                                                                           orElse: () => Collection(
                                                                               zeroAddress,
                                                                               '',
