@@ -1205,7 +1205,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                       child: Text(
                                                                           context
                                                                               .loc
-                                                                              .youAreNFTOwner,
+                                                                              .youAreNotNftOwner,
                                                                           textAlign: TextAlign
                                                                               .center,
                                                                           style: Theme.of(context)
