@@ -29,35 +29,35 @@
 		<key>UIMainStoryboardFile</key>
 		<string>Main</string>
 		<key>LSApplicationQueriesSchemes</key>
-			<array>
-				<string>islamiwallet</string>
-				<string>zel</string>
-				<string>com.wallet.passpay</string>
-				<string>zeluswallet</string>
-				<string>midoin</string>
-				<string>dfw</string>
-				<string>roam</string>
-				<string>mewwallet</string>
-				<string>balletcrypto</string>
-				<string>nodle</string>
-				<string>talkapp</string>
-				<string>cypherwallet</string>
-				<string>celo</string>
-				<string>pltwallet</string>
-				<string>metamask</string>
-				<string>avacus</string>
-				<string>argent</string>
-				<string>bitski</string>
-				<string>bybitapp</string>
-				<string>hippowallet</string>
-				<string>internetmoney</string>
-				<string>core</string>
-				<string>getcogni</string>
-				<string>gtweb3wallet</string>
-				<string>impactsx</string>
-				<string>myapp</string>
-				<string>enjinwallet</string>
-			</array>
+		<array>
+			<string>islamiwallet</string>
+			<string>zel</string>
+			<string>com.wallet.passpay</string>
+			<string>zeluswallet</string>
+			<string>midoin</string>
+			<string>dfw</string>
+			<string>roam</string>
+			<string>mewwallet</string>
+			<string>balletcrypto</string>
+			<string>nodle</string>
+			<string>talkapp</string>
+			<string>cypherwallet</string>
+			<string>celo</string>
+			<string>pltwallet</string>
+			<string>metamask</string>
+			<string>avacus</string>
+			<string>argent</string>
+			<string>bitski</string>
+			<string>bybitapp</string>
+			<string>hippowallet</string>
+			<string>internetmoney</string>
+			<string>core</string>
+			<string>getcogni</string>
+			<string>gtweb3wallet</string>
+			<string>impactsx</string>
+			<string>myapp</string>
+			<string>enjinwallet</string>
+		</array>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
