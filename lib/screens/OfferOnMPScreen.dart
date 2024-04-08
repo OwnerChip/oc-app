@@ -335,6 +335,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       if (txnReceipt?.status) {
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
+        await Future.delayed(const Duration(seconds: 2));
         var response = await createRaribleOrder(config.chainId, order);
 
         //call backend with info about offering
