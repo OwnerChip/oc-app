@@ -131,5 +131,5 @@ String makeRaribleTokenPageUrl(
 const raribleTokenPageUrls = {
   1: 'https://rarible.com/token/',
   137: 'https://rarible.com/token/polygon/',
-  80001: 'https://testnet.rarible.com/token/polygon/',
+  // 80001: 'https://testnet.rarible.com/token/polygon/',
 };

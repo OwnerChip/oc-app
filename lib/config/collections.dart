@@ -40,17 +40,17 @@ final BlockchainCollectionList allCollections = BlockchainCollectionList({
         EthereumAddress.fromHex("0xFA4c465D82B8419f3A8AF0ec615E1bcA1D86Ac63"),
         "ArtsyApes"),
   ],
-  80001: [
-    Collection(
-        EthereumAddress.fromHex('0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
-        "Demo Collection"),
-    Collection(
-        EthereumAddress.fromHex('0x82a225C01F70828A415bB576f1C334928aE32b29'),
-        "Stebo Demo"),
-    Collection(
-        EthereumAddress.fromHex('0x163a80d5D7E2e1d256D7083E4b04Cd873e30f6d2'),
-        "Stebo Demo (old)"),
-  ]
+  // 80001: [
+  //   Collection(
+  //       EthereumAddress.fromHex('0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a'),
+  //       "Demo Collection"),
+  //   Collection(
+  //       EthereumAddress.fromHex('0x82a225C01F70828A415bB576f1C334928aE32b29'),
+  //       "Stebo Demo"),
+  //   Collection(
+  //       EthereumAddress.fromHex('0x163a80d5D7E2e1d256D7083E4b04Cd873e30f6d2'),
+  //       "Stebo Demo (old)"),
+  // ]
 });
 
 /// helper function
