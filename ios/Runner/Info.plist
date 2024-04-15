@@ -80,9 +80,9 @@
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>The app would like to access your photos.</string>
+		<string>The OwnerChip app uses this access so you can add an NFT image and photo attachments to your digital twin.</string>
 		<key>NSCameraUsageDescription</key>
-		<string>The app would like to access your camera.</string>
+		<string>The OwnerChip app uses this access so you can add an NFT image and photo attachments to your digital twin.</string>
 		<key>NFCReaderUsageDescription</key>
 		<string>We need to use NFC</string>
 		<key>com.apple.developer.nfc.readersession.felica.systemcodes</key>
