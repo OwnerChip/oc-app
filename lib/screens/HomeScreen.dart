@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -262,6 +263,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         loading: () => SizedBox(
                             height: 40, child: Text(context.loc.loading)),
                         error: (err, stack) => const SizedBox(height: 40)),
+                const SizedBox(height: 20),
+                CustomRoundedButton(
+                  width: 250,
+                  text: 'My Collection',
+                  onPressed: () =>
+                      Navigator.pushNamed(context, GalleryScreen.routeName),
+                )
               ],
             ),
 

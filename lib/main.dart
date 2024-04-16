@@ -10,6 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
+import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
@@ -142,6 +143,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         OfferOnMPScreen.routeName: (context) => const OfferOnMPScreen(),
         EnterShippingAddressScreen.routeName: (context) =>
             const EnterShippingAddressScreen(),
+        GalleryScreen.routeName: (context) => const GalleryScreen(),
       },
     );
   }
