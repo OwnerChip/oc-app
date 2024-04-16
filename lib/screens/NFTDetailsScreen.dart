@@ -146,6 +146,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                 voucherContractAndTwinNftOwner.when(
                                   data: (data) => data != null &&
                                           data[0] != null &&
+                                          data[0] != zeroAddress &&
                                           data[1] == connectedWallet
                                       ? Expanded(
                                           flex: 1,
