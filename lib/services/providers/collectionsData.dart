@@ -41,20 +41,13 @@ final voucherContractAndTwinNftOwnerProvider =
 
 final voucherContractProvider =
     FutureProvider.autoDispose<EthereumAddress?>((ref) async {
-  print('inside voucher contract provider');
   final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
 
   final TokenChainAndCollection tokenInfo =
       await ref.read(findTokenProvider(chipInfo.tokenId).future);
 
-  final BlockchainCollectionList collections =
-      await ref.read(appCollectionProvider.future);
-
-  // get collection in collections.collections[tokenInfo.chainId] with id == tokenInfo.collectionAddress
-  final Collection collection = collections.collections[tokenInfo.chainId]!
-      .firstWhere((element) => element.id == tokenInfo.collectionId);
-
-  final EthereumAddress? voucherContractAddress = collection.voucherAddress;
+  final voucherContractAddress = await getVoucherContractFromTwin(
+      getRPCUrlFromChainId(tokenInfo.chainId), tokenInfo.collectionId);
 
   return voucherContractAddress;
 });

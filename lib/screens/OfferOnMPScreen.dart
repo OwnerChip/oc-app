@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:info_popup/info_popup.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -133,9 +135,24 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final metaTxAgreementId = response[1];
 
     try {
-      String tokenUri = await getTokenUri(getRPCUrlFromChainId(config.chainId),
-          config.collectionId, config.tokenId);
-      String cid = getCidFromIpfsLink(tokenUri);
+      // get tokenUri from twin token
+      String twinTokenUri = await getTokenUri(
+          getRPCUrlFromChainId(config.chainId),
+          config.collectionId,
+          config.tokenId);
+      String twinTokenMetadataCID = getCidFromIpfsLink(twinTokenUri);
+      Map<String, dynamic> twinTokenMetadata =
+          await downloadMetadataFromIPFS(twinTokenMetadataCID);
+
+      // generate voucher token metadata and upload to IPFS
+      String voucherTokenMetadataCID = '';
+      Map<String, dynamic> voucherTokenMetadata = twinTokenMetadata;
+      voucherTokenMetadata['description'] +=
+          "\n\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+      XFile jsonFileVoucher =
+          await saveMetadataAsJSONFile(voucherTokenMetadata);
+      voucherTokenMetadataCID =
+          await uploadFileToIPFS(jsonFileVoucher, 'application/json');
 
       String txnHash;
       if (canUseGasStation) {
@@ -151,9 +168,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             wcSession,
             metaTxAgreementId,
             walletType!,
-            cid: cid,
-            voucherTokenCID:
-                cid, // TODO: change this to generated voucherTokenCID
+            twinTokenMetadataCID: twinTokenMetadataCID,
+            voucherTokenMetadataCID: voucherTokenMetadataCID,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -172,9 +188,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           wc,
           wcSession!,
           walletType!,
-          cid: cid,
-          voucherTokenCID:
-              cid, // TODO: change this to generated voucherTokenCID
+          twinTokenMetadataCID: twinTokenMetadataCID,
+          voucherTokenMetadataCID: voucherTokenMetadataCID,
         );
       }
     } catch (e) {
@@ -206,7 +221,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     setState(() {
       isLoading = true;
       overlayContentType = context.loc.loading;
-      loadingText = context.loc.mintingVoucherToken;
     });
 
     final voucherContractAddress =
@@ -220,6 +234,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     );
 
     if (voucherTokenOwner == null) {
+      setState(() {
+        loadingText = context.loc.mintingVoucherToken;
+      });
       await mintVoucherToken(
           config.chainId,
           config.collectionId,
@@ -318,6 +335,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       if (txnReceipt?.status) {
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
+        await Future.delayed(const Duration(seconds: 2));
         var response = await createRaribleOrder(config.chainId, order);
 
         //call backend with info about offering
@@ -334,7 +352,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             encodedData: typedDataHashAndEncodedData.encodedData,
             typedDataHash: typedDataHash,
             chipSignature: hexSignature,
-            marketplaceContract: raribleExchangeV2Contracts[config.chainId]!);
+            marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
+            offchainOfferId: response['id']);
 
         await sendOfferItemInfoToBackend(offerItemInputData);
 
@@ -353,6 +372,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           await ref.refresh(creatorDataProvider.future);
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
           await ref.refresh(voucherTokenOwnerProvider.future);
+          await ref.refresh(activeOffersProvider.future);
         } catch (e) {
           print(e);
           Sentry.captureException(e);
@@ -562,10 +582,31 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(context.loc.price,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall!),
+                                Row(
+                                  children: [
+                                    Text(context.loc.price,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall!),
+                                    const SizedBox(width: 5),
+                                    InfoPopupWidget(
+                                      key: const Key('feeInfoPopup'),
+                                      arrowTheme: InfoPopupArrowTheme(
+                                        arrowDirection: ArrowDirection.down,
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                      ),
+                                      contentTitle: context.loc.feesInfo,
+                                      child: Icon(
+                                          color:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                          Icons.info,
+                                          size: 18),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(
                                   height: 5,
                                 ),

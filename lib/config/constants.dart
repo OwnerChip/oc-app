@@ -20,7 +20,10 @@ const String approveFunctionSignature = '0x095ea7b3';
 const String offerItemFunctionSignature = '0xc8f1044d';
 
 //cancelOffer
-const String cancelOfferFunctionSignature = '0x32864096';
+const String cancelMarketplaceOfferSignature = '0x7a616970';
 
 //redeemItem
 const String redeemItemFunctionSignature = '0x1247fcb5';
+
+//recoverToken
+const String recoverTokenFunctionSignature = '0x41b49312';

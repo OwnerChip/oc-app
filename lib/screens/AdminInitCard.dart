@@ -8,12 +8,15 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/credentials.dart';
 
 class AdminInitCard extends ConsumerStatefulWidget {
@@ -39,6 +42,24 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
 
   @override
   Widget build(BuildContext context) {
+    String baseId = dotenv.get('OWNERCARD_BASE_ID');
+    Map<String, EthereumAddress> slot0Addresses = {
+      'OwnerChip':
+          EthereumAddress.fromHex('0x3e873dd1a384860640dff4a78b80f95907ccc3c5'),
+      'Stebo':
+          EthereumAddress.fromHex('0xdb166d2468d111bba8f80904cfd8143cebd07507'),
+      'Infineon':
+          EthereumAddress.fromHex('0x3ad219eb491f5587bc26738cc9abd842f57e188f'),
+      'Stilami':
+          EthereumAddress.fromHex('0x9eb5ac7ce359f50176f98a4b6b6bdbca0cd79185')
+    };
+    List<String> keys = ['OwnerChip', 'Stebo', 'Infineon', 'Stilami'];
+    List values = [
+      'ID: 100 \nSlot 0:${slot0Addresses['OwnerChip']!.hex.substring(0, 6)}...',
+      'ID: 101 \nSlot 0: ${slot0Addresses['Stebo']!.hex.substring(0, 6)}...',
+      'ID: 102 \nSlot 0: ${slot0Addresses['Infineon']!.hex.substring(0, 6)}...',
+      'ID:103 \nSlot 0: ${slot0Addresses['Stilami']!.hex.substring(0, 6)}...'
+    ];
     return Scaffold(
       appBar: const CustomAppBar(
         text: 'Init OwnerCards slot',
@@ -50,10 +71,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
           const Text(
               'ATTENTION: Key slot 0 can only be set on OwnerCards that are not yet PIN code locked. '),
           const SizedBox(height: 10),
-          const Text('OwnerChip: 100'),
-          const Text('Stebo: 101'),
-          const Text('Infineon: 102'),
-          const Text('Stilami: 103'),
+          InfoKeyValues(keys: keys, values: values),
           const SizedBox(height: 20),
           //text input field for the customer id
           Form(

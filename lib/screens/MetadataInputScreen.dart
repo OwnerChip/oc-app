@@ -143,23 +143,38 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
       sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet.hex});
+
+      /////////// TWIN METADATA ///////////
+      String twinTokenMetadataCID = '';
+
       //upload image to ipfs
       String imageCid;
-      String cid = '';
       String mimeType = lookupMimeType(image!.path) ?? "image/jpg";
       imageCid = await uploadFileToIPFS(image, mimeType);
       metadata['image'] = 'ipfs://$imageCid';
 
-      //generate metadata JSON file
-      XFile jsonFile = await saveMetadataAsJSONFile(metadata);
+      //generate twin metadata JSON file
+      XFile jsonFileTwin = await saveMetadataAsJSONFile(metadata);
 
-      //upload metadata json to ipfs
-      cid = await uploadFileToIPFS(jsonFile, 'application/json');
+      //upload twin metadata json to ipfs
+      twinTokenMetadataCID =
+          await uploadFileToIPFS(jsonFileTwin, 'application/json');
 
-      if (cid != '') {
+      /////////// VOUCHER METADATA ///////////
+
+      Map<String, dynamic> voucherMetadata = {...metadata};
+      XFile jsonFileVoucher =
+          await generateVoucherMetadataFile(voucherMetadata, context);
+      String voucherTokenMetadataCID =
+          await uploadFileToIPFS(jsonFileVoucher, 'application/json');
+
+      if (twinTokenMetadataCID != '' || voucherTokenMetadataCID != '') {
         ipfsProcess.finish();
-        sendAnalyticsTrace(sessionId, cid, "IPFS_UPLOAD_FINISHED",
-            tags: {'connectedWallet': connectedWallet.hex, 'cid': cid});
+        sendAnalyticsTrace(
+            sessionId, twinTokenMetadataCID, "IPFS_UPLOAD_FINISHED", tags: {
+          'connectedWallet': connectedWallet.hex,
+          'cid': twinTokenMetadataCID
+        });
       }
 
       //check if user is allowed to use gas station
@@ -196,9 +211,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             wcSession,
             metaTxAgreementId,
             walletType!,
-            cid: cid,
-            voucherTokenCID:
-                cid, // TODO: change this to generated voucherTokenCID
+            twinTokenMetadataCID: twinTokenMetadataCID,
+            voucherTokenMetadataCID: voucherTokenMetadataCID,
             toggleLoading: toggleLoading);
       } else {
         if (userSession.isOwnerCard) {
@@ -208,21 +222,19 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
-          ref,
-          (voucherCollectionId != null)
-              ? mintVoucherFunctionSignature
-              : mintFunctionSignature,
-          chainId,
-          voucherCollectionId ?? collectionId,
-          signatureData,
-          connectedWallet,
-          wc,
-          wcSession!,
-          walletType!,
-          cid: cid,
-          voucherTokenCID:
-              cid, // TODO: change this to generated voucherTokenCID
-        );
+            ref,
+            (voucherCollectionId != null)
+                ? mintVoucherFunctionSignature
+                : mintFunctionSignature,
+            chainId,
+            voucherCollectionId ?? collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession!,
+            walletType!,
+            twinTokenMetadataCID: twinTokenMetadataCID,
+            voucherTokenMetadataCID: voucherTokenMetadataCID);
       }
 
       //wait until TX is succeeded or failed

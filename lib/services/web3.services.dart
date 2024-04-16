@@ -10,6 +10,8 @@ import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:web3dart/json_rpc.dart';
 import 'package:web3dart/web3dart.dart';
@@ -98,12 +100,16 @@ Future<List<dynamic>> queryCollectionContract(
     EthereumAddress collectionId,
     String functionName,
     List<dynamic> args) async {
-  DeployedContract contract = await getCollectionContract(collectionId);
-  ContractFunction function = contract.function(functionName);
-  final web3Client = getWeb3Client(chainRpcUrl);
-  final result = await web3Client.call(
-      contract: contract, function: function, params: args);
-  return result;
+  try {
+    DeployedContract contract = await getCollectionContract(collectionId);
+    ContractFunction function = contract.function(functionName);
+    final web3Client = getWeb3Client(chainRpcUrl);
+    final result = await web3Client.call(
+        contract: contract, function: function, params: args);
+    return result;
+  } catch (e) {
+    rethrow;
+  }
 }
 
 Future<List<dynamic>> queryVoucherContract(
@@ -126,6 +132,20 @@ Future<List<dynamic>> queryForwarderContract(
     List<dynamic> args) async {
   DeployedContract contract =
       await getForwarderContract(registryForwarderAddress);
+  ContractFunction function = contract.function(functionName);
+  final web3Client = getWeb3Client(chainRpcUrl);
+  List<dynamic> result = await web3Client.call(
+      contract: contract, function: function, params: args);
+  return result;
+}
+
+Future<List<dynamic>> queryControllerContract(
+    String chainRpcUrl,
+    EthereumAddress controllerContractAddress,
+    String functionName,
+    List<dynamic> args) async {
+  DeployedContract contract =
+      await getControllerContract(controllerContractAddress);
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client(chainRpcUrl);
   List<dynamic> result = await web3Client.call(
@@ -256,12 +276,12 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         sellerPayoutAddress!,
         offerPrice!,
         typedDataHash!);
-  } else if (functionSignatureHash == cancelOfferFunctionSignature) {
-    data = makeCancelOfferData(functionSignatureHash, randomValueHash,
-        signature, salt!, end!, encodedOfferData!);
   } else if (functionSignatureHash == redeemItemFunctionSignature) {
     data = makeRedeemTwinTokenData(
         functionSignatureHash, randomValueHash, signature, offerHash!);
+  } else if (functionSignatureHash == recoverTokenFunctionSignature) {
+    data =
+        makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -322,22 +342,31 @@ String makeRedeemTwinTokenData(String functionSignatureHash, Uint8List hash,
 
 String makeCancelOfferData(
     String functionSignatureHash,
+    EthereumAddress marketplaceContract,
     Uint8List hash,
     MsgSignature signature,
-    BigInt offerSalt,
-    int offerEnd,
     String encodedOfferData) {
   String data = functionSignatureHash +
+      marketplaceContract.toString().substring(2).padLeft(64, '0') +
       uint8ListTo32ByteHex(hash) +
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0') +
-      offerSalt.toRadixString(16).padLeft(64, '0') +
-      offerEnd.toRadixString(16).padLeft(64, '0') +
+      "00000000000000000000000000000000000000000000000000000000000000c0" +
       (encodedOfferData.substring(2).length ~/ 2)
           .toRadixString(16)
           .padLeft(64, '0') +
       encodedOfferData.substring(2);
+  return data;
+}
+
+String makeRecoverTokenData(
+    String functionSignatureHash, Uint8List hash, MsgSignature signature) {
+  String data = functionSignatureHash +
+      uint8ListTo32ByteHex(hash) +
+      signature.r.toRadixString(16).padLeft(64, '0') +
+      signature.s.toRadixString(16).padLeft(64, '0') +
+      signature.v.toRadixString(16).padLeft(64, '0');
   return data;
 }
 
@@ -450,6 +479,20 @@ Future<String> getContractName(
   }
 }
 
+Future<EthereumAddress> getVoucherContractFromTwin(
+    String chainRpcUrl, EthereumAddress collectionId) async {
+  try {
+    var result = await queryCollectionContract(
+        chainRpcUrl, collectionId, "voucherNFTCollectionAddress", []);
+    return result[0];
+  } catch (e) {
+    print(
+        'Error while fetching voucher contract address of collection $collectionId: $e');
+    throw Exception(
+        'Error while fetching voucher contract address of collection $collectionId: $e');
+  }
+}
+
 Future<dynamic> getTokenUri(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   try {
@@ -501,6 +544,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
   final List<Purchase> unredeemedPurchases =
       await ref.read(unredeemedVoucherNftsProvider.future);
   if (unredeemedPurchases.isNotEmpty &&
+      !unredeemedPurchases.first.manualHandover &&
       unredeemedPurchases.first.shippingInfo == null) {
     // ignore: use_build_context_synchronously
     await showCustomPopup(
@@ -523,8 +567,44 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
               Navigator.pushNamed(
                   context, EnterShippingAddressScreen.routeName);
             },
-          )
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          CustomOutlinedButton(
+            width: double.infinity,
+            buttonText: context.loc.manualHandover,
+            onPressed: () async {
+              try {
+                await postManualHandoverToBackend(unredeemedPurchases.first);
+                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+                    context.loc.successHeadingSnackbar,
+                    context.loc.successManualHandover,
+                    'success'));
+                Navigator.pop(context);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                      context.loc.pleaseTryAgainLater, 'error'),
+                );
+              }
+            },
+          ),
         ]),
         setShippingPopupIsShownState: setShippingPopupIsShownState);
+  }
+}
+
+Future<EthereumAddress> getLastSellerAddress(String chainRpcUrl,
+    EthereumAddress controllerContractAddress, BigInt tokenId) async {
+  try {
+    final List result = await queryControllerContract(chainRpcUrl,
+        controllerContractAddress, "getLastSellerAddress", [tokenId]);
+    print(result);
+    return result[0];
+  } catch (e) {
+    print('Error while fetching last seller address of tokenId $tokenId: $e');
+    throw Exception(
+        'Error while fetching last seller address of tokenId $tokenId: $e');
   }
 }

@@ -35,7 +35,8 @@ dependencies:
   pinput: ^3.0.0
   control_style: ^0.1.0
   country_picker: ^2.0.23
-  web3modal_flutter: ^3.0.21
+  web3modal_flutter: 3.0.21
+  info_popup: ^4.3.1
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,7 @@ flutter:
     - assets/contracts/registry.abi.json
     - assets/contracts/forwarder.abi.json
     - assets/contracts/voucher.abi.json
+    - assets/contracts/controller.abi.json
     - .env
   generate: true
   uses-material-design: true

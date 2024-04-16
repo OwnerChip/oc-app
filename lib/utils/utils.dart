@@ -20,28 +20,12 @@ import 'package:web3dart/web3dart.dart';
 //validate ethereum address
 bool validateEthAddress(String hex) {
   //validate if hex is a valid ethereum address
-
-  bool result = true;
-
-  if (hex == null) {
+  try {
+    EthereumAddress.fromHex(hex);
+    return true;
+  } catch (e) {
     return false;
   }
-
-  if (hex.length != 42 || !hex.startsWith('0x')) {
-    return false;
-  }
-
-  final address = strip0x(hex);
-  final hash = bytesToHex(keccakAscii(address.toLowerCase()));
-  for (var i = 0; i < 40; i++) {
-    // the nth letter should be uppercase if the nth digit of casemap is 1
-    final hashedPos = int.parse(hash[i], radix: 16);
-    if ((hashedPos > 7 && address[i].toUpperCase() != address[i]) ||
-        (hashedPos <= 7 && address[i].toLowerCase() != address[i])) {
-      result = false;
-    }
-  }
-  return result;
 }
 
 String getNdefUrl() {
@@ -212,6 +196,18 @@ Future<String> getSha256HashOfFile(File file) async {
   final bytes = await file.readAsBytes();
   final hash = sha256.convert(bytes);
   return hash.toString();
+}
+
+Future<XFile> generateVoucherMetadataFile(
+    Map<String, dynamic> twinMetadata, BuildContext context) async {
+  Map<String, dynamic> voucherMetadata = twinMetadata;
+  if (voucherMetadata['description'] == null) {
+    voucherMetadata['description'] = '';
+  }
+  voucherMetadata['description'] +=
+      "\n \n${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+  XFile jsonFileVoucher = await saveMetadataAsJSONFile(voucherMetadata);
+  return jsonFileVoucher;
 }
 
 // generate OwnerCard identifier [from customer 100 to 3582]

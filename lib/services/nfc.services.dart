@@ -5,7 +5,9 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
@@ -62,6 +64,8 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
 
     TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipTokenId).future);
+    BlockchainCollectionList relevantCollections =
+        await ref.watch(findAllMinterRolesProvider.future);
 
     //verify signature
     List verificationResult = await verifySignatureAuthenticity(
@@ -76,8 +80,32 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
           tags: {"chipWallet": chipWalletAddress});
 
-      Navigator.pushNamed(context, ChainSelectorScreen.routeName,
-          arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
+      //decide if chain selector screen should be shown
+      bool showChainSelector = false;
+      if (relevantCollections.collections.keys.length > 1) {
+        showChainSelector = true;
+      } else {
+        //loop over all chain IDs in relevantCollections
+        for (int chainId in relevantCollections.collections.keys) {
+          if (relevantCollections.collections[chainId]!.length > 1) {
+            showChainSelector = true;
+            break;
+          }
+        }
+      }
+
+      if (showChainSelector) {
+        Navigator.pushNamed(context, ChainSelectorScreen.routeName,
+            arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
+      } else {
+        int chainId = relevantCollections.collections.keys.first;
+        Collection? collection =
+            relevantCollections.collections[chainId]!.first;
+        Navigator.pushNamed(context, MetadataScreen.routeName,
+            arguments: MetadataInputScreenArguments(
+                sessionId, chainId, collection.id,
+                voucherAddress: collection.voucherAddress));
+      }
     }
     //TOKEN EXISTS
     else {

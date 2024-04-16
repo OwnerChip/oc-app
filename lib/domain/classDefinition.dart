@@ -55,6 +55,7 @@ class BlockchainConfig {
   final String controllerContract;
   final String openseaUrl;
   final String raribleUrl;
+  final String raribleEnum;
   final String blockchainExplorerUrl;
   final String alchemyBaseUrl;
   final String? forwarderContract;
@@ -67,6 +68,7 @@ class BlockchainConfig {
       required this.controllerContract,
       required this.openseaUrl,
       required this.raribleUrl,
+      required this.raribleEnum,
       required this.blockchainExplorerUrl,
       required this.alchemyBaseUrl,
       this.forwarderContract});
@@ -195,21 +197,22 @@ class OfferItemInputData {
   final String typedDataHash;
   final String chipSignature;
   final String marketplaceContract;
+  final String offchainOfferId;
 
-  const OfferItemInputData({
-    required this.tokenId,
-    required this.offerPrice,
-    required this.offerCurrency,
-    required this.sellerWalletAddress,
-    required this.sellerPayoutAddress,
-    required this.sellerEmail,
-    required this.validUntil,
-    required this.salt,
-    required this.encodedData,
-    required this.typedDataHash,
-    required this.chipSignature,
-    required this.marketplaceContract,
-  });
+  const OfferItemInputData(
+      {required this.tokenId,
+      required this.offerPrice,
+      required this.offerCurrency,
+      required this.sellerWalletAddress,
+      required this.sellerPayoutAddress,
+      required this.sellerEmail,
+      required this.validUntil,
+      required this.salt,
+      required this.encodedData,
+      required this.typedDataHash,
+      required this.chipSignature,
+      required this.marketplaceContract,
+      required this.offchainOfferId});
 
   Map<String, dynamic> toJson() => {
         'tokenId': tokenId,
@@ -224,6 +227,7 @@ class OfferItemInputData {
         'typedDataHash': typedDataHash,
         'chipSignature': chipSignature,
         'marketplaceContract': marketplaceContract,
+        'offchainOfferId': offchainOfferId
       };
 }
 
