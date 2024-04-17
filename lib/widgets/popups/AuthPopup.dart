@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -141,6 +142,7 @@ Future<void> onTapAuth(
   storage.setString('userSession', jsonUserSession);
 
   await ref.refresh(findAllMinterRolesProvider);
+  await ref.refresh(getOcNftsForOwner);
 
   sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
     'connectedWallet': userWalletAddress.hex,

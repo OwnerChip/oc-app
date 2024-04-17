@@ -5,7 +5,11 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 
 // A function that fetches NFTs for a given owner address and chainId
 Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
-    {String? pageKey}) async {
+    {String? pageKey, List<EthereumAddress>? contractAddresses}) async {
+  if (contractAddresses != null && contractAddresses.length > 45) {
+    print(
+        'WARNING: Only a max. of 45 contracts are supported by Alchemy API. The rest will be ignored.');
+  }
   final options = BaseOptions(
     method: 'GET',
     headers: {'accept': 'application/json'},
@@ -22,8 +26,11 @@ Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
           'owner': owner.hex,
           'withMetadata': 'true',
           'pageSize': '100',
-          'excludeFilters': ['SPAM', 'AIRDROPS'],
-          'pageKey': pageKey
+          'excludeFilters[]': ['SPAM', 'AIRDROPS'],
+          'pageKey': pageKey,
+          'contractAddresses[]': contractAddresses != null
+              ? contractAddresses.map((e) => e.hex).toList()
+              : '',
         },
       );
 

@@ -2,16 +2,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
-import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
-import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
-import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -22,6 +24,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/moreInfoButtons.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class GalleryScreen extends ConsumerStatefulWidget {
   const GalleryScreen({Key? key}) : super(key: key);
@@ -35,11 +38,6 @@ class GalleryScreen extends ConsumerStatefulWidget {
 class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text('Tab 1'),
-    Text('Tab 2'),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -48,26 +46,104 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AsyncValue<List?> ownedOcNfts = ref.watch(getOcNftsForOwner);
+    final UserSession? userSession = ref.watch(userSessionProvider);
+
+    List<Widget> _widgetOptions = <Widget>[
+      ownedOcNfts.when(
+          data: (data) => Expanded(
+                  // Provides bounded constraints for the GridView
+                  child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  childAspectRatio: 0.95,
+                  crossAxisCount: 2, // Number of columns
+                  crossAxisSpacing: 12.0, // Horizontal space between items
+                  mainAxisSpacing: 12.0, // Vertical space between items
+                ),
+                itemCount: data!.length,
+                itemBuilder: (context, index) {
+                  Map item = data[index];
+                  return GestureDetector(
+                      onTap: () {
+                        final BigInt chipTokenId =
+                            BigInt.parse(item['tokenId']);
+                        final EthereumAddress chipEthereumAddress =
+                            EthereumAddress.fromHex(
+                                convertTokenIdToEthereumAddress(chipTokenId));
+                        setChipInfoProvider(
+                            ref, chipEthereumAddress, chipTokenId);
+
+                        Navigator.of(context)
+                            .pushNamed(NFTDetailsScreen.routeName);
+                      },
+                      child: CustomCard(
+                          padding: const EdgeInsets.all(11),
+                          borderRadius: 19,
+                          children: [
+                            CustomImage(
+                              loading: false,
+                              imagePath: item['image']['thumbnailUrl'],
+                              boxFit: BoxFit.cover,
+                              aspectRatio: 1,
+                            ),
+                            Text(
+                                item['name'].length > 10
+                                    ? '${item['name'].substring(0, 10)}...'
+                                    : item['name'],
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .accentColor)),
+                          ]));
+                },
+              )),
+          error: (e, s) {
+            if (userSession == null ||
+                userSession.userWalletAddress == zeroAddress) {
+              return Column(children: [
+                const SizedBox(height: 20),
+                Text(
+                  'Please connect your wallet to view items.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 20),
+                CustomRoundedButton(
+                    width: 250,
+                    text: context.loc.connectWallet,
+                    onPressed: (() => {walletPopupBuilder(context, ref)}))
+              ]);
+            } else {
+              return Container();
+            }
+          },
+          loading: () => CircularProgressIndicator(
+              color: CustomColors(dotenv.get('APP_ID')).primaryColor)),
+      Text('Tab 2'),
+    ];
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
         showBackButton: true,
       ),
       body: ScreenBodyLayout(
+        withScrollView: false,
         mainAxisAlignment: MainAxisAlignment.center,
         flexSides: 0,
         padding: const EdgeInsets.only(top: 0, bottom: 15),
         children: [_widgetOptions.elementAt(_selectedIndex)],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Tab 1',
+            icon: Container(),
+            label: 'Owned by me',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.business),
-            label: 'Tab 2',
+            icon: Container(),
+            label: 'Created by me',
           ),
         ],
         currentIndex: _selectedIndex,

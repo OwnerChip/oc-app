@@ -44,5 +44,4 @@ final ethereumMainnet = BlockchainConfig(
 final Map<int, BlockchainConfig> chainConfig = {
   1: ethereumMainnet,
   137: polygonMainnet,
-  // 80001: polygonMumbaiTestnet,
 };
