@@ -4,6 +4,18 @@ Token tokenFromJson(String str) => Token.fromJson(json.decode(str));
 
 String tokenToJson(Token data) => json.encode(data.toJson());
 
+class AlchemyNftTokenIdCollectionChainId {
+  AlchemyNftTokenIdCollectionChainId({
+    required this.nftTokenId,
+    required this.collectionAddress,
+    required this.chainId,
+  });
+
+  String nftTokenId;
+  String collectionAddress;
+  int chainId;
+}
+
 class Token {
   Token({
     required this.tokenId,

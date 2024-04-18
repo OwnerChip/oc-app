@@ -47,6 +47,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List?> ownedOcNfts = ref.watch(getOcNftsForOwner);
+    final AsyncValue<List?> mintedOcNfts = ref.watch(getOcNftsMintedByUser);
     final UserSession? userSession = ref.watch(userSessionProvider);
 
     List<Widget> _widgetOptions = <Widget>[
