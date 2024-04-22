@@ -1,20 +1,5 @@
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 
-final polygonMumbaiTestnet = BlockchainConfig(
-  networkName: "Polygon Mumbai Testnet",
-  nativeTokenSymbol: "MATIC",
-  rpcUrl:
-      "https://polygon-mumbai.infura.io/v3/b5b3b9c6bd56483c9203c06f9b0eb0f4",
-  registryContract: "0xE587fb76509550a72Eb120b941F9235488aB6AEe",
-  controllerContract: "0x99a0EEBe6D5Abd437485B2c61522A0E5770fc681",
-  openseaUrl: "https://testnets.opensea.io/assets/mumbai",
-  raribleUrl: "https://testnet.rarible.com/token/polygon",
-  raribleEnum: "POLYGON",
-  blockchainExplorerUrl: "https://mumbai.polygonscan.com/token",
-  alchemyBaseUrl: "https://polygon-mumbai.g.alchemy.com/",
-  forwarderContract: "0xE3116Ba52ba63573ecB5964187A711ef7eF74107",
-);
-
 final polygonMainnet = BlockchainConfig(
     networkName: "Polygon Mainnet",
     nativeTokenSymbol: "MATIC",

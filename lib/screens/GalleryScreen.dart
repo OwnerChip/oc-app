@@ -52,7 +52,17 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
 
     List<Widget> _widgetOptions = <Widget>[
       ownedOcNfts.when(
-          data: (data) => Expanded(
+          data: (data) {
+            if (data!.length == 0) {
+              return Column(children: [
+                const SizedBox(height: 20),
+                Text(
+                  'You do not own any items.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ]);
+            } else {
+              return Expanded(
                   // Provides bounded constraints for the GridView
                   child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -100,7 +110,9 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                                                 .accentColor)),
                           ]));
                 },
-              )),
+              ));
+            }
+          },
           error: (e, s) {
             if (userSession == null ||
                 userSession.userWalletAddress == zeroAddress) {

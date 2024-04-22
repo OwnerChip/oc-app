@@ -238,7 +238,7 @@ final getOcNftsMintedByUser = FutureProvider.autoDispose<List?>((ref) async {
   final BlockchainCollectionList ocCollections =
       await ref.watch(appCollectionProvider.future);
 
-  final List nftList = [];
+  final List nftInfoList = [];
   try {
     var allFailed = true; // Flag to track if all futures fail
 
@@ -251,12 +251,12 @@ final getOcNftsMintedByUser = FutureProvider.autoDispose<List?>((ref) async {
                   ?.map((e) => e.id)
                   .toList());
           allFailed = false;
-          nftList.addAll(nftsForOwner);
+          nftInfoList.addAll(nftsForOwner);
         } catch (e) {
           print('Error fetching NFTs from Alchemy for chainId $chainId: $e');
           Sentry.captureException(e);
         }
-        return nftList;
+        return nftInfoList;
       }),
       eagerError: false,
     );
@@ -265,6 +265,21 @@ final getOcNftsMintedByUser = FutureProvider.autoDispose<List?>((ref) async {
       throw Exception(
           'Fetching minted NFTs for creator failed on all chains. (in getOcNftsMintedByUser())');
     }
+
+    List nftList = [];
+
+    chainIds.map((chainId) async {
+      try {
+        final List nfts = await getNFTMetadataBatch(chainId, nftInfoList);
+        allFailed = false;
+        nftList.addAll(nfts);
+      } catch (e) {
+        print(
+            'Error fetching batched NFTs from Alchemy for chainId $chainId: $e');
+        Sentry.captureException(e);
+      }
+      return nftInfoList;
+    });
 
     return nftList;
   } catch (err) {
