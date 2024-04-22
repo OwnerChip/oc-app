@@ -265,22 +265,28 @@ final getOcNftsMintedByUser = FutureProvider.autoDispose<List?>((ref) async {
       throw Exception(
           'Fetching minted NFTs for creator failed on all chains. (in getOcNftsMintedByUser())');
     }
-
-    List nftList = [];
-
-    chainIds.map((chainId) async {
+    List callData = [];
+    for (var nft in nftInfoList) {
+      callData.add({
+        "contractAddress": nft.collectionAddress,
+        "tokenId": nft.nftTokenId,
+        "type": "ERC721"
+      });
+    }
+    List<dynamic> nftList = [];
+    for (var chainId in chainIds) {
       try {
-        final List nfts = await getNFTMetadataBatch(chainId, nftInfoList);
-        allFailed = false;
+        var response = await getNFTMetadataBatch(chainId, callData);
+        List<dynamic> nfts = response['nfts'];
         nftList.addAll(nfts);
       } catch (e) {
         print(
             'Error fetching batched NFTs from Alchemy for chainId $chainId: $e');
         Sentry.captureException(e);
       }
-      return nftInfoList;
-    });
-
+    }
+    //filter out nfts where "name" is null
+    nftList = nftList.where((nft) => nft['name'] != null).toList();
     return nftList;
   } catch (err) {
     rethrow;

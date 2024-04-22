@@ -181,7 +181,7 @@ Future<List> getNotBurnedMintedOcNftsByAddress(
 
 //TODO:
 //call get metadata batch with filtered NFTs and then pass the fetched data to the UI
-Future<List> getNFTMetadataBatch(int chainId, List nftsInfo) async {
+Future<dynamic> getNFTMetadataBatch(int chainId, List tokens) async {
   final options = BaseOptions(
     method: 'POST',
     headers: {
@@ -191,27 +191,11 @@ Future<List> getNFTMetadataBatch(int chainId, List nftsInfo) async {
   );
 
   final dio = Dio(options);
-  List<Future> futures = [];
-  for (var nft in nftsInfo) {
-    futures.add(dio.post(
-      '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY')}/getNFTMetadataBatch',
-      data: {
-        "tokens": [
-          {
-            "contractAddress": nft.collectionAddress,
-            "tokenId": nft.nftTokenId,
-            "type": "ERC721"
-          }
-        ]
-      },
-    ));
-  }
 
-  var responses = await Future.wait(futures);
-  List metadata = [];
-  for (var i = 0; i < responses.length; i++) {
-    metadata.add(responses[i].data);
-  }
+  var response = await dio.post(
+    '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY')}/getNFTMetadataBatch',
+    data: {"tokens": tokens.toList()},
+  );
 
-  return metadata;
+  return response.data;
 }

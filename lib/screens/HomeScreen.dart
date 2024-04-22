@@ -75,48 +75,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _setProviderStatesFromPersistedState() async {
     try {
       await initWcClient(ref, context);
-
-      final storage = await SharedPreferences.getInstance();
-
-      final storedWcSession = storage.getString('session');
-      final storedWalletType = storage.getString('walletType');
-      final storedUserSession = storage.getString('userSession');
-      //check if a session is stored
-      if (storedWcSession != null &&
-          storedWalletType != null &&
-          storedUserSession != null) {
-        final wcSession = SessionData.fromJson(jsonDecode(storedWcSession));
-        final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
-        final backendSession =
-            UserSession.fromJson(jsonDecode(storedUserSession));
-        //check if the stored session expires in less than three days; if yes, remove it
-        //Note: WalletConnect session duration is 7 days
-        double nowPlusThreeDays =
-            DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
-        if (wcSession.expiry > nowPlusThreeDays &&
-            backendSession.expiryDate > nowPlusThreeDays) {
-          ref.read(wcSessionProvider.notifier).state = wcSession;
-          ref.read(walletTypeProvider.notifier).state = walletType;
-          ref.read(userSessionProvider.notifier).state = backendSession;
-        } else {
-          //remove session and wallet type from storage
-          storage.remove('session');
-          storage.remove('walletType');
-          storage.remove('userSession');
-        }
-      } else {
-        //remove session and wallet type from storage
-        storage.remove('session');
-        storage.remove('walletType');
-        storage.remove('userSession');
-      }
-
-      if (!shippingPopupIsShown) {
-        checkAndShowShippingPopup(context, ref,
-            setShippingPopupIsShownState: () => setState(() {
-                  shippingPopupIsShown = !shippingPopupIsShown;
-                }));
-      }
     } catch (e, s) {
       await Sentry.captureException(
         e,
@@ -124,6 +82,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       );
       FlutterNativeSplash.remove();
     }
+
+    final storage = await SharedPreferences.getInstance();
+
+    final storedWcSession = storage.getString('session');
+    final storedWalletType = storage.getString('walletType');
+    final storedUserSession = storage.getString('userSession');
+    //check if a session is stored
+    if (storedWcSession != null &&
+        storedWalletType != null &&
+        storedUserSession != null) {
+      final wcSession = SessionData.fromJson(jsonDecode(storedWcSession));
+      final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
+      final backendSession =
+          UserSession.fromJson(jsonDecode(storedUserSession));
+      //check if the stored session expires in less than three days; if yes, remove it
+      //Note: WalletConnect session duration is 7 days
+      double nowPlusThreeDays =
+          DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
+      if (wcSession.expiry > nowPlusThreeDays &&
+          backendSession.expiryDate > nowPlusThreeDays) {
+        ref.read(wcSessionProvider.notifier).state = wcSession;
+        ref.read(walletTypeProvider.notifier).state = walletType;
+        ref.read(userSessionProvider.notifier).state = backendSession;
+      } else {
+        //remove session and wallet type from storage
+        storage.remove('session');
+        storage.remove('walletType');
+        storage.remove('userSession');
+      }
+    } else {
+      //remove session and wallet type from storage
+      storage.remove('session');
+      storage.remove('walletType');
+      storage.remove('userSession');
+    }
+
+    if (!shippingPopupIsShown) {
+      checkAndShowShippingPopup(context, ref,
+          setShippingPopupIsShownState: () => setState(() {
+                shippingPopupIsShown = !shippingPopupIsShown;
+              }));
+    }
+    FlutterNativeSplash.remove();
   }
 
   @override
