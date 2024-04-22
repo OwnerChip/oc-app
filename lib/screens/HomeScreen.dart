@@ -72,7 +72,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Future<void> _setProviderStatesFromPersistedState() async {
-    await initWcClient(ref, context);
+    try {
+      await initWcClient(ref, context);
+    } catch (e) {
+      FlutterNativeSplash.remove();
+      await Sentry.captureException(
+        "Error initializing WalletConnect client $e",
+      );
+    }
 
     final storage = await SharedPreferences.getInstance();
 
