@@ -232,19 +232,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           flexSides: 0,
           padding: const EdgeInsets.only(top: 0, bottom: 15),
           children: [
-            dotenv.get('APP_ID') == 'ownerchip_infineon'
-                ? Column(children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                          'assets/images/ownerchip_infineon/infineon_logo.png',
-                          height: 40,
-                        )
-                      ],
-                    ),
-                  ])
-                : Container(),
             dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
                 ? const Text(
                     'INTERNAL',
