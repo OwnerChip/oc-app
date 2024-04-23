@@ -17,7 +17,7 @@ Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
   try {
     while (true) {
       var response = await dio.get(
-        '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY')}/getNFTsForOwner',
+        '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getNFTsForOwner',
         queryParameters: {
           'owner': owner.hex,
           'withMetadata': 'true',
