@@ -22,7 +22,7 @@ Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
   try {
     while (true) {
       var response = await dio.get(
-        '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY')}/getNFTsForOwner',
+        '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getNFTsForOwner',
         queryParameters: {
           'owner': owner.hex,
           'withMetadata': 'true',
@@ -75,7 +75,7 @@ Future<List<AlchemyNftTokenIdCollectionChainId>> fetchMintedOcNftsByAddress(
   try {
     while (true) {
       var response = await dio.post(
-        '${chainConfig[chainId]!.alchemyBaseUrl}v2/${dotenv.get('ALCHEMY_API_KEY')}',
+        '${chainConfig[chainId]!.alchemyBaseUrl}v2/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}',
         data: {
           "id": 1,
           "jsonrpc": "2.0",
@@ -157,7 +157,7 @@ Future<List> getNotBurnedMintedOcNftsByAddress(
   for (var nft in mintedNfts) {
     //TODO: I think this only works for a max of 45 NFTs before Error code 429 too many requests from Alchemy
     futures.add(dio.get(
-      '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY')}/getOwnersForNFT',
+      '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getOwnersForNFT',
       queryParameters: {
         "contractAddress": nft.collectionAddress,
         "tokenId": nft.nftTokenId
@@ -179,7 +179,6 @@ Future<List> getNotBurnedMintedOcNftsByAddress(
   return filteredNfts;
 }
 
-//TODO:
 //call get metadata batch with filtered NFTs and then pass the fetched data to the UI
 Future<dynamic> getNFTMetadataBatch(int chainId, List tokens) async {
   final options = BaseOptions(
@@ -193,8 +192,8 @@ Future<dynamic> getNFTMetadataBatch(int chainId, List tokens) async {
   final dio = Dio(options);
 
   var response = await dio.post(
-    '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY')}/getNFTMetadataBatch',
-    data: {"tokens": tokens.toList()},
+    '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getNFTMetadataBatch',
+    data: {"tokens": tokens.toList(), "refreshCache": false},
   );
 
   return response.data;

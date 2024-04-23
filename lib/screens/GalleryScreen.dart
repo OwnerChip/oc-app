@@ -24,6 +24,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/moreInfoButtons.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/GalleryItem.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class GalleryScreen extends ConsumerStatefulWidget {
@@ -74,41 +75,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                 itemCount: data.length,
                 itemBuilder: (context, index) {
                   Map item = data[index];
-                  return GestureDetector(
-                      onTap: () {
-                        final BigInt chipTokenId =
-                            BigInt.parse(item['tokenId']);
-                        final EthereumAddress chipEthereumAddress =
-                            EthereumAddress.fromHex(
-                                convertTokenIdToEthereumAddress(chipTokenId));
-                        setChipInfoProvider(
-                            ref, chipEthereumAddress, chipTokenId);
-
-                        Navigator.of(context)
-                            .pushNamed(NFTDetailsScreen.routeName);
-                      },
-                      child: CustomCard(
-                          padding: const EdgeInsets.all(11),
-                          borderRadius: 19,
-                          children: [
-                            CustomImage(
-                              loading: false,
-                              imagePath: item['image']['thumbnailUrl'],
-                              boxFit: BoxFit.cover,
-                              aspectRatio: 1,
-                            ),
-                            Text(
-                                item['name'].length > 10
-                                    ? '${item['name'].substring(0, 10)}...'
-                                    : item['name'],
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall!
-                                    .copyWith(
-                                        color:
-                                            CustomColors(dotenv.get('APP_ID'))
-                                                .accentColor)),
-                          ]));
+                  return GalleryItem(
+                    item: item,
+                    ref: ref,
+                  );
                 },
               ));
             }
@@ -160,41 +130,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                   if (item['name'] == null) {
                     return Container();
                   }
-                  return GestureDetector(
-                      onTap: () {
-                        final BigInt chipTokenId =
-                            BigInt.parse(item['tokenId']);
-                        final EthereumAddress chipEthereumAddress =
-                            EthereumAddress.fromHex(
-                                convertTokenIdToEthereumAddress(chipTokenId));
-                        setChipInfoProvider(
-                            ref, chipEthereumAddress, chipTokenId);
-
-                        Navigator.of(context)
-                            .pushNamed(NFTDetailsScreen.routeName);
-                      },
-                      child: CustomCard(
-                          padding: const EdgeInsets.all(11),
-                          borderRadius: 19,
-                          children: [
-                            CustomImage(
-                              loading: false,
-                              imagePath: item['image']['thumbnailUrl'],
-                              boxFit: BoxFit.cover,
-                              aspectRatio: 1,
-                            ),
-                            Text(
-                                item['name'].length > 10
-                                    ? '${item['name'].substring(0, 10)}...'
-                                    : item['name'],
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall!
-                                    .copyWith(
-                                        color:
-                                            CustomColors(dotenv.get('APP_ID'))
-                                                .accentColor)),
-                          ]));
+                  return GalleryItem(
+                    item: item,
+                    ref: ref,
+                  );
                 },
               ));
             }
