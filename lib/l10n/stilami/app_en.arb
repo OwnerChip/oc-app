@@ -100,7 +100,7 @@
     "disconnect": "Logout",
     "connect": "Login",
     "remove": "Remove",
-    "add": "Add",
+    "add": "Add trait",
     "type": "Type",
     "value": "Value",
     "showTraits": "Show traits",
@@ -312,5 +312,6 @@
     "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore.\nFor more information visit www.stilami.com",
     "transferred": "Transferred",
     "errorWhenOffering": "Something went wrong when offering your token. Please recover token or contact support.",
-    "recoverToken": "Recover token"
+    "recoverToken": "Recover token",
+    "enterDetails": "Enter details"
 }

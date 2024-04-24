@@ -99,7 +99,7 @@
     "disconnect": "Logout",
     "connect": "Login",
     "remove": "Remove",
-    "add": "Add",
+    "add": "Add trait",
     "type": "Type",
     "value": "Value",
     "showTraits": "Show traits",
@@ -311,5 +311,6 @@
     "voucherNftDescriptionAppSpecific": "via the Steboart-App, downloadable in the Google Playstore and Apple AppStore. \n For more information visit https://steboart.com",
     "transferred": "Transferred",
     "errorWhenOffering": "Something went wrong when offering your token. Please recover token or contact support.",
-    "recoverToken": "Recover token"
+    "recoverToken": "Recover token",
+    "enterDetails": "Enter details"
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -6,15 +7,16 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TraitsForm extends StatefulWidget {
-  TraitsForm(
-      {super.key,
-      required this.submitFunction,
-      required this.toggleTraitsForm,
-      required this.initialTraitsArray});
+  TraitsForm({
+    super.key,
+    required this.submitFunction,
+    required this.toggleTraitsForm,
+    required this.traitsStateArray,
+  });
 
   Function submitFunction;
   Function toggleTraitsForm;
-  List initialTraitsArray;
+  List traitsStateArray;
 
   @override
   TraitsFormState createState() => TraitsFormState();
@@ -23,20 +25,24 @@ class TraitsForm extends StatefulWidget {
 class TraitsFormState extends State<TraitsForm> {
   final _formKey = GlobalKey<FormState>();
   List<Widget> traitsTextFields = [];
-  static List<Map> traitsArray = [];
 
   //initialize TextFields with already defined traits
   @override
   void initState() {
     super.initState();
-    for (var val in widget.initialTraitsArray) {
+    for (var val in widget.traitsStateArray) {
       traitsTextFields.add(TraitTextInput(
           index: traitsTextFields.length,
-          initialText: [val["trait_type"], val["value"]]));
+          initialText: [val["trait_type"], val["value"]],
+          traitsStateArray: widget.traitsStateArray,
+          removeTraitInput: removeTraitInput));
     }
     if (traitsTextFields.isEmpty) {
-      traitsArray.add({"trait_type": "", "value": ""});
-      traitsTextFields.add(TraitTextInput(index: traitsTextFields.length));
+      widget.traitsStateArray.add({"trait_type": "", "value": ""});
+      traitsTextFields.add(TraitTextInput(
+          index: traitsTextFields.length,
+          traitsStateArray: widget.traitsStateArray,
+          removeTraitInput: removeTraitInput));
     }
   }
 
@@ -44,21 +50,38 @@ class TraitsFormState extends State<TraitsForm> {
     //new focus node
     FocusNode focusNode = FocusNode();
     setState(() {
-      traitsArray.add({"trait_type": "", "value": ""});
+      widget.traitsStateArray.add({"trait_type": "", "value": ""});
       traitsTextFields.add(TraitTextInput(
-        index: traitsTextFields.length,
-        focusNode: focusNode,
-      ));
+          index: traitsTextFields.length,
+          focusNode: focusNode,
+          traitsStateArray: widget.traitsStateArray,
+          removeTraitInput: removeTraitInput));
     });
     //focus focusNode
     focusNode.requestFocus();
   }
 
-  void removeTraitInput() {
+  void removeTraitInput(int index) {
     if (traitsTextFields.isNotEmpty) {
-      traitsArray.removeLast();
       setState(() {
-        traitsTextFields.removeLast();
+        widget.traitsStateArray.removeAt(index);
+        traitsTextFields.removeAt(index);
+        // Regenerate widgets to make sure index is correct
+        List<Widget> newTraitsTextFields = [];
+        for (int i = 0; i < traitsTextFields.length; i++) {
+          newTraitsTextFields.add(TraitTextInput(
+            key: ValueKey(widget.traitsStateArray[i]
+                ["trait_type"]), // Unique key for each widget
+            index: i,
+            initialText: [
+              widget.traitsStateArray[i]["trait_type"],
+              widget.traitsStateArray[i]["value"]
+            ],
+            traitsStateArray: widget.traitsStateArray,
+            removeTraitInput: removeTraitInput,
+          ));
+        }
+        traitsTextFields = newTraitsTextFields;
       });
     }
   }
@@ -70,78 +93,33 @@ class TraitsFormState extends State<TraitsForm> {
         child: Form(
             key: _formKey,
             child: Column(children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  CustomRoundedButton(
-                      height: 25,
-                      width: 100,
-                      backgroundColor: Colors.grey,
-                      text: context.loc.remove,
-                      textStyle: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .copyWith(
-                              color: CustomColors(dotenv.get('APP_ID'))
-                                  .customRoundedButtonColor,
-                              fontSize: CustomFonts(dotenv.get('APP_ID'))
-                                      .bodyText2FontSize /
-                                  1.3),
-                      onPressed: () => removeTraitInput()),
-                  const SizedBox(width: 10),
-                  CustomRoundedButton(
-                      height: 25,
-                      width: 100,
-                      text: context.loc.add,
-                      textStyle: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .copyWith(
-                              color: CustomColors(dotenv.get('APP_ID'))
-                                  .customRoundedButtonColor,
-                              fontSize: CustomFonts(dotenv.get('APP_ID'))
-                                      .bodyText2FontSize /
-                                  1.3),
-                      onPressed: () => addTraitInput()),
-                ],
-              ),
               ...traitsTextFields,
               const SizedBox(height: 20),
-              CustomRoundedButton(
-                  text: context.loc.save,
+              CustomOutlinedButton(
+                  buttonText: context.loc.add,
+                  width: double.infinity,
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-
-                      //check if key or value of map in traitsArray is empty string
-                      traitsArray.removeWhere((element) =>
-                          element["trait_type"] == "" ||
-                          element["value"] == "");
-
-                      widget.submitFunction(traitsArray);
-                    }
+                    addTraitInput();
                   }),
               const SizedBox(height: 10),
-              CustomRoundedButton(
-                  text: context.loc.cancel,
-                  backgroundColor: Colors.grey,
-                  onPressed: () => {
-                        traitsArray.removeWhere((element) =>
-                            element["trait_type"] == "" ||
-                            element["value"] == ""),
-                        widget.toggleTraitsForm()
-                      })
             ])));
   }
 }
 
 class TraitTextInput extends StatefulWidget {
   const TraitTextInput(
-      {super.key, required this.index, this.focusNode, this.initialText});
+      {super.key,
+      required this.index,
+      this.focusNode,
+      this.initialText,
+      required this.traitsStateArray,
+      required this.removeTraitInput});
 
   final int index;
   final List<String>? initialText;
   final FocusNode? focusNode;
+  final List traitsStateArray;
+  final Function removeTraitInput;
 
   @override
   _TraitTextInput createState() => _TraitTextInput();
@@ -173,8 +151,11 @@ class _TraitTextInput extends State<TraitTextInput> {
         Expanded(
           flex: 4,
           child: TextFormField(
-            style: Theme.of(context).textTheme.bodyMedium,
-            autofocus: true,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(fontWeight: FontWeight.bold),
+            autofocus: false,
             focusNode: widget.focusNode,
             controller: _keyController,
             decoration: InputDecoration(
@@ -193,8 +174,8 @@ class _TraitTextInput extends State<TraitTextInput> {
               }
               return null;
             },
-            onSaved: (value) {
-              TraitsFormState.traitsArray[widget.index]["trait_type"] =
+            onChanged: (value) {
+              widget.traitsStateArray[widget.index]["trait_type"] =
                   _keyController.text;
             },
           ),
@@ -212,8 +193,8 @@ class _TraitTextInput extends State<TraitTextInput> {
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
-                hintStyle: Theme.of(context).textTheme.bodyMedium,
-                hintText: context.loc.value,
+                hintStyle: Theme.of(context).textTheme.bodySmall,
+                hintText: context.loc.enterDetails,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -221,11 +202,21 @@ class _TraitTextInput extends State<TraitTextInput> {
                 }
                 return null;
               },
-              onSaved: (value) {
-                TraitsFormState.traitsArray[widget.index]["value"] =
+              onChanged: (value) {
+                widget.traitsStateArray[widget.index]["value"] =
                     _valueController.text;
               },
-            ))
+            )),
+        const SizedBox(width: 10),
+        Expanded(
+          flex: 1,
+          child: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              widget.removeTraitInput(widget.index);
+            },
+          ),
+        ),
       ],
     );
   }

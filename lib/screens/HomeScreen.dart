@@ -269,7 +269,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   text: context.loc.initializeChip,
                                   onPressed: () => onButtonPress(true),
                                 ))
-                            : const SizedBox(height: 40),
+                            : Container(),
                         loading: () => SizedBox(
                             height: 40, child: Text(context.loc.loading)),
                         error: (err, stack) => Container()),

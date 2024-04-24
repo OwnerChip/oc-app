@@ -12,7 +12,6 @@ import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/web3dart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry/sentry.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -30,7 +29,6 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 
 //screen imports
-import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 
@@ -42,7 +40,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 
@@ -79,6 +76,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   String overlayContentType = 'loading'; //can be "traits" or "loading"
   String loadingText = '';
   CancelableOperation? cancellableOperation;
+  List<Map> traitsStateArray = [];
 
   @override
   void initState() {
@@ -86,6 +84,16 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     metadata = {
       'traits': [],
     };
+    setState(
+      () {
+        traitsStateArray = [
+          {"trait_type": "Artist", "value": ""},
+          {"trait_type": "Medium", "value": ""},
+          {"trait_type": "Size", "value": ""},
+          {"trait_type": "Year", "value": ""}
+        ];
+      },
+    );
   }
 
   void resetImage() {
@@ -305,16 +313,19 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
   void setTraits(List traits) {
     setState(() {
-      metadata["traits"] = traits;
+      metadata["traits"] = traits.where((trait) {
+        return trait["trait_type"].isNotEmpty && trait["value"].isNotEmpty;
+      }).toList();
     });
-    toggleTraitsForm();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    TraitsFormState.traitsArray.clear();
+    setState(() {
+      traitsStateArray = [];
+    });
     super.dispose();
   }
 
@@ -371,7 +382,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                       child: TraitsForm(
                     submitFunction: setTraits,
                     toggleTraitsForm: toggleTraitsForm,
-                    initialTraitsArray: metadata['traits'],
+                    traitsStateArray: traitsStateArray,
                   ))
                 ]),
       child: Scaffold(
@@ -442,7 +453,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                         hintText: context.loc.title,
                                         hintStyle: Theme.of(context)
                                             .textTheme
-                                            .bodyMedium),
+                                            .bodySmall),
                                     onChanged: (text) {
                                       metadata['name'] = text;
                                     },
@@ -454,27 +465,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                     },
                                   ),
                                 ),
-                                Expanded(
-                                  flex: 3,
-                                  child: CustomRoundedButton(
-                                      height: 25,
-                                      // width: 100,
-                                      textStyle: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .copyWith(
-                                              color: CustomColors(
-                                                      dotenv.get('APP_ID'))
-                                                  .customRoundedButtonColor,
-                                              fontSize: CustomFonts(
-                                                          dotenv.get('APP_ID'))
-                                                      .bodyText2FontSize /
-                                                  1.3),
-                                      text: context.loc.traits,
-                                      onPressed: () => toggleTraitsForm()),
-                                )
                               ]),
                               const SizedBox(height: 15),
+                              TraitsForm(
+                                submitFunction: setTraits,
+                                toggleTraitsForm: toggleTraitsForm,
+                                traitsStateArray: traitsStateArray,
+                              ),
                               StyledTextInputBox(
                                 controller: _descriptionController,
                                 setText: (input) =>
@@ -525,6 +522,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                             onPressed: () async {
                               FocusManager.instance.primaryFocus?.unfocus();
                               if (_formKey.currentState!.validate()) {
+                                setTraits(traitsStateArray);
                                 fromCancelable(createToken(
                                     navArgs.sessionId,
                                     wc,
