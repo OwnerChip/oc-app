@@ -155,6 +155,8 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
   chainIds.remove(80001);
   final UserSession? userSession = ref.read(userSessionProvider);
   final EthereumAddress? walletAddress = userSession?.userWalletAddress;
+  final BlockchainCollectionList ocCollections =
+      await ref.watch(appCollectionProvider.future);
 
   //call fetchNFTsForOwner for each chainId; use Future.wait to wait for all futures to complete
   final Map chainIdToNfts = {};
@@ -164,8 +166,11 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
     var result = await Future.wait(
       chainIds.map((chainId) async {
         try {
-          final List nftsForOwner =
-              await fetchNFTsForOwner(walletAddress!, chainId);
+          final List nftsForOwner = await fetchNFTsForOwner(
+              walletAddress!, chainId,
+              contractAddresses: ocCollections.collections[chainId]
+                  ?.map((e) => e.id)
+                  .toList());
           chainIdToNfts[chainId] = nftsForOwner;
           allFailed = false;
         } catch (e) {

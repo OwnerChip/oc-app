@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
@@ -8,6 +9,8 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
     {List<EthereumAddress>? contractAddresses}) async {
   if (contractAddresses != null && contractAddresses.length > 45) {
+    Sentry.captureMessage(
+        'WARNING: Only a max. of 45 contracts are supported by Alchemy API. The rest will be ignored.');
     print(
         'WARNING: Only a max. of 45 contracts are supported by Alchemy API. The rest will be ignored.');
   }
@@ -66,7 +69,6 @@ Future<List<AlchemyNftTokenIdCollectionChainId>> fetchMintedOcNftsByAddress(
   var params = {
     "fromBlock": "0x0",
     "fromAddress": "0x0000000000000000000000000000000000000000",
-    "toAddress": userAddress.hex,
     "category": ["erc721", "erc1155"],
     "contractAddresses": contractAddresses != null
         ? contractAddresses.map((e) => e.hex).toList()
@@ -105,14 +107,14 @@ Future<List<AlchemyNftTokenIdCollectionChainId>> fetchMintedOcNftsByAddress(
       }
     }
 
-    //minte
+    //minted
     List<AlchemyNftTokenIdCollectionChainId> mintedNftEvents =
         mintTransferEvents.map((e) {
       return AlchemyNftTokenIdCollectionChainId(
-        chainId: 137, //TODO: make dynamic
-        nftTokenId: e['tokenId'],
-        collectionAddress: e['rawContract']['address'],
-      );
+          chainId: 137, //TODO: make dynamic
+          nftTokenId: e['tokenId'],
+          collectionAddress: e['rawContract']['address'],
+          minterAddress: e['to']);
     }).toList();
 
     List<AlchemyNftTokenIdCollectionChainId> uniqueMintedNftEvents = [];
@@ -120,11 +122,17 @@ Future<List<AlchemyNftTokenIdCollectionChainId>> fetchMintedOcNftsByAddress(
     //loop over unique token ids
     for (var i = 0; i < uniqueTokenIds.length; i++) {
       final lastMintEvent = mintedNftEvents.lastWhere(
-          (element) => element.nftTokenId == uniqueTokenIds[i],
-          orElse: () => AlchemyNftTokenIdCollectionChainId(
-              chainId: 137, //TODO: make dynamic
-              nftTokenId: '',
-              collectionAddress: ''));
+        //get the last mint event for each unique token id, only if the last minter is current user
+        (element) {
+          return element.nftTokenId == uniqueTokenIds[i] &&
+              EthereumAddress.fromHex(element.minterAddress) == userAddress;
+        },
+        orElse: () => AlchemyNftTokenIdCollectionChainId(
+            nftTokenId: '',
+            collectionAddress: '',
+            chainId: chainId,
+            minterAddress: ''),
+      );
       if (lastMintEvent.nftTokenId != '') {
         uniqueMintedNftEvents.add(lastMintEvent);
       }

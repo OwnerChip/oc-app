@@ -243,6 +243,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // MIDDLE CONTENT
             Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CustomHomeScreenButton(
                     text: context.loc.scanning,
@@ -261,16 +262,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     : relevantCollections.when(
                         data: (data) => data.hasAnyMinterRole! &&
                                 ref.read(userSessionProvider) != null
-                            ? CustomRoundedButton(
-                                width: 250,
-                                text: context.loc.initializeChip,
-                                onPressed: () => onButtonPress(true),
-                              )
+                            ? Padding(
+                                padding: EdgeInsets.only(bottom: 20),
+                                child: CustomRoundedButton(
+                                  width: 250,
+                                  text: context.loc.initializeChip,
+                                  onPressed: () => onButtonPress(true),
+                                ))
                             : const SizedBox(height: 40),
                         loading: () => SizedBox(
                             height: 40, child: Text(context.loc.loading)),
-                        error: (err, stack) => const SizedBox(height: 40)),
-                const SizedBox(height: 20),
+                        error: (err, stack) => Container()),
                 CustomRoundedButton(
                   width: 250,
                   text: 'My Collection',
