@@ -117,13 +117,12 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         }
 
         // if device language is not supported by the app,
-        // the app will set it to english but return this to set to Bahasa instead
+        // the app will set it to english
         return const Locale('en');
       },
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
-      //register all routes
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),

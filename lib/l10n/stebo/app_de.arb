@@ -313,5 +313,6 @@
     "transferred": "Transferiert",
     "errorWhenOffering": "Beim anbieten des Tokens ist ein Fehler passiert. Bitte drücke Token wiederherstellen oder kontaktiere den Support.",
     "recoverToken": "Token wiederherstellen",
-    "enterDetails": "Details eingeben"
+    "enterDetails": "Details eingeben",
+    "myCollection": "Meine Sammlung"
 }

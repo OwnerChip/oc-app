@@ -18,11 +18,15 @@ Future<List> postAttachmentMetadataToBackend(
     String name,
     String title,
     bool isPrivate,
-    {String? fileLink,
+    {String? attachmentLink,
     String? fileHash,
     String? contentType,
     int? fileSize}) async {
   final Dio dio = getBackendClient();
+
+  if (attachmentLink != null && !attachmentLink.startsWith('http')) {
+    attachmentLink = 'https://$attachmentLink';
+  }
 
   final url = '/attachments';
   final data = {
@@ -40,7 +44,7 @@ Future<List> postAttachmentMetadataToBackend(
     'content_type': contentType,
     'sha256_hash': fileHash == null ? null : "0x$fileHash",
     'is_private': isPrivate,
-    'link': fileLink,
+    'link': attachmentLink,
   };
 
   try {
