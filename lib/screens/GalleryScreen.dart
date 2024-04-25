@@ -162,8 +162,9 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
     ];
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const CustomAppBar(
+      appBar: CustomAppBar(
         showBackButton: true,
+        text: context.loc.myCollection,
       ),
       body: ScreenBodyLayout(
         withScrollView: false,

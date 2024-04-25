@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -136,7 +138,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //read persisted session
     _setProviderStatesFromPersistedState();
 
+    //refreshes alchemy metadata for all collections belonging to app
+    makeAlchemyRefreshMetadata();
+
     super.initState();
+  }
+
+  Future<void> makeAlchemyRefreshMetadata() async {
+    BlockchainCollectionList collections =
+        await ref.read(appCollectionProvider.future);
+    for (var chainId in collections.collections.keys) {
+      for (var collection in collections.collections[chainId]!) {
+        updateAlchemyNftCache(chainId, collection.id);
+      }
+    }
   }
 
   //do stuff on app resume
@@ -275,7 +290,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         error: (err, stack) => Container()),
                 CustomRoundedButton(
                   width: 250,
-                  text: 'My Collection',
+                  text: context.loc.myCollection,
                   onPressed: () =>
                       Navigator.pushNamed(context, GalleryScreen.routeName),
                 )

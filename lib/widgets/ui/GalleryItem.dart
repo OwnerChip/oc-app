@@ -35,7 +35,7 @@ class GalleryItem extends StatelessWidget {
         children: [
           CustomImage(
             loading: false,
-            imagePath: item['image']['thumbnailUrl'],
+            imagePath: item['image']['originalUrl'],
             boxFit: BoxFit.cover,
             aspectRatio: 1,
           ),

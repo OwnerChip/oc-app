@@ -206,3 +206,21 @@ Future<dynamic> getNFTMetadataBatch(int chainId, List tokens) async {
 
   return response.data;
 }
+
+Future<dynamic> updateAlchemyNftCache(
+    int chainId, EthereumAddress contract) async {
+  final options = BaseOptions(
+    method: 'GET',
+    headers: {'accept': 'application/json'},
+  );
+
+  final dio = Dio(options);
+  try {
+    var _ = await dio.get(
+      '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/invalidateContract',
+      queryParameters: {'contractAddress': contract.hex},
+    );
+  } catch (e) {
+    Sentry.captureException(e);
+  }
+}
