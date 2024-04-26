@@ -314,5 +314,10 @@
     "errorWhenOffering": "Something went wrong when offering your token. Please recover token or contact support.",
     "recoverToken": "Recover token",
     "enterDetails": "Enter details",
-    "myCollection": "My collection"
+    "myCollection": "My collection",
+    "pleaseConnectWalletToViewItems": "Please connect your wallet to view items.",
+    "ownedByMe": "Owned by me",
+    "createdByMe": "Created by me",
+    "youHaveNotMintedAnyItems": "You have not minted any digital twins.",
+    "youDoNotOwnAnyItems": "You do not own any digital twins."
 }
