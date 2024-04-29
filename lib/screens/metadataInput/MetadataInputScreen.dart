@@ -202,11 +202,15 @@ class _MetadataScreenState extends ConsumerState<MetadataScreen>
                             ],
                           )),
                       const SizedBox(height: 20),
+                      dotenv.get('APP_ID') == 'ownerchip_infineon'
+                          ? Container()
+                          : Column(children: [
+                              AttachmentUploadButton(
+                                  text: context.loc.uploadDigitalContent,
+                                  icon: Icons.add),
+                              const SizedBox(height: 20),
+                            ]),
 
-                      AttachmentUploadButton(
-                          text: context.loc.uploadDigitalContent,
-                          icon: Icons.add),
-                      const SizedBox(height: 20),
                       //map over attachmentList to display all attachments as FileBox
                       if (attachmentList != null)
                         for (var i = 0; i < attachmentList.length; i++)
