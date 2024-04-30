@@ -143,6 +143,7 @@ Future<void> onTapAuth(
 
   await ref.refresh(findAllMinterRolesProvider);
   await ref.refresh(getOcNftsForOwner);
+  await ref.refresh(getOcNftsMintedByUser);
 
   sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
     'connectedWallet': userWalletAddress.hex,

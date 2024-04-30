@@ -17,6 +17,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/GalleryItem.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GalleryScreen extends ConsumerStatefulWidget {
   const GalleryScreen({Key? key}) : super(key: key);
@@ -104,6 +105,14 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                   context.loc.youHaveNotMintedAnyItems,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+                const SizedBox(height: 20),
+                CustomRoundedButton(
+                    text: context.loc.orderChips,
+                    onPressed: () => {
+                          launchUrl(Uri.parse(context.loc.orderChipsUrl),
+                              mode: LaunchMode.externalApplication)
+                        },
+                    width: 250)
               ]);
             } else {
               return Expanded(

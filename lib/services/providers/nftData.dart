@@ -167,10 +167,9 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
       chainIds.map((chainId) async {
         try {
           final List nftsForOwner = await fetchNFTsForOwner(
-              walletAddress!, chainId,
-              contractAddresses: ocCollections.collections[chainId]
-                  ?.map((e) => e.id)
-                  .toList());
+            walletAddress!,
+            chainId,
+          );
           chainIdToNfts[chainId] = nftsForOwner;
           allFailed = false;
         } catch (e) {
@@ -207,13 +206,15 @@ final getOcNftsForOwner = FutureProvider.autoDispose<List?>((ref) async {
     var result = await Future.wait(
       chainIds.map((chainId) async {
         try {
-          final List nftsForOwner = await fetchNFTsForOwner(
-              walletAddress!, chainId,
-              contractAddresses: ocCollections.collections[chainId]
-                  ?.map((e) => e.id)
-                  .toList());
-          allFailed = false;
-          nftList.addAll(nftsForOwner);
+          List<EthereumAddress>? contractAddresses =
+              ocCollections.collections[chainId]?.map((e) => e.id).toList();
+          if (contractAddresses != null && contractAddresses.isNotEmpty) {
+            final List nftsForOwner = await fetchNFTsForOwner(
+                walletAddress!, chainId,
+                contractAddresses: contractAddresses);
+            allFailed = false;
+            nftList.addAll(nftsForOwner);
+          }
         } catch (e) {
           print(
               'Error fetching minted NFTs from Alchemy for chainId $chainId: $e');
@@ -281,6 +282,9 @@ final getOcNftsMintedByUser = FutureProvider.autoDispose<List?>((ref) async {
     List<dynamic> nftList = [];
     for (var chainId in chainIds) {
       try {
+        if (callData.isEmpty) {
+          continue;
+        }
         var response = await getNFTMetadataBatch(chainId, callData);
         List<dynamic> nfts = response['nfts'];
         nftList.addAll(nfts);
