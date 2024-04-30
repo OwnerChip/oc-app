@@ -448,12 +448,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                               color: Theme.of(context)
                                                   .primaryColor),
                                         ),
-                                        contentPadding:
-                                            const EdgeInsets.only(left: 12),
                                         hintText: context.loc.title,
                                         hintStyle: Theme.of(context)
                                             .textTheme
-                                            .bodySmall),
+                                            .bodyMedium),
                                     onChanged: (text) {
                                       metadata['name'] = text;
                                     },
