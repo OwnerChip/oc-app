@@ -185,7 +185,9 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: CustomColors(dotenv.get('APP_ID')).primaryColor,
+        selectedItemColor: CustomColors(dotenv.get('APP_ID')).accentColor,
+        backgroundColor: CustomColors(dotenv.get('APP_ID')).cardColor,
+        elevation: 10,
         onTap: _onItemTapped,
       ),
     );

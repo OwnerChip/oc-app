@@ -288,12 +288,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         loading: () => SizedBox(
                             height: 40, child: Text(context.loc.loading)),
                         error: (err, stack) => Container()),
-                CustomRoundedButton(
-                  width: 250,
-                  text: context.loc.myCollection,
-                  onPressed: () =>
-                      Navigator.pushNamed(context, GalleryScreen.routeName),
-                )
               ],
             ),
 
@@ -301,6 +295,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                CustomOutlinedButton(
+                  width: 250,
+                  buttonText: context.loc.myCollection,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, GalleryScreen.routeName),
+                ),
+                const SizedBox(height: 20),
                 //if stebo app show additional button
                 dotenv.get('APP_ID') == 'stebo'
                     ? Column(children: [
@@ -309,7 +310,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             onPressed: () => launchUrl(
                                 Uri.parse('https://www.steboart.com'),
                                 mode: LaunchMode.externalApplication)),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
                       ])
                     : Container(),
                 CustomOutlinedButton(
