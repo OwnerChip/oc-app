@@ -1,14 +1,18 @@
-# Flutter Demo Application for Owner Chip
+# OwnerChip Whitelabel Flutter App
 
-## Getting Started
+## Setup
 
-This project is a starting point for a Flutter application.
+1. Install Flutter https://docs.flutter.dev/get-started/install
+2. Run ```flutter doctor``` and install all missing requirements (e.g. Android Studio, etc.)
+3. Clone this repository
+4. Install dependencies with
+    ```
+   cd oc-app
+   flutter pub get
+    ```
 
-A few resources to get you started if this is your first Flutter project:
+5. Create .env file in ```oc-app``` folder based on .sample-env. Contact Ferdinand Regner or David Hauser to get necessary API keys.
+6. Create localization files with ```flutter gen-10n```
+7. Make sure you have a device connected and run ```flutter run``` to start the app
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
