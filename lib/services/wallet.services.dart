@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 //misc imports
@@ -118,7 +119,7 @@ Future<String> makeAndSendGaslessTx(
       signature = msgSignatureToHex(cardSignature);
     } else {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
-      await w3mService!.launchConnectedWallet();
+      w3mService!.launchConnectedWallet();
 
       toggleLoading();
 
@@ -200,7 +201,7 @@ Future<String> makeAndSendNormalTx(
       encodedOfferData: encodedOfferData);
 
   final W3MService? w3mService = ref.read(w3mServiceProvider);
-  await w3mService!.launchConnectedWallet();
+  w3mService!.launchConnectedWallet();
 
   String txnHash = await wc.request(
     topic: wcSession.topic,
@@ -224,25 +225,31 @@ Future<String> sendPersonalSignRequest(
   WalletType walletType,
 ) async {
   final W3MService? w3mService = ref.read(w3mServiceProvider);
-  await w3mService!.launchConnectedWallet();
+  w3mService!.launchConnectedWallet();
 
   List<int> utf8CodeUnits = utf8.encode(message);
   String hexUtf8EncodedMessage =
       "0x" + utf8CodeUnits.map((e) => e.toRadixString(16)).join();
 
-  String signature = await wc.request(
-    topic: wcSession.topic,
-    chainId: 'eip155:1',
-    // chainId: w3mService.selectedChain?.chainId == null
-    // ? 'eip155:1'
-    // : 'eip155:${w3mService.selectedChain?.chainId}',
-    request: SessionRequestParams(
-      method: 'personal_sign',
-      params: [hexUtf8EncodedMessage, walletAddress.toString()],
-    ),
-  );
-
-  return signature;
+  try {
+    String signature = await wc.request(
+      topic: wcSession.topic,
+      chainId: 'eip155:1',
+      // chainId: w3mService.selectedChain?.chainId == null
+      // ? 'eip155:1'
+      // : 'eip155:${w3mService.selectedChain?.chainId}',
+      request: SessionRequestParams(
+        method: 'personal_sign',
+        params: [hexUtf8EncodedMessage, walletAddress.toString()],
+      ),
+    );
+    return signature;
+  } catch (e) {
+    Sentry.captureException(e);
+    print(e);
+    rethrow;
+  }
+  ;
 }
 
 Future<String> getGaslessTxHash(request, collectionId) async {
@@ -253,7 +260,8 @@ Future<String> getGaslessTxHash(request, collectionId) async {
 
 Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
   Web3App wcClient = await Web3App.createInstance(
-    relayUrl: 'wss://relay.walletconnect.com',
+    // relayUrl:
+    // "https://relay.walletconnect.com/?projectId=${dotenv.env['WC_PROJECT_ID']!}",
     projectId: dotenv.env['WC_PROJECT_ID']!,
     metadata: const PairingMetadata(
       name: 'OwnerChip',

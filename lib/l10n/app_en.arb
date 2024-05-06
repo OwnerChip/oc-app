@@ -99,7 +99,7 @@
     "disconnect": "Disconnect",
     "connect": "Connect",
     "remove": "Remove",
-    "add": "Add",
+    "add": "Add trait",
     "type": "Type",
     "value": "Value",
     "showTraits": "Show traits",
@@ -313,5 +313,11 @@
     "voucherNftDescriptionAppSpecific": "via the Ownerchip-App, downloadable in the Google Playstore and Apple AppStore. \n For more information visit https://ownerchip.com",
     "transferred": "Transferred",
     "errorWhenOffering": "Something went wrong when offering your token. Please recover token or contact support.",
-    "recoverToken": "Recover token"
-}
+    "recoverToken": "Recover token",
+    "enterDetails": "Enter details",
+    "myCollection": "My collection",
+    "pleaseConnectWalletToViewItems": "Please connect your wallet to view items.",
+    "ownedByMe": "Owned by me",
+    "createdByMe": "Created by me",
+    "youHaveNotMintedAnyItems": "You have not minted any digital twins.",
+    "youDoNotOwnAnyItems": "You do not own any digital twins."}

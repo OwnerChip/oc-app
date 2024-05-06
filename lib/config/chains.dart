@@ -4,8 +4,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 final polygonMainnet = BlockchainConfig(
     networkName: "Polygon Mainnet",
     nativeTokenSymbol: "MATIC",
-    rpcUrl:
-        "https://polygon-mainnet.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_POLYGON']}",
+    rpcUrl: "https://polygon-mainnet.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_POLYGON']}",
     registryContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
     controllerContract: "0x7F15F01af90Fd8c1AA32264f44DB02E6bEd259aF",
     openseaUrl: "https://opensea.io/assets/matic",
@@ -18,8 +17,7 @@ final polygonMainnet = BlockchainConfig(
 final ethereumMainnet = BlockchainConfig(
     networkName: "Ethereum Mainnet",
     nativeTokenSymbol: "ETH",
-    rpcUrl:
-        "https://eth-mainnet.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
+    rpcUrl: "https://eth-mainnet.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
     registryContract: "0x8Dcc2016E0dEe536D238562dC2a46c8EEf2aac86",
     controllerContract: "",
     openseaUrl: "https://opensea.io/assets",

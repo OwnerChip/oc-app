@@ -7,6 +7,9 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -74,11 +77,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _setProviderStatesFromPersistedState() async {
     try {
       await initWcClient(ref, context);
-    } catch (e) {
-      FlutterNativeSplash.remove();
+    } catch (e, s) {
       await Sentry.captureException(
-        "Error initializing WalletConnect client $e",
+        e,
+        stackTrace: s,
       );
+      FlutterNativeSplash.remove();
     }
 
     final storage = await SharedPreferences.getInstance();
@@ -122,7 +126,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 shippingPopupIsShown = !shippingPopupIsShown;
               }));
     }
-
     FlutterNativeSplash.remove();
   }
 
@@ -135,7 +138,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //read persisted session
     _setProviderStatesFromPersistedState();
 
+    //refreshes alchemy metadata for all collections belonging to app
+    makeAlchemyRefreshMetadata();
+
     super.initState();
+  }
+
+  Future<void> makeAlchemyRefreshMetadata() async {
+    BlockchainCollectionList collections =
+        await ref.read(appCollectionProvider.future);
+    for (var chainId in collections.collections.keys) {
+      for (var collection in collections.collections[chainId]!) {
+        updateAlchemyNftCache(chainId, collection.id);
+      }
+    }
   }
 
   //do stuff on app resume
@@ -242,6 +258,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // MIDDLE CONTENT
             Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CustomHomeScreenButton(
                     text: context.loc.scanning,
@@ -260,15 +277,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     : relevantCollections.when(
                         data: (data) => data.hasAnyMinterRole! &&
                                 ref.read(userSessionProvider) != null
-                            ? CustomRoundedButton(
-                                width: 250,
-                                text: context.loc.initializeChip,
-                                onPressed: () => onButtonPress(true),
-                              )
-                            : const SizedBox(height: 40),
+                            ? Padding(
+                                padding: EdgeInsets.only(bottom: 20),
+                                child: CustomRoundedButton(
+                                  width: 250,
+                                  text: context.loc.initializeChip,
+                                  onPressed: () => onButtonPress(true),
+                                ))
+                            : Container(),
                         loading: () => SizedBox(
                             height: 40, child: Text(context.loc.loading)),
-                        error: (err, stack) => const SizedBox(height: 40)),
+                        error: (err, stack) => Container()),
               ],
             ),
 
@@ -276,6 +295,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                CustomOutlinedButton(
+                  width: 250,
+                  buttonText: context.loc.myCollection,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, GalleryScreen.routeName),
+                ),
+                const SizedBox(height: 20),
                 //if stebo app show additional button
                 dotenv.get('APP_ID') == 'stebo'
                     ? Column(children: [
@@ -284,7 +310,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             onPressed: () => launchUrl(
                                 Uri.parse('https://www.steboart.com'),
                                 mode: LaunchMode.externalApplication)),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
                       ])
                     : Container(),
                 CustomOutlinedButton(
