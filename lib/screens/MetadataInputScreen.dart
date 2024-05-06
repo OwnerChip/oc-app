@@ -87,7 +87,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     setState(
       () {
         traitsStateArray = [
-          {"trait_type": "Artist", "value": ""},
+          {"trait_type": "Creator", "value": ""},
           {"trait_type": "Medium", "value": ""},
           {"trait_type": "Size", "value": ""},
           {"trait_type": "Year", "value": ""}
