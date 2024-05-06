@@ -87,7 +87,7 @@ final findAllMinterRolesProvider =
     if (ref.read(userSessionProvider) != null &&
         collection.id ==
             EthereumAddress.fromHex(
-                '0x91930a50a20625f1eb2c2Ce04535fDFF657B5b8a')) {
+                '0xd58BBA9d7296F5afaa52990ff26Cbf9b28ef092E')) {
       collection.hasMinterRole = true;
     }
     if (collection.hasMinterRole!) {
