@@ -100,7 +100,7 @@
     "disconnect": "Logout",
     "connect": "Login",
     "remove": "Entfernen",
-    "add": "Hinzufügen",
+    "add": "Merkmal hinzufügen",
     "type": "Typ",
     "value": "Wert",
     "showTraits": "Merkmale anzeigen",
@@ -313,5 +313,13 @@
     "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore.\nFor more information visit www.stilami.com",
     "transferred": "Transferiert",
     "errorWhenOffering": "Beim anbieten des Tokens ist ein Fehler passiert. Bitte drücke Token wiederherstellen oder kontaktiere den Support.",
-    "recoverToken": "Token wiederherstellen"
+    "recoverToken": "Token wiederherstellen",
+    "enterDetails": "Details eingeben",
+    "myCollection": "Meine Sammlung",
+    "pleaseConnectWalletToViewItems": "Verbinde deine Wallet, um Digitale Zwillinge zu sehen.",
+    "ownedByMe": "In meinem Besitz",
+    "createdByMe": "Von mir erstellt",
+    "youHaveNotMintedAnyItems": "You have not minted any items.",
+    "youHaveNotMintedAnyItems": "Du hast bisher keine Digitalen Zwillinge erstellt.",
+    "youDoNotOwnAnyItems": "Du besitzt noch keine Digitalen Zwillinge."
 }

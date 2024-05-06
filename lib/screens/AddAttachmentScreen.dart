@@ -344,7 +344,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           _titleInputController.text,
           _titleInputController.text,
           isPrivate,
-          fileLink: _urlInputController.text);
+          attachmentLink: _urlInputController.text);
 
       String fileUuid = result[0];
       String status = result[1];
@@ -548,12 +548,18 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                         urlTextInput = text;
                                       }),
                                   validator: (value) {
+                                    //check if url starts with http and add it if not
+                                    if (value != null &&
+                                        !value.startsWith('http')) {
+                                      value = 'https://$value';
+                                    }
+
                                     //check if url is valid
                                     if (!Uri.parse(value!).isAbsolute) {
                                       return context.loc.enterValidUrl;
                                     }
 
-                                    if (value.isEmpty) {
+                                    if (value!.isEmpty) {
                                       return context.loc.urlCannotBeEmpty;
                                     }
                                     if (attachmentList.length >= 50) {

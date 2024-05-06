@@ -10,6 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
+import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
@@ -116,13 +117,12 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         }
 
         // if device language is not supported by the app,
-        // the app will set it to english but return this to set to Bahasa instead
+        // the app will set it to english
         return const Locale('en');
       },
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
-      //register all routes
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),
@@ -142,6 +142,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         OfferOnMPScreen.routeName: (context) => const OfferOnMPScreen(),
         EnterShippingAddressScreen.routeName: (context) =>
             const EnterShippingAddressScreen(),
+        GalleryScreen.routeName: (context) => const GalleryScreen(),
       },
     );
   }

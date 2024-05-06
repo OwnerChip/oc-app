@@ -4,15 +4,16 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CustomImage extends StatelessWidget {
-  const CustomImage({
-    super.key,
-    this.imagePath,
-    this.imageFile,
-    this.width,
-    this.height,
-    this.loading = true,
-    this.tokenId,
-  });
+  const CustomImage(
+      {super.key,
+      this.imagePath,
+      this.imageFile,
+      this.width,
+      this.height,
+      this.loading = true,
+      this.tokenId,
+      this.boxFit = BoxFit.contain,
+      this.aspectRatio = 0.75});
 
   final dynamic imagePath;
   final dynamic imageFile;
@@ -20,6 +21,9 @@ class CustomImage extends StatelessWidget {
   final double? height;
   final bool loading;
   final BigInt? tokenId;
+  final BoxFit boxFit;
+  final double aspectRatio;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -39,7 +43,7 @@ class CustomImage extends StatelessWidget {
           ClipRRect(
               borderRadius: BorderRadius.circular(19),
               child: AspectRatio(
-                aspectRatio: 0.75,
+                aspectRatio: aspectRatio,
                 child: loading || imagePath == null || imagePath == ""
                     ? Image.asset(
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg',
@@ -48,10 +52,10 @@ class CustomImage extends StatelessWidget {
                     : imageFile != null
                         ? Image.file(
                             File(imagePath),
-                            fit: BoxFit.contain,
+                            fit: boxFit,
                           )
                         : Image.network(imagePath,
-                            fit: BoxFit.contain,
+                            fit: boxFit,
                             frameBuilder: (context, child, frame,
                                     wasSynchronouslyLoaded) =>
                                 wasSynchronouslyLoaded
