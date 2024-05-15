@@ -29,8 +29,9 @@ class OnboardingScreen extends ConsumerWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              Flexible(
                 child: ListView(
                   shrinkWrap: true,
                   children: [
@@ -48,7 +49,7 @@ class OnboardingScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(
-                      height: 48,
+                      height: 24,
                     ),
                     _buildIconTextItem(
                       context,
@@ -63,7 +64,7 @@ class OnboardingScreen extends ConsumerWidget {
                           context.loc.onboardingFeatureAuthenticitySubtitle,
                     ),
                     const SizedBox(
-                      height: 48,
+                      height: 24,
                     ),
                     _buildIconTextItem(
                       context,
@@ -79,7 +80,7 @@ class OnboardingScreen extends ConsumerWidget {
                           .loc.onboardingFeatureDigitalExperiencesSubtitle,
                     ),
                     const SizedBox(
-                      height: 48,
+                      height: 24,
                     ),
                     _buildIconTextItem(
                       context,
@@ -92,11 +93,11 @@ class OnboardingScreen extends ConsumerWidget {
                       title: context.loc.onboardingFeatureSellTitle,
                       subtitle: context.loc.onboardingFeatureSellSubtitle,
                     ),
-                    const SizedBox(
-                      height: 48,
-                    ),
                   ],
                 ),
+              ),
+              const SizedBox(
+                height: 24,
               ),
               CustomRoundedButton(
                 text: context.loc.onboardingStartButton,
@@ -119,7 +120,7 @@ class OnboardingScreen extends ConsumerWidget {
     );
   }
 
-  Row _buildIconTextItem(
+  Widget _buildIconTextItem(
     BuildContext context, {
     required Widget icon,
     required String title,
