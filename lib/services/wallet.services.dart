@@ -10,6 +10,7 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -57,7 +58,7 @@ Future<String> makeAndSendGaslessTx(
     SignatureData signatureData,
     EthereumAddress walletAddress,
     Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
-    SessionData? wcSession,
+    W3MSession? wcSession,
     String metaTxAgreementId,
     WalletType walletType,
     {EthereumAddress? controllerContractId,
@@ -125,7 +126,7 @@ Future<String> makeAndSendGaslessTx(
 
       signature = await wc!
           .request(
-        topic: wcSession!.topic,
+        topic: wcSession!.topic!,
         // chainId: 'eip155:$chainId',
         chainId: 'eip155:1',
         request: SessionRequestParams(
@@ -162,7 +163,7 @@ Future<String> makeAndSendNormalTx(
   SignatureData signatureData,
   EthereumAddress walletAddress,
   Web3App wc,
-  SessionData wcSession,
+  W3MSession wcSession,
   WalletType walletType, {
   EthereumAddress? toAccount,
   BigInt? tokenId,
@@ -204,7 +205,7 @@ Future<String> makeAndSendNormalTx(
   w3mService!.launchConnectedWallet();
 
   String txnHash = await wc.request(
-    topic: wcSession.topic,
+    topic: wcSession.topic!,
     chainId: 'eip155:$chainId',
     request: SessionRequestParams(
       method: 'eth_sendTransaction',
@@ -221,7 +222,7 @@ Future<String> sendPersonalSignRequest(
   String message,
   EthereumAddress walletAddress,
   Web3App wc,
-  SessionData wcSession,
+  W3MSession wcSession,
   WalletType walletType,
 ) async {
   final W3MService? w3mService = ref.read(w3mServiceProvider);
@@ -233,7 +234,7 @@ Future<String> sendPersonalSignRequest(
 
   try {
     String signature = await wc.request(
-      topic: wcSession.topic,
+      topic: wcSession.topic!,
       chainId: 'eip155:1',
       // chainId: w3mService.selectedChain?.chainId == null
       // ? 'eip155:1'
@@ -259,9 +260,8 @@ Future<String> getGaslessTxHash(request, collectionId) async {
 }
 
 Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
-  Web3App wcClient = await Web3App.createInstance(
-    // relayUrl:
-    // "https://relay.walletconnect.com/?projectId=${dotenv.env['WC_PROJECT_ID']!}",
+  //create Web3Modal service and set provider
+  final W3MService w3mService = W3MService(
     projectId: dotenv.env['WC_PROJECT_ID']!,
     metadata: const PairingMetadata(
       name: 'OwnerChip',
@@ -274,13 +274,18 @@ Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
       ),
     ),
   );
-  //set walletconnect client provider
-  ref.read(wcProvider.notifier).state = wcClient;
 
-  //create Web3Modal service and set provider
-  final W3MService w3mService = W3MService(web3App: wcClient);
+  w3mService.onSessionEventEvent.subscribe(wrapOnSessionEvent(ref));
+  w3mService.onModalConnect.subscribe(wrapOnSessionConnect(ref, context));
+  w3mService.onModalDisconnect.subscribe(wrapOnSessionDisconnect(ref));
+  w3mService.onSessionExpireEvent.subscribe(wrapOnSessionExpire(ref));
+
   await w3mService.init();
   ref.read(w3mServiceProvider.notifier).state = w3mService;
+
+  final Web3App wcClient = w3mService.web3App! as Web3App;
+  //set walletconnect client provider
+  ref.read(wcProvider.notifier).state = wcClient;
 
   // Register event handlers
   final events = EIP155.events.values.toList();
@@ -290,17 +295,12 @@ Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
     }
   }
 
-  wcClient.onSessionEvent.subscribe(wrapOnSessionEvent(ref));
-  wcClient.onSessionConnect.subscribe(wrapOnSessionConnect(ref, context));
-  wcClient.onSessionDelete.subscribe(wrapOnSessionDisconnect(ref));
-  wcClient.onSessionExpire.subscribe(wrapOnSessionExpire(ref));
-
   return wcClient;
 }
 
-void Function(SessionConnect?) wrapOnSessionConnect(
+void Function(ModalConnect?) wrapOnSessionConnect(
     WidgetRef ref, BuildContext context) {
-  return (SessionConnect? args) {
+  return (ModalConnect? args) {
     Web3App? wc = ref.read(wcProvider);
 
     //set session and wallet type provider
@@ -316,8 +316,8 @@ void Function(SessionConnect?) wrapOnSessionConnect(
   };
 }
 
-void Function(SessionDelete?) wrapOnSessionDisconnect(WidgetRef ref) {
-  return (SessionDelete? args) {
+void Function(ModalDisconnect?) wrapOnSessionDisconnect(WidgetRef ref) {
+  return (ModalDisconnect? args) {
     onSessionDisconnect(args, ref);
   };
 }
@@ -325,8 +325,12 @@ void Function(SessionDelete?) wrapOnSessionDisconnect(WidgetRef ref) {
 void Function(SessionExpire?) wrapOnSessionExpire(WidgetRef ref) {
   return (SessionExpire? event) {
     if (event?.topic != null) {
-      SessionDelete deleteArgs = SessionDelete(event!.topic);
-      onSessionDisconnect(deleteArgs, ref);
+      onSessionDisconnect(
+        ModalDisconnect(
+          topic: event!.topic,
+        ),
+        ref,
+      );
     }
   };
 }
@@ -335,7 +339,7 @@ void Function(SessionEvent?) wrapOnSessionEvent(WidgetRef ref) {
   return (SessionEvent? args) {};
 }
 
-void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {
+void onSessionDisconnect(ModalDisconnect? args, WidgetRef ref) {
   //remove session and wallet type
   final storage = SharedPreferences.getInstance();
   storage.then((value) => value.remove('session'));
@@ -350,11 +354,12 @@ void onSessionDisconnect(SessionDelete? args, WidgetRef ref) {
 
 void unsubscribeWcListeners(WidgetRef ref, BuildContext context) {
   Web3App? wcClient = ref.read(wcProvider);
+  W3MService? w3mService = ref.read(w3mServiceProvider);
   if (wcClient != null) {
-    wcClient.onSessionConnect.unsubscribe(wrapOnSessionConnect(ref, context));
-    wcClient.onSessionDelete.unsubscribe(wrapOnSessionDisconnect(ref));
-    wcClient.onSessionEvent.unsubscribe(wrapOnSessionEvent(ref));
-    wcClient.onSessionExpire.unsubscribe(wrapOnSessionExpire(ref));
+    w3mService?.onModalConnect.unsubscribe(wrapOnSessionConnect(ref, context));
+    w3mService?.onModalDisconnect.unsubscribe(wrapOnSessionDisconnect(ref));
+    w3mService?.onSessionEventEvent.unsubscribe(wrapOnSessionEvent(ref));
+    w3mService?.onSessionExpireEvent.unsubscribe(wrapOnSessionExpire(ref));
   }
 }
 

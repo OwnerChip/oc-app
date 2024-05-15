@@ -5,15 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import '../../utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
-import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
@@ -31,7 +28,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Web3App? wc = ref.watch(wcProvider);
-    SessionData? wcSession = ref.watch(wcSessionProvider);
+    W3MSession? wcSession = ref.watch(wcSessionProvider);
     UserSession? userSession = ref.watch(userSessionProvider);
     return AppBar(
       automaticallyImplyLeading: false,
@@ -91,7 +88,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
                           if (wc != null && wcSession != null) {
                             wc.disconnectSession(
-                                topic: wcSession.topic,
+                                topic: wcSession.topic!,
                                 reason: const WalletConnectError(
                                     code: 6000,
                                     message:
