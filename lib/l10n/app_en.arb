@@ -353,5 +353,6 @@
   "onboardingCreatorCompleteButtonTitle": "Create Digital Twin NFT",
   "onboardingUserCompleteTitle": "You're all done!",
   "onboardingUserCompleteSubtitle": "You have completed the tutorial.",
-  "onboardingUserCompleteButtonTitle": "Start scanning now!"
+  "onboardingUserCompleteButtonTitle": "Start scanning now!",
+  "onboardingCheckboxShowAgainTitle": "Show again next time"
 }

@@ -1,25 +1,22 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenUserComplete.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/widgets/onboarding_screen_user_step.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/widgets/onboarding_video_player.dart';
+import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 
-class OnboardingScreen extends StatelessWidget {
+class OnboardingScreen extends ConsumerWidget {
   const OnboardingScreen({super.key});
 
   static const routeName = '/onboarding';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: const CustomAppBar(
         showBackButton: false,
@@ -76,8 +73,8 @@ class OnboardingScreen extends StatelessWidget {
                         color:
                             CustomColors(dotenv.get('APP_ID')).headline2Color,
                       ),
-                      title: context
-                          .loc.onboardingFeatureDigitalExperiencesTitle,
+                      title:
+                          context.loc.onboardingFeatureDigitalExperiencesTitle,
                       subtitle: context
                           .loc.onboardingFeatureDigitalExperiencesSubtitle,
                     ),
@@ -104,42 +101,11 @@ class OnboardingScreen extends StatelessWidget {
               CustomRoundedButton(
                 text: context.loc.onboardingStartButton,
                 onPressed: () {
+                  ref.read(onboardingProvider.notifier).showedTutorial();
                   Navigator.of(context).pushReplacementNamed(
                     OnboardingScreenWithSteps.routeName,
-                    arguments: OnboardingScreenWithStepsArguments(
-                        title: context.loc.onboardingUserPageTitle,
-                        stepBuilders: [
-                          (BuildContext context) => OnboardingScreenUserStep(
-                                title:
-                                    context.loc.onboardingUserPageStep1Title,
-                                subtitle: context
-                                    .loc.onboardingUserPageStep1Subtitle,
-                                content: (context) => OnboardingVideoPlayer(
-                                  asset:
-                                      'assets/images/common/onboarding_step1_${Platform.isAndroid ? "android" : "ios"}.mp4',
-                                ),
-                              ),
-                          (BuildContext context) => OnboardingScreenUserStep(
-                                title:
-                                    context.loc.onboardingUserPageStep2Title,
-                                subtitle: context
-                                    .loc.onboardingUserPageStep2Subtitle,
-                                content: (context) =>
-                                    const OnboardingVideoPlayer(
-                                  asset:
-                                      'assets/images/common/onboarding_step2.mp4',
-                                ),
-                              ),
-                        ],
-                        completedButtonBuilder: (BuildContext context) =>
-                            CustomRoundedButton(
-                              text: context
-                                  .loc.onboardingUserPageCompleteButtonTitle,
-                              onPressed: () {
-                                Navigator.of(context).pushReplacementNamed(
-                                    OnboardingScreenUserComplete.routeName);
-                              },
-                            )),
+                    arguments: OnboardingScreenWithStepsArguments.userTutorial(
+                        context),
                   );
                 },
               ),

@@ -9,8 +9,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
+import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -136,11 +138,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
 
-    // add post frame callback to show onboarding screen
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.of(context).pushNamed(OnboardingScreen.routeName);
-    });
-
     super.initState();
   }
 
@@ -237,6 +234,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
+
+    ref.watch(onboardingProvider).maybeWhen(
+        data: (data) {
+          if (!data.showedTutorial && data.showTutorialNextTime) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.of(context)
+                  .pushReplacementNamed(OnboardingScreen.routeName);
+            });
+          }
+        },
+        orElse: () {});
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
