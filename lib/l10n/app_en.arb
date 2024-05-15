@@ -354,5 +354,6 @@
   "onboardingUserCompleteTitle": "You're all done!",
   "onboardingUserCompleteSubtitle": "You have completed the tutorial.",
   "onboardingUserCompleteButtonTitle": "Start scanning now!",
-  "onboardingCheckboxShowAgainTitle": "Show again next time"
+  "onboardingCheckboxShowAgainTitle": "Show again next time",
+  "onboardingMoreInfoShowTutorialButtonTitle": "Show Tutorial"
 }
