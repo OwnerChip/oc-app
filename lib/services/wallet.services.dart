@@ -81,8 +81,8 @@ Future<String> makeAndSendGaslessTx(
       randomValueHash: signatureData.hashedMsg,
       signature: signatureData.signature,
       from: walletAddress,
-      to: controllerContractId ??
-          toAddress, //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
+      to: controllerContractId ?? toAddress,
+      //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
       toAccount: toAccount,
       tokenURI:
           twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
@@ -313,8 +313,6 @@ void Function(SessionConnect?) wrapOnSessionConnect(
     storage.then((value) => value.setString('session', session));
     storage.then((value) => value.setString(
         'walletType', jsonEncode(walletConfig['walletConnect']!.toJson())));
-
-    authPopupBuilder(context, ref, wc!, 'WalletConnect');
   };
 }
 
