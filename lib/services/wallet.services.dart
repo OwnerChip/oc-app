@@ -268,6 +268,10 @@ Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
       description: 'OwnerChip - Connecting physical objects to the blockchain',
       url: 'https://www.ownerchip.com',
       icons: ['https://avatars.githubusercontent.com/u/116345848'],
+      redirect: Redirect(
+        native: 'ownerchip://',
+        universal: 'https://www.ownerchip.com',
+      ),
     ),
   );
   //set walletconnect client provider

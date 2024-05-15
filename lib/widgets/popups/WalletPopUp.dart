@@ -66,8 +66,7 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                   onTap: () async {
                     Navigator.pop(context);
                     await w3mService!.disconnect();
-                    await w3mService!.openModal(navigatorKey.currentContext!);
-                    w3mService.closeModal();
+                    await w3mService.openModal(navigatorKey.currentContext!);
                   },
                   backgroundColor: CustomColors(dotenv.get('APP_ID'))
                       .ownerCardWalletIconBackgroundColor,
