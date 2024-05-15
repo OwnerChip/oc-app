@@ -102,7 +102,6 @@ class OnboardingScreen extends ConsumerWidget {
               CustomRoundedButton(
                 text: context.loc.onboardingStartButton,
                 onPressed: () {
-                  ref.read(onboardingProvider.notifier).showedTutorial();
                   Navigator.of(context).pushReplacementNamed(
                     OnboardingScreenWithSteps.routeName,
                     arguments: OnboardingScreenWithStepsArguments.userTutorial(

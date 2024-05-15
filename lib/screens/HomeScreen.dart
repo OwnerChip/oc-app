@@ -239,6 +239,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         data: (data) {
           if (!data.showedTutorial && data.showTutorialNextTime) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              ref.read(onboardingProvider.notifier).showedTutorial();
               Navigator.of(context)
                   .pushReplacementNamed(OnboardingScreen.routeName);
             });
