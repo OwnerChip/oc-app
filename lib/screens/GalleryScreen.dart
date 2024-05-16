@@ -83,6 +83,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                 Text(
                   context.loc.pleaseConnectWalletToViewItems,
                   style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
                 CustomRoundedButton(
@@ -146,6 +147,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                 Text(
                   context.loc.pleaseConnectWalletToViewItems,
                   style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
                 CustomRoundedButton(
