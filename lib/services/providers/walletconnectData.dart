@@ -21,7 +21,7 @@ final walletTypeProvider = StateProvider<WalletType?>((ref) {
   return null;
 });
 
-final wcSessionProvider = StateProvider<SessionData?>((ref) {
+final wcSessionProvider = StateProvider<W3MSession?>((ref) {
   return null;
 });
 
@@ -29,7 +29,7 @@ final userAddressProvider = StateProvider<EthereumAddress>((ref) {
   final session = ref.watch(wcSessionProvider);
   final addr = session != null
       ? EthereumAddress.fromHex(
-          session.namespaces['eip155']!.accounts[0].split(':').last)
+          session.namespaces!['eip155']!.accounts[0].split(':').last)
       : zeroAddress;
   return addr;
 });

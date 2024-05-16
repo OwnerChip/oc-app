@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 import '../../utils/localization.helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -101,7 +102,7 @@ Future<void> authPopupBuilder(
 Future<void> onTapAuth(
     BuildContext context, String sessionId, WidgetRef ref, Web3App wc) async {
   EthereumAddress userWalletAddress = ref.read(userAddressProvider);
-  SessionData? session = ref.read(wcSessionProvider);
+  W3MSession? session = ref.read(wcSessionProvider);
   WalletType? walletType = ref.read(walletTypeProvider);
 
   if (session == null || walletType == null) {

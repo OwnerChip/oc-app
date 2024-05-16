@@ -39,6 +39,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -91,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (storedWcSession != null &&
         storedWalletType != null &&
         storedUserSession != null) {
-      final wcSession = SessionData.fromJson(jsonDecode(storedWcSession));
+      final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession));
       final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
       final backendSession =
           UserSession.fromJson(jsonDecode(storedUserSession));
@@ -99,7 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       //Note: WalletConnect session duration is 7 days
       double nowPlusThreeDays =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
-      if (wcSession.expiry > nowPlusThreeDays &&
+      if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
           backendSession.expiryDate > nowPlusThreeDays) {
         ref.read(wcSessionProvider.notifier).state = wcSession;
         ref.read(walletTypeProvider.notifier).state = walletType;
