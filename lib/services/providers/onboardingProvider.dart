@@ -49,9 +49,8 @@ class OnboardingProvider extends StateNotifier<AsyncValue<OnboardingStatus>> {
     final sharedPrefs = await SharedPreferences.getInstance();
     await sharedPrefs.setBool(_showTutorialNextTimeKey, value);
 
-    state = AsyncData(OnboardingStatus(
-      showTutorialNextTime: value,
-    ));
+    state = AsyncData(state.value?.copyWith(showTutorialNextTime: value) ??
+        OnboardingStatus(showTutorialNextTime: value));
   }
 }
 
