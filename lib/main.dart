@@ -1,5 +1,4 @@
 //import packages
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +15,9 @@ import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
+import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenUserComplete.dart';
+import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -33,7 +35,6 @@ import 'screens/AddAttachmentScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
 
 // setup logger
 void _setupLogging() {
@@ -97,6 +98,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     return MaterialApp(
       navigatorKey: navigatorKey,
       theme: CustomThemeData.getThemeData(),
+      debugShowCheckedModeBanner: false,
       localeListResolutionCallback: (locales, supportedLocales) {
         print('device locales=$locales supported locales=$supportedLocales');
         print(locales.runtimeType);
@@ -123,6 +125,14 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.0),
+          ),
+          child: child!,
+        );
+      },
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),
@@ -143,6 +153,11 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         EnterShippingAddressScreen.routeName: (context) =>
             const EnterShippingAddressScreen(),
         GalleryScreen.routeName: (context) => const GalleryScreen(),
+        OnboardingScreen.routeName: (context) => const OnboardingScreen(),
+        OnboardingScreenWithSteps.routeName: (context) =>
+            const OnboardingScreenWithSteps(),
+        OnboardingScreenUserComplete.routeName: (context) =>
+            const OnboardingScreenUserComplete(),
       },
     );
   }
