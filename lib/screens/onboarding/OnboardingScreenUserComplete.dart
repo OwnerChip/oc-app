@@ -120,8 +120,7 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
             CustomRoundedButton(
               text: context.loc.onboardingUserCompleteButtonTitle,
               onPressed: () {
-                Navigator.of(context)
-                    .pushReplacementNamed(HomeScreen.routeName);
+                Navigator.of(context).pop();
               },
             ),
             const SizedBox(
