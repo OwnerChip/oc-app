@@ -18,6 +18,9 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
 
   static const routeName = '/onboardingUserComplete';
 
+  bool get _showCreatorTutorial => dotenv.env['APP_ID'] == 'ownerchip';
+  // bool get _showCreatorTutorial => false;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onboarding = ref.watch(onboardingProvider);
@@ -32,34 +35,36 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
           children: [
-            const Spacer(
-              flex: 4,
-            ),
-            Text(
-              context.loc.onboardingUserCompleteCreatorPageTitle,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(
-              height: 12,
-            ),
-            Text(
-              context.loc.onboardingUserCompleteCreatorPageSubtitle,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(
-              height: 24,
-            ),
-            CustomRoundedButton(
-                text: context.loc.onboardingUserCompleteCreatorButtonTitle,
-                onPressed: () {
-                  Navigator.of(context).pushReplacementNamed(
-                    OnboardingScreenWithSteps.routeName,
-                    arguments:
-                        OnboardingScreenWithStepsArguments.creatorTutorial(
-                            context),
-                  );
-                }),
+            if (_showCreatorTutorial) ...[
+              const Spacer(
+                flex: 4,
+              ),
+              Text(
+                context.loc.onboardingUserCompleteCreatorPageTitle,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(
+                height: 4,
+              ),
+              Text(
+                context.loc.onboardingUserCompleteCreatorPageSubtitle,
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(
+                height: 24,
+              ),
+              CustomRoundedButton(
+                  text: context.loc.onboardingUserCompleteCreatorButtonTitle,
+                  onPressed: () {
+                    Navigator.of(context).pushReplacementNamed(
+                      OnboardingScreenWithSteps.routeName,
+                      arguments:
+                          OnboardingScreenWithStepsArguments.creatorTutorial(
+                              context),
+                    );
+                  }),
+            ],
             const Spacer(
               flex: 3,
             ),
@@ -69,23 +74,28 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
               color: CustomColors(dotenv.get('APP_ID')).accentColor,
             ),
             const SizedBox(
-              height: 48,
+              height: 12,
             ),
             Text(
               context.loc.onboardingUserCompleteTitle,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(
-              height: 12,
+              height: 4,
             ),
             Text(
               context.loc.onboardingUserCompleteSubtitle,
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(
-              height: 12,
-            ),
+            if (_showCreatorTutorial)
+              const SizedBox(
+                height: 24,
+              )
+            else
+              const Spacer(
+                flex: 6,
+              ),
             onboarding.maybeWhen(data: (data) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -110,7 +120,8 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
             CustomRoundedButton(
               text: context.loc.onboardingUserCompleteButtonTitle,
               onPressed: () {
-                Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+                Navigator.of(context)
+                    .pushReplacementNamed(HomeScreen.routeName);
               },
             ),
             const SizedBox(
