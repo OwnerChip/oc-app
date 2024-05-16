@@ -10,7 +10,6 @@ class MoreInfoButtons {
     switch (appEnvironment) {
       case 'ownerchip':
         roundedButtons = [
-          MoreInfoButton(loc.watchTutorial, loc.tutorialUrl),
           MoreInfoButton(loc.viewProjects, loc.projectsUrl),
           MoreInfoButton(loc.orderChips, loc.orderChipsUrl),
         ];
@@ -21,7 +20,6 @@ class MoreInfoButtons {
         break;
       case 'stebo':
         roundedButtons = [
-          MoreInfoButton(loc.watchTutorial, loc.tutorialUrl),
         ];
         outlinedRoundedButtons = [
           MoreInfoButton(loc.support, loc.supportUrl),
@@ -40,7 +38,6 @@ class MoreInfoButtons {
         break;
       default:
         roundedButtons = [
-          MoreInfoButton(loc.watchTutorial, loc.tutorialUrl),
           MoreInfoButton(loc.viewProjects, loc.projectsUrl),
           MoreInfoButton(loc.orderChips, loc.orderChipsUrl),
         ];

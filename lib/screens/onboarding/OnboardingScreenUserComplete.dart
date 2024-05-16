@@ -40,7 +40,7 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(
-              height: 24,
+              height: 12,
             ),
             Text(
               context.loc.onboardingUserCompleteCreatorPageSubtitle,
@@ -76,7 +76,7 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(
-              height: 24,
+              height: 12,
             ),
             Text(
               context.loc.onboardingUserCompleteSubtitle,
