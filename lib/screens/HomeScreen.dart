@@ -103,7 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       //Note: WalletConnect session duration is 7 days
       double nowPlusThreeDays =
           DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
-      if (wcSession.expiry! > nowPlusThreeDays &&
+      if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
           backendSession.expiryDate > nowPlusThreeDays) {
         ref.read(wcSessionProvider.notifier).state = wcSession;
         ref.read(walletTypeProvider.notifier).state = walletType;
