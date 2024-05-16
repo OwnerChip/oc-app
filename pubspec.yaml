@@ -37,6 +37,7 @@ dependencies:
   country_picker: ^2.0.23
   web3modal_flutter: 3.2.0
   info_popup: ^4.3.1
+  video_player: ^2.8.6
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +65,7 @@ flutter_icons:
 
 flutter:
   assets:
+    - assets/images/common/
     - assets/images/ownerchip/
     - assets/images/ownerchip_user/
     - assets/images/stebo/

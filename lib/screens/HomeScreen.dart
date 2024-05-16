@@ -8,12 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
+import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -30,15 +31,11 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 
 //import screens
-import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/domain/errorDefinitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -238,6 +235,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
+
+    ref.watch(onboardingProvider).maybeWhen(
+        data: (data) {
+          if (!data.showedTutorial && data.showTutorialNextTime) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ref.read(onboardingProvider.notifier).showedTutorial();
+              Navigator.of(context)
+                  .pushReplacementNamed(OnboardingScreen.routeName);
+            });
+          }
+        },
+        orElse: () {});
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
