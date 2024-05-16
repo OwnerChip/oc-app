@@ -309,7 +309,7 @@ void Function(ModalConnect?) wrapOnSessionConnect(
 
     //store session and wallet type
     final storage = SharedPreferences.getInstance();
-    final session = jsonEncode(args?.session);
+    final session = jsonEncode(args?.session.toMap());
     storage.then((value) => value.setString('session', session));
     storage.then((value) => value.setString(
         'walletType', jsonEncode(walletConfig['walletConnect']!.toJson())));
