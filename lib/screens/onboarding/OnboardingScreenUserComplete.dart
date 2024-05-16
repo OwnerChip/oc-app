@@ -37,14 +37,14 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
             ),
             Text(
               context.loc.onboardingUserCompleteCreatorPageTitle,
-              style: Theme.of(context).textTheme.displayMedium,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(
               height: 24,
             ),
             Text(
               context.loc.onboardingUserCompleteCreatorPageSubtitle,
-              style: Theme.of(context).textTheme.displaySmall,
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(
@@ -73,14 +73,14 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
             ),
             Text(
               context.loc.onboardingUserCompleteTitle,
-              style: Theme.of(context).textTheme.displayMedium,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(
               height: 24,
             ),
             Text(
               context.loc.onboardingUserCompleteSubtitle,
-              style: Theme.of(context).textTheme.displaySmall,
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(
@@ -100,7 +100,7 @@ class OnboardingScreenUserComplete extends ConsumerWidget {
                   ),
                   Text(
                     context.loc.onboardingCheckboxShowAgainTitle,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               );

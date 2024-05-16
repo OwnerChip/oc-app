@@ -26,7 +26,7 @@ class OnboardingScreenUserStep extends StatelessWidget {
         Center(
           child: Text(
             title,
-            style: Theme.of(context).textTheme.displayMedium,
+            style: Theme.of(context).textTheme.headlineMedium,
             textAlign: TextAlign.center,
           ),
         ),
@@ -36,7 +36,7 @@ class OnboardingScreenUserStep extends StatelessWidget {
         Center(
           child: Text(
             subtitle,
-            style: Theme.of(context).textTheme.displaySmall,
+            style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
         ),

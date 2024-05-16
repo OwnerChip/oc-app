@@ -333,7 +333,7 @@
   "onboardingUserPageTitle": "How to use this App",
   "onboardingPagination": "Step {current}/",
   "onboardingUserPageStep1Title": "Scan NFC chip",
-  "onboardingUserPageStep1Subtitle": "Press \"Scan Now\" and\nhold your phone close to the chip.",
+  "onboardingUserPageStep1Subtitle": "Press \"Scan Now\" and hold your phone close to the chip.",
   "onboardingUserPageStep2Title": "Login with your wallet",
   "onboardingUserPageStep2Subtitle": "Identify yourself using your OwnerCard or your crypto wallet to prove and transfer ownership and unlock private digital content.",
   "onboardingUsePageNextButtonTitle": "Next",

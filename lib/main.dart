@@ -125,6 +125,14 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: widget.initialRoute,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.0),
+          ),
+          child: child!,
+        );
+      },
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
         MetadataScreen.routeName: (context) => const MetadataScreen(),

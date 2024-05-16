@@ -164,7 +164,7 @@ class _OnboardingScreenWithStepsState extends State<OnboardingScreenWithSteps> {
             ),
             Text(
               title,
-              style: Theme.of(context).textTheme.displayMedium,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             Row(
               children: [

@@ -34,6 +34,7 @@ class OnboardingScreen extends ConsumerWidget {
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     Icon(
                       Icons.waving_hand_outlined,
@@ -97,7 +98,7 @@ class OnboardingScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(
-                height: 24,
+                height: 12,
               ),
               CustomRoundedButton(
                 text: context.loc.onboardingStartButton,
@@ -142,14 +143,14 @@ class OnboardingScreen extends ConsumerWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.displayMedium,
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(
                 height: 4,
               ),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.displaySmall,
+                style: Theme.of(context).textTheme.bodyMedium,
               )
             ],
           ),

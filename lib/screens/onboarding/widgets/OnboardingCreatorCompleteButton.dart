@@ -32,7 +32,7 @@ class OnboardingCreatorCompleteButton extends ConsumerWidget {
               ),
               Text(
                 context.loc.onboardingCheckboxShowAgainTitle,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           );
