@@ -67,7 +67,7 @@ class CreatorDataBoxContent extends StatelessWidget {
               },
               child: Text(
                 creatorData.name,
-                style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColorLight,
                     ),
