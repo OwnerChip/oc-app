@@ -76,6 +76,22 @@ class AlchemyContract {
     required this.spamClassifications,
   });
 
+  // temp
+  Map<String, dynamic> toJson() {
+    return {
+      'address': address,
+      'name': name,
+      'symbol': symbol,
+      'totalSupply': totalSupply,
+      'tokenType': tokenType,
+      'contractDeployer': contractDeployer,
+      'deployedBlockNumber': deployedBlockNumber,
+      'openSeaMetadata': openSeaMetadata.toJson(),
+      'isSpam': isSpam,
+      'spamClassifications': spamClassifications,
+    };
+  }
+
   factory AlchemyContract.fromJson(Map<String, dynamic> json) {
     return AlchemyContract(
       address: json['address'],
@@ -190,6 +206,23 @@ class OpenSeaMetadata {
     this.bannerImageUrl,
     this.lastIngestedAt,
   });
+
+  // temp
+  Map<String, dynamic> toJson() {
+    return {
+      'floorPrice': floorPrice,
+      'collectionName': collectionName,
+      'collectionSlug': collectionSlug,
+      'safelistRequestStatus': safelistRequestStatus,
+      'imageUrl': imageUrl,
+      'description': description,
+      'externalUrl': externalUrl,
+      'twitterUsername': twitterUsername,
+      'discordUrl': discordUrl,
+      'bannerImageUrl': bannerImageUrl,
+      'lastIngestedAt': lastIngestedAt?.toIso8601String(),
+    };
+  }
 
   factory OpenSeaMetadata.fromJson(Map<String, dynamic> json) {
     return OpenSeaMetadata(

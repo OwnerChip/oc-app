@@ -15,6 +15,8 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
+  static const double kCustomAppBarHeight = 84.0;
+
   const CustomAppBar({
     super.key,
     this.text,
@@ -38,6 +40,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       leadingWidth: !showBackButton ? 120 : null,
+      toolbarHeight: kCustomAppBarHeight,
       //only change leading width if logo is shown
       leading: Padding(
           padding: const EdgeInsets.only(left: 10),

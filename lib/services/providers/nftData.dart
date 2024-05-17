@@ -6,8 +6,11 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nft/nftForOwner/nftForOwnerData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nft/nftForOwner/nftForOwnerNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -190,10 +193,15 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
   }
 });
 
+final ocNFTsForOwnerProvider =
+    NotifierProvider<OCNTFsForOwnerNotifier, OCNFTsForOwnerData>(
+        OCNTFsForOwnerNotifier.new);
+
 final getOcNftsForOwner = FutureProvider.autoDispose<List?>((ref) async {
   List chainIds = chainConfig.keys.toList();
   final UserSession? userSession = ref.read(userSessionProvider);
-  final EthereumAddress? walletAddress = userSession?.userWalletAddress;
+  final EthereumAddress? walletAddress =
+      EthereumAddress.fromHex('0xd7C130773D63bAA579180834CE9A2662Dd23178D');
 
   final BlockchainCollectionList ocCollections =
       await ref.watch(appCollectionProvider.future);
@@ -251,13 +259,15 @@ final getOcNftsMintedByUser = FutureProvider.autoDispose<List?>((ref) async {
     var result = await Future.wait(
       chainIds.map((chainId) async {
         try {
-          final List nftsForOwner = await getNotBurnedMintedOcNftsByAddress(
-              walletAddress!, chainId,
-              contractAddresses: ocCollections.collections[chainId]
-                  ?.map((e) => e.id)
-                  .toList());
+          final AlchemyPaginationResponse<dynamic> nftsForOwner =
+              await getNotBurnedMintedOcNftsByAddress(
+            walletAddress!,
+            chainId,
+            contractAddresses:
+                ocCollections.collections[chainId]?.map((e) => e.id).toList(),
+          );
           allFailed = false;
-          nftInfoList.addAll(nftsForOwner);
+          nftInfoList.addAll(nftsForOwner.data);
         } catch (e) {
           print('Error fetching NFTs from Alchemy for chainId $chainId: $e');
           Sentry.captureException(e);
