@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -9,8 +10,13 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 
 // A function that fetches NFTs for a given owner address and chainId
-Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
-    {List<EthereumAddress>? contractAddresses}) async {
+Future<AlchemyPaginationResponse<OcOwnedNft>> fetchNFTsForOwner(
+  EthereumAddress owner,
+  int chainId, {
+  List<EthereumAddress>? contractAddresses,
+  int pageSize = 10,
+  String? pageKey,
+}) async {
   if (contractAddresses != null && contractAddresses.length > 45) {
     Sentry.captureMessage(
         'WARNING: Only a max. of 45 contracts are supported by Alchemy API. The rest will be ignored.');
@@ -23,36 +29,26 @@ Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
   );
 
   final dio = Dio(options);
-  final List ownedNfts = [];
-  var pageKey;
   try {
-    while (true) {
-      var response = await dio.get(
-        '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getNFTsForOwner',
-        queryParameters: {
-          'owner': owner.hex,
-          'withMetadata': 'true',
-          'pageSize': '100',
-          'excludeFilters[]': ['SPAM', 'AIRDROPS'],
-          'pageKey': pageKey,
-          'contractAddresses[]': contractAddresses != null
-              ? contractAddresses.map((e) => e.hex).toList()
-              : [],
-        },
-      );
-
-      ownedNfts.addAll(response.data['ownedNfts']);
-
-      // Check if there's a new pageKey and update it, otherwise break the loop
-      if (response.data['pageKey'] != null) {
-        pageKey = response.data['pageKey'];
-      } else {
-        break;
-      }
-    }
-    return ownedNfts;
+    var response = await dio.get(
+      '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getNFTsForOwner',
+      queryParameters: {
+        'owner': owner.hex,
+        'withMetadata': 'true',
+        'pageSize': pageSize.toString(),
+        'excludeFilters[]': ['SPAM', 'AIRDROPS'],
+        'pageKey': pageKey,
+        'contractAddresses[]': contractAddresses != null
+            ? contractAddresses.map((e) => e.hex).toList()
+            : [],
+      },
+    );
+    return AlchemyPaginationResponse(
+      data: (response.data['ownedNfts'] as List).map((e) => OcOwnedNft.fromJson(e)).toList(),
+      pageKey: response.data['pageKey'],
+    );
   } catch (err) {
-    print(err);
+    talker.error(err);
     rethrow;
   }
 }
@@ -147,7 +143,7 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
   }
 }
 
-Future<AlchemyPaginationResponse<dynamic>> getNotBurnedMintedOcNftsByAddress(
+Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>> getNotBurnedMintedOcNftsByAddress(
   EthereumAddress userAddress,
   int chainId, {
   List<EthereumAddress>? contractAddresses,
@@ -165,14 +161,14 @@ Future<AlchemyPaginationResponse<dynamic>> getNotBurnedMintedOcNftsByAddress(
   dio.interceptors.add(
     TalkerDioLoggerExtension.instance,
   );
-  List filteredNfts = [];
+  List<AlchemyNftTokenIdCollectionChainId> filteredNfts = [];
 
   String? lastPageKey = startPageKey;
 
   for (;;) {
     AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId> mintedNfts =
         await fetchMintedOcNftsByAddress(
-      EthereumAddress.fromHex('0xd7C130773D63bAA579180834CE9A2662Dd23178D'),
+      userAddress,
       chainId,
       contractAddresses: contractAddresses,
       startPageKey: lastPageKey,

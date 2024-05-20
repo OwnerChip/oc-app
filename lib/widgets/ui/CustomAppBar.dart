@@ -15,7 +15,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  static const double kCustomAppBarHeight = 84.0;
+  static const double kCustomAppBarHeight = 110.0;
 
   const CustomAppBar({
     super.key,

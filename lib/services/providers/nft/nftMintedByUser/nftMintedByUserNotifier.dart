@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
@@ -6,22 +8,18 @@ import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/nft/nftForOwner/nftForOwnerData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nft/nftMintedByUser/nftMintedByUserData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nft/paginationNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 
-class OCNTFsForOwnerNotifier extends Notifier<OCNFTsForOwnerData>
+class OCNFTsMintedByUserNotifier extends Notifier<OCNFTsMintedByUserData>
     implements IPaginationNotifier {
-  OCNTFsForOwnerNotifier();
-
   @override
-  OCNFTsForOwnerData build() {
-    return OCNFTsForOwnerData.initial(
-      pageSize: 10,
-    );
+  OCNFTsMintedByUserData build() {
+    return OCNFTsMintedByUserData.initial();
   }
 
   Future<List<OcOwnedNft>> _fetchNFTs({
@@ -36,8 +34,7 @@ class OCNTFsForOwnerNotifier extends Notifier<OCNFTsForOwnerData>
     final BlockchainCollectionList ocCollections =
         await ref.read(appCollectionProvider.future);
 
-    //call fetchNFTsForOwner for each chainId; use Future.wait to wait for all futures to complete
-    final List<OcOwnedNft> nftList = [];
+    final List nftInfoList = [];
     try {
       var allFailed = true; // Flag to track if all futures fail
 
@@ -45,40 +42,68 @@ class OCNTFsForOwnerNotifier extends Notifier<OCNFTsForOwnerData>
         chainIds.map((chainId) async {
           try {
             if (ignoreNullKeys && pageKeys[chainId] == null) {
-              return null;
+              return;
             }
 
-            List<EthereumAddress>? contractAddresses =
-                ocCollections.collections[chainId]?.map((e) => e.id).toList();
-            if (contractAddresses != null && contractAddresses.isNotEmpty) {
-              final AlchemyPaginationResponse<OcOwnedNft> nftsForOwner =
-                  await fetchNFTsForOwner(
-                walletAddress!,
-                chainId,
-                contractAddresses: contractAddresses,
-                pageKey: pageKeys[chainId],
-              );
-              allFailed = false;
-              nftList.addAll(nftsForOwner.data);
-              pageKeys[chainId] = nftsForOwner.pageKey;
-            }
+            final AlchemyPaginationResponse<dynamic> nftsForOwner =
+                await getNotBurnedMintedOcNftsByAddress(
+              walletAddress!,
+              chainId,
+              contractAddresses:
+                  ocCollections.collections[chainId]?.map((e) => e.id).toList(),
+              pageSize: 10,
+              startPageKey: pageKeys[chainId],
+            );
+            pageKeys[chainId] = nftsForOwner.pageKey;
+            allFailed = false;
+            nftInfoList.addAll(nftsForOwner.data);
+          } on DioException catch (e) {
+            talker.error(
+                'Error fetching NFTs from Alchemy for chainId $chainId: ${e.response?.data}');
+            Sentry.captureException(e);
           } catch (e) {
-            print(
-                'Error fetching m1inted NFTs from Alchemy for chainId $chainId: $e');
+            talker.error(
+                'Error fetching NFTs from Alchemy for chainId $chainId: $e');
             Sentry.captureException(e);
           }
-          return nftList;
         }),
         eagerError: false,
       );
 
       if (allFailed) {
         throw Exception(
-            'Fetching NFTs for owner failed on all chains. (in getOcNftsForOwner())');
+            'Fetching minted NFTs for creator failed on all chains. (in getOcNftsMintedByUser())');
       }
-
-      return nftList;
-    } catch (err) {
+      List callData = [];
+      for (var nft in nftInfoList) {
+        callData.add({
+          "contractAddress": nft.collectionAddress,
+          "tokenId": nft.nftTokenId,
+          "type": "ERC721"
+        });
+      }
+      List<dynamic> nftList = [];
+      for (var chainId in chainIds) {
+        try {
+          if (callData.isEmpty) {
+            continue;
+          }
+          var response = await getNFTMetadataBatch(chainId, callData);
+          List<dynamic> nfts = response['nfts'];
+          nftList.addAll(nfts);
+        } catch (e) {
+          talker.error(
+              'Error fetching batched NFTs from Alchemy for chainId $chainId: $e');
+          Sentry.captureException(e);
+        }
+      }
+      // filter out nfts where "name" is null
+      return nftList
+          .where((nft) => nft['name'] != null)
+          .toList()
+          .map((nft) => OcOwnedNft.fromJson(nft))
+          .toList();
+    } catch (e, s) {
       rethrow;
     }
   }
@@ -151,7 +176,6 @@ class OCNTFsForOwnerNotifier extends Notifier<OCNFTsForOwnerData>
         loading: false,
         error: true,
       );
-
       talker.error('Error loading next page of NFTs for owner', e, s);
       Sentry.captureException(e, stackTrace: s);
     }
