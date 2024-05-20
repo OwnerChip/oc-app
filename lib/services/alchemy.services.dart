@@ -44,7 +44,9 @@ Future<AlchemyPaginationResponse<OcOwnedNft>> fetchNFTsForOwner(
       },
     );
     return AlchemyPaginationResponse(
-      data: (response.data['ownedNfts'] as List).map((e) => OcOwnedNft.fromJson(e)).toList(),
+      data: (response.data['ownedNfts'] as List)
+          .map((e) => OcOwnedNft.fromJson(e))
+          .toList(),
       pageKey: response.data['pageKey'],
     );
   } catch (err) {
@@ -143,7 +145,8 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
   }
 }
 
-Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>> getNotBurnedMintedOcNftsByAddress(
+Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
+    getNotBurnedMintedOcNftsByAddress(
   EthereumAddress userAddress,
   int chainId, {
   List<EthereumAddress>? contractAddresses,
@@ -198,14 +201,14 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>> getNotBurn
         .map((i) => mintedNfts.data[i.key])
         .toList());
 
-    if (mintedNfts.pageKey == null || filteredNfts.length >= pageSize) {
+    if (!mintedNfts.canLoadMore || filteredNfts.length >= pageSize) {
       break;
     }
   }
 
   return AlchemyPaginationResponse(
     data: filteredNfts,
-    pageKey: lastPageKey,
+    pageKey: filteredNfts.isEmpty ? null : lastPageKey,
   );
 }
 

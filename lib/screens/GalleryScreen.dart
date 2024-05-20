@@ -186,6 +186,13 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
     required String pageStorageKey,
   }) {
     return Builder(builder: (context) {
+      if (!ocNFTsForOwnerData.loading &&
+          ocNFTsForOwnerData.data.isEmpty &&
+          ocNFTsForOwnerData.canLoadMore) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          getNotifier().refreshPage();
+        });
+      }
       if (ocNFTsForOwnerData.loading &&
           ocNFTsForOwnerData.data.isEmpty &&
           !ocNFTsForOwnerData.error) {
