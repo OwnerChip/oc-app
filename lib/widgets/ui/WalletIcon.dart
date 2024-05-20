@@ -41,8 +41,14 @@ class WalletIcon extends StatelessWidget {
                   child:
                       //if iconpath ends with svg
                       iconPath.endsWith('.svg')
-                          ? SvgPicture.asset(iconPath, fit: BoxFit.contain)
-                          : Image.asset(iconPath, fit: BoxFit.contain),
+                          ? SvgPicture.asset(
+                              iconPath,
+                              fit: BoxFit.contain,
+                            )
+                          : Image.asset(
+                              iconPath,
+                              fit: BoxFit.contain,
+                            ),
                 )),
             SizedBox(
                 width: 130,

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -39,6 +40,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -74,8 +76,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _setProviderStatesFromPersistedState() async {
     try {
-      await initWcClient(ref, context);
+      await Future.wait(
+        [
+          initWcClient(ref, context),
+          setupWeb3Auth(),
+        ],
+        eagerError: true,
+      );
     } catch (e, s) {
+
       await Sentry.captureException(
         e,
         stackTrace: s,
@@ -83,48 +92,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       FlutterNativeSplash.remove();
     }
 
-    final storage = await SharedPreferences.getInstance();
+    try {
+      final storage = await SharedPreferences.getInstance();
 
-    final storedWcSession = storage.getString('session');
-    final storedWalletType = storage.getString('walletType');
-    final storedUserSession = storage.getString('userSession');
-    //check if a session is stored
-    if (storedWcSession != null &&
-        storedWalletType != null &&
-        storedUserSession != null) {
-      final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession));
-      final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
-      final backendSession =
-          UserSession.fromJson(jsonDecode(storedUserSession));
-      //check if the stored session expires in less than three days; if yes, remove it
-      //Note: WalletConnect session duration is 7 days
-      double nowPlusThreeDays =
-          DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
-      if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
-          backendSession.expiryDate > nowPlusThreeDays) {
-        ref.read(wcSessionProvider.notifier).state = wcSession;
-        ref.read(walletTypeProvider.notifier).state = walletType;
-        ref.read(userSessionProvider.notifier).state = backendSession;
+      final storedWcSession = storage.getString('session');
+      final storedWalletType = storage.getString('walletType');
+      final storedUserSession = storage.getString('userSession');
+      //check if a session is stored
+      if (storedWcSession != null &&
+          storedWalletType != null &&
+          storedUserSession != null) {
+        final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
+        final backendSession =
+            UserSession.fromJson(jsonDecode(storedUserSession));
+
+        double nowPlusThreeDays =
+            DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
+
+        if (walletType.type == EWalletType.web3auth) {
+          String? privKey;
+          try {
+            privKey = await Web3AuthFlutter.getPrivKey();
+          } catch (e) {
+            await Sentry.captureException(
+              e,
+            );
+          }
+
+          if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
+            ref.read(userAddressProvider.notifier).state =
+                EthPrivateKey.fromHex(privKey).address;
+
+            ref.read(walletTypeProvider.notifier).state = walletType;
+          } else {
+            if (privKey == null) {}
+          }
+        } else {
+          final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession));
+
+          //check if the stored session expires in less than three days; if yes, remove it
+          //Note: WalletConnect session duration is 7 days
+
+          if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
+              backendSession.expiryDate > nowPlusThreeDays) {
+            ref.read(wcSessionProvider.notifier).state = wcSession;
+            ref.read(walletTypeProvider.notifier).state = walletType;
+            ref.read(userSessionProvider.notifier).state = backendSession;
+          } else {
+            //remove session and wallet type from storage
+            storage.remove('session');
+            storage.remove('walletType');
+            storage.remove('userSession');
+          }
+        }
       } else {
         //remove session and wallet type from storage
         storage.remove('session');
         storage.remove('walletType');
         storage.remove('userSession');
       }
-    } else {
-      //remove session and wallet type from storage
-      storage.remove('session');
-      storage.remove('walletType');
-      storage.remove('userSession');
-    }
 
-    if (!shippingPopupIsShown) {
-      checkAndShowShippingPopup(context, ref,
-          setShippingPopupIsShownState: () => setState(() {
-                shippingPopupIsShown = !shippingPopupIsShown;
-              }));
+      if (!shippingPopupIsShown) {
+        checkAndShowShippingPopup(context, ref,
+            setShippingPopupIsShownState: () => setState(() {
+                  shippingPopupIsShown = !shippingPopupIsShown;
+                }));
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+    } finally {
+      FlutterNativeSplash.remove();
     }
-    FlutterNativeSplash.remove();
   }
 
   @override
@@ -241,8 +279,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           if (!data.showedTutorial && data.showTutorialNextTime) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ref.read(onboardingProvider.notifier).showedTutorial();
-              Navigator.of(context)
-                  .pushNamed(OnboardingScreen.routeName);
+              Navigator.of(context).pushNamed(OnboardingScreen.routeName);
             });
           }
         },

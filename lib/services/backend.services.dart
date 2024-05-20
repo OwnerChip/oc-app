@@ -183,7 +183,7 @@ Future<void> saveUserSession(
       sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
 
   ref.read(userAddressProvider.notifier).state = cardWalletAddress;
-  ref.read(walletTypeProvider.notifier).state = walletConfig['ownerCard'];
+  ref.read(walletTypeProvider.notifier).state = walletConfig[EWalletType.ownerCard];
   const isOwnerCard = true;
   UserSession userSession = UserSession(sessionId, signature,
       ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
