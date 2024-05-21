@@ -62,9 +62,11 @@ class OCNTFsForOwnerNotifier extends Notifier<OCNFTsForOwnerData>
               nftList.addAll(nftsForOwner.data);
               pageKeys[chainId] = nftsForOwner.pageKey;
             }
-          } catch (e) {
-            print(
-                'Error fetching m1inted NFTs from Alchemy for chainId $chainId: $e');
+          } catch (e, st) {
+            talker.error(
+                'Error fetching m1inted NFTs from Alchemy for chainId $chainId',
+                e,
+                st);
             Sentry.captureException(e);
           }
           return nftList;

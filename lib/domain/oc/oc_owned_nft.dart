@@ -17,7 +17,7 @@ class OcOwnedNft {
 
   final String tokenType;
   final String name;
-  final String description;
+  final String? description;
   final String tokenUri;
   final OcNftImage image;
 

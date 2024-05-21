@@ -84,6 +84,7 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
             'maxCount': '0x${pageSize.toRadixString(16)}',
             "fromBlock": "0x0",
             "fromAddress": "0x0000000000000000000000000000000000000000",
+            "toAddress": userAddress.hex,
             "category": ["erc721", "erc1155"],
             "contractAddresses": contractAddresses != null
                 ? contractAddresses.map((e) => e.hex).toList()
@@ -135,9 +136,10 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
       }
     }
 
+    final key = response.data["result"]['pageKey'];
     return AlchemyPaginationResponse(
       data: uniqueMintedNftEvents,
-      pageKey: response.data["result"]['pageKey'],
+      pageKey: key == startPageKey ? null : key,
     );
   } catch (err) {
     print(err);
@@ -175,10 +177,8 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
       chainId,
       contractAddresses: contractAddresses,
       startPageKey: lastPageKey,
-      pageSize: pageSize,
+      pageSize: 25,
     );
-
-    lastPageKey = mintedNfts.pageKey;
 
     //TODO: I think this only works for a max of 45 NFTs before Error code 429 too many requests from Alchemy
     var responses = await Future.wait(
@@ -201,9 +201,13 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
         .map((i) => mintedNfts.data[i.key])
         .toList());
 
-    if (!mintedNfts.canLoadMore || filteredNfts.length >= pageSize) {
+    if ((mintedNfts.pageKey == lastPageKey) ||
+        filteredNfts.length >= pageSize) {
+      lastPageKey = mintedNfts.pageKey;
       break;
     }
+
+    lastPageKey = mintedNfts.pageKey;
   }
 
   return AlchemyPaginationResponse(

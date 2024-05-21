@@ -188,7 +188,8 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
     return Builder(builder: (context) {
       if (!ocNFTsForOwnerData.loading &&
           ocNFTsForOwnerData.data.isEmpty &&
-          ocNFTsForOwnerData.canLoadMore) {
+          ocNFTsForOwnerData.canLoadMore &&
+          !ocNFTsForOwnerData.error) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           getNotifier().refreshPage();
         });

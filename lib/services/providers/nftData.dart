@@ -3,6 +3,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
@@ -164,7 +165,7 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
       await ref.watch(appCollectionProvider.future);
 
   //call fetchNFTsForOwner for each chainId; use Future.wait to wait for all futures to complete
-  final Map chainIdToNfts = {};
+  final Map<int, List<OcOwnedNft>> chainIdToNfts = {};
   try {
     var allFailed = true; // Flag to track if all futures fail
 
@@ -174,7 +175,7 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
           String? pageKey;
 
           for (;;) {
-            final AlchemyPaginationResponse nftsForOwner =
+            final AlchemyPaginationResponse<OcOwnedNft> nftsForOwner =
                 await fetchNFTsForOwner(
               walletAddress!,
               chainId,
@@ -216,11 +217,12 @@ final ocNFTsMintedByUserNotifierProvider =
 
 final voucherNftsOwnedByUserProvider =
     FutureProvider.autoDispose<List<AlchemyNFTAsset>>((ref) async {
-  final Map? nftsForOwnerByChainId =
-      await ref.watch(getNftsForOwnerProvider.future);
+  Map? nftsForOwnerByChainId = await ref.watch(getNftsForOwnerProvider.future);
   if (nftsForOwnerByChainId == null) {
     return [];
   }
+  nftsForOwnerByChainId = nftsForOwnerByChainId as Map<int, List<OcOwnedNft>>;
+
   final BlockchainCollectionList collections =
       await ref.read(appCollectionProvider.future);
 
@@ -234,13 +236,13 @@ final voucherNftsOwnedByUserProvider =
     }
   }
 
-  List nftsForOwner = [];
+  List<OcOwnedNft> nftsForOwner = [];
   nftsForOwnerByChainId.forEach((chainId, nfts) {
     nftsForOwner.addAll(nfts);
   });
   List voucherNftsOwnedByUser = nftsForOwner
-      .where((nft) => voucherContractsAllChains.contains(
-          EthereumAddress.fromHex(nft['contract']['address'].toString())))
+      .where((nft) => voucherContractsAllChains
+          .contains(EthereumAddress.fromHex(nft.contract.address.toString())))
       .toList();
   final List<AlchemyNFTAsset> alchemyVoucherNftsOwnedByUser =
       voucherNftsOwnedByUser.map((e) => AlchemyNFTAsset.fromJson(e)).toList();
