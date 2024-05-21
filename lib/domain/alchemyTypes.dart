@@ -33,20 +33,22 @@ class AlchemyNFTAsset {
 
   factory AlchemyNFTAsset.fromJson(Map<String, dynamic> json) {
     return AlchemyNFTAsset(
-      contract: AlchemyContract.fromJson(json['contract']),
-      tokenId: json['tokenId'].toString(),
-      tokenType: json['tokenType'],
-      name: json['name'],
+      contract: AlchemyContract.fromJson(json['contract'] ?? {}),
+      tokenId: json['tokenId']?.toString() ?? '',
+      tokenType: json['tokenType'] ?? '',
+      name: json['name'] ?? '',
       description: json['description'],
-      tokenUri: json['tokenUri'],
-      image: AlchemyNftAssetImage.fromJson(json['image']),
-      raw: AlchemyRaw.fromJson(json['raw']),
+      tokenUri: json['tokenUri'] ?? '',
+      image: AlchemyNftAssetImage.fromJson(json['image'] ?? {}),
+      raw: AlchemyRaw.fromJson(json['raw'] ?? {}),
       collection: json['collection'],
-      mint: Mint.fromJson(json['mint']),
+      mint: Mint.fromJson(json['mint'] ?? {}),
       owners: json['owners'],
-      timeLastUpdated: DateTime.parse(json['timeLastUpdated']),
-      balance: int.parse(json['balance']),
-      acquiredAt: AcquiredAt.fromJson(json['acquiredAt']),
+      timeLastUpdated: json['timeLastUpdated'] != null
+          ? DateTime.parse(json['timeLastUpdated'])
+          : DateTime.now(),
+      balance: json['balance'] != null ? int.parse(json['balance']) : 0,
+      acquiredAt: AcquiredAt.fromJson(json['acquiredAt'] ?? {}),
     );
   }
 }
@@ -129,12 +131,12 @@ class AlchemyNftAssetImage {
 
   factory AlchemyNftAssetImage.fromJson(Map<String, dynamic> json) {
     return AlchemyNftAssetImage(
-      cachedUrl: json['cachedUrl'],
+      cachedUrl: json['cachedUrl'] ?? '',
       thumbnailUrl: json['thumbnailUrl'],
-      pngUrl: json['pngUrl'],
-      contentType: json['contentType'],
+      pngUrl: json['pngUrl'] ?? '',
+      contentType: json['contentType'] ?? '',
       size: json['size'],
-      originalUrl: json['originalUrl'],
+      originalUrl: json['originalUrl'] ?? '',
     );
   }
 }

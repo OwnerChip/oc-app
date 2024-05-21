@@ -17,6 +17,7 @@ import 'package:ownerchip_whitelabel/services/providers/nft/nftMintedByUser/nftM
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -172,23 +173,53 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
     var result = await Future.wait(
       chainIds.map((chainId) async {
         try {
+          final List<EthereumAddress> twinCollections =
+              ocCollections.collections[chainId]?.map((e) => e.id).toList() ??
+                  [];
+          final List<EthereumAddress?> voucherCollections = ocCollections
+                  .collections[chainId]
+                  ?.map((e) => e.voucherAddress)
+                  .toList() ??
+              [];
+
+          // Merge twin and voucher collections
+          List<EthereumAddress> contractAddresses = [
+            ...twinCollections,
+            ...voucherCollections.whereType<EthereumAddress>()
+          ];
           String? pageKey;
 
+          final List<OcOwnedNft> nftsForOwner = [];
+
           for (;;) {
-            final AlchemyPaginationResponse<OcOwnedNft> nftsForOwner =
-                await fetchNFTsForOwner(
-              walletAddress!,
-              chainId,
-              pageSize: 100,
-              pageKey: pageKey,
-            );
-            chainIdToNfts[chainId] = nftsForOwner.data;
-            pageKey = nftsForOwner.pageKey;
-            allFailed = false;
-            if (pageKey == null) {
+            try {
+              final AlchemyPaginationResponse<OcOwnedNft> res =
+                  await fetchNFTsForOwner(
+                walletAddress!,
+                chainId,
+                pageSize: 100,
+                pageKey: pageKey,
+                contractAddresses: contractAddresses,
+              );
+              nftsForOwner.addAll(res.data);
+              pageKey = res.pageKey;
+              allFailed = false;
+              if (pageKey == null) {
+                break;
+              }
+            } catch (e, st) {
+              talker.error(
+                'Error fetching NFTs from Alchemy for chainId $chainId',
+                e,
+                st,
+              );
+              Sentry.captureException(e);
               break;
             }
           }
+
+          chainIdToNfts[chainId] = nftsForOwner;
+          allFailed = false;
         } catch (e) {
           print('Error fetching NFTs from Alchemy for chainId $chainId: $e');
           Sentry.captureException(e);
