@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
@@ -12,12 +13,13 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/utils/web3authUtils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:web3auth_flutter/output.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
@@ -109,7 +111,7 @@ Future<String> makeAndSendGaslessTx(
 
   try {
     String signature;
-    if (walletType.name == 'OwnerCard') {
+    if (walletType.type == EWalletType.ownerCard) {
       String hash = await getGaslessTxHash(request, toAddress);
 
       var cardSignature =
@@ -123,7 +125,7 @@ Future<String> makeAndSendGaslessTx(
                   })) as MsgSignature;
 
       signature = msgSignatureToHex(cardSignature);
-    } else {
+    } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
       w3mService!.launchConnectedWallet();
 
@@ -143,6 +145,26 @@ Future<String> makeAndSendGaslessTx(
         throw 'error signing gasless tx';
       });
       //turn on loading again, while waiting for gasless tx to be mined
+      toggleLoading();
+    } else {
+      toggleLoading();
+
+      await Web3AuthFlutter.request(
+        ChainConfig(
+          chainId: 'eip155:1',
+          rpcTarget: chainConfig[1]!.rpcUrl,
+        ),
+        'eth_signTypedData_v4',
+        [walletAddress.toString(), json.encode(typedData)],
+      );
+
+      final res = await Web3AuthUtils.getSignResult();
+
+      if (res == null) {
+        throw Exception('Failed to sign message with Web3Auth');
+      }
+
+      signature = res;
       toggleLoading();
     }
 
@@ -206,17 +228,42 @@ Future<String> makeAndSendNormalTx(
       end: endTimestamp,
       encodedOfferData: encodedOfferData);
 
-  final W3MService? w3mService = ref.read(w3mServiceProvider);
-  w3mService!.launchConnectedWallet();
+  late String txnHash;
 
-  String txnHash = await wc.request(
-    topic: wcSession.topic!,
-    chainId: 'eip155:$chainId',
-    request: SessionRequestParams(
-      method: 'eth_sendTransaction',
-      params: txParams,
-    ),
-  );
+  final walletType = ref.read(walletTypeProvider);
+  if (walletType == null) {
+    throw Exception('Wallet type not found');
+  }
+
+  if (walletType.type == EWalletType.web3auth) {
+    final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
+    final credentials =
+        EthPrivateKey.fromHex(await Web3AuthFlutter.getPrivKey());
+    final params = txParams[0];
+    final transaction = Transaction(
+      from: params['from'],
+      to: params['to'],
+      data: params['data'],
+      gasPrice: EtherAmount.inWei(BigInt.parse(
+        params['gasPrice'].toString().substring(2),
+        radix: 16,
+      )),
+      maxGas: int.parse(params['gas']),
+    );
+    txnHash = await client.sendTransaction(credentials, transaction);
+  } else {
+    final W3MService? w3mService = ref.read(w3mServiceProvider);
+    w3mService!.launchConnectedWallet();
+
+    txnHash = await wc.request(
+      topic: wcSession.topic!,
+      chainId: 'eip155:$chainId',
+      request: SessionRequestParams(
+        method: 'eth_sendTransaction',
+        params: txParams,
+      ),
+    );
+  }
 
   return txnHash;
 }
@@ -237,22 +284,31 @@ Future<String> sendPersonalSignRequest(
   final requestParams = [hexUtf8EncodedMessage, walletAddress.toString()];
 
   if (walletType.type == EWalletType.web3auth) {
-    await Web3AuthFlutter.getWeb3AuthResponse().catchError((_) {});
+    // final cfg = ChainConfig(
+    //   chainId: '11155111',
+    //   rpcTarget:
+    //       "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
+    // );
+    // TODO: Web3Auth doesn't open the correct network
+    // it always opens eth mainnet
+    final cfg = ChainConfig(
+      chainId: 'eip155:1',
+      rpcTarget: chainConfig[1]!.rpcUrl,
+    );
+
     await Web3AuthFlutter.request(
-      ChainConfig(chainId: 'eip155:1', rpcTarget: "https://polygon-rpc.com/"),
+      cfg,
       'personal_sign',
       requestParams,
     ).catchError((_) {});
-    await Web3AuthFlutter.getWeb3AuthResponse().catchError((_) {});
 
+    final res = await Web3AuthUtils.getSignResult(maxTries: 5);
 
-    final response = await Web3AuthFlutter.getSignResponse();
-
-    if(response.success) {
-      return response.result!;
+    if (res == null) {
+      throw Exception('Failed to sign message with Web3Auth');
     }
 
-    throw Exception('Failed to sign message with Web3Auth');
+    return res;
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
     w3mService!.launchConnectedWallet();
@@ -422,18 +478,17 @@ Future<void> setupWeb3Auth() async {
 
   Uri redirectUrl;
   if (Platform.isAndroid) {
-    redirectUrl =
-        Uri.parse('torusapp://org.torusresearch.com.ownerchip.demo/auth');
+    redirectUrl = Uri.parse(
+        'torusapp://org.torusresearch.${dotenv.get("BITRISEIO_PACKAGE_NAME")}/auth');
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.ownerchip.demo://auth');
+    redirectUrl = Uri.parse('${dotenv.get("BITRISEIO_PACKAGE_NAME")}://auth');
   } else {
     throw UnKnownException('Unknown platform');
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
-      clientId:
-          'BCGuB4TOrWXvmJKbZB2V1u0R-iyo1jJxsVKwTheUBSyQ850lquUtJO6YHALOtY6cbd_ZbmCIInHbrwlTy2wxYRI',
+      clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
       network: Network.sapphire_devnet,
       buildEnv: BuildEnv.testing,
       redirectUrl: redirectUrl,
