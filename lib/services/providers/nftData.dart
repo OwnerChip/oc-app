@@ -166,9 +166,25 @@ final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
     var result = await Future.wait(
       chainIds.map((chainId) async {
         try {
+          final List<EthereumAddress> twinCollections =
+              ocCollections.collections[chainId]?.map((e) => e.id).toList() ??
+                  [];
+          final List<EthereumAddress?> voucherCollections = ocCollections
+                  .collections[chainId]
+                  ?.map((e) => e.voucherAddress)
+                  .toList() ??
+              [];
+
+          // Merge twin and voucher collections
+          List<EthereumAddress> contractAddresses = [
+            ...twinCollections,
+            ...voucherCollections.whereType<EthereumAddress>()
+          ];
+
           final List nftsForOwner = await fetchNFTsForOwner(
             walletAddress!,
             chainId,
+            contractAddresses: contractAddresses,
           );
           chainIdToNfts[chainId] = nftsForOwner;
           allFailed = false;
