@@ -109,7 +109,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="torusapp" android:host="com.ownerchip.demo" android:path="/auth" />
+                <data android:scheme="torusapp" android:host="org.torusresearch.com.ownerchip.internal" android:path="/auth" />
                 <!-- Accept URIs: w3a://com.example.w3aflutter -->
             </intent-filter>
         </activity>

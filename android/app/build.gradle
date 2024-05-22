@@ -51,7 +51,7 @@ android {
 
     defaultConfig {
         applicationId "com.ownerchip.demo"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
