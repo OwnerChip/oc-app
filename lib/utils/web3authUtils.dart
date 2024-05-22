@@ -9,12 +9,12 @@ extension Web3AuthUtils on Web3AuthFlutter {
   * Sometime it throws an error that user has not logged in yet.
    */
   static Future<String?> getSignResult({
-    int maxTries = 10,
+    int maxRetries = 10,
     Duration delay = const Duration(seconds: 2),
     bool checkIfIdenticalToLastResult = true,
     bool returnLastIfFailed = true,
   }) async {
-    for (int i = 0; i <= maxTries; i++) {
+    for (int i = 0; i <= maxRetries; i++) {
       try {
         final response = await Web3AuthFlutter.getSignResponse();
 

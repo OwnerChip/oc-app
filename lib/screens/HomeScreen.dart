@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +10,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
@@ -21,7 +18,6 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:convert/convert.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -43,17 +39,16 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   static const routeName = '/home';
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
@@ -183,47 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
 
-
-
     super.initState();
-  }
-
-  Future<void> _test() async {
-    final config = chainConfig[1]!;
-
-    EthereumAddress connectedWallet = ref.read(userAddressProvider);
-    final wc = ref.read(wcProvider);
-
-    final cfg = ChainConfig(
-      chainId: '11155111',
-      rpcTarget:
-          "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
-    );
-
-    try {
-      final priv = await Web3AuthFlutter.getPrivKey();
-
-      final client = getWeb3Client(cfg.rpcTarget);
-      final credentials = EthPrivateKey.fromHex(priv);
-
-      final transaction = Transaction(
-        // 0x779877A7B0D9E8603169DdbD7836e478b4624789
-      from: credentials.address,
-        to: EthereumAddress.fromHex(
-            '0x0B8EF1eD66eB1E8b239b383e01da7fC7B0bb7f15'),
-        value: EtherAmount.inWei(
-          BigInt.from(1000000000000000),
-        ),
-      );
-      // Send the transaction
-      final String txHash = await client
-          .sendTransaction(credentials, transaction, chainId: 11155111);
-      print(txHash);
-
-    } catch (e, st) {
-      print(e);
-      print(st);
-    }
   }
 
   Future<void> makeAlchemyRefreshMetadata() async {
@@ -336,113 +291,84 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       appBar: const CustomAppBar(
         showBackButton: false,
       ),
-      body: Stack(
-        fit: StackFit.expand,
+      body: ScreenBodyLayout(
+        withScrollView: false,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        flexSides: 0,
+        padding: const EdgeInsets.only(top: 0, bottom: 15),
         children: [
-          ScreenBodyLayout(
-              withScrollView: false,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              flexSides: 0,
-              padding: const EdgeInsets.only(top: 0, bottom: 15),
-              children: [
-                dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
-                    ? const Text(
-                        'INTERNAL',
-                        style: TextStyle(color: Colors.red, fontSize: 20),
-                      )
-                    : Container(),
-
-                // MIDDLE CONTENT
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomHomeScreenButton(
-                        text: context.loc.scanning,
-                        svgPath:
-                            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                        onTap: () => onButtonPress(false)),
-                    const SizedBox(height: 40),
-                    CustomRoundedButton(
-                      width: 250,
-                      text: context.loc.scanNow,
-                      onPressed: () => onButtonPress(false),
-                    ),
-                    const SizedBox(height: 20),
-                    ref.read(userSessionProvider) == null
-                        ? Container()
-                        : relevantCollections.when(
-                            data: (data) => data.hasAnyMinterRole! &&
-                                    ref.read(userSessionProvider) != null
-                                ? Padding(
-                                    padding: EdgeInsets.only(bottom: 20),
-                                    child: CustomRoundedButton(
-                                      width: 250,
-                                      text: context.loc.initializeChip,
-                                      onPressed: () => onButtonPress(true),
-                                    ))
-                                : Container(),
-                            loading: () => SizedBox(
-                                height: 40, child: Text(context.loc.loading)),
-                            error: (err, stack) => Container()),
-                  ],
-                ),
-
-                //FOOTER CONTENT
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomOutlinedButton(
-                      width: 250,
-                      buttonText: context.loc.myCollection,
-                      onPressed: () =>
-                          Navigator.pushNamed(context, GalleryScreen.routeName),
-                    ),
-                    const SizedBox(height: 20),
-                    //if stebo app show additional button
-                    dotenv.get('APP_ID') == 'stebo'
-                        ? Column(children: [
-                            CustomOutlinedButton(
-                                buttonText: 'SteboArt',
-                                onPressed: () => launchUrl(
-                                    Uri.parse('https://www.steboart.com'),
-                                    mode: LaunchMode.externalApplication)),
-                            const SizedBox(height: 20),
-                          ])
-                        : Container(),
-                    CustomOutlinedButton(
-                      buttonText: context.loc.more,
-                      onPressed: () => Navigator.pushNamed(
-                          context, MoreInfoScreen.routeName),
-                    ),
-                  ],
+          dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
+              ? const Text(
+                  'INTERNAL',
+                  style: TextStyle(color: Colors.red, fontSize: 20),
                 )
-              ]),
-          Positioned(
-              top: 90,
-              left: 16,
-              child: Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _test();
-                    },
-                    child: Text("Make transaction"),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Web3AuthFlutter.launchWalletServices(
-                        ChainConfig(
-                          chainId: '11155111',
-                          rpcTarget:
-                              "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
-                        ),
-                      );
-                    },
-                    child: Text("Open Wallet"),
-                  ),
-                ],
-              ))
+              : Container(),
+
+          // MIDDLE CONTENT
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomHomeScreenButton(
+                  text: context.loc.scanning,
+                  svgPath:
+                      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
+                  onTap: () => onButtonPress(false)),
+              const SizedBox(height: 40),
+              CustomRoundedButton(
+                width: 250,
+                text: context.loc.scanNow,
+                onPressed: () => onButtonPress(false),
+              ),
+              const SizedBox(height: 20),
+              ref.read(userSessionProvider) == null
+                  ? Container()
+                  : relevantCollections.when(
+                      data: (data) => data.hasAnyMinterRole! &&
+                              ref.read(userSessionProvider) != null
+                          ? Padding(
+                              padding: EdgeInsets.only(bottom: 20),
+                              child: CustomRoundedButton(
+                                width: 250,
+                                text: context.loc.initializeChip,
+                                onPressed: () => onButtonPress(true),
+                              ))
+                          : Container(),
+                      loading: () => SizedBox(
+                          height: 40, child: Text(context.loc.loading)),
+                      error: (err, stack) => Container()),
+            ],
+          ),
+
+          //FOOTER CONTENT
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomOutlinedButton(
+                width: 250,
+                buttonText: context.loc.myCollection,
+                onPressed: () =>
+                    Navigator.pushNamed(context, GalleryScreen.routeName),
+              ),
+              const SizedBox(height: 20),
+              //if stebo app show additional button
+              dotenv.get('APP_ID') == 'stebo'
+                  ? Column(children: [
+                      CustomOutlinedButton(
+                          buttonText: 'SteboArt',
+                          onPressed: () => launchUrl(
+                              Uri.parse('https://www.steboart.com'),
+                              mode: LaunchMode.externalApplication)),
+                      const SizedBox(height: 20),
+                    ])
+                  : Container(),
+              CustomOutlinedButton(
+                buttonText: context.loc.more,
+                onPressed: () =>
+                    Navigator.pushNamed(context, MoreInfoScreen.routeName),
+              ),
+            ],
+          )
         ],
       ),
     );
