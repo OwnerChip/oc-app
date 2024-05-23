@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +25,7 @@ import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:convert/convert.dart';
+
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -147,22 +149,33 @@ Future<String> makeAndSendGaslessTx(
     } else {
       toggleLoading();
 
-      await Web3AuthFlutter.request(
-        ChainConfig(
-          chainId: 'eip155:1',
-          rpcTarget: chainConfig[1]!.rpcUrl,
-        ),
-        'eth_signTypedData_v4',
-        [walletAddress.toString(), json.encode(typedData)],
-      );
+      // await Web3AuthFlutter.request(
+      //   ChainConfig(
+      //     chainId: 'eip155:1',
+      //     rpcTarget: chainConfig[1]!.rpcUrl,
+      //   ),
+      //   'eth_signTypedData_v4',
+      //   [walletAddress.toString(), json.encode(typedData)],
+      // );
 
-      final res = await Web3AuthUtils.getSignResult();
+      // final res = await Web3AuthUtils.getSignResult();
 
-      if (res == null) {
+      // if (res == null) {
+      //   throw Exception('Failed to sign message with Web3Auth');
+      // }
+
+      try {
+        signature = EthSigUtil.signTypedData(
+          privateKey: await Web3AuthFlutter.getPrivKey(),
+          jsonData: json.encode(typedData),
+          version: TypedDataVersion.V4,
+        );
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        debugPrint(e.toString());
+        debugPrintStack(stackTrace: st);
         throw Exception('Failed to sign message with Web3Auth');
       }
-
-      signature = res;
       toggleLoading();
     }
 
@@ -238,7 +251,6 @@ Future<String> makeAndSendNormalTx(
     final credentials =
         EthPrivateKey.fromHex(await Web3AuthFlutter.getPrivKey());
     final params = txParams[0];
-
 
     Uint8List hexToBytes(String hexString) {
       // Ensure the hex string does not contain the '0x' prefix
