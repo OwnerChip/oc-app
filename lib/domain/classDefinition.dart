@@ -1,3 +1,4 @@
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -16,16 +17,24 @@ class WalletType {
   final String name;
   final String iconUri;
 
-  WalletType(this.name, this.iconUri);
+  final EWalletType type;
+
+  WalletType(
+    this.name,
+    this.iconUri,
+    this.type,
+  );
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'iconUri': iconUri,
+        'type': type.index,
       };
 
   WalletType.fromJson(Map<String, dynamic> json)
       : name = json['name'],
-        iconUri = json['iconUri'];
+        iconUri = json['iconUri'],
+        type = EWalletType.values[json['type']];
 }
 
 class Collection {
@@ -87,6 +96,7 @@ class ChipInfoModel {
       {required this.chipEthereumAddress,
       required this.tokenId,
       this.chipIsInitialized = false});
+
   EthereumAddress chipEthereumAddress;
   BigInt tokenId;
   bool chipIsInitialized;

@@ -51,11 +51,16 @@ android {
 
     defaultConfig {
         applicationId "com.ownerchip.demo"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+
+        manifestPlaceholders += [
+            'bitriseioPackageName': System.getenv("BITRISEIO_PACKAGE_NAME") ?: 'com.ownerchip.internal',
+            'redirectScheme': System.getenv("APP_ID") ?: 'ownerchip',
+        ]
     }
 
     signingConfigs {
