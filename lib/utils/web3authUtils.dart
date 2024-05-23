@@ -1,3 +1,4 @@
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 extension Web3AuthUtils on Web3AuthFlutter {
@@ -14,6 +15,9 @@ extension Web3AuthUtils on Web3AuthFlutter {
     bool checkIfIdenticalToLastResult = true,
     bool returnLastIfFailed = true,
   }) async {
+    Exception? lastException;
+    StackTrace? lastStackTrace;
+
     for (int i = 0; i <= maxRetries; i++) {
       try {
         final response = await Web3AuthFlutter.getSignResponse();
@@ -28,12 +32,19 @@ extension Web3AuthUtils on Web3AuthFlutter {
 
           return response.result!;
         }
-      } catch (e) {
+      } on Exception catch (e, st) {
+        lastException = e;
+        lastStackTrace = st;
         await Future.delayed(
           delay,
         );
       }
     }
+
+    Sentry.captureException(
+      lastException!,
+      stackTrace: lastStackTrace,
+    );
 
     if (returnLastIfFailed) {
       return _lastSignResult;

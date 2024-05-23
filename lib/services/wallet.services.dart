@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:eth_sig_util/eth_sig_util.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -147,7 +148,6 @@ Future<String> makeAndSendGaslessTx(
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     } else {
-
       try {
         signature = EthSigUtil.signTypedData(
           privateKey: await Web3AuthFlutter.getPrivKey(),
@@ -299,19 +299,43 @@ Future<String> sendPersonalSignRequest(
       rpcTarget: chainConfig[1]!.rpcUrl,
     );
 
-    await Web3AuthFlutter.request(
-      cfg,
-      'personal_sign',
-      requestParams,
-    ).catchError((_) {});
+    Future<String> signWithPrivateKey() async {
+      final priv = await Web3AuthFlutter.getPrivKey();
+      final credentials = EthPrivateKey.fromHex(priv);
+      final res = credentials.signPersonalMessageToUint8List(
+          Uint8List.fromList(utf8CodeUnits),
+          chainId: 1);
 
-    final res = await Web3AuthUtils.getSignResult(maxRetries: 30);
-
-    if (res == null) {
-      throw Exception('Failed to sign message with Web3Auth');
+      return '0x${hex.encode(res)}';
     }
 
-    return res;
+    try {
+      if (Platform.isAndroid) {
+        return signWithPrivateKey();
+      }
+
+      await Web3AuthFlutter.request(
+        cfg,
+        'personal_sign',
+        requestParams,
+      ).catchError((_) {});
+
+      final res = await Web3AuthUtils.getSignResult(
+          maxRetries: 3,
+          delay: const Duration(
+            seconds: 1,
+          ));
+
+      if (res == null) {
+        return signWithPrivateKey();
+      }
+
+      return res;
+    } catch (e, st) {
+      Sentry.captureException(e, stackTrace: st);
+
+      throw Exception('Failed to sign message with Web3Auth');
+    }
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
     w3mService!.launchConnectedWallet();
@@ -492,8 +516,9 @@ Future<void> setupWeb3Auth() async {
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
-      network: Network.sapphire_devnet,
-      buildEnv: BuildEnv.testing,
+      network: dotenv.get('IS_INTERNAL') == 'true'
+          ? Network.sapphire_devnet
+          : Network.sapphire_mainnet,
       redirectUrl: redirectUrl,
       whiteLabel: WhiteLabelData(
         mode: ThemeModes.dark,
