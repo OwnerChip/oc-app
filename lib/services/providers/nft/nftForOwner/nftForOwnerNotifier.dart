@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/blockchainCollectionList/blockchainCollectionList.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
+import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';

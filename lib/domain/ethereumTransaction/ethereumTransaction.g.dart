@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'ethereum_transaction.dart';
+part of 'ethereumTransaction.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

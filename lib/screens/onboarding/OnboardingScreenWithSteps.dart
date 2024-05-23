@@ -1,10 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenUserComplete.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/widgets/OnboardingCreatorCompleteButton.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/widgets/OnboardingScreenUserStep.dart';

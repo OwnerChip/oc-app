@@ -1,7 +1,7 @@
+import 'package:control_style/control_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:control_style/control_style.dart';
 
 //a function that returns a InputDecoration
 

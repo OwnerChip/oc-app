@@ -1,7 +1,6 @@
-import 'package:flutter/foundation.dart';
-import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import '../domain/classDefinition.dart';
+
+import '../domain/attachmentType/attachmentType.dart';
 
 class MetadataInputScreenArguments {
   final String sessionId;

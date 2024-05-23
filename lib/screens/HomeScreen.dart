@@ -1,42 +1,38 @@
 //import packages
 import 'dart:convert';
 
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/domain/blockchainCollectionList/blockchainCollectionList.dart';
+import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
+import 'package:ownerchip_whitelabel/domain/walletType/walletType.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
-import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
-import 'package:ownerchip_whitelabel/services/nfc.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:sentry/sentry.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-
-//import services
-import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-
 //import screens
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-
+import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
+import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+//import services
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:sentry/sentry.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';

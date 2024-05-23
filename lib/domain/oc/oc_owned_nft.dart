@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
+import 'package:ownerchip_whitelabel/domain/alchemy/alchemyContract/alchemyContract.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_nft_image.dart';
 
 part 'oc_owned_nft.g.dart';

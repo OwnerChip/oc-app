@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:math' as math;
-
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class NFCAnimation extends StatefulWidget {

@@ -1,20 +1,26 @@
 import 'dart:convert';
+
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
-import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/domain/creatorData/creatorData.dart';
+import 'package:ownerchip_whitelabel/domain/offerItemInputData/offerItemInputData.dart';
+import 'package:ownerchip_whitelabel/domain/phygital/purchase/purchase.dart';
+import 'package:ownerchip_whitelabel/domain/phygital/shippingInfo/shippingInfo.dart';
+import 'package:ownerchip_whitelabel/domain/rarible/raribleV2Order/raribleV2Order.dart';
+import 'package:ownerchip_whitelabel/domain/rartibleHashAndEncodedData/raribleHashAndEncededData.dart';
+import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
+import 'package:ownerchip_whitelabel/domain/token/token.dart';
+import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:sentry/sentry.dart';
+import 'package:sentry_dio/sentry_dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:sentry_dio/sentry_dio.dart';
-import 'package:sentry/sentry.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 /// get OC backend client (with sentry interceptor)
 Dio getBackendClient() {

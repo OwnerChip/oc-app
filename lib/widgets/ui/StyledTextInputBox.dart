@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 //misc imports
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 

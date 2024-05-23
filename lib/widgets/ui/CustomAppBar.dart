@@ -1,18 +1,18 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import '../../utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
+
+import '../../utils/localization.helper.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   static const double kCustomAppBarHeight = 110.0;

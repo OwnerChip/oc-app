@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/domain/attachmentType/attachmentType.dart';
 import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import '../../domain/classDefinition.dart';
 
 import '../../utils/localization.helper.dart';
 

@@ -1,10 +1,11 @@
 import 'dart:typed_data';
-import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
+
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/rarible/raribleConsts.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:web3dart/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 // EIP712Domain is the domain definition used by the EIP712 standard. It is used to define the domain of the signature.
 final EIP712Domain = [

@@ -1,4 +1,5 @@
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/blockchainCollectionList/blockchainCollectionList.dart';
+import 'package:ownerchip_whitelabel/domain/collection/collection.dart';
 import 'package:web3dart/web3dart.dart';
 
 // as fallback only!

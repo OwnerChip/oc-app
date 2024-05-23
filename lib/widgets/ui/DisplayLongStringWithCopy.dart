@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:web3dart/web3dart.dart';
 
 class DisplayLongStringWithCopy extends StatelessWidget {
   const DisplayLongStringWithCopy(

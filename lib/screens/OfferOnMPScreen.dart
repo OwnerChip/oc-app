@@ -4,22 +4,28 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:info_popup/info_popup.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/domain/chipInfoModel/chipInfoModel.dart';
+import 'package:ownerchip_whitelabel/domain/offerItemInputData/offerItemInputData.dart';
+import 'package:ownerchip_whitelabel/domain/rarible/raribleConsts.dart';
+import 'package:ownerchip_whitelabel/domain/rarible/raribleV2Order/raribleV2Order.dart';
+import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
+import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
+import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
+import 'package:ownerchip_whitelabel/domain/walletType/walletType.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
-import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -28,26 +34,19 @@ import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/LoadingIndicator.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:web3dart/web3dart.dart';
-
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CryptoCurrencyDropdown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
-import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class OfferOnMPScreen extends ConsumerStatefulWidget {
@@ -255,13 +254,15 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       loadingText = context.loc.offeringToken;
     });
 
-    RaribleV2Order raribleV2Order = makeRaribleV2Order(
+    final raribleV2Order = RaribleV2Order.makeRaribleV2Order(
         controllerContractAddress,
         controllerContractAddress,
         config.tokenId,
         controllerContractAddress,
-        10000, //TODO: fix this
-        0, //TODO: fix this
+        10000,
+        //TODO: fix this
+        0,
+        //TODO: fix this
         voucherContractAddress!,
         config.tokenId,
         BigInt.from(priceInPrimaryChainCurrency),

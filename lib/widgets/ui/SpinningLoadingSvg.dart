@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'CustomCard.dart';
-import '../animations/PopupLoader.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../animations/PopupLoader.dart';
+import 'CustomCard.dart';
 
 class SpinningLoadingSvg extends StatelessWidget {
   const SpinningLoadingSvg({

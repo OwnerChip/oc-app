@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class CustomOutlinedButton extends StatelessWidget {
   final double width;

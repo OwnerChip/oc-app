@@ -2,34 +2,24 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:sentry/sentry.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/ChainDropdown.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
-
-//import services
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-
+import 'package:ownerchip_whitelabel/domain/blockchainCollectionList/blockchainCollectionList.dart';
+import 'package:ownerchip_whitelabel/domain/collection/collection.dart';
 //import screens
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
-
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-//import dotenv
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-//import svg
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/ChainDropdown.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:sentry/sentry.dart';
 import 'package:web3dart/web3dart.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {

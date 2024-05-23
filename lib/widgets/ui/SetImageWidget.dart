@@ -1,19 +1,17 @@
 //import packages
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-
-//import widgets
-import 'CustomImage.dart';
-import 'CustomCard.dart';
-import 'CustomRoundedButton.dart';
-
 //import CustomColors
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-
 //import utils
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+
+import 'CustomCard.dart';
+//import widgets
+import 'CustomImage.dart';
+import 'CustomRoundedButton.dart';
 
 class SetImageWidget extends ConsumerStatefulWidget {
   const SetImageWidget(

@@ -1,5 +1,4 @@
 
-import 'package:ansicolor/ansicolor.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 

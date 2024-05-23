@@ -1,20 +1,21 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+
+import 'package:cross_file/cross_file.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/crypto.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:cross_file/cross_file.dart';
-import 'package:crypto/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 //validate ethereum address

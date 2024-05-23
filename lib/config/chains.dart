@@ -1,5 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/blockchainConfig/blockchainConfig.dart';
 
 final polygonMainnet = BlockchainConfig(
     networkName: "Polygon Mainnet",
