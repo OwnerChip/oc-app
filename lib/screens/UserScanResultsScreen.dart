@@ -152,7 +152,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             walletType!);
       }
 
@@ -264,7 +264,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             walletType!);
       }
 
@@ -398,7 +398,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           signatureData,
           connectedWallet,
           wc,
-          wcSession!,
+          wcSession,
           walletType!,
         );
       }
@@ -542,7 +542,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             walletType!,
             encodedOfferData: cancelTxCalldata);
       }
@@ -670,7 +670,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             walletType!,
             offerHash: offerHash);
       }

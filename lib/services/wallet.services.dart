@@ -187,7 +187,7 @@ Future<String> makeAndSendNormalTx(
   SignatureData signatureData,
   EthereumAddress walletAddress,
   Web3App wc,
-  W3MSession wcSession,
+  W3MSession? wcSession,
   WalletType walletType, {
   EthereumAddress? toAccount,
   BigInt? tokenId,
@@ -253,7 +253,7 @@ Future<String> makeAndSendNormalTx(
     w3mService!.launchConnectedWallet();
 
     txnHash = await wc.request(
-      topic: wcSession.topic!,
+      topic: wcSession!.topic!,
       chainId: 'eip155:$chainId',
       request: SessionRequestParams(
         method: 'eth_sendTransaction',
