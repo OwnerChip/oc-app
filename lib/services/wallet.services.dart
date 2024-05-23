@@ -147,22 +147,6 @@ Future<String> makeAndSendGaslessTx(
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     } else {
-      toggleLoading();
-
-      // await Web3AuthFlutter.request(
-      //   ChainConfig(
-      //     chainId: 'eip155:1',
-      //     rpcTarget: chainConfig[1]!.rpcUrl,
-      //   ),
-      //   'eth_signTypedData_v4',
-      //   [walletAddress.toString(), json.encode(typedData)],
-      // );
-
-      // final res = await Web3AuthUtils.getSignResult();
-
-      // if (res == null) {
-      //   throw Exception('Failed to sign message with Web3Auth');
-      // }
 
       try {
         signature = EthSigUtil.signTypedData(
@@ -176,7 +160,6 @@ Future<String> makeAndSendGaslessTx(
         debugPrintStack(stackTrace: st);
         throw Exception('Failed to sign message with Web3Auth');
       }
-      toggleLoading();
     }
 
     String txnHash = await sendGaslessRequest(
