@@ -353,5 +353,14 @@
     "onboardingUserCompleteSubtitle": "You have completed the tutorial.",
     "onboardingUserCompleteButtonTitle": "Start scanning now!",
     "onboardingCheckboxShowAgainTitle": "Show again next time",
-    "onboardingMoreInfoShowTutorialButtonTitle": "Show Tutorial"
+    "onboardingMoreInfoShowTutorialButtonTitle": "Show Tutorial",
+    "@_GALLERY": {},
+    "galleryPullToRefresh": "Pull to refresh",
+    "galleryRefreshing": "Refreshing...",
+    "galleryLoadMore": "Load more",
+    "galleryLoadingMore": "Loading...",
+    "galleryNoMoreItems": "No more NFTs to load",
+    "errorLoadingOwnedItems": "Error loading owned NFTs",
+    "errorLoadingCreatedItems": "Error loading created NFTs",
+    "galleryErrorLoadingMore": "Error loading more NFTs"
 }
