@@ -33,7 +33,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Web3App? wc = ref.watch(wcProvider);
-    SessionData? wcSession = ref.watch(wcSessionProvider);
+    W3MSession? wcSession = ref.watch(wcSessionProvider);
     UserSession? userSession = ref.watch(userSessionProvider);
     return AppBar(
       automaticallyImplyLeading: false,
@@ -94,7 +94,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
                             if (wc != null && wcSession != null) {
                               wc.disconnectSession(
-                                  topic: wcSession.topic,
+                                  topic: wcSession.topic!,
                                   reason: const WalletConnectError(
                                       code: 6000,
                                       message:

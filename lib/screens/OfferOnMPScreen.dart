@@ -48,6 +48,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
+import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class OfferOnMPScreen extends ConsumerStatefulWidget {
   const OfferOnMPScreen({Key? key}) : super(key: key);
@@ -125,7 +126,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       SignatureData signatureData,
       EthereumAddress connectedWallet,
       Web3App? wc,
-      SessionData? wcSession,
+      W3MSession? wcSession,
       UserSession userSession,
       WalletType? walletType) async {
     //check if user is allowed to use gas station
@@ -201,7 +202,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final Web3App? wc = ref.read(wcProvider);
     final SignatureData signatureData = ref.read(chipSignatureDataProvider);
     final UserSession userSession = ref.read(userSessionProvider)!;
-    final SessionData? wcSession = ref.read(wcSessionProvider);
+    final W3MSession? wcSession = ref.read(wcSessionProvider);
     final WalletType? walletType = ref.read(walletTypeProvider);
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
     final TokenChainAndCollection config =

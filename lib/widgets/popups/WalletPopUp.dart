@@ -9,6 +9,7 @@ import 'package:flutter/gestures.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
@@ -42,37 +43,57 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                // OwnerCard wallet
-                WalletIcon(
-                  iconPath:
-                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
-                  walletName: context.loc.ownercard,
-                  onTap: () async {
-                    await Navigator.pushNamed(context, PinScreen.routeName,
-                        arguments: PinScreenArguments(
-                            activeFeature: PinScreenActiveFeature.verifyPinAuth,
-                            callback: (String pin) async {
-                              onCardPress(ref, context, pin, true);
-                            }));
-                  },
-                  backgroundColor: CustomColors(dotenv.get('APP_ID'))
-                      .ownerCardWalletIconBackgroundColor,
-                ),
-                WalletIcon(
-                  iconPath:
-                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/walletconnect.png",
-                  walletName: 'WalletConnect',
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await w3mService!.disconnect();
-                    await w3mService!.openModal(navigatorKey.currentContext!);
-                    w3mService.closeModal();
-                  },
-                  backgroundColor: CustomColors(dotenv.get('APP_ID'))
-                      .ownerCardWalletIconBackgroundColor,
-                ),
-              ]),
+              Wrap(
+                runSpacing: 16,
+                children: [
+                  // OwnerCard wallet
+                  WalletIcon(
+                    iconPath:
+                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
+                    walletName: context.loc.ownercard,
+                    onTap: () async {
+                      await Navigator.pushNamed(context, PinScreen.routeName,
+                          arguments: PinScreenArguments(
+                              activeFeature:
+                                  PinScreenActiveFeature.verifyPinAuth,
+                              callback: (String pin) async {
+                                onCardPress(ref, context, pin, true);
+                              }));
+                    },
+                    backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                        .ownerCardWalletIconBackgroundColor,
+                  ),
+                  WalletIcon(
+                    iconPath:
+                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/walletconnect.png",
+                    walletName: 'WalletConnect',
+                    onTap: () async {
+                      Navigator.pop(context);
+
+                      if (w3mService?.isConnected ?? false) {
+                        await w3mService?.disconnect();
+                        await Future.delayed(const Duration(seconds: 1));
+                      }
+
+                      await w3mService?.openModal(navigatorKey.currentContext!);
+                      if (ref.read(wcSessionProvider) != null) {
+                        authPopupBuilder(
+                          navigatorKey.currentContext!,
+                          ref,
+                          w3mService!.web3App! as Web3App,
+                          "WalletConnect",
+                        ).then((e) {
+                          if (e == null || e == false) {
+                            w3mService.disconnect();
+                          }
+                        });
+                      }
+                    },
+                    backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                        .ownerCardWalletIconBackgroundColor,
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.only(top: 30),
