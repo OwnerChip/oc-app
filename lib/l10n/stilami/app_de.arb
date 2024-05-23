@@ -356,5 +356,14 @@
     "onboardingUserCompleteSubtitle": "Du hast das Tutorial erfolgreich abgeschlossen.",
     "onboardingUserCompleteButtonTitle": "Jetzt scannen!",
     "onboardingCheckboxShowAgainTitle": "Beim nächsten Mal anzeigen",
-    "onboardingMoreInfoShowTutorialButtonTitle": "Tutorial anzeigen"
+    "onboardingMoreInfoShowTutorialButtonTitle": "Tutorial anzeigen",
+    "@_GALLERY": {},
+    "galleryPullToRefresh": "Zum Aktualisieren herunterziehen",
+    "galleryRefreshing": "Neu laden...",
+    "galleryLoadMore": "Mehr laden",
+    "galleryLoadingMore": "Laden...",
+    "galleryNoMoreItems": "Alle NFTs geladen",
+    "errorLoadingOwnedItems": "Fehler beim Laden der NFTs",
+    "errorLoadingCreatedItems": "Fehler beim Laden der NFTs",
+    "galleryErrorLoadingMore": "Fehler beim Laden der NFTs"
 }
