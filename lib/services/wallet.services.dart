@@ -299,7 +299,7 @@ Future<String> sendPersonalSignRequest(
       requestParams,
     ).catchError((_) {});
 
-    final res = await Web3AuthUtils.getSignResult(maxRetries: 5);
+    final res = await Web3AuthUtils.getSignResult(maxRetries: 30);
 
     if (res == null) {
       throw Exception('Failed to sign message with Web3Auth');
@@ -341,13 +341,13 @@ Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
   //create Web3Modal service and set provider
   final W3MService w3mService = W3MService(
     projectId: dotenv.env['WC_PROJECT_ID']!,
-    metadata: const PairingMetadata(
+    metadata: PairingMetadata(
       name: 'OwnerChip',
       description: 'OwnerChip - Connecting physical objects to the blockchain',
       url: 'https://www.ownerchip.com',
       icons: ['https://avatars.githubusercontent.com/u/116345848'],
       redirect: Redirect(
-        native: 'ownerchip://',
+        native: '${dotenv.get("APP_ID")}://',
         universal: 'https://www.ownerchip.com',
       ),
     ),
