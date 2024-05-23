@@ -1,6 +1,7 @@
 //package imports
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +23,7 @@ import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
-
+import 'package:convert/convert.dart';
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -237,15 +238,25 @@ Future<String> makeAndSendNormalTx(
     final credentials =
         EthPrivateKey.fromHex(await Web3AuthFlutter.getPrivKey());
     final params = txParams[0];
+
+
+    Uint8List hexToBytes(String hexString) {
+      // Ensure the hex string does not contain the '0x' prefix
+      if (hexString.startsWith('0x')) {
+        hexString = hexString.substring(2);
+      }
+      return Uint8List.fromList(hex.decode(hexString));
+    }
+
     final transaction = Transaction(
-      from: params['from'],
-      to: params['to'],
-      data: params['data'],
+      from: walletAddress,
+      to: toAddress,
+      data: hexToBytes(params['data']),
       gasPrice: EtherAmount.inWei(BigInt.parse(
         params['gasPrice'].toString().substring(2),
         radix: 16,
       )),
-      maxGas: int.parse(params['gas']),
+      maxGas: int.tryParse(params['gas']),
     );
     txnHash = await client.sendTransaction(credentials, transaction);
   } else {
