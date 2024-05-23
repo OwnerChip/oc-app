@@ -91,6 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     try {
+      final wcService = ref.read(w3mServiceProvider);
+
       final storage = await SharedPreferences.getInstance();
 
       final storedWcSession = storage.getString('session');
@@ -144,6 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
+            wcService?.disconnect();
           }
         }
       } else {
@@ -151,6 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('session');
         storage.remove('walletType');
         storage.remove('userSession');
+        wcService?.disconnect();
       }
 
       if (!shippingPopupIsShown) {
@@ -159,8 +163,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   shippingPopupIsShown = !shippingPopupIsShown;
                 }));
       }
-    } catch (e) {
-      Sentry.captureException(e);
+    } catch (e, st) {
+      Sentry.captureException(
+        e,
+        stackTrace: st,
+      );
     } finally {
       FlutterNativeSplash.remove();
     }

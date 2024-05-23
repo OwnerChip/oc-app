@@ -78,13 +78,24 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                     walletName: 'WalletConnect',
                     onTap: () async {
                       Navigator.pop(context);
-                      await w3mService!.disconnect();
-                      await w3mService.openModal(navigatorKey.currentContext!);
+
+                      if (w3mService?.isConnected ?? false) {
+                        await w3mService?.disconnect();
+                        await Future.delayed(const Duration(seconds: 1));
+                      }
+
+                      await w3mService?.openModal(navigatorKey.currentContext!);
                       if (ref.read(wcSessionProvider) != null) {
                         authPopupBuilder(
                           navigatorKey.currentContext!,
                           ref,
-                        );
+                          w3mService!.web3App! as Web3App,
+                          "WalletConnect",
+                        ).then((e) {
+                          if (e == null || e == false) {
+                            w3mService.disconnect();
+                          }
+                        });
                       }
                     },
                     backgroundColor: CustomColors(dotenv.get('APP_ID'))
@@ -123,6 +134,8 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                         authPopupBuilder(
                           navigatorKey.currentContext!,
                           ref,
+                          w3mService!.web3App! as Web3App,
+                          walletConfig[EWalletType.web3auth]!.name,
                         );
                       });
                     },

@@ -21,11 +21,9 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
-Future<void> authPopupBuilder(
-  BuildContext context,
-  WidgetRef ref,
-) async {
-  return showDialog<void>(
+Future<dynamic> authPopupBuilder(
+    BuildContext context, WidgetRef ref, Web3App wc, String walletName) async {
+  return showDialog<dynamic>(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -118,7 +116,7 @@ Future<void> onTapAuth(
           context.loc.pleaseTryAgainLater, 'error'),
     );
     //remove auth popup
-    Navigator.pop(context);
+    Navigator.pop(context, false);
     return;
   }
 
@@ -164,5 +162,5 @@ Future<void> onTapAuth(
         context.loc.walletIsConnected, 'success'),
   );
 
-  Navigator.pop(context);
+  Navigator.pop(context, true);
 }
