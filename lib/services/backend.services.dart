@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/domain/rartibleHashAndEncodedData/raribleHa
 import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
 import 'package:ownerchip_whitelabel/domain/token/token.dart';
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
+import 'package:ownerchip_whitelabel/domain/walletType/eWalletType.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -189,7 +190,7 @@ Future<void> saveUserSession(
       sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
 
   ref.read(userAddressProvider.notifier).state = cardWalletAddress;
-  ref.read(walletTypeProvider.notifier).state = walletConfig['ownerCard'];
+  ref.read(walletTypeProvider.notifier).state = walletConfig[EWalletType.ownerCard];
   const isOwnerCard = true;
   UserSession userSession = UserSession(sessionId, signature,
       ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);

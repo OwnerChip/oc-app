@@ -1,15 +1,19 @@
 //package imports
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
+import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
-import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/domain/eip155/eip155.dart';
 import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
+import 'package:ownerchip_whitelabel/domain/walletType/eWalletType.dart';
 import 'package:ownerchip_whitelabel/domain/walletType/walletType.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
@@ -17,14 +21,19 @@ import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/utils/web3authUtils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:web3auth_flutter/enums.dart';
+import 'package:web3auth_flutter/input.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 Uri convertToWcLink({
@@ -102,7 +111,7 @@ Future<String> makeAndSendGaslessTx(
 
   try {
     String signature;
-    if (walletType.name == 'OwnerCard') {
+    if (walletType.type == EWalletType.ownerCard) {
       String hash = await getGaslessTxHash(request, toAddress);
 
       var cardSignature =
@@ -116,7 +125,7 @@ Future<String> makeAndSendGaslessTx(
                   })) as MsgSignature;
 
       signature = msgSignatureToHex(cardSignature);
-    } else {
+    } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
       w3mService!.launchConnectedWallet();
 
@@ -137,6 +146,19 @@ Future<String> makeAndSendGaslessTx(
       });
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
+    } else {
+      try {
+        signature = EthSigUtil.signTypedData(
+          privateKey: await Web3AuthFlutter.getPrivKey(),
+          jsonData: json.encode(typedData),
+          version: TypedDataVersion.V4,
+        );
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        debugPrint(e.toString());
+        debugPrintStack(stackTrace: st);
+        throw Exception('Failed to sign message with Web3Auth');
+      }
     }
 
     String txnHash = await sendGaslessRequest(
@@ -161,7 +183,7 @@ Future<String> makeAndSendNormalTx(
   SignatureData signatureData,
   EthereumAddress walletAddress,
   Web3App wc,
-  W3MSession wcSession,
+  W3MSession? wcSession,
   WalletType walletType, {
   EthereumAddress? toAccount,
   BigInt? tokenId,
@@ -199,17 +221,51 @@ Future<String> makeAndSendNormalTx(
       end: endTimestamp,
       encodedOfferData: encodedOfferData);
 
-  final W3MService? w3mService = ref.read(w3mServiceProvider);
-  w3mService!.launchConnectedWallet();
+  late String txnHash;
 
-  String txnHash = await wc.request(
-    topic: wcSession.topic!,
-    chainId: 'eip155:$chainId',
-    request: SessionRequestParams(
-      method: 'eth_sendTransaction',
-      params: txParams,
-    ),
-  );
+  final walletType = ref.read(walletTypeProvider);
+  if (walletType == null) {
+    throw Exception('Wallet type not found');
+  }
+
+  if (walletType.type == EWalletType.web3auth) {
+    final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
+    final credentials =
+        EthPrivateKey.fromHex(await Web3AuthFlutter.getPrivKey());
+    final params = txParams[0];
+
+    Uint8List hexToBytes(String hexString) {
+      // Ensure the hex string does not contain the '0x' prefix
+      if (hexString.startsWith('0x')) {
+        hexString = hexString.substring(2);
+      }
+      return Uint8List.fromList(hex.decode(hexString));
+    }
+
+    final transaction = Transaction(
+      from: walletAddress,
+      to: toAddress,
+      data: hexToBytes(params['data']),
+      gasPrice: EtherAmount.inWei(BigInt.parse(
+        params['gasPrice'].toString().substring(2),
+        radix: 16,
+      )),
+      maxGas: int.tryParse(params['gas']),
+    );
+    txnHash = await client.sendTransaction(credentials, transaction);
+  } else {
+    final W3MService? w3mService = ref.read(w3mServiceProvider);
+    w3mService!.launchConnectedWallet();
+
+    txnHash = await wc.request(
+      topic: wcSession!.topic!,
+      chainId: 'eip155:$chainId',
+      request: SessionRequestParams(
+        method: 'eth_sendTransaction',
+        params: txParams,
+      ),
+    );
+  }
 
   return txnHash;
 }
@@ -219,36 +275,89 @@ Future<String> sendPersonalSignRequest(
   WidgetRef ref,
   String message,
   EthereumAddress walletAddress,
-  Web3App wc,
-  W3MSession wcSession,
+  W3MSession? wcSession,
+  Web3AuthNotifierData web3AuthData,
   WalletType walletType,
 ) async {
-  final W3MService? w3mService = ref.read(w3mServiceProvider);
-  w3mService!.launchConnectedWallet();
-
   List<int> utf8CodeUnits = utf8.encode(message);
   String hexUtf8EncodedMessage =
       "0x" + utf8CodeUnits.map((e) => e.toRadixString(16)).join();
 
-  try {
-    String signature = await wc.request(
-      topic: wcSession.topic!,
+  final requestParams = [hexUtf8EncodedMessage, walletAddress.toString()];
+
+  if (walletType.type == EWalletType.web3auth) {
+    // final cfg = ChainConfig(
+    //   chainId: '11155111',
+    //   rpcTarget:
+    //       "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
+    // );
+    // TODO: Web3Auth doesn't open the correct network
+    // it always opens eth mainnet
+    final cfg = ChainConfig(
       chainId: 'eip155:1',
-      // chainId: w3mService.selectedChain?.chainId == null
-      // ? 'eip155:1'
-      // : 'eip155:${w3mService.selectedChain?.chainId}',
-      request: SessionRequestParams(
-        method: 'personal_sign',
-        params: [hexUtf8EncodedMessage, walletAddress.toString()],
-      ),
+      rpcTarget: chainConfig[1]!.rpcUrl,
     );
-    return signature;
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
+
+    Future<String> signWithPrivateKey() async {
+      final priv = await Web3AuthFlutter.getPrivKey();
+      final credentials = EthPrivateKey.fromHex(priv);
+      final res = credentials.signPersonalMessageToUint8List(
+          Uint8List.fromList(utf8CodeUnits),
+          chainId: 1);
+
+      return '0x${hex.encode(res)}';
+    }
+
+    try {
+      if (Platform.isAndroid) {
+        return signWithPrivateKey();
+      }
+
+      await Web3AuthFlutter.request(
+        cfg,
+        'personal_sign',
+        requestParams,
+      ).catchError((_) {});
+
+      final res = await Web3AuthUtils.getSignResult(
+          maxRetries: 3,
+          delay: const Duration(
+            seconds: 1,
+          ));
+
+      if (res == null) {
+        return signWithPrivateKey();
+      }
+
+      return res;
+    } catch (e, st) {
+      Sentry.captureException(e, stackTrace: st);
+
+      throw Exception('Failed to sign message with Web3Auth');
+    }
+  } else {
+    final W3MService? w3mService = ref.read(w3mServiceProvider);
+    w3mService!.launchConnectedWallet();
+
+    try {
+      String signature = await w3mService.request(
+        topic: wcSession!.topic!,
+        chainId: 'eip155:1',
+        // chainId: w3mService.selectedChain?.chainId == null
+        // ? 'eip155:1'
+        // : 'eip155:${w3mService.selectedChain?.chainId}',
+        request: SessionRequestParams(
+          method: 'personal_sign',
+          params: requestParams,
+        ),
+      );
+      return signature;
+    } catch (e) {
+      Sentry.captureException(e);
+      print(e);
+      rethrow;
+    }
   }
-  ;
 }
 
 Future<String> getGaslessTxHash(request, collectionId) async {
@@ -261,13 +370,13 @@ Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
   //create Web3Modal service and set provider
   final W3MService w3mService = W3MService(
     projectId: dotenv.env['WC_PROJECT_ID']!,
-    metadata: const PairingMetadata(
+    metadata: PairingMetadata(
       name: 'OwnerChip',
       description: 'OwnerChip - Connecting physical objects to the blockchain',
       url: 'https://www.ownerchip.com',
       icons: ['https://avatars.githubusercontent.com/u/116345848'],
       redirect: Redirect(
-        native: 'ownerchip://',
+        native: '${dotenv.get("APP_ID")}://',
         universal: 'https://www.ownerchip.com',
       ),
     ),
@@ -303,14 +412,15 @@ void Function(ModalConnect?) wrapOnSessionConnect(
 
     //set session and wallet type provider
     ref.read(wcSessionProvider.notifier).state = args?.session;
-    ref.read(walletTypeProvider.notifier).state = walletConfig['walletConnect'];
+    ref.read(walletTypeProvider.notifier).state =
+        walletConfig[EWalletType.walletConnect];
 
     //store session and wallet type
     final storage = SharedPreferences.getInstance();
     final session = jsonEncode(args?.session.toMap());
     storage.then((value) => value.setString('session', session));
-    storage.then((value) => value.setString(
-        'walletType', jsonEncode(walletConfig['walletConnect']!.toJson())));
+    storage.then((value) => value.setString('walletType',
+        jsonEncode(walletConfig[EWalletType.walletConnect]!.toJson())));
   };
 }
 
@@ -385,4 +495,38 @@ Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
     //remove wallet popup
     Navigator.pop(context);
   }
+}
+
+bool _initializedWeb3Auth = false;
+
+Future<void> setupWeb3Auth() async {
+  if (_initializedWeb3Auth) return;
+
+  Uri redirectUrl;
+  if (Platform.isAndroid) {
+    redirectUrl = Uri.parse(
+        'torusapp://org.torusresearch.${dotenv.get("BITRISEIO_PACKAGE_NAME")}/auth');
+  } else if (Platform.isIOS) {
+    redirectUrl = Uri.parse('${dotenv.get("BITRISEIO_PACKAGE_NAME")}://auth');
+  } else {
+    throw UnKnownException('Unknown platform');
+  }
+
+  await Web3AuthFlutter.init(
+    Web3AuthOptions(
+      clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
+      network: dotenv.get('IS_INTERNAL') == 'true'
+          ? Network.sapphire_devnet
+          : Network.sapphire_mainnet,
+      redirectUrl: redirectUrl,
+      whiteLabel: WhiteLabelData(
+        mode: ThemeModes.dark,
+        defaultLanguage: Language.en,
+      ),
+    ),
+  );
+
+  await Web3AuthFlutter.initialize();
+
+  _initializedWeb3Auth = true;
 }

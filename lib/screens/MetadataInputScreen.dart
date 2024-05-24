@@ -234,7 +234,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             walletType!,
             twinTokenMetadataCID: twinTokenMetadataCID,
             voucherTokenMetadataCID: voucherTokenMetadataCID);

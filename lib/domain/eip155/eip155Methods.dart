@@ -1,4 +1,3 @@
-import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/domain/eip155/eip155.dart';
 
 enum EIP155Methods {

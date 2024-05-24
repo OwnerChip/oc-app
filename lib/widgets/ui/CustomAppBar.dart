@@ -8,8 +8,10 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 import '../../utils/localization.helper.dart';
@@ -84,6 +86,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             //reset providers
                             ref.read(userAddressProvider.notifier).state =
                                 zeroAddress;
+
                             ref.read(walletTypeProvider.notifier).state = null;
                             ref.read(userSessionProvider.notifier).state = null;
 
@@ -95,8 +98,11 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             storage.remove('walletType');
                             storage.remove('userSession');
 
+                            ref.refresh(web3AuthNotifierProvider);
+                            await Web3AuthFlutter.logout().catchError((_) {});
+
                             if (wc != null && wcSession != null) {
-                              wc.disconnectSession(
+                              await wc.disconnectSession(
                                   topic: wcSession.topic!,
                                   reason: const WalletConnectError(
                                       code: 6000,
