@@ -119,9 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             );
           }
 
-          // TODO: For some reason backend session expiry date is 0 when using web3auth
-          // if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
-          if (privKey != null) {
+          if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
             ref.read(userAddressProvider.notifier).state =
                 EthPrivateKey.fromHex(privKey).address;
 
