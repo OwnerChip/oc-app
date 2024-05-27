@@ -17,7 +17,7 @@ import 'package:sentry/sentry.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:pinput/pinput.dart';
 
 class PinScreen extends ConsumerStatefulWidget {
