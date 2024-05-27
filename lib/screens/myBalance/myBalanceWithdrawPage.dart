@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
+import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawConfirmationDialog.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
@@ -28,6 +32,16 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   final TextEditingController _amountController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+
+    // TODO: for testing purposes only
+    final userState = ref.read(userSessionProvider);
+    _addressController.value =
+        TextEditingValue(text: userState?.userWalletAddress.hex ?? "");
+  }
+
+  @override
   void dispose() {
     _addressController.dispose();
     _amountController.dispose();
@@ -43,7 +57,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
   @override
   Widget build(BuildContext context) {
-    final myBalanceNotifier = ref.read(myBalanceNotifierProvider);
+    final myBalanceNotifier = ref.watch(myBalanceNotifierProvider);
 
     final item = myBalanceNotifier.myBalanceListItem;
 
@@ -137,6 +151,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                     child: CustomOutlinedButton(
                       onPressed: () {
                         _amountController.text = item.balance;
+                        if (mounted) {
+                          setState(() {});
+                        }
                       },
                       buttonText: context.loc.myBalanceSendMaxButton,
                     ),
@@ -152,9 +169,26 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                   duration: const Duration(milliseconds: 300),
                   opacity: _isSendAvailable(item) ? 1.0 : 0.5,
                   child: CustomRoundedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (!_isSendAvailable(item)) {
                         return;
+                      }
+                      final walletType = ref.read(walletTypeProvider);
+
+                      if (walletType?.type == EWalletType.web3auth) {
+                        final confirmation = await showDialog(
+                          context: context,
+                          builder: (context) =>
+                              MyBalanceWithdrawConfirmationDialog(
+                            amount: _amountController.text,
+                            address: _addressController.text,
+                            item: item,
+                          ),
+                        );
+
+                        if (confirmation != true) {
+                          return;
+                        }
                       }
 
                       // TODO: Implement send

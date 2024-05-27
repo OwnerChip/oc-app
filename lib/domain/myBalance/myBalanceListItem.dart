@@ -1,6 +1,6 @@
 class MyBalanceListItem {
   final String name;
-  final String network;
+  final int network;
   final String balance;
   final String balanceEur;
 

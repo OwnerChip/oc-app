@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawPage.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
@@ -27,7 +28,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
     super.initState();
     _myBalanceList.add(
       const MyBalanceListItem(
-        network: "Ethereum Mainnet",
+        network: 1,
         name: "ETH",
         balance: "0,674",
         balanceEur: "1.373",
@@ -35,7 +36,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
       ),
     );
     _myBalanceList.add(const MyBalanceListItem(
-      network: "Polygon Mainnet",
+      network: 137,
       name: "MATIC",
       balance: "100,54",
       balanceEur: "79,46",
@@ -153,7 +154,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.network),
+                    Text(chainConfig[item.network]!.networkName),
                     Text(
                       item.name,
                       style: Theme.of(context).textTheme.displaySmall!.copyWith(
