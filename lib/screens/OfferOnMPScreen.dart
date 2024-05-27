@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:info_popup/info_popup.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
@@ -89,7 +90,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     _setCurrencyDropDownValuesFuture = setCurrencyDropDownValues();
 
     UserSession? userSession = ref.read(userSessionProvider);
-    if (userSession != null && !userSession.isOwnerCard) {
+    final wallet = ref.read(walletTypeProvider);
+    if (userSession != null &&
+        !userSession.isOwnerCard &&
+        wallet?.type != EWalletType.web3auth) {
       _sellerPayoutInputController.value = TextEditingValue(
           text: userSession.userWalletAddress.toString(),
           selection: TextSelection.fromPosition(TextPosition(
@@ -260,8 +264,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         controllerContractAddress,
         config.tokenId,
         controllerContractAddress,
-        10000, //TODO: fix this
-        0, //TODO: fix this
+        10000,
+        //TODO: fix this
+        0,
+        //TODO: fix this
         voucherContractAddress!,
         config.tokenId,
         BigInt.from(priceInPrimaryChainCurrency),
