@@ -25,9 +25,11 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.text,
     this.showBackButton = true,
     this.showWalletButton = true,
+    this.overrideBackButton,
   });
 
   final String? text;
+  final VoidCallback? overrideBackButton;
   final bool showBackButton;
   final bool showWalletButton;
 
@@ -53,7 +55,14 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       icon: SvgPicture.asset(
                           "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/back.svg"),
                       color: CustomColors(dotenv.get('APP_ID')).black,
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        if(overrideBackButton != null) {
+                          overrideBackButton!();
+                          return;
+                        }
+
+                        Navigator.of(context).pop();
+                      },
                     ),
                   ],
                 )
