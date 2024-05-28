@@ -197,30 +197,33 @@ Future<String> makeAndSendNormalTx(
   BigInt? salt,
   int? endTimestamp,
   String? encodedOfferData,
+  EtherAmount? amount,
 }) async {
   var txParams = await buildEthSendTransactionRequest(
-      getRPCUrlFromChainId(chainId),
-      toAddress,
-      walletAddress,
-      functionSignatureHash,
-      signatureData.hashedMsg,
-      signatureData.signature,
-      toAccount: toAccount,
-      tokenId: tokenId,
-      tokenURI:
-          twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
-      voucherTokenURI: voucherTokenMetadataCID != null
-          ? "ipfs://$voucherTokenMetadataCID"
-          : null,
-      enableRecovery: false,
-      sellerPayoutAddress: sellerPayoutAddress,
-      typedDataHash: typedDataHash,
-      chainId: chainId,
-      offerHash: offerHash,
-      offerPrice: price,
-      salt: salt,
-      end: endTimestamp,
-      encodedOfferData: encodedOfferData);
+    getRPCUrlFromChainId(chainId),
+    toAddress,
+    walletAddress,
+    functionSignatureHash,
+    signatureData.hashedMsg,
+    signatureData.signature,
+    toAccount: toAccount,
+    tokenId: tokenId,
+    tokenURI:
+        twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
+    voucherTokenURI: voucherTokenMetadataCID != null
+        ? "ipfs://$voucherTokenMetadataCID"
+        : null,
+    enableRecovery: false,
+    sellerPayoutAddress: sellerPayoutAddress,
+    typedDataHash: typedDataHash,
+    chainId: chainId,
+    offerHash: offerHash,
+    offerPrice: price,
+    salt: salt,
+    end: endTimestamp,
+    encodedOfferData: encodedOfferData,
+    amount: amount,
+  );
 
   late String txnHash;
 
@@ -246,14 +249,28 @@ Future<String> makeAndSendNormalTx(
     final transaction = Transaction(
       from: walletAddress,
       to: toAddress,
-      data: hexToBytes(params['data']),
+      data: params['data'] != null ? hexToBytes(params['data']) : null,
       gasPrice: EtherAmount.inWei(BigInt.parse(
         params['gasPrice'].toString().substring(2),
         radix: 16,
       )),
-      maxGas: int.tryParse(params['gas']),
+      maxGas: int.tryParse(
+        params['gas'],
+      ),
+      value: params['value'] != null
+          ? EtherAmount.inWei(
+              BigInt.parse(
+                params['value'].toString().substring(2),
+                radix: 16,
+              ),
+            )
+          : null,
     );
-    txnHash = await client.sendTransaction(credentials, transaction);
+    txnHash = await client.sendTransaction(
+      credentials,
+      transaction,
+      chainId: chainId,
+    );
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
     w3mService!.launchConnectedWallet();

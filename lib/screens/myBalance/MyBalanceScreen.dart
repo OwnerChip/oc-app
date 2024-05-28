@@ -1,13 +1,18 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawPage.dart';
+import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifierData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 class MyBalancePage extends ConsumerStatefulWidget {
   const MyBalancePage({super.key});
@@ -19,34 +24,23 @@ class MyBalancePage extends ConsumerStatefulWidget {
 }
 
 class _MyBalancePageState extends ConsumerState<MyBalancePage> {
+  final PageController _pageController = PageController();
   final ScrollController _scrollController = ScrollController();
+  final RefreshController _refreshController = RefreshController();
 
-  List<MyBalanceListItem> _myBalanceList = [];
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _myBalanceList.add(
-      const MyBalanceListItem(
-        network: 1,
-        name: "ETH",
-        balance: "0,674",
-        balanceEur: "1.373",
-        iconPath: "assets/images/common/eth_icon.png",
-      ),
-    );
-    _myBalanceList.add(const MyBalanceListItem(
-      network: 137,
-      name: "MATIC",
-      balance: "100,54",
-      balanceEur: "79,46",
-      iconPath: "assets/images/common/matic_icon.png",
-    ));
+    ref.read(myBalanceNotifierProvider.notifier).updateBalance();
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     _scrollController.dispose();
+    _refreshController.dispose();
     super.dispose();
   }
 
@@ -59,50 +53,180 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
         text: context.loc.myBalanceTitle,
         overrideBackButton: () {
           if (data.myBalanceListItem != null) {
-            ref.read(myBalanceNotifierProvider.notifier).setMyBalanceListItem(
-                  null,
-                );
+            FocusScope.of(context).unfocus();
+
+            _pageController.animateToPage(
+              0,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.ease,
+            );
           } else {
             Navigator.of(context).pop();
           }
         },
       ),
       body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
-          switchInCurve: Curves.easeInOut,
-          switchOutCurve: Curves.easeInOut,
-          transitionBuilder: (child, animation) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1, 0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-            );
+        child: PageView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: _pageController,
+          onPageChanged: (index) {
+            _currentPage = index;
+            if (mounted) {
+              setState(() {});
+            }
           },
-          child: data.myBalanceListItem != null
-              ? const MyBalanceWithdrawPage()
-              : CustomScrollView(
-                  controller: _scrollController,
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: _buildHeader(context),
+          children: [
+            _buildList(
+              context,
+              data: data,
+              key: const PageStorageKey('myBalanceList'),
+            ),
+            MyBalanceWithdrawPage(
+              isVisible: _currentPage == 1,
+              onBack: () {
+                _pageController.animateToPage(
+                  0,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildList(
+    BuildContext context, {
+    required MyBalanceNotifierData data,
+    required Key key,
+  }) {
+    return data.error
+        ? _buildErrorWidget(context)
+        : data.initialized
+            ? _buildCryptoList(
+                context,
+                data,
+                key,
+              )
+            : _buildListLoadingState();
+  }
+
+  CustomHeader _buildListRefreshHeader() {
+    return CustomHeader(
+      builder: (context, mode) {
+        return Container(
+          alignment: Alignment.center,
+          child: mode == RefreshStatus.idle
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.arrow_downward,
+                      color: CustomColors(
+                        dotenv.get('APP_ID'),
+                      ).primaryColor,
                     ),
-                    SliverList.builder(
-                        itemCount: _myBalanceList.length,
-                        itemBuilder: (context, index) {
-                          return _buildCryptoCurrencyListItem(
-                            _myBalanceList[index],
-                          );
-                        }),
+                    const SizedBox(
+                      width: 16,
+                    ),
+                    Text(context.loc.myBalancePullToRefresh),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: CustomColors(
+                        dotenv.get('APP_ID'),
+                      ).primaryColor,
+                    ),
+                    const SizedBox(
+                      width: 16,
+                    ),
+                    Text(
+                      context.loc.myBalanceRefreshing,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                            color: CustomColors(
+                              dotenv.get('APP_ID'),
+                            ).primaryColor,
+                          ),
+                    ),
                   ],
                 ),
-        ),
+        );
+      },
+    );
+  }
+
+  Center _buildListLoadingState() {
+    return Center(
+      child: CircularProgressIndicator(
+        color: CustomColors(
+          dotenv.get('APP_ID'),
+        ).primaryColor,
+      ),
+    );
+  }
+
+  Widget _buildCryptoList(
+      BuildContext context, MyBalanceNotifierData data, Key key) {
+    final data = ref.watch(myBalanceNotifierProvider);
+
+    return SmartRefresher(
+      key: key,
+      controller: _refreshController,
+      physics: const BouncingScrollPhysics(),
+      scrollDirection: Axis.vertical,
+      enablePullDown: true,
+      enablePullUp: false,
+      header: _buildListRefreshHeader(),
+      onRefresh: () {
+        ref.read(myBalanceNotifierProvider.notifier).updateBalance().then((_) {
+          _refreshController.refreshCompleted();
+        }).catchError((e) {
+          _refreshController.refreshCompleted();
+        });
+      },
+      child: ListView(
+        key: ValueKey(data.myBalanceList),
+        physics: const BouncingScrollPhysics(),
+        controller: _scrollController,
+        children: [
+          _buildHeader(
+            context,
+            data: data,
+          ),
+          ...data.myBalanceList.map(
+            (item) => _buildCryptoCurrencyListItem(
+              item,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Center _buildErrorWidget(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            context.loc.myBalanceError,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          CustomOutlinedButton(
+            onPressed: () {
+              ref.read(myBalanceNotifierProvider.notifier).updateBalance();
+            },
+            buttonText: context.loc.myBalanceRetry,
+          ),
+        ],
       ),
     );
   }
@@ -120,6 +244,11 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
           ref.read(myBalanceNotifierProvider.notifier).setMyBalanceListItem(
                 item,
               );
+          _pageController.animateToPage(
+            1,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.ease,
+          );
         },
         child: Container(
           decoration: BoxDecoration(
@@ -154,7 +283,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(chainConfig[item.network]!.networkName),
+                    Text(chainConfig[item.chain]!.networkName),
                     Text(
                       item.name,
                       style: Theme.of(context).textTheme.displaySmall!.copyWith(
@@ -169,14 +298,14 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      item.balance,
+                      item.balanceInEther.toStringAsFixed(2),
                       style:
                           Theme.of(context).textTheme.headlineMedium!.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                     ),
                     Text(
-                      "${item.balanceEur} €",
+                      "${item.balanceEur.toStringAsFixed(2)} €",
                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(),
                     ),
                   ],
@@ -189,7 +318,10 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
     );
   }
 
-  Column _buildHeader(BuildContext context) {
+  Column _buildHeader(
+    BuildContext context, {
+    required MyBalanceNotifierData data,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -208,7 +340,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                 style: Theme.of(context).textTheme.bodySmall!,
               ),
               Text(
-                "~1.443,47 €",
+                "${data.myBalanceList.map((e) => e.balanceEur).reduce((a, b) => a + b).toStringAsFixed(2)} €",
                 style: Theme.of(context).textTheme.displayLarge!.copyWith(),
               ),
             ],

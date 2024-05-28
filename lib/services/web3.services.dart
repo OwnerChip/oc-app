@@ -253,11 +253,14 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     int? end,
     String? encodedOfferData,
     int? chainId,
+    EtherAmount? amount,
     String? offerHash}) async {
-  String data;
+  String? data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (amount != null) {
+    data = null;
   } else if (functionSignatureHash == mintVoucherFunctionSignature) {
     data = makeMintData(functionSignatureHash, randomValueHash, signature,
         tokenURI!, voucherTokenURI!);
@@ -289,7 +292,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   String gasAmount = "0x55730"; // fallback: 300000 gas
   try {
     BigInt gasAmountEst =
-        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
+        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data!), from!);
     gasAmount = "0x${gasAmountEst.toRadixString(16)}";
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
@@ -311,11 +314,19 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     {
       "from": from.toString(),
       "to": collectionId.toString(),
-      "data": data,
       "gasPrice": gasPrice,
-      "gas": gasAmount
+      "gas": gasAmount,
     },
   ];
+
+  if (data != null) {
+    params[0]["data"] = data;
+  }
+
+  if (amount != null) {
+    params[0]["value"] = "0x${amount.getInWei.toRadixString(16)}";
+  }
+
   return params;
 }
 
@@ -379,6 +390,17 @@ String makeTransferFromData(String functionSignatureHash, Uint8List hash,
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0') +
       (recovery ? "01".padLeft(64, "0") : "00".padLeft(64, "0"));
+  return data;
+}
+
+String makeTransferData(
+  String functionSignatureHash,
+  EthereumAddress to,
+  EtherAmount amount,
+) {
+  String data = functionSignatureHash +
+      to.toString().substring(2).padLeft(64, '0') +
+      amount.getInWei.toRadixString(16).padLeft(64, '0');
   return data;
 }
 

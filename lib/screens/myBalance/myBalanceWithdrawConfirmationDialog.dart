@@ -68,7 +68,7 @@ class MyBalanceWithdrawConfirmationDialog extends StatelessWidget {
                     _buildValue(context, item.name),
                     _buildValue(
                       context,
-                      chainConfig[item.network]!.networkName,
+                      chainConfig[item.chain]!.networkName,
                     ),
                   ],
                 ),
