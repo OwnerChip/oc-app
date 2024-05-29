@@ -280,16 +280,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
 
-    ref.watch(onboardingProvider).maybeWhen(
-        data: (data) {
-          if (!data.showedTutorial && data.showTutorialNextTime) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref.read(onboardingProvider.notifier).showedTutorial();
-              Navigator.of(context).pushNamed(OnboardingScreen.routeName);
-            });
-          }
-        },
-        orElse: () {});
+    if (dotenv.get("APP_ID") == "ownerchip") {
+      ref.watch(onboardingProvider).maybeWhen(
+          data: (data) {
+            if (!data.showedTutorial && data.showTutorialNextTime) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(onboardingProvider.notifier).showedTutorial();
+                Navigator.of(context).pushNamed(OnboardingScreen.routeName);
+              });
+            }
+          },
+          orElse: () {});
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
