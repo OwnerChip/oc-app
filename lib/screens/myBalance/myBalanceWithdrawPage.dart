@@ -331,6 +331,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
                             _amountController.text = item.balanceInEther
                                 .toStringAsFixed(max(2, numberOfDecimals));
+                            _amount = double.tryParse(_amountController.text) ?? 0;
+
                             if (mounted) {
                               setState(() {});
                             }
