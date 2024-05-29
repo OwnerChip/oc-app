@@ -224,11 +224,12 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        context.loc.myBalanceWithdrawMaxAmount(item.balanceInEther.toStringAsPrecision(3)),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium!
-                            .copyWith(),
+                        context.loc.myBalanceWithdrawMaxAmount(
+                            item.balanceInEther.toStringAsPrecision(
+                          min(item.decimals, 3),
+                        )),
+                        style:
+                            Theme.of(context).textTheme.bodyMedium!.copyWith(),
                       ),
                       const SizedBox(
                         height: 12,
@@ -331,7 +332,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
                             _amountController.text = item.balanceInEther
                                 .toStringAsFixed(max(2, numberOfDecimals));
-                            _amount = double.tryParse(_amountController.text) ?? 0;
+                            _amount =
+                                double.tryParse(_amountController.text) ?? 0;
 
                             if (mounted) {
                               setState(() {});

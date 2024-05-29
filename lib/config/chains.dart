@@ -36,7 +36,26 @@ final Map<int, BlockchainConfig> chainConfig = {
 };
 
 final Map<int, List<BlockchainToken>> chainTokenConfigs = {
-  1: [],
+  1: [
+    BlockchainToken(
+      symbol: "USDC",
+      abiAssetPath: "assets/contracts/erc20.abi.json",
+      contractAddress: EthereumAddress.fromHex(
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      ),
+      iconPath: "assets/images/common/usdc_icon.png",
+      decimals: 6,
+    ),
+    // BlockchainToken(
+    //   symbol: "USDT",
+    //   abiAssetPath: "assets/contracts/erc20.abi.json",
+    //   contractAddress: EthereumAddress.fromHex(
+    //     "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    //   ),
+    //   iconPath: "assets/images/common/usdt_icon.png",
+    //   decimals: 6,
+    // ),
+  ],
   137: [
     BlockchainToken(
       symbol: "USDC",
@@ -46,6 +65,15 @@ final Map<int, List<BlockchainToken>> chainTokenConfigs = {
       ),
       iconPath: "assets/images/common/usdc_icon.png",
       decimals: 6,
-    )
+    ),
+    // BlockchainToken(
+    //   symbol: "USDT",
+    //   abiAssetPath: "assets/contracts/erc20.abi.json",
+    //   contractAddress: EthereumAddress.fromHex(
+    //     "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+    //   ),
+    //   iconPath: "assets/images/common/usdt_icon.png",
+    //   decimals: 6,
+    // ),
   ],
 };

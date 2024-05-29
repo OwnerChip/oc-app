@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -298,7 +300,9 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      item.balanceInEther.toStringAsPrecision(3),
+                      item.balanceInEther.toStringAsPrecision(
+                        min(item.decimals, 3),
+                      ),
                       style:
                           Theme.of(context).textTheme.headlineMedium!.copyWith(
                                 fontWeight: FontWeight.bold,
