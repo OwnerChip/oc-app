@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -19,7 +20,6 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
 
 Future<dynamic> authPopupBuilder(
     BuildContext context, WidgetRef ref, Web3App wc, String walletName) async {
@@ -91,7 +91,7 @@ Future<dynamic> authPopupBuilder(
               CustomRoundedButton(
                   text: context.loc.authenticate,
                   onPressed: () {
-                    onTapAuth(context, 'insert_session_id', ref, wc);
+                    onTapAuth(context, 'insert_session_id', ref);
                   }),
             ],
           ));
@@ -100,12 +100,17 @@ Future<dynamic> authPopupBuilder(
 }
 
 Future<void> onTapAuth(
-    BuildContext context, String sessionId, WidgetRef ref, Web3App wc) async {
+  BuildContext context,
+  String sessionId,
+  WidgetRef ref,
+) async {
   EthereumAddress userWalletAddress = ref.read(userAddressProvider);
   W3MSession? session = ref.read(wcSessionProvider);
+  Web3AuthNotifierData web3AuthData = ref.read(web3AuthNotifierProvider);
   WalletType? walletType = ref.read(walletTypeProvider);
 
-  if (session == null || walletType == null) {
+  if ((session == null && web3AuthData.web3AuthResponse == null) ||
+      walletType == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.pleaseTryAgainLater, 'error'),
@@ -124,7 +129,7 @@ Future<void> onTapAuth(
       "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
 
   String hexSignature = await sendPersonalSignRequest(
-      ref, message, userWalletAddress, wc, session, walletType);
+      ref, message, userWalletAddress, session, web3AuthData, walletType);
 
   MsgSignature signature = hexSignatureToRSV(hexSignature);
 
@@ -143,8 +148,8 @@ Future<void> onTapAuth(
   storage.setString('userSession', jsonUserSession);
 
   await ref.refresh(findAllMinterRolesProvider);
-  await ref.refresh(getOcNftsForOwner);
-  await ref.refresh(getOcNftsMintedByUser);
+  await ref.refresh(ocNFTsForOwnerProvider);
+  await ref.refresh(ocNFTsMintedByUserNotifierProvider);
 
   sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
     'connectedWallet': userWalletAddress.hex,

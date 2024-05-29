@@ -3,13 +3,13 @@ import 'dart:convert';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
@@ -39,15 +39,16 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   static const routeName = '/home';
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
@@ -74,7 +75,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _setProviderStatesFromPersistedState() async {
     try {
-      await initWcClient(ref, context);
+      await Future.wait(
+        [
+          initWcClient(ref, context),
+          setupWeb3Auth(),
+        ],
+        eagerError: true,
+      );
     } catch (e, s) {
       await Sentry.captureException(
         e,
@@ -85,6 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     try {
       final wcService = ref.read(w3mServiceProvider);
+
       final storage = await SharedPreferences.getInstance();
 
       final storedWcSession = storage.getString('session');
@@ -94,25 +102,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (storedWcSession != null &&
           storedWalletType != null &&
           storedUserSession != null) {
-        final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession));
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
             UserSession.fromJson(jsonDecode(storedUserSession));
-        //check if the stored session expires in less than three days; if yes, remove it
-        //Note: WalletConnect session duration is 7 days
+
         double nowPlusThreeDays =
             DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
-        if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
-            backendSession.expiryDate > nowPlusThreeDays) {
-          ref.read(wcSessionProvider.notifier).state = wcSession;
-          ref.read(walletTypeProvider.notifier).state = walletType;
-          ref.read(userSessionProvider.notifier).state = backendSession;
+
+        if (walletType.type == EWalletType.web3auth) {
+          String? privKey;
+          try {
+            privKey = await Web3AuthFlutter.getPrivKey();
+          } catch (e) {
+            await Sentry.captureException(
+              e,
+            );
+          }
+
+          if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
+            ref.read(userAddressProvider.notifier).state =
+                EthPrivateKey.fromHex(privKey).address;
+
+            ref.read(walletTypeProvider.notifier).state = walletType;
+            ref.read(userSessionProvider.notifier).state = backendSession;
+          } else {
+            if (privKey == null) {}
+          }
         } else {
-          //remove session and wallet type from storage
-          storage.remove('session');
-          storage.remove('walletType');
-          storage.remove('userSession');
-          wcService?.disconnect();
+          final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession));
+
+          //check if the stored session expires in less than three days; if yes, remove it
+          //Note: WalletConnect session duration is 7 days
+
+          if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
+              backendSession.expiryDate > nowPlusThreeDays) {
+            ref.read(wcSessionProvider.notifier).state = wcSession;
+            ref.read(walletTypeProvider.notifier).state = walletType;
+            ref.read(userSessionProvider.notifier).state = backendSession;
+          } else {
+            //remove session and wallet type from storage
+            storage.remove('session');
+            storage.remove('walletType');
+            storage.remove('userSession');
+            wcService?.disconnect();
+          }
         }
       } else {
         //remove session and wallet type from storage
@@ -128,14 +161,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   shippingPopupIsShown = !shippingPopupIsShown;
                 }));
       }
-    } catch (e, s) {
-      await Sentry.captureException(
+    } catch (e, st) {
+      Sentry.captureException(
         e,
-        stackTrace: s,
+        stackTrace: st,
       );
+    } finally {
+      FlutterNativeSplash.remove();
     }
-
-    FlutterNativeSplash.remove();
   }
 
   @override
@@ -264,84 +297,85 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         showBackButton: false,
       ),
       body: ScreenBodyLayout(
-          withScrollView: false,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          flexSides: 0,
-          padding: const EdgeInsets.only(top: 0, bottom: 15),
-          children: [
-            dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
-                ? const Text(
-                    'INTERNAL',
-                    style: TextStyle(color: Colors.red, fontSize: 20),
-                  )
-                : Container(),
+        withScrollView: false,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        flexSides: 0,
+        padding: const EdgeInsets.only(top: 0, bottom: 15),
+        children: [
+          dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
+              ? const Text(
+                  'INTERNAL',
+                  style: TextStyle(color: Colors.red, fontSize: 20),
+                )
+              : Container(),
 
-            // MIDDLE CONTENT
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CustomHomeScreenButton(
-                    text: context.loc.scanning,
-                    svgPath:
-                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                    onTap: () => onButtonPress(false)),
-                const SizedBox(height: 40),
-                CustomRoundedButton(
-                  width: 250,
-                  text: context.loc.scanNow,
-                  onPressed: () => onButtonPress(false),
-                ),
-                const SizedBox(height: 20),
-                ref.read(userSessionProvider) == null
-                    ? Container()
-                    : relevantCollections.when(
-                        data: (data) => data.hasAnyMinterRole! &&
-                                ref.read(userSessionProvider) != null
-                            ? Padding(
-                                padding: EdgeInsets.only(bottom: 20),
-                                child: CustomRoundedButton(
-                                  width: 250,
-                                  text: context.loc.initializeChip,
-                                  onPressed: () => onButtonPress(true),
-                                ))
-                            : Container(),
-                        loading: () => SizedBox(
-                            height: 40, child: Text(context.loc.loading)),
-                        error: (err, stack) => Container()),
-              ],
-            ),
+          // MIDDLE CONTENT
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomHomeScreenButton(
+                  text: context.loc.scanning,
+                  svgPath:
+                      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
+                  onTap: () => onButtonPress(false)),
+              const SizedBox(height: 40),
+              CustomRoundedButton(
+                width: 250,
+                text: context.loc.scanNow,
+                onPressed: () => onButtonPress(false),
+              ),
+              const SizedBox(height: 20),
+              ref.read(userSessionProvider) == null
+                  ? Container()
+                  : relevantCollections.when(
+                      data: (data) => data.hasAnyMinterRole! &&
+                              ref.read(userSessionProvider) != null
+                          ? Padding(
+                              padding: EdgeInsets.only(bottom: 20),
+                              child: CustomRoundedButton(
+                                width: 250,
+                                text: context.loc.initializeChip,
+                                onPressed: () => onButtonPress(true),
+                              ))
+                          : Container(),
+                      loading: () => SizedBox(
+                          height: 40, child: Text(context.loc.loading)),
+                      error: (err, stack) => Container()),
+            ],
+          ),
 
-            //FOOTER CONTENT
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CustomOutlinedButton(
-                  width: 250,
-                  buttonText: context.loc.myCollection,
-                  onPressed: () =>
-                      Navigator.pushNamed(context, GalleryScreen.routeName),
-                ),
-                const SizedBox(height: 20),
-                //if stebo app show additional button
-                dotenv.get('APP_ID') == 'stebo'
-                    ? Column(children: [
-                        CustomOutlinedButton(
-                            buttonText: 'SteboArt',
-                            onPressed: () => launchUrl(
-                                Uri.parse('https://www.steboart.com'),
-                                mode: LaunchMode.externalApplication)),
-                        const SizedBox(height: 20),
-                      ])
-                    : Container(),
-                CustomOutlinedButton(
-                  buttonText: context.loc.more,
-                  onPressed: () =>
-                      Navigator.pushNamed(context, MoreInfoScreen.routeName),
-                ),
-              ],
-            )
-          ]),
+          //FOOTER CONTENT
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomOutlinedButton(
+                width: 250,
+                buttonText: context.loc.myCollection,
+                onPressed: () =>
+                    Navigator.pushNamed(context, GalleryScreen.routeName),
+              ),
+              const SizedBox(height: 20),
+              //if stebo app show additional button
+              dotenv.get('APP_ID') == 'stebo'
+                  ? Column(children: [
+                      CustomOutlinedButton(
+                          buttonText: 'SteboArt',
+                          onPressed: () => launchUrl(
+                              Uri.parse('https://www.steboart.com'),
+                              mode: LaunchMode.externalApplication)),
+                      const SizedBox(height: 20),
+                    ])
+                  : Container(),
+              CustomOutlinedButton(
+                buttonText: context.loc.more,
+                onPressed: () =>
+                    Navigator.pushNamed(context, MoreInfoScreen.routeName),
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
 }

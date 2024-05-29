@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
@@ -37,11 +38,12 @@ final unredeemedVoucherNftsProvider =
 
 final voucherNftsOwnedByUserProvider =
     FutureProvider.autoDispose<List<AlchemyNFTAsset>>((ref) async {
-  final Map? nftsForOwnerByChainId =
+   Map? nftsForOwnerByChainId =
       await ref.watch(getNftsForOwnerProvider.future);
   if (nftsForOwnerByChainId == null) {
     return [];
   }
+  nftsForOwnerByChainId = nftsForOwnerByChainId as Map<int, List<OcOwnedNft>>;
   final BlockchainCollectionList collections =
       await ref.read(appCollectionProvider.future);
 
@@ -55,13 +57,13 @@ final voucherNftsOwnedByUserProvider =
     }
   }
 
-  List nftsForOwner = [];
+  List<OcOwnedNft> nftsForOwner = [];
   nftsForOwnerByChainId.forEach((chainId, nfts) {
     nftsForOwner.addAll(nfts);
   });
   List voucherNftsOwnedByUser = nftsForOwner
       .where((nft) => voucherContractsAllChains.contains(
-          EthereumAddress.fromHex(nft['contract']['address'].toString())))
+          EthereumAddress.fromHex(nft.contract.address.toString())))
       .toList();
   final List<AlchemyNFTAsset> alchemyVoucherNftsOwnedByUser =
       voucherNftsOwnedByUser.map((e) => AlchemyNFTAsset.fromJson(e)).toList();

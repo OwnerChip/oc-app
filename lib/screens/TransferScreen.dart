@@ -128,7 +128,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             signatureData,
             connectedWallet,
             wc,
-            wcSession!,
+            wcSession,
             ref.read(walletTypeProvider)!,
             tokenId: tokenId,
             toAccount: to);

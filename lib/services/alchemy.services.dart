@@ -1,13 +1,22 @@
 import 'package:dio/dio.dart';
+import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
+import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 
 // A function that fetches NFTs for a given owner address and chainId
-Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
-    {List<EthereumAddress>? contractAddresses}) async {
+Future<AlchemyPaginationResponse<OcOwnedNft>> fetchNFTsForOwner(
+  EthereumAddress owner,
+  int chainId, {
+  List<EthereumAddress>? contractAddresses,
+  int pageSize = 10,
+  String? pageKey,
+}) async {
   if (contractAddresses != null && contractAddresses.length > 45) {
     Sentry.captureMessage(
         'WARNING: Only a max. of 45 contracts are supported by Alchemy API. The rest will be ignored.');
@@ -20,43 +29,40 @@ Future<List> fetchNFTsForOwner(EthereumAddress owner, int chainId,
   );
 
   final dio = Dio(options);
-  final List ownedNfts = [];
-  var pageKey;
   try {
-    while (true) {
-      var response = await dio.get(
-        '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getNFTsForOwner',
-        queryParameters: {
-          'owner': owner.hex,
-          'withMetadata': 'true',
-          'pageSize': '100',
-          'excludeFilters[]': ['SPAM', 'AIRDROPS'],
-          'pageKey': pageKey,
-          'contractAddresses[]': contractAddresses != null
-              ? contractAddresses.map((e) => e.hex).toList()
-              : [],
-        },
-      );
-
-      ownedNfts.addAll(response.data['ownedNfts']);
-
-      // Check if there's a new pageKey and update it, otherwise break the loop
-      if (response.data['pageKey'] != null) {
-        pageKey = response.data['pageKey'];
-      } else {
-        break;
-      }
-    }
-    return ownedNfts;
+    var response = await dio.get(
+      '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getNFTsForOwner',
+      queryParameters: {
+        'owner': owner.hex,
+        'withMetadata': 'true',
+        'pageSize': pageSize.toString(),
+        'excludeFilters[]': ['SPAM', 'AIRDROPS'],
+        'pageKey': pageKey,
+        'contractAddresses[]': contractAddresses != null
+            ? contractAddresses.map((e) => e.hex).toList()
+            : [],
+      },
+    );
+    return AlchemyPaginationResponse(
+      data: (response.data['ownedNfts'] as List)
+          .map((e) => OcOwnedNft.fromJson(e))
+          .toList(),
+      pageKey: response.data['pageKey'],
+    );
   } catch (err) {
-    print(err);
+    talker.error(err);
     rethrow;
   }
 }
 
-Future<List<AlchemyNftTokenIdCollectionChainId>> fetchMintedOcNftsByAddress(
-    EthereumAddress userAddress, int chainId,
-    {List<EthereumAddress>? contractAddresses}) async {
+Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
+    fetchMintedOcNftsByAddress(
+  EthereumAddress userAddress,
+  int chainId, {
+  List<EthereumAddress>? contractAddresses,
+  String? startPageKey,
+  int pageSize = 10,
+}) async {
   final options = BaseOptions(
     method: 'POST',
     headers: {'accept': 'application/json', 'content-type': 'application/json'},
@@ -64,48 +70,40 @@ Future<List<AlchemyNftTokenIdCollectionChainId>> fetchMintedOcNftsByAddress(
 
   final dio = Dio(options);
   final List mintTransferEvents = [];
-  var pageKey;
   List<String> uniqueTokenIds = [];
-  var params = {
-    "fromBlock": "0x0",
-    "fromAddress": "0x0000000000000000000000000000000000000000",
-    "category": ["erc721", "erc1155"],
-    "contractAddresses": contractAddresses != null
-        ? contractAddresses.map((e) => e.hex).toList()
-        : [],
-  };
   try {
-    while (true) {
-      var response = await dio.post(
-        '${chainConfig[chainId]!.alchemyBaseUrl}v2/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}',
-        data: {
-          "id": 1,
-          "jsonrpc": "2.0",
-          "method": "alchemy_getAssetTransfers",
-          "params": [
-            pageKey == null ? params : {"pageKey": pageKey, ...params}
-          ]
-        },
-      );
+    var response = await dio.post(
+      '${chainConfig[chainId]!.alchemyBaseUrl}v2/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}',
+      data: {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "alchemy_getAssetTransfers",
+        "params": [
+          {
+            if (startPageKey != null) "pageKey": startPageKey,
+            'maxCount': '0x${pageSize.toRadixString(16)}',
+            "fromBlock": "0x0",
+            "fromAddress": "0x0000000000000000000000000000000000000000",
+            "toAddress": userAddress.hex,
+            "category": ["erc721", "erc1155"],
+            "contractAddresses": contractAddresses != null
+                ? contractAddresses.map((e) => e.hex).toList()
+                : [],
+          }
+        ]
+      },
+    );
 
-      final transfers = response.data['result']['transfers'];
-      //loop over transfers and add to mintTransferEvents
-      for (var i = 0; i < transfers.length; i++) {
-        if (uniqueTokenIds.contains(transfers[i]['tokenId'])) {
-          continue;
-        }
-        uniqueTokenIds.add(transfers[i]['tokenId']);
+    final transfers = response.data['result']['transfers'];
+    //loop over transfers and add to mintTransferEvents
+    for (var i = 0; i < transfers.length; i++) {
+      if (uniqueTokenIds.contains(transfers[i]['tokenId'])) {
+        continue;
       }
-
-      mintTransferEvents.addAll(response.data['result']['transfers']);
-
-      // Check if there's a new pageKey and update it, otherwise break the loop
-      if (response.data['pageKey'] != null) {
-        pageKey = response.data['pageKey'];
-      } else {
-        break;
-      }
+      uniqueTokenIds.add(transfers[i]['tokenId']);
     }
+
+    mintTransferEvents.addAll(response.data['result']['transfers']);
 
     //minted
     List<AlchemyNftTokenIdCollectionChainId> mintedNftEvents =
@@ -138,16 +136,25 @@ Future<List<AlchemyNftTokenIdCollectionChainId>> fetchMintedOcNftsByAddress(
       }
     }
 
-    return uniqueMintedNftEvents;
+    final key = response.data["result"]['pageKey'];
+    return AlchemyPaginationResponse(
+      data: uniqueMintedNftEvents,
+      pageKey: key == startPageKey ? null : key,
+    );
   } catch (err) {
     print(err);
     rethrow;
   }
 }
 
-Future<List> getNotBurnedMintedOcNftsByAddress(
-    EthereumAddress userAddress, int chainId,
-    {List<EthereumAddress>? contractAddresses}) async {
+Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
+    getNotBurnedMintedOcNftsByAddress(
+  EthereumAddress userAddress,
+  int chainId, {
+  List<EthereumAddress>? contractAddresses,
+  String? startPageKey,
+  int pageSize = 15,
+}) async {
   final options = BaseOptions(
     method: 'GET',
     headers: {
@@ -156,35 +163,57 @@ Future<List> getNotBurnedMintedOcNftsByAddress(
   );
 
   final dio = Dio(options);
-  final List<AlchemyNftTokenIdCollectionChainId> mintedNfts =
-      await fetchMintedOcNftsByAddress(userAddress, chainId,
-          contractAddresses: contractAddresses);
+  dio.interceptors.add(
+    TalkerDioLoggerExtension.instance,
+  );
+  List<AlchemyNftTokenIdCollectionChainId> filteredNfts = [];
 
-  List<Future> futures = [];
+  String? lastPageKey = startPageKey;
 
-  for (var nft in mintedNfts) {
+  for (;;) {
+    AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId> mintedNfts =
+        await fetchMintedOcNftsByAddress(
+      userAddress,
+      chainId,
+      contractAddresses: contractAddresses,
+      startPageKey: lastPageKey,
+      pageSize: 25,
+    );
+
     //TODO: I think this only works for a max of 45 NFTs before Error code 429 too many requests from Alchemy
-    futures.add(dio.get(
-      '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getOwnersForNFT',
-      queryParameters: {
-        "contractAddress": nft.collectionAddress,
-        "tokenId": nft.nftTokenId
-      },
-    ));
-  }
-  List filteredNfts = [];
-  var responses = await Future.wait(futures);
-  for (var i = 0; i < responses.length; i++) {
-    if (responses[i]
-        .data['owners']
-        .contains('0x0000000000000000000000000000000000000000')) {
-      continue;
+    var responses = await Future.wait(
+      mintedNfts.data.map((nft) => dio.get(
+            '${chainConfig[chainId]!.alchemyBaseUrl}nft/v3/${dotenv.get('ALCHEMY_API_KEY_POLYGON')}/getOwnersForNFT',
+            queryParameters: {
+              "contractAddress": nft.collectionAddress,
+              "tokenId": nft.nftTokenId
+            },
+          )),
+    );
+
+    filteredNfts.addAll(responses
+        .asMap()
+        .entries
+        .where((entry) {
+          return !entry.value.data['owners']
+              .contains('0x0000000000000000000000000000000000000000');
+        })
+        .map((i) => mintedNfts.data[i.key])
+        .toList());
+
+    if ((mintedNfts.pageKey == lastPageKey) ||
+        filteredNfts.length >= pageSize) {
+      lastPageKey = mintedNfts.pageKey;
+      break;
     }
 
-    filteredNfts.add(mintedNfts[i]);
+    lastPageKey = mintedNfts.pageKey;
   }
 
-  return filteredNfts;
+  return AlchemyPaginationResponse(
+    data: filteredNfts,
+    pageKey: filteredNfts.isEmpty ? null : lastPageKey,
+  );
 }
 
 //call get metadata batch with filtered NFTs and then pass the fetched data to the UI
