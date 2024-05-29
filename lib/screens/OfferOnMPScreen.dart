@@ -89,7 +89,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     _setCurrencyDropDownValuesFuture = setCurrencyDropDownValues();
 
     UserSession? userSession = ref.read(userSessionProvider);
-    if (userSession != null && !userSession.isOwnerCard) {
+    if (userSession != null) {
       _sellerPayoutInputController.value = TextEditingValue(
           text: userSession.userWalletAddress.toString(),
           selection: TextSelection.fromPosition(TextPosition(
@@ -260,8 +260,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         controllerContractAddress,
         config.tokenId,
         controllerContractAddress,
-        10000, //TODO: fix this
-        0, //TODO: fix this
+        10000,
+        //TODO: fix this
+        0,
+        //TODO: fix this
         voucherContractAddress!,
         config.tokenId,
         BigInt.from(priceInPrimaryChainCurrency),
