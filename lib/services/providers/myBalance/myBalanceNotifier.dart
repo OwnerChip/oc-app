@@ -67,17 +67,18 @@ class MyBalanceNotifier extends Notifier<MyBalanceNotifierData> {
             symbol: token.symbol,
             iconPath: token.iconPath,
             decimals: token.decimals,
-            balanceEur:
-                balanceInEther / BigInt.from(10).pow(token.decimals) * priceInFiat['EUR']!,
+            balanceEur: balanceInEther /
+                BigInt.from(10).pow(token.decimals) *
+                priceInFiat['EUR']!,
             token: chainTokenConfigs[chain.key]!.indexOf(token),
           ));
         }
       }
 
       state = state.copyWith(
-        myBalanceList: newListItems,
-        initialized: true,
-      );
+          myBalanceList: newListItems,
+          initialized: true,
+          myBalanceListItem: state.myBalanceListItem);
     } catch (e, st) {
       Sentry.captureException(e);
       talker.error(
@@ -85,7 +86,10 @@ class MyBalanceNotifier extends Notifier<MyBalanceNotifierData> {
         st,
       );
 
-      state = state.copyWith(error: true);
+      state = state.copyWith(
+        error: true,
+        myBalanceListItem: state.myBalanceListItem,
+      );
     }
   }
 
