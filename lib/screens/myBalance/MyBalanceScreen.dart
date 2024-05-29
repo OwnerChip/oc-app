@@ -298,7 +298,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      item.balanceInEther.toStringAsFixed(2),
+                      item.balanceInEther.toStringAsPrecision(3),
                       style:
                           Theme.of(context).textTheme.headlineMedium!.copyWith(
                                 fontWeight: FontWeight.bold,

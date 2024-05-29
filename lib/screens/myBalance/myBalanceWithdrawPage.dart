@@ -138,7 +138,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 32.0,
+              horizontal: 24.0,
             ),
             child: Form(
               key: _formKey,
@@ -149,18 +149,72 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                   const SizedBox(
                     height: 32,
                   ),
-                  TextFormField(
-                    controller: _addressController,
-                    focusNode: _addressFocusNode,
-                    decoration: customInputDecoration(
-                      context,
-                      context.loc.myBalanceReceivingWalletAddress,
-                    ),
-                    onChanged: (value) {
-                      if (mounted) {
-                        setState(() {});
-                      }
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            TextFormField(
+                              controller: _addressController,
+                              focusNode: _addressFocusNode,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (_addressFocusNode.hasFocus) {
+                                  return null;
+                                }
+
+                                if (value == null || value.isEmpty) {
+                                  return context
+                                      .loc.myBalanceWithdrawWrongAddress;
+                                }
+                                try {
+                                  EthereumAddress.fromHex(value);
+                                } catch (e) {
+                                  return context
+                                      .loc.myBalanceWithdrawWrongAddress;
+                                }
+                                return null;
+                              },
+                              decoration: customInputDecoration(
+                                context,
+                                context.loc.myBalanceReceivingWalletAddress,
+                              ).copyWith(
+                                contentPadding: const EdgeInsets.only(
+                                  right: 64,
+                                  left: 12,
+                                ),
+                              ),
+                              onChanged: (value) {
+                                if (mounted) {
+                                  setState(() {});
+                                }
+                              },
+                            ),
+                            Positioned(
+                              right: 12,
+                              top: 12,
+                              bottom: 0,
+                              child: InkWell(
+                                onTap: () {
+                                  Clipboard.getData('text/plain').then((value) {
+                                    if (value != null) {
+                                      _addressController.text =
+                                          value.text ?? '';
+                                      if (mounted) {
+                                        setState(() {});
+                                      }
+                                    }
+                                  });
+                                },
+                                child: Text(context
+                                    .loc.myBalanceWithdrawPasteAddressButton),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const Spacer(
                     flex: 1,
@@ -169,6 +223,16 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Text(
+                        context.loc.myBalanceWithdrawMaxAmount(item.balanceInEther.toStringAsPrecision(3)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium!
+                            .copyWith(),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
                       Row(
                         children: [
                           Expanded(
@@ -287,6 +351,10 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       child: CustomRoundedButton(
                         onPressed: () async {
                           FocusScope.of(context).unfocus();
+
+                          if (!(_formKey.currentState?.validate() ?? false)) {
+                            return;
+                          }
 
                           try {
                             if (!_isSendAvailable(item)) {
