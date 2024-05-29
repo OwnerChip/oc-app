@@ -58,55 +58,59 @@ Uri convertToWcLink({
 // It then sends the gasless transaction request to the backend and returns the txnHash.
 
 Future<String> makeAndSendGaslessTx(
-    WidgetRef ref,
-    BuildContext context,
-    String functionSignatureHash,
-    int chainId,
-    EthereumAddress toAddress,
-    SignatureData signatureData,
-    EthereumAddress walletAddress,
-    Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
-    W3MSession? wcSession,
-    String metaTxAgreementId,
-    WalletType walletType,
-    {EthereumAddress? controllerContractId,
-    String? typedDataHash,
-    EthereumAddress? toAccount,
-    String? twinTokenMetadataCID,
-    String? voucherTokenMetadataCID,
-    BigInt? tokenId,
-    bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress,
-    BigInt? salt,
-    int? endTimestamp,
-    BigInt? price,
-    String? encodedOfferData,
-    required Function toggleLoading,
-    String? offerHash}) async {
+  WidgetRef ref,
+  BuildContext context,
+  String functionSignatureHash,
+  int chainId,
+  EthereumAddress toAddress,
+  SignatureData signatureData,
+  EthereumAddress walletAddress,
+  Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
+  W3MSession? wcSession,
+  String metaTxAgreementId,
+  WalletType walletType, {
+  EthereumAddress? controllerContractId,
+  String? typedDataHash,
+  EthereumAddress? toAccount,
+  String? twinTokenMetadataCID,
+  String? voucherTokenMetadataCID,
+  BigInt? tokenId,
+  bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
+  BigInt? salt,
+  int? endTimestamp,
+  BigInt? price,
+  String? encodedOfferData,
+  required Function toggleLoading,
+  String? offerHash,
+  BigInt? amount,
+}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
-      functionSignatureHash: functionSignatureHash,
-      chainRpcUrl: getRPCUrlFromChainId(chainId),
-      chainId: chainId,
-      randomValueHash: signatureData.hashedMsg,
-      signature: signatureData.signature,
-      from: walletAddress,
-      to: controllerContractId ?? toAddress,
-      //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
-      toAccount: toAccount,
-      tokenURI:
-          twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
-      voucherTokenURI: voucherTokenMetadataCID != null
-          ? "ipfs://$voucherTokenMetadataCID"
-          : null,
-      tokenId: tokenId,
-      enableRecovery: enableRecovery,
-      sellerPayoutAddress: sellerPayoutAddress,
-      salt: salt,
-      endTimestamp: endTimestamp,
-      price: price,
-      encodedOfferData: encodedOfferData,
-      typedDataHash: typedDataHash,
-      offerHash: offerHash);
+    functionSignatureHash: functionSignatureHash,
+    chainRpcUrl: getRPCUrlFromChainId(chainId),
+    chainId: chainId,
+    randomValueHash: signatureData.hashedMsg,
+    signature: signatureData.signature,
+    from: walletAddress,
+    to: controllerContractId ?? toAddress,
+    //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
+    toAccount: toAccount,
+    tokenURI:
+        twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
+    voucherTokenURI: voucherTokenMetadataCID != null
+        ? "ipfs://$voucherTokenMetadataCID"
+        : null,
+    tokenId: tokenId,
+    enableRecovery: enableRecovery,
+    sellerPayoutAddress: sellerPayoutAddress,
+    salt: salt,
+    endTimestamp: endTimestamp,
+    price: price,
+    encodedOfferData: encodedOfferData,
+    typedDataHash: typedDataHash,
+    offerHash: offerHash,
+    amount: amount,
+  );
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
@@ -135,8 +139,7 @@ Future<String> makeAndSendGaslessTx(
       signature = await wc!
           .request(
         topic: wcSession!.topic!,
-        // chainId: 'eip155:$chainId',
-        chainId: 'eip155:1',
+        chainId: 'eip155:$chainId',
         request: SessionRequestParams(
           method: 'eth_signTypedData_v4',
           params: [walletAddress.toString(), json.encode(typedData)],
@@ -197,7 +200,7 @@ Future<String> makeAndSendNormalTx(
   BigInt? salt,
   int? endTimestamp,
   String? encodedOfferData,
-  EtherAmount? amount,
+  BigInt? amount,
 }) async {
   var txParams = await buildEthSendTransactionRequest(
     getRPCUrlFromChainId(chainId),

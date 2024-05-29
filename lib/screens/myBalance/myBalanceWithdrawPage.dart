@@ -5,9 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawConfirmationDialog.dart';
+import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
@@ -23,6 +26,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class MyBalanceWithdrawPage extends ConsumerStatefulWidget {
   const MyBalanceWithdrawPage({
@@ -56,7 +60,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
   @override
   void didUpdateWidget(covariant MyBalanceWithdrawPage oldWidget) {
-    if (widget.isVisible) {
+    if (!widget.isVisible) {
       _amount = 0.0;
       _addressController.clear();
       _amountController.clear();
@@ -91,8 +95,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     if (item == null) {
       return const SizedBox();
     }
-    final fiatPrice =
-        ref.watch(ethPriceProvider(chainConfig[item.chain]!.nativeTokenSymbol));
+    final fiatPrice = ref.watch(
+      ethPriceProvider(item.symbol),
+    );
 
     return CustomOverlay(
       show: _processing,
@@ -290,15 +295,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                             final walletType = ref.read(walletTypeProvider);
 
                             if (walletType?.type == EWalletType.web3auth) {
-                              final confirmation = await showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    MyBalanceWithdrawConfirmationDialog(
-                                  amount: _amountController.text,
-                                  address: _addressController.text,
-                                  item: item,
-                                ),
-                              );
+                              final confirmation =
+                                  await _web3AuthTransactionConfirmation(
+                                      context, item);
 
                               if (confirmation != true) {
                                 return;
@@ -329,25 +328,31 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                               return;
                             }
 
-                            final txHash = await makeAndSendNormalTx(
-                              ref,
-                              "",
-                              item.chain,
-                              EthereumAddress.fromHex(_addressController.text),
-                              chipSignature,
-                              userSession.userWalletAddress,
-                              wc,
-                              wcSession,
-                              walletType,
-                              // convert double to BigInt
-                              amount: EtherAmount.fromBigInt(
-                                EtherUnit.wei,
-                                BigInt.parse(
-                                    (_amount * 1e18).toStringAsFixed(0)),
-                              ),
-                              toAccount: EthereumAddress.fromHex(
-                                  _addressController.text),
+                            final BigInt amount = BigInt.from(
+                              (_amount * pow(10, item.decimals)).toInt(),
                             );
+
+                            //
+                            if (item.token == null) {
+                              final txHash = await _makeNormalNativeTransaction(
+                                  item,
+                                  chipSignature,
+                                  userSession,
+                                  wc,
+                                  wcSession,
+                                  walletType,
+                                  amount);
+                            } else {
+                              await _makeTokenTransaction(
+                                  item,
+                                  context,
+                                  chipSignature,
+                                  userSession,
+                                  wc,
+                                  wcSession,
+                                  walletType,
+                                  amount);
+                            }
                             _success = true;
                           } catch (e, st) {
                             _error = true;
@@ -371,6 +376,99 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _makeTokenTransaction(
+      MyBalanceListItem item,
+      BuildContext context,
+      SignatureData chipSignature,
+      UserSession userSession,
+      Web3App wc,
+      W3MSession? wcSession,
+      WalletType walletType,
+      BigInt amount) async {
+    final blockchainToken = chainTokenConfigs[item.chain]![item.token!];
+
+    final metaTx = await checkMetaTx(
+        blockchainToken.contractAddress, erc20TransferFunctionSignature);
+
+    if (metaTx[0]) {
+      final metaTxAgreementId = metaTx[1];
+
+      final txHash = await makeAndSendGaslessTx(
+        ref,
+        context,
+        erc20TransferFunctionSignature,
+        item.chain,
+        blockchainToken.contractAddress,
+        chipSignature,
+        userSession.userWalletAddress,
+        wc,
+        wcSession,
+        metaTxAgreementId,
+        walletType,
+        toggleLoading: () {},
+        toAccount: EthereumAddress.fromHex(_addressController.text),
+        amount: amount,
+      );
+
+      print(txHash);
+    } else {
+      // gas station is not available
+
+      final txHash = await makeAndSendNormalTx(
+        ref,
+        erc20TransferFunctionSignature,
+        item.chain,
+        blockchainToken.contractAddress,
+        chipSignature,
+        userSession.userWalletAddress,
+        wc,
+        wcSession,
+        walletType,
+        // convert double to BigInt
+        amount: amount,
+        toAccount: EthereumAddress.fromHex(_addressController.text),
+      );
+
+      print(txHash);
+    }
+  }
+
+  Future<String> _makeNormalNativeTransaction(
+      MyBalanceListItem item,
+      SignatureData chipSignature,
+      UserSession userSession,
+      Web3App wc,
+      W3MSession? wcSession,
+      WalletType walletType,
+      BigInt amount) async {
+    return await makeAndSendNormalTx(
+      ref,
+      "",
+      item.chain,
+      EthereumAddress.fromHex(_addressController.text),
+      chipSignature,
+      userSession.userWalletAddress,
+      wc,
+      wcSession,
+      walletType,
+      // convert double to BigInt
+      amount: amount,
+      toAccount: EthereumAddress.fromHex(_addressController.text),
+    );
+  }
+
+  Future<dynamic> _web3AuthTransactionConfirmation(
+      BuildContext context, MyBalanceListItem item) async {
+    return await showDialog(
+      context: context,
+      builder: (context) => MyBalanceWithdrawConfirmationDialog(
+        amount: _amountController.text,
+        address: _addressController.text,
+        item: item,
       ),
     );
   }

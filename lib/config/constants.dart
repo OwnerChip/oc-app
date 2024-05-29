@@ -27,3 +27,6 @@ const String redeemItemFunctionSignature = '0x1247fcb5';
 
 //recoverToken
 const String recoverTokenFunctionSignature = '0x41b49312';
+
+// erc20 transfer
+const String erc20TransferFunctionSignature = '0xa9059cbb';

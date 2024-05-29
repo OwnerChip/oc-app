@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:web3dart/web3dart.dart';
 
 class MyBalanceNotifier extends Notifier<MyBalanceNotifierData> {
   MyBalanceNotifier() : super();
@@ -40,10 +41,37 @@ class MyBalanceNotifier extends Notifier<MyBalanceNotifierData> {
         newListItems.add(MyBalanceListItem(
           balance: balance,
           chain: chain.key,
+          symbol: chain.value.nativeTokenSymbol,
           name: chain.value.nativeTokenSymbol,
           iconPath: _listItemAssetPath[chain.key]!,
           balanceEur: balance / BigInt.from(10).pow(18) * priceInFiat['EUR']!,
         ));
+
+        for (final token in chainTokenConfigs[chain.key]!) {
+          final deployedContract = await token.getDeployedContract();
+          final balance = await client.call(
+            contract: deployedContract,
+            function: deployedContract.function('balanceOf'),
+            params: [userSession.userWalletAddress],
+          );
+
+          final balanceInEther = balance.first as BigInt;
+
+          final priceInFiat =
+              await ref.read(ethPriceProvider(token.symbol).future);
+
+          newListItems.add(MyBalanceListItem(
+            balance: balanceInEther,
+            chain: chain.key,
+            name: token.symbol,
+            symbol: token.symbol,
+            iconPath: token.iconPath,
+            decimals: token.decimals,
+            balanceEur:
+                balanceInEther / BigInt.from(10).pow(token.decimals) * priceInFiat['EUR']!,
+            token: chainTokenConfigs[chain.key]!.indexOf(token),
+          ));
+        }
       }
 
       state = state.copyWith(

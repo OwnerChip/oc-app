@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -253,12 +254,18 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     int? end,
     String? encodedOfferData,
     int? chainId,
-    EtherAmount? amount,
+    BigInt? amount,
     String? offerHash}) async {
   String? data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == erc20TransferFunctionSignature) {
+    data = makeErc20TransferData(
+      functionSignatureHash,
+      toAccount!,
+      amount!,
+    );
   } else if (amount != null) {
     data = null;
   } else if (functionSignatureHash == mintVoucherFunctionSignature) {
@@ -323,8 +330,9 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     params[0]["data"] = data;
   }
 
-  if (amount != null) {
-    params[0]["value"] = "0x${amount.getInWei.toRadixString(16)}";
+  // native transfer
+  if (functionSignatureHash.isEmpty && amount != null) {
+    params[0]["value"] = "0x${amount.toRadixString(16)}";
   }
 
   return params;
@@ -378,6 +386,14 @@ String makeRecoverTokenData(
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+String makeErc20TransferData(
+    String functionSignatureHash, EthereumAddress to, BigInt value) {
+  String data = functionSignatureHash +
+      to.toString().substring(2).padLeft(64, '0') +
+      value.toRadixString(16).padLeft(64, '0');
   return data;
 }
 
