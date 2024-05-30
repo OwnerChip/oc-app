@@ -54,7 +54,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
       appBar: CustomAppBar(
         text: context.loc.myBalanceTitle,
         overrideBackButton: () {
-          if (data.myBalanceListItem != null) {
+          if (_currentPage == 1) {
             FocusScope.of(context).unfocus();
 
             _pageController.animateToPage(
@@ -294,25 +294,31 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                     ),
                   ],
                 ),
-                const Spacer(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      item.balanceInEther.toStringAsPrecision(
-                        min(item.decimals, 3),
+                const SizedBox(
+                  width: 16,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        item.balanceInEtherString,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium!
+                            .copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      style:
-                          Theme.of(context).textTheme.headlineMedium!.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
-                    Text(
-                      "${item.balanceEur.toStringAsFixed(2)} €",
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(),
-                    ),
-                  ],
+                      Text(
+                        "${item.balanceEur.toStringAsFixed(2)} €",
+                        style:
+                            Theme.of(context).textTheme.bodyMedium!.copyWith(),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

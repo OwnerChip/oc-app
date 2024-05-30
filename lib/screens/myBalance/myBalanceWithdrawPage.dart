@@ -17,6 +17,7 @@ import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotif
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -58,6 +59,11 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   bool _success = false;
   bool _error = false;
 
+  bool _maxAmount = false;
+
+  BigInt? _gasPrice;
+  BigInt? _gasLimit;
+
   @override
   void didUpdateWidget(covariant MyBalanceWithdrawPage oldWidget) {
     if (!widget.isVisible) {
@@ -89,15 +95,17 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   @override
   Widget build(BuildContext context) {
     final myBalanceNotifier = ref.watch(myBalanceNotifierProvider);
-
     final item = myBalanceNotifier.myBalanceListItem;
 
     if (item == null) {
       return const SizedBox();
     }
+
     final fiatPrice = ref.watch(
       ethPriceProvider(item.symbol),
     );
+
+    print(item.balanceInEther);
 
     return CustomOverlay(
       show: _processing,
@@ -225,9 +233,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                     children: [
                       Text(
                         context.loc.myBalanceWithdrawMaxAmount(
-                            item.balanceInEther.toStringAsPrecision(
-                          min(item.decimals, 3),
-                        )),
+                            item.balanceInEtherString),
                         style:
                             Theme.of(context).textTheme.bodyMedium!.copyWith(),
                       ),
@@ -265,7 +271,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                                 return null;
                               },
                               onChanged: (value) {
-                                _amount = double.tryParse(value) ?? 0;
+                                _updateAmount();
+                                _maxAmount = false;
 
                                 if (mounted) {
                                   setState(() {});
@@ -323,17 +330,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       SizedBox(
                         width: double.infinity,
                         child: CustomOutlinedButton(
-                          onPressed: () {
-                            int numberOfDecimals = item.balanceInEther
-                                .toString()
-                                .split('.')
-                                .last
-                                .length;
-
-                            _amountController.text = item.balanceInEther
-                                .toStringAsFixed(max(2, numberOfDecimals));
-                            _amount =
-                                double.tryParse(_amountController.text) ?? 0;
+                          onPressed: () async {
+                            _maxAmount = true;
+                            _estimateGas(item);
 
                             if (mounted) {
                               setState(() {});
@@ -400,30 +399,25 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                               return;
                             }
 
-                            final BigInt amount = BigInt.from(
-                              (_amount * pow(10, item.decimals)).toInt(),
-                            );
-
                             //
                             if (item.token == null) {
                               final txHash = await _makeNormalNativeTransaction(
-                                  item,
-                                  chipSignature,
-                                  userSession,
-                                  wc,
-                                  wcSession,
-                                  walletType,
-                                  amount);
+                                  item: item,
+                                  chipSignature: chipSignature,
+                                  userSession: userSession,
+                                  wc: wc,
+                                  wcSession: wcSession,
+                                  walletType: walletType);
                             } else {
                               await _makeTokenTransaction(
-                                  item,
-                                  context,
-                                  chipSignature,
-                                  userSession,
-                                  wc,
-                                  wcSession,
-                                  walletType,
-                                  amount);
+                                context: context,
+                                item: item,
+                                chipSignature: chipSignature,
+                                userSession: userSession,
+                                wc: wc,
+                                wcSession: wcSession,
+                                walletType: walletType,
+                              );
                             }
                             _success = true;
                           } catch (e, st) {
@@ -452,15 +446,64 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     );
   }
 
-  Future<void> _makeTokenTransaction(
-      MyBalanceListItem item,
-      BuildContext context,
-      SignatureData chipSignature,
-      UserSession userSession,
-      Web3App wc,
-      W3MSession? wcSession,
-      WalletType walletType,
-      BigInt amount) async {
+  void _updateAmount() {
+    _amount = double.tryParse(_amountController.text) ?? 0;
+  }
+
+  Future<void> _estimateGas(MyBalanceListItem item) async {
+    final receivingAddress = _getReceivingAddress() ?? zeroAddress;
+    final userSession = ref.read(userSessionProvider);
+
+    _gasPrice = await estimateGasPrice(chainConfig[item.chain]!.rpcUrl);
+    _gasLimit = await estimateGas(
+      chainConfig[item.chain]!.rpcUrl,
+      receivingAddress,
+      null,
+      userSession!.userWalletAddress,
+      value: EtherAmount.fromBigInt(
+        EtherUnit.wei,
+        item.balance,
+      ),
+    );
+
+    // add buffer to leave some room for gas price fluctuations
+    BigInt gasCost = _gasPrice! * _gasLimit!;
+    gasCost += BigInt.from(pow(10, item.decimals - 2));
+
+    final maxTransferAmount = item.balance - gasCost;
+
+    if (_maxAmount) {
+      if (maxTransferAmount < BigInt.zero) {
+        _amountController.text = "0";
+      } else {
+        _amountController.text =
+            (maxTransferAmount / BigInt.from(pow(10, item.decimals)))
+                .toStringAsFixed(item.decimals);
+      }
+    }
+
+    _updateAmount();
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  BigInt _getAmount(MyBalanceListItem item) {
+    return BigInt.from(
+      (_amount * pow(10, item.decimals)).toInt(),
+    );
+  }
+
+  Future<void> _makeTokenTransaction({
+    required BuildContext context,
+    required MyBalanceListItem item,
+    required SignatureData chipSignature,
+    required UserSession userSession,
+    required Web3App wc,
+    required W3MSession? wcSession,
+    required WalletType walletType,
+  }) async {
     final blockchainToken = chainTokenConfigs[item.chain]![item.token!];
 
     final metaTx = await checkMetaTx(
@@ -482,8 +525,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         metaTxAgreementId,
         walletType,
         toggleLoading: () {},
-        toAccount: EthereumAddress.fromHex(_addressController.text),
-        amount: amount,
+        toAccount: _getReceivingAddress()!,
+        amount: _getAmount(item),
+        token: blockchainToken,
       );
 
       print(txHash);
@@ -501,36 +545,44 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         wcSession,
         walletType,
         // convert double to BigInt
-        amount: amount,
-        toAccount: EthereumAddress.fromHex(_addressController.text),
+        amount: _getAmount(item),
+        toAccount: _getReceivingAddress()!,
       );
 
       print(txHash);
     }
   }
 
-  Future<String> _makeNormalNativeTransaction(
-      MyBalanceListItem item,
-      SignatureData chipSignature,
-      UserSession userSession,
-      Web3App wc,
-      W3MSession? wcSession,
-      WalletType walletType,
-      BigInt amount) async {
+  Future<String> _makeNormalNativeTransaction({
+    required MyBalanceListItem item,
+    required SignatureData chipSignature,
+    required UserSession userSession,
+    required Web3App wc,
+    required W3MSession? wcSession,
+    required WalletType walletType,
+  }) async {
     return await makeAndSendNormalTx(
       ref,
       "",
       item.chain,
-      EthereumAddress.fromHex(_addressController.text),
+      _getReceivingAddress()!,
       chipSignature,
       userSession.userWalletAddress,
       wc,
       wcSession,
       walletType,
       // convert double to BigInt
-      amount: amount,
-      toAccount: EthereumAddress.fromHex(_addressController.text),
+      amount: _getAmount(item),
+      toAccount: _getReceivingAddress()!,
     );
+  }
+
+  EthereumAddress? _getReceivingAddress() {
+    try {
+      return EthereumAddress.fromHex(_addressController.text.trim());
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<dynamic> _web3AuthTransactionConfirmation(

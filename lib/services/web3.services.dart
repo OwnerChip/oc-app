@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -154,11 +156,20 @@ Future<List<dynamic>> queryControllerContract(
   return result;
 }
 
-Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
-    Uint8List txData, EthereumAddress fromAddress) async {
+Future<BigInt> estimateGas(
+  String chainRpcUrl,
+  EthereumAddress contractAddress,
+  Uint8List? txData,
+  EthereumAddress fromAddress, {
+  EtherAmount? value,
+}) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   BigInt result = await web3Client.estimateGas(
-      sender: fromAddress, to: contractAddress, data: txData);
+    sender: fromAddress,
+    to: contractAddress,
+    data: txData,
+    value: value,
+  );
   return result;
 }
 
@@ -298,8 +309,12 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
 
   String gasAmount = "0x55730"; // fallback: 300000 gas
   try {
-    BigInt gasAmountEst =
-        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data!), from!);
+    BigInt gasAmountEst = await estimateGas(
+      chainRpcUrl,
+      collectionId,
+      data != null ? hexToBytes(data) : null,
+      from!,
+    );
     gasAmount = "0x${gasAmountEst.toRadixString(16)}";
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
@@ -406,17 +421,6 @@ String makeTransferFromData(String functionSignatureHash, Uint8List hash,
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0') +
       (recovery ? "01".padLeft(64, "0") : "00".padLeft(64, "0"));
-  return data;
-}
-
-String makeTransferData(
-  String functionSignatureHash,
-  EthereumAddress to,
-  EtherAmount amount,
-) {
-  String data = functionSignatureHash +
-      to.toString().substring(2).padLeft(64, '0') +
-      amount.getInWei.toRadixString(16).padLeft(64, '0');
   return data;
 }
 

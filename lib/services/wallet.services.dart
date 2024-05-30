@@ -5,11 +5,13 @@ import 'dart:typed_data';
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
@@ -84,6 +86,7 @@ Future<String> makeAndSendGaslessTx(
   required Function toggleLoading,
   String? offerHash,
   BigInt? amount,
+  BlockchainToken? token,
 }) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
     functionSignatureHash: functionSignatureHash,
@@ -115,7 +118,7 @@ Future<String> makeAndSendGaslessTx(
   final Map<String, dynamic> request = gaslessTxParams[1];
 
   try {
-    String signature;
+    String signature = "";
     if (walletType.type == EWalletType.ownerCard) {
       String hash = await getGaslessTxHash(request, toAddress);
 
@@ -136,6 +139,19 @@ Future<String> makeAndSendGaslessTx(
 
       toggleLoading();
 
+      // check if the user allowed the forwarder contract to spend their tokens
+      if (chainConfig[chainId]!.forwarderContract != null) {
+        await _wcCheckERC20Allowance(
+          token,
+          walletAddress,
+          chainId,
+          wc,
+          wcSession,
+          w3mService,
+        );
+      }
+
+      // requqest user to allow the forwarder contract to spend their tokens
       signature = await wc!
           .request(
         topic: wcSession!.topic!,
@@ -152,8 +168,9 @@ Future<String> makeAndSendGaslessTx(
       toggleLoading();
     } else {
       try {
+        final priv = await Web3AuthFlutter.getPrivKey();
         signature = EthSigUtil.signTypedData(
-          privateKey: await Web3AuthFlutter.getPrivKey(),
+          privateKey: priv,
           jsonData: json.encode(typedData),
           version: TypedDataVersion.V4,
         );
@@ -165,12 +182,66 @@ Future<String> makeAndSendGaslessTx(
       }
     }
 
+    if (signature.isEmpty) {
+      throw Exception('Failed to sign message');
+    }
+
     String txnHash = await sendGaslessRequest(
         toAddress, signature, metaTxAgreementId, request);
     return txnHash;
   } catch (e) {
     print(e);
     rethrow;
+  }
+}
+
+// TODO: should be a gasless transaction as well
+Future<void> _wcCheckERC20Allowance(
+    BlockchainToken? token,
+    EthereumAddress walletAddress,
+    int chainId,
+    Web3App? wc,
+    W3MSession? wcSession,
+    W3MService w3mService) async {
+  final contract = await token!.getDeployedContract();
+  final function = contract.function('allowance');
+  ;
+
+  final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
+  final res = await client.call(
+    contract: contract,
+    function: function,
+    params: [
+      walletAddress,
+      EthereumAddress.fromHex(chainConfig[chainId]!.forwarderContract!),
+    ],
+  );
+
+  if (res.first == BigInt.zero) {
+    final function = contract.function('approve');
+    final data = function.encodeCall([
+      EthereumAddress.fromHex(chainConfig[chainId]!.forwarderContract!),
+      BigInt.parse(
+          '115792089237316195423570985008687907853269984665640564039457584007913129639935')
+    ]);
+
+    final res = await wc!.request(
+      topic: wcSession!.topic!,
+      chainId: 'eip155:$chainId',
+      request: SessionRequestParams(
+        method: 'eth_sendTransaction',
+        params: [
+          {
+            'from': walletAddress.toString(),
+            'to': token.contractAddress.toString(),
+            'data': "0x${hex.encode(data)}",
+          }
+        ],
+      ),
+    );
+    print('Transaction sent: $res');
+
+    w3mService.launchConnectedWallet();
   }
 }
 
@@ -535,7 +606,8 @@ Future<void> setupWeb3Auth() async {
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
-      clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
+      clientId:
+          "BCGuB4TOrWXvmJKbZB2V1u0R-iyo1jJxsVKwTheUBSyQ850lquUtJO6YHALOtY6cbd_ZbmCIInHbrwlTy2wxYRI",
       network: dotenv.get('IS_INTERNAL') == 'true'
           ? Network.sapphire_devnet
           : Network.sapphire_mainnet,

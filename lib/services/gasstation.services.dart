@@ -70,7 +70,13 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
-  } else if (functionSignatureHash == mintVoucherFunctionSignature) {
+  } else if (functionSignatureHash == erc20TransferFunctionSignature) {
+    data = makeErc20TransferData(
+      functionSignatureHash,
+      toAccount!,
+      amount!,
+    );
+  }  else if (functionSignatureHash == mintVoucherFunctionSignature) {
     data = makeMintData(functionSignatureHash, randomValueHash, signature,
         tokenURI!, voucherTokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
@@ -101,12 +107,6 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   } else if (functionSignatureHash == recoverTokenFunctionSignature) {
     data =
         makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
-  } else if (functionSignatureHash == erc20TransferFunctionSignature) {
-    data = makeErc20TransferData(
-      functionSignatureHash,
-      toAccount!,
-      amount!,
-    );
   } else {
     throw Exception('Invalid function signature hash');
   }
