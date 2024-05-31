@@ -119,9 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             );
           }
 
-          // TODO: For some reason backend session expiry date is 0 when using web3auth
-          // if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
-          if (privKey != null) {
+          if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
             ref.read(userAddressProvider.notifier).state =
                 EthPrivateKey.fromHex(privKey).address;
 
@@ -282,16 +280,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
 
-    ref.watch(onboardingProvider).maybeWhen(
-        data: (data) {
-          if (!data.showedTutorial && data.showTutorialNextTime) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref.read(onboardingProvider.notifier).showedTutorial();
-              Navigator.of(context).pushNamed(OnboardingScreen.routeName);
-            });
-          }
-        },
-        orElse: () {});
+    if (dotenv.get("APP_ID") == "ownerchip") {
+      ref.watch(onboardingProvider).maybeWhen(
+          data: (data) {
+            if (!data.showedTutorial && data.showTutorialNextTime) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(onboardingProvider.notifier).showedTutorial();
+                Navigator.of(context).pushNamed(OnboardingScreen.routeName);
+              });
+            }
+          },
+          orElse: () {});
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
