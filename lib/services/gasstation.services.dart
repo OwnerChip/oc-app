@@ -64,19 +64,21 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   String? typedDataHash,
   String? offerHash, {
   BigInt? amount,
+  BigInt? gas,
 }) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
-  } else if (functionSignatureHash == erc20TransferFunctionSignature) {
-    data = makeErc20TransferData(
+  } else if (functionSignatureHash == erc20TransferFromFunctionSignature) {
+    data = makeErc20TransferFromData(
       functionSignatureHash,
+      from,
       toAccount!,
       amount!,
     );
-  }  else if (functionSignatureHash == mintVoucherFunctionSignature) {
+  } else if (functionSignatureHash == mintVoucherFunctionSignature) {
     data = makeMintData(functionSignatureHash, randomValueHash, signature,
         tokenURI!, voucherTokenURI!);
   } else if (functionSignatureHash == burnFunctionSignature) {
@@ -117,8 +119,8 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     'from': from.hex,
     'to': to.hex,
     'value': 0,
-    'gas':
-        500000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
+    'gas': gas?.toInt() ?? 500000,
+    //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
     'nonce': nonce.toInt(),
     'data': data,
   };
@@ -157,6 +159,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams({
   String? typedDataHash,
   String? offerHash,
   BigInt? amount,
+  BigInt? gas,
 }) async {
   final request = await buildTypedV4Request(
     functionSignatureHash,
@@ -179,6 +182,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams({
     typedDataHash,
     offerHash,
     amount: amount,
+    gas: gas,
   );
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];

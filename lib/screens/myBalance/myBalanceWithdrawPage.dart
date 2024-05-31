@@ -65,6 +65,15 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   BigInt? _gasAmount;
 
   @override
+  void initState() {
+    super.initState();
+
+    _addressController.value = const TextEditingValue(
+      text: '0xab3e7ac85ea6547705ddb69b25e6fa5f883458b2',
+    );
+  }
+
+  @override
   void didUpdateWidget(covariant MyBalanceWithdrawPage oldWidget) {
     if (!widget.isVisible) {
       _amount = BigInt.zero;
@@ -269,7 +278,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                                 return null;
                               },
                               onChanged: (value) {
-                                _updateAmount();
+                                _updateAmount(
+                                  item,
+                                );
                                 _maxAmount = false;
 
                                 if (mounted) {
@@ -486,10 +497,14 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         });
   }
 
-  void _updateAmount() {
+  void _updateAmount(MyBalanceListItem item) {
     try {
       _amount = BigInt.from(
-        double.parse(_amountController.text) * pow(10, 18),
+        double.parse(_amountController.text) *
+            pow(
+              10,
+              item.decimals,
+            ),
       );
       talker.info("Amount: $_amount");
     } catch (e) {
@@ -505,18 +520,36 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       final receivingAddress = _getReceivingAddress() ?? zeroAddress;
       final userSession = ref.read(userSessionProvider);
 
-      _gasPrice = (await estimateGasPrice(chainConfig[item.chain]!.rpcUrl));
+      if (item.token == null) {
+        _gasPrice = (await estimateGasPrice(chainConfig[item.chain]!.rpcUrl));
+        _gasAmount = await estimateGas(
+          chainConfig[item.chain]!.rpcUrl,
+          receivingAddress,
+          Uint8List(0),
+          userSession!.userWalletAddress,
+          gasPrice: EtherAmount.fromBigInt(EtherUnit.wei, _gasPrice!),
+        );
+      } else {
+        final token = chainTokenConfigs[item.chain]![item.token!];
+        final contract = await token.getDeployedContract();
+        final data = contract.function('transfer').encodeCall([
+          receivingAddress,
+          _amount,
+        ]);
+
+        _gasAmount = await estimateGas(
+          chainConfig[item.chain]!.rpcUrl,
+          token.contractAddress,
+          data,
+          userSession!.userWalletAddress,
+        );
+      }
+
       talker.info("GASPRICE: ${_gasPrice}");
-      _gasAmount = await estimateGas(
-        chainConfig[item.chain]!.rpcUrl,
-        receivingAddress,
-        Uint8List(0),
-        userSession!.userWalletAddress,
-        gasPrice: EtherAmount.fromBigInt(EtherUnit.wei, _gasPrice!),
-      );
+
       talker.info("GASAMOUNT: ${_gasAmount}");
       // fallback: 300000 gas
-      _gasAmount = BigInt.from(max(_gasAmount!.toDouble(), 110000));
+      _gasAmount = BigInt.from(max(_gasAmount!.toDouble(), 105000));
       talker.info("GASAMOUNT: ${_gasAmount}");
 
       if (mounted) {
@@ -530,7 +563,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   void _setMaxAmount(MyBalanceListItem item) {
     BigInt gasCost = _gasPrice! * _gasAmount! +
         EtherAmount.fromInt(EtherUnit.gwei, 10).getInWei;
+    talker.info("Gas cost: $gasCost");
     final maxTransferAmount = item.balance - gasCost;
+    talker.info("Max transfer amount: $maxTransferAmount");
 
     if (_maxAmount) {
       if (maxTransferAmount < BigInt.zero) {
@@ -540,7 +575,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
             maxTransferAmount / BigInt.from(pow(10, item.decimals));
         _amountController.text = adjustedAmount.toStringAsFixed(item.decimals);
       }
-      _updateAmount();
+      _updateAmount(
+        item,
+      );
     }
   }
 
@@ -556,7 +593,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     final blockchainToken = chainTokenConfigs[item.chain]![item.token!];
 
     final metaTx = await checkMetaTx(
-        blockchainToken.contractAddress, erc20TransferFunctionSignature);
+      blockchainToken.contractAddress,
+      erc20TransferFunctionSignature,
+    );
 
     if (metaTx[0]) {
       final metaTxAgreementId = metaTx[1];
@@ -564,7 +603,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       final txHash = await makeAndSendGaslessTx(
         ref,
         context,
-        erc20TransferFunctionSignature,
+        erc20TransferFromFunctionSignature,
         item.chain,
         blockchainToken.contractAddress,
         chipSignature,
@@ -577,6 +616,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         toAccount: _getReceivingAddress()!,
         amount: _amount,
         token: blockchainToken,
+        gasAmount: _gasAmount,
       );
 
       talker.info("Transaction sent: $txHash");

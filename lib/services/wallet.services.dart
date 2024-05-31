@@ -87,6 +87,7 @@ Future<String> makeAndSendGaslessTx(
   String? offerHash,
   BigInt? amount,
   BlockchainToken? token,
+  BigInt? gasAmount,
 }) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
     functionSignatureHash: functionSignatureHash,
@@ -113,6 +114,7 @@ Future<String> makeAndSendGaslessTx(
     typedDataHash: typedDataHash,
     offerHash: offerHash,
     amount: amount,
+    gas: gasAmount,
   );
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];

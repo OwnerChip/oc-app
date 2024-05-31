@@ -427,6 +427,19 @@ String makeErc20TransferData(
   return data;
 }
 
+String makeErc20TransferFromData(
+  String functionSignatureHash,
+  EthereumAddress from,
+  EthereumAddress to,
+  BigInt value,
+) {
+  String data = functionSignatureHash +
+      from.toString().substring(2).padLeft(64, '0') +
+      to.toString().substring(2).padLeft(64, '0') +
+      value.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
 String makeTransferFromData(String functionSignatureHash, Uint8List hash,
     MsgSignature signature, bool? enableRecovery) {
   final recovery = enableRecovery ?? false;
