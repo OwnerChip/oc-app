@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
@@ -147,9 +148,10 @@ Future<void> onTapAuth(
   final String jsonUserSession = jsonEncode(userSession.toJson());
   storage.setString('userSession', jsonUserSession);
 
-  await ref.refresh(findAllMinterRolesProvider);
-  await ref.refresh(ocNFTsForOwnerProvider);
-  await ref.refresh(ocNFTsMintedByUserNotifierProvider);
+  ref.refresh(findAllMinterRolesProvider);
+  ref.refresh(ocNFTsForOwnerProvider);
+  ref.refresh(ocNFTsMintedByUserNotifierProvider);
+  ref.refresh(myBalanceNotifierProvider);
 
   sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
     'connectedWallet': userWalletAddress.hex,

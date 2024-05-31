@@ -1,6 +1,7 @@
 //import packages
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
@@ -119,7 +120,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             );
           }
 
-          if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
+          if (privKey != null &&
+              (backendSession.expiryDate > nowPlusThreeDays || kDebugMode)) {
             ref.read(userAddressProvider.notifier).state =
                 EthPrivateKey.fromHex(privKey).address;
 

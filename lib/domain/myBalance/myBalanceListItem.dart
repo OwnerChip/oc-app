@@ -11,6 +11,7 @@ class MyBalanceListItem {
   final double balanceEur;
   final String iconPath;
   final int decimals;
+  final int sendMaxTransferBufferDecimals;
   final int? token;
 
   // convert wei to ether
@@ -34,7 +35,6 @@ class MyBalanceListItem {
       str += "0";
     }
 
-
     return str;
   }
 
@@ -46,6 +46,7 @@ class MyBalanceListItem {
     required this.balanceEur,
     required this.iconPath,
     this.decimals = 18,
+    this.sendMaxTransferBufferDecimals = 15,
     this.token,
   });
 }

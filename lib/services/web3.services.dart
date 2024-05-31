@@ -162,6 +162,7 @@ Future<BigInt> estimateGas(
   Uint8List? txData,
   EthereumAddress fromAddress, {
   EtherAmount? value,
+  EtherAmount? gasPrice,
 }) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   BigInt result = await web3Client.estimateGas(
@@ -169,6 +170,7 @@ Future<BigInt> estimateGas(
     to: contractAddress,
     data: txData,
     value: value,
+    gasPrice: gasPrice,
   );
   return result;
 }
@@ -246,27 +248,29 @@ String makeMintData(String functionSignatureHash, Uint8List hash,
 }
 
 Future<List<dynamic>> buildEthSendTransactionRequest(
-    String chainRpcUrl,
-    EthereumAddress collectionId,
-    EthereumAddress? from,
-    String functionSignatureHash,
-    Uint8List randomValueHash,
-    MsgSignature signature,
-    {EthereumAddress? toAccount,
-    String? tokenURI,
-    String? voucherTokenURI,
-    String? gasPrice,
-    BigInt? tokenId,
-    bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress,
-    BigInt? offerPrice,
-    String? typedDataHash,
-    BigInt? salt,
-    int? end,
-    String? encodedOfferData,
-    int? chainId,
-    BigInt? amount,
-    String? offerHash}) async {
+  String chainRpcUrl,
+  EthereumAddress collectionId,
+  EthereumAddress? from,
+  String functionSignatureHash,
+  Uint8List randomValueHash,
+  MsgSignature signature, {
+  EthereumAddress? toAccount,
+  String? tokenURI,
+  String? voucherTokenURI,
+  BigInt? tokenId,
+  bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
+  BigInt? offerPrice,
+  String? typedDataHash,
+  BigInt? salt,
+  int? end,
+  String? encodedOfferData,
+  int? chainId,
+  BigInt? amount,
+  String? offerHash,
+  BigInt? gasAmount,
+  BigInt? gasPrice,
+}) async {
   String? data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
@@ -307,39 +311,50 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
     throw Exception('Invalid function signature hash');
   }
 
-  String gasAmount = "0x55730"; // fallback: 300000 gas
+  String gasAmountStr =
+      "0x${gasAmount != null ? gasAmount.toRadixString(16) : "55730"}"; // fallback: 300000 gas
   try {
-    BigInt gasAmountEst = await estimateGas(
-      chainRpcUrl,
-      collectionId,
-      data != null ? hexToBytes(data) : null,
-      from!,
-    );
-    gasAmount = "0x${gasAmountEst.toRadixString(16)}";
+    if (gasAmount == null) {
+      BigInt gasAmountEst = await estimateGas(
+        chainRpcUrl,
+        collectionId,
+        data != null ? hexToBytes(data) : null,
+        from!,
+      );
+      gasAmountStr = "0x${gasAmountEst.toRadixString(16)}";
+    }
+    ;
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
     print("ERROR estimating gas amount: $e");
   }
 
+  String gasPriceStr;
+
   if (gasPrice == null) {
     try {
-      BigInt estimatedGasPrice = await estimateGasPrice(chainRpcUrl);
-      gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
+      gasPrice = await estimateGasPrice(chainRpcUrl);
       print("ESTIMATED GAS PRICE: $gasPrice");
+      gasPriceStr = "0x${gasPrice.toRadixString(16)}";
     } catch (e) {
       print("ERROR estimating gas price: $e");
-      gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
+      gasPriceStr = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
     }
+  } else {
+    gasPriceStr = "0x${gasPrice.toRadixString(16)}";
   }
-  gasAmount = "0x55730"; // fallback: 350000 gas
+
   final params = [
     {
       "from": from.toString(),
       "to": collectionId.toString(),
-      "gasPrice": gasPrice,
-      "gas": gasAmount,
+      "gasPrice": gasPriceStr,
+      "gas": gasAmountStr,
     },
   ];
+
+  // print("GasPrice: ${BigInt.parse(gasPriceStr.substring(2), radix: 16)}");
+  // print("GasAmount: ${BigInt.parse(gasAmountStr.substring(2), radix: 16)}");
 
   if (data != null) {
     params[0]["data"] = data;

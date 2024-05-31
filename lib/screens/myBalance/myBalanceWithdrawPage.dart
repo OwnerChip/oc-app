@@ -54,7 +54,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   final FocusNode _amountFocusNode = FocusNode();
   final TextEditingController _amountController = TextEditingController();
 
-  double _amount = 0.0;
+  BigInt _amount = BigInt.zero;
   bool _processing = false;
   bool _success = false;
   bool _error = false;
@@ -62,12 +62,12 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   bool _maxAmount = false;
 
   BigInt? _gasPrice;
-  BigInt? _gasLimit;
+  BigInt? _gasAmount;
 
   @override
   void didUpdateWidget(covariant MyBalanceWithdrawPage oldWidget) {
     if (!widget.isVisible) {
-      _amount = 0.0;
+      _amount = BigInt.zero;
       _addressController.clear();
       _amountController.clear();
       _success = false;
@@ -87,8 +87,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     return item.balance != BigInt.zero &&
         _addressController.text.isNotEmpty &&
         _amountController.text.isNotEmpty &&
-        _amount > 0.0 &&
-        _amount <= item.balanceInEther &&
+        _amount > BigInt.zero &&
+        _amount <= item.balance &&
         !_processing;
   }
 
@@ -120,6 +120,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
                   _amountController.clear();
                   _addressController.clear();
+
                   FocusScope.of(context).unfocus();
 
                   widget.onBack();
@@ -136,9 +137,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
           svgPath:
               '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/${_success ? "check.svg" : _error ? "triangle_small.svg" : 'chip_dark_blue.svg'}'),
       child: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
@@ -301,7 +299,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                         data: (data) {
                           final priceInFiat = data['EUR']!;
                           return Text(
-                            "${(_amount * priceInFiat).toStringAsFixed(2)} €",
+                            "${((_amount / BigInt.from(pow(10, item.decimals))).toDouble() * priceInFiat).toStringAsFixed(2)} €",
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium!
@@ -332,8 +330,12 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                         child: CustomOutlinedButton(
                           onPressed: () async {
                             _maxAmount = true;
-                            _estimateGas(item);
-
+                            _estimateGas(
+                              item,
+                              all: true,
+                            ).then((_) {
+                              _setMaxAmount(item);
+                            });
                             if (mounted) {
                               setState(() {});
                             }
@@ -352,83 +354,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       duration: const Duration(milliseconds: 300),
                       opacity: _isSendAvailable(item) ? 1.0 : 0.5,
                       child: CustomRoundedButton(
-                        onPressed: () async {
-                          FocusScope.of(context).unfocus();
-
-                          if (!(_formKey.currentState?.validate() ?? false)) {
-                            return;
-                          }
-
-                          try {
-                            if (!_isSendAvailable(item)) {
-                              return;
-                            }
-                            final walletType = ref.read(walletTypeProvider);
-
-                            if (walletType?.type == EWalletType.web3auth) {
-                              final confirmation =
-                                  await _web3AuthTransactionConfirmation(
-                                      context, item);
-
-                              if (confirmation != true) {
-                                return;
-                              }
-                            }
-
-                            _processing = true;
-
-                            if (mounted) {
-                              setState(() {});
-                            }
-
-                            final chipSignature =
-                                ref.read(chipSignatureDataProvider);
-                            final wc = ref.read(wcProvider);
-                            final wcSession = ref.read(wcSessionProvider);
-                            final userSession = ref.read(userSessionProvider);
-
-                            if (walletType == null ||
-                                userSession == null ||
-                                wc == null) {
-                              _error = true;
-
-                              if (mounted) {
-                                setState(() {});
-                              }
-
-                              return;
-                            }
-
-                            //
-                            if (item.token == null) {
-                              final txHash = await _makeNormalNativeTransaction(
-                                  item: item,
-                                  chipSignature: chipSignature,
-                                  userSession: userSession,
-                                  wc: wc,
-                                  wcSession: wcSession,
-                                  walletType: walletType);
-                            } else {
-                              await _makeTokenTransaction(
-                                context: context,
-                                item: item,
-                                chipSignature: chipSignature,
-                                userSession: userSession,
-                                wc: wc,
-                                wcSession: wcSession,
-                                walletType: walletType,
-                              );
-                            }
-                            _success = true;
-                          } catch (e, st) {
-                            _error = true;
-                            talker.error(
-                                "Error sending transaction: $e", e, st);
-                          }
-
-                          if (mounted) {
-                            setState(() {});
-                          }
+                        onPressed: () {
+                          _onSend(item);
                         },
                         text: context.loc.myBalanceSendButton,
                       ),
@@ -446,53 +373,175 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     );
   }
 
-  void _updateAmount() {
-    _amount = double.tryParse(_amountController.text) ?? 0;
-  }
+  Future<void> _onSend(MyBalanceListItem item) async {
+    FocusScope.of(context).unfocus();
 
-  Future<void> _estimateGas(MyBalanceListItem item) async {
-    final receivingAddress = _getReceivingAddress() ?? zeroAddress;
-    final userSession = ref.read(userSessionProvider);
-
-    _gasPrice = await estimateGasPrice(chainConfig[item.chain]!.rpcUrl);
-    _gasLimit = await estimateGas(
-      chainConfig[item.chain]!.rpcUrl,
-      receivingAddress,
-      null,
-      userSession!.userWalletAddress,
-      value: EtherAmount.fromBigInt(
-        EtherUnit.wei,
-        item.balance,
-      ),
-    );
-
-    // add buffer to leave some room for gas price fluctuations
-    BigInt gasCost = _gasPrice! * _gasLimit!;
-    gasCost += BigInt.from(pow(10, item.decimals - 2));
-
-    final maxTransferAmount = item.balance - gasCost;
-
-    if (_maxAmount) {
-      if (maxTransferAmount < BigInt.zero) {
-        _amountController.text = "0";
-      } else {
-        _amountController.text =
-            (maxTransferAmount / BigInt.from(pow(10, item.decimals)))
-                .toStringAsFixed(item.decimals);
-      }
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
     }
 
-    _updateAmount();
+    try {
+      if (!_isSendAvailable(item)) {
+        return;
+      }
+      final walletType = ref.read(walletTypeProvider);
+
+      if (walletType?.type == EWalletType.web3auth) {
+        final confirmation =
+            await _web3AuthTransactionConfirmation(context, item);
+
+        if (confirmation != true) {
+          return;
+        }
+      }
+
+      _processing = true;
+
+      if (mounted) {
+        setState(() {});
+      }
+
+      _sendAnalytics(
+        item,
+        description: "Transaction initiated",
+        type: "SENDING_TRANSACTION_INITIATED",
+      );
+
+      final chipSignature = ref.read(chipSignatureDataProvider);
+      final wc = ref.read(wcProvider);
+      final wcSession = ref.read(wcSessionProvider);
+      final userSession = ref.read(userSessionProvider);
+
+      if (walletType == null || userSession == null || wc == null) {
+        _error = true;
+
+        _sendAnalytics(
+          item,
+          description:
+              "Error sending transaction: Wallet type, user session or wc is null",
+          type: "SENDING_TRANSACTION_ERROR",
+        );
+
+        if (mounted) {
+          setState(() {});
+        }
+
+        return;
+      }
+
+      await _estimateGas(item);
+
+      if (item.token == null) {
+        final txHash = await _makeNormalNativeTransaction(
+            item: item,
+            chipSignature: chipSignature,
+            userSession: userSession,
+            wc: wc,
+            wcSession: wcSession,
+            walletType: walletType);
+        talker.info("Transaction sent: $txHash");
+      } else {
+        await _makeTokenTransaction(
+          context: context,
+          item: item,
+          chipSignature: chipSignature,
+          userSession: userSession,
+          wc: wc,
+          wcSession: wcSession,
+          walletType: walletType,
+        );
+      }
+      _success = true;
+
+      _sendAnalytics(item,
+          description: "Transaction sent successfully",
+          type: "SENDING_TRANSACTION_SUCCESS");
+    } catch (e, st) {
+      _sendAnalytics(item,
+          description: "Error sending transaction: ${e.toString()}",
+          type: "SENDING_TRANSACTION_ERROR");
+      _error = true;
+      talker.error("Error sending transaction: $e", e, st);
+    }
 
     if (mounted) {
       setState(() {});
     }
   }
 
-  BigInt _getAmount(MyBalanceListItem item) {
-    return BigInt.from(
-      (_amount * pow(10, item.decimals)).toInt(),
-    );
+  void _sendAnalytics(
+    MyBalanceListItem item, {
+    required String description,
+    required String type,
+  }) {
+    sendAnalyticsTrace(ref.read(userSessionProvider)?.sessionId ?? "unknown",
+        description, type,
+        tags: {
+          "from": ref.read(userSessionProvider)?.userWalletAddress,
+          "to": _getReceivingAddress()?.hex,
+          "amount": _amount.toString(),
+          "balance": item.balance.toString(),
+          "chain": item.chain,
+          "token": item.token,
+        });
+  }
+
+  void _updateAmount() {
+    try {
+      _amount = BigInt.from(
+        double.parse(_amountController.text) * pow(10, 18),
+      );
+      talker.info("Amount: $_amount");
+    } catch (e) {
+      _amount = BigInt.zero;
+    }
+  }
+
+  Future<void> _estimateGas(
+    MyBalanceListItem item, {
+    bool all = false,
+  }) async {
+    try {
+      final receivingAddress = _getReceivingAddress() ?? zeroAddress;
+      final userSession = ref.read(userSessionProvider);
+
+      _gasPrice = (await estimateGasPrice(chainConfig[item.chain]!.rpcUrl));
+      talker.info("GASPRICE: ${_gasPrice}");
+      _gasAmount = await estimateGas(
+        chainConfig[item.chain]!.rpcUrl,
+        receivingAddress,
+        Uint8List(0),
+        userSession!.userWalletAddress,
+        gasPrice: EtherAmount.fromBigInt(EtherUnit.wei, _gasPrice!),
+      );
+      talker.info("GASAMOUNT: ${_gasAmount}");
+      // fallback: 300000 gas
+      _gasAmount = BigInt.from(max(_gasAmount!.toDouble(), 110000));
+      talker.info("GASAMOUNT: ${_gasAmount}");
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      talker.error("Error estimating gas: $e");
+    }
+  }
+
+  void _setMaxAmount(MyBalanceListItem item) {
+    BigInt gasCost = _gasPrice! * _gasAmount! +
+        EtherAmount.fromInt(EtherUnit.gwei, 10).getInWei;
+    final maxTransferAmount = item.balance - gasCost;
+
+    if (_maxAmount) {
+      if (maxTransferAmount < BigInt.zero) {
+        _amountController.text = "0";
+      } else {
+        final adjustedAmount =
+            maxTransferAmount / BigInt.from(pow(10, item.decimals));
+        _amountController.text = adjustedAmount.toStringAsFixed(item.decimals);
+      }
+      _updateAmount();
+    }
   }
 
   Future<void> _makeTokenTransaction({
@@ -526,11 +575,11 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         walletType,
         toggleLoading: () {},
         toAccount: _getReceivingAddress()!,
-        amount: _getAmount(item),
+        amount: _amount,
         token: blockchainToken,
       );
 
-      print(txHash);
+      talker.info("Transaction sent: $txHash");
     } else {
       // gas station is not available
 
@@ -545,11 +594,13 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         wcSession,
         walletType,
         // convert double to BigInt
-        amount: _getAmount(item),
+        amount: _amount,
         toAccount: _getReceivingAddress()!,
+        gasPrice: _gasPrice,
+        gasAmount: _gasAmount,
       );
 
-      print(txHash);
+      talker.info("Transaction sent: $txHash");
     }
   }
 
@@ -572,14 +623,17 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       wcSession,
       walletType,
       // convert double to BigInt
-      amount: _getAmount(item),
+      amount: _amount,
       toAccount: _getReceivingAddress()!,
+      gasAmount: _gasAmount,
+      gasPrice: _gasPrice,
     );
   }
 
   EthereumAddress? _getReceivingAddress() {
     try {
-      return EthereumAddress.fromHex(_addressController.text.trim());
+      return EthereumAddress.fromHex(
+          _addressController.text.trim().toLowerCase());
     } catch (e) {
       return null;
     }

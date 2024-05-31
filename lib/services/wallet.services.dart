@@ -272,6 +272,8 @@ Future<String> makeAndSendNormalTx(
   int? endTimestamp,
   String? encodedOfferData,
   BigInt? amount,
+  BigInt? gasAmount,
+  BigInt? gasPrice,
 }) async {
   var txParams = await buildEthSendTransactionRequest(
     getRPCUrlFromChainId(chainId),
@@ -297,6 +299,8 @@ Future<String> makeAndSendNormalTx(
     end: endTimestamp,
     encodedOfferData: encodedOfferData,
     amount: amount,
+    gasPrice: gasPrice,
+    gasAmount: gasAmount,
   );
 
   late String txnHash;
@@ -324,13 +328,20 @@ Future<String> makeAndSendNormalTx(
       from: walletAddress,
       to: toAddress,
       data: params['data'] != null ? hexToBytes(params['data']) : null,
-      gasPrice: EtherAmount.inWei(BigInt.parse(
-        params['gasPrice'].toString().substring(2),
-        radix: 16,
-      )),
-      maxGas: int.tryParse(
-        params['gas'],
-      ),
+      gasPrice: params['gasPrice'] != null
+          ? EtherAmount.inWei(BigInt.parse(
+              params['gasPrice'].toString().substring(2),
+              radix: 16,
+            ))
+          : null,
+      maxGas: params["gas"] != null
+          ? BigInt.parse(
+              params['gas'].toString().substring(
+                    2,
+                  ),
+              radix: 16,
+            ).toInt()
+          : null,
       value: params['value'] != null
           ? EtherAmount.inWei(
               BigInt.parse(
