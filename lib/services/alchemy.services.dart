@@ -195,14 +195,21 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
         .asMap()
         .entries
         .where((entry) {
-          return !entry.value.data['owners']
+          final isZero = entry.value.data['owners']
               .contains('0x0000000000000000000000000000000000000000');
+          //  filter out duplicates just in case
+          final alreadyOnList = filteredNfts.any((nft) =>
+              nft.collectionAddress ==
+                  mintedNfts.data[entry.key].collectionAddress &&
+              nft.nftTokenId == mintedNfts.data[entry.key].nftTokenId);
+          return !isZero && !alreadyOnList;
         })
         .map((i) => mintedNfts.data[i.key])
         .toList());
 
-    if ((mintedNfts.pageKey == lastPageKey) ||
-        filteredNfts.length >= pageSize) {
+    if ((mintedNfts.pageKey == null) ||
+        (mintedNfts.pageKey == lastPageKey) ||
+        (filteredNfts.length >= pageSize)) {
       lastPageKey = mintedNfts.pageKey;
       break;
     }
