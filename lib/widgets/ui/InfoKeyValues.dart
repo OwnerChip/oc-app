@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class InfoKeyValues extends StatelessWidget {

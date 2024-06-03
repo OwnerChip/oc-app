@@ -25,7 +25,7 @@ import 'package:async/async.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';

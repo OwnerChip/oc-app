@@ -47,7 +47,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/images.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //theme imports

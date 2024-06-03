@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:nfc_manager/platform_tags.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 
 class NFCPlatform {
   var platform = defaultTargetPlatform;

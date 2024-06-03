@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
@@ -122,7 +123,7 @@ Future<void> onTapAuth(
 
   //get sessionid from backend (only if not already set)
   final oldUserSession = ref.read(userSessionProvider);
-  String sessionId = oldUserSession?.sessionId ?? await getSessionId();
+  String sessionId = oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
   bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
 
   String message =
@@ -134,7 +135,7 @@ Future<void> onTapAuth(
   MsgSignature signature = hexSignatureToRSV(hexSignature);
 
   int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-  int sessionExpirationDate = await getSessionExpiration(
+  int sessionExpirationDate = await BackendAuth.getSessionExpiration(
       sevenDaysInSeconds, sessionId, userWalletAddress, signature);
 
   UserSession userSession = UserSession(sessionId, signature,

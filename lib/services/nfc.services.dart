@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -21,7 +22,7 @@ import 'package:sentry/sentry.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/secora.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -266,7 +267,7 @@ Future<void> authenticateCard(
     EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature =
         await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign, false);
-    await saveUserSession(sessionId, cardWalletAddress, signature, ref);
+    await BackendAuth.saveUserSession(sessionId, cardWalletAddress, signature, ref);
   }
 
   return await scanClosure(
@@ -438,7 +439,7 @@ Future<dynamic> scanClosure(
   //get saved session id if exists, else get new one from backend
   String sessionId = ref.read(userSessionProvider) != null
       ? ref.read(userSessionProvider)!.sessionId
-      : await getSessionId();
+      : await BackendAuth.getSessionId();
 
   //start NFC scan
   final scanProcess = Sentry.startTransaction('$analyticsType', 'task');

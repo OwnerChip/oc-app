@@ -6,7 +6,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';

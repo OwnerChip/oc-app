@@ -34,7 +34,7 @@ import 'package:ownerchip_whitelabel/domain/eip155.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 
 Uri convertToWcLink({

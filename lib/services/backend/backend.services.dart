@@ -1,30 +1,32 @@
 import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/wallets.dart';
+
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:sentry_dio/sentry_dio.dart';
 import 'package:sentry/sentry.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:sentry_dio/sentry_dio.dart';
+import 'package:web3dart/web3dart.dart';
 
-/// get OC backend client (with sentry interceptor)
-Dio getBackendClient() {
-  final client = Dio(BaseOptions(
-      baseUrl: dotenv.get('IS_INTERNAL') == 'true'
-          ? dotenv.get('OC_BACKEND_URL_TEST')
-          : dotenv.get('OC_BACKEND_URL'),
-      headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
-  client.addSentry();
-  return client;
+abstract class Backend {
+  /// get OC backend client (with sentry interceptor)
+  static getBackendClient() {
+    final client = Dio(BaseOptions(
+        baseUrl: dotenv.get('IS_INTERNAL') == 'true'
+            ? dotenv.get('OC_BACKEND_URL_TEST')
+            : dotenv.get('OC_BACKEND_URL'),
+        headers: {
+          "app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'),
+          "lang": "en"
+        }));
+
+    client.addSentry();
+
+    return client;
+  }
 }
 
 Future<void> sendCardInitToBackend(
@@ -50,7 +52,7 @@ Future<void> sendCardInitToBackend(
 
 // get a list of all collections associated with a specific app
 Future<Map> getAppCollections() async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
   final String url = '/app/$appId';
 
@@ -65,7 +67,7 @@ Future<Map> getAppCollections() async {
 //         the error message if it is not supported.
 Future<List<dynamic>> checkMetaTx(
     EthereumAddress collectionId, String functionSignatureHash) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url = '/collection/$collectionId/metaTx/$functionSignatureHash';
   try {
     final response = await dio.get(url);
@@ -83,7 +85,7 @@ Future<String> sendGaslessRequest(
     String txSignature,
     String metaTxAgreementId,
     Map<String, dynamic> txRequest) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url = '/collection/$collectionId/metatx';
   //make post request with dio
   final response = await dio.post(url, data: {
@@ -97,7 +99,7 @@ Future<String> sendGaslessRequest(
 // gets the hash that needs to be used to sign a gasless tx request.
 Future<String> getEthSignTypedDataSignature(
     EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url = '/collection/$collectionId/metatx/hash';
   //make post request with dio
   final response = await dio.post(url, data: txRequest);
@@ -107,7 +109,7 @@ Future<String> getEthSignTypedDataSignature(
 // This function will post a user action to the analytics backend.
 Future<void> sendAnalyticsTrace(String caseId, String description, String type,
     {Map<String, dynamic>? tags}) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url = '/app/${dotenv.get('BITRISEIO_PACKAGE_NAME')}/action';
   //make post request with dio (do not care about response)
   try {
@@ -126,76 +128,6 @@ Future<void> sendAnalyticsTrace(String caseId, String description, String type,
   }
 }
 
-// This function requests a Session Id from the backend
-Future<String> getSessionId() async {
-  final Dio dio = getBackendClient();
-  try {
-    final response = await dio.get('/auth');
-    final String sessionId = response.data;
-    return sessionId;
-  } catch (e, s) {
-    await Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-    //fallback!
-    return makeRandomInt().toString();
-  }
-}
-
-Future<dynamic> getSessionExpiration(int sessionDuration, String sessionId,
-    EthereumAddress userWalletAddress, MsgSignature signature) async {
-  final Dio dio = getBackendClient();
-  try {
-    final response = await dio.post('/auth/${sessionDuration}',
-        data: {
-          "sessionId": sessionId,
-          "walletAddress": userWalletAddress.hex,
-          "userWalletSignature": {
-            'r': convertSignatureParamToHexString(signature.r),
-            's': convertSignatureParamToHexString(signature.s),
-            'v': signature.v
-          }
-        },
-        options: Options(
-          responseType: ResponseType.plain,
-        ));
-    return int.parse(response.data); // unix expiration timestamp
-  } catch (e, s) {
-    await Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-    return 0;
-  }
-}
-
-/// save a userSession of a OwnerCard
-Future<void> saveUserSession(
-    String sessionId,
-    EthereumAddress cardWalletAddress,
-    MsgSignature signature,
-    WidgetRef ref) async {
-  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-  int sessionExpirationDate = await getSessionExpiration(
-      sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
-
-  ref.read(userAddressProvider.notifier).state = cardWalletAddress;
-  ref.read(walletTypeProvider.notifier).state = walletConfig[EWalletType.ownerCard];
-  const isOwnerCard = true;
-  UserSession userSession = UserSession(sessionId, signature,
-      ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
-
-  ref.read(userSessionProvider.notifier).state = userSession;
-
-  //persist session date
-  final SharedPreferences storage = await SharedPreferences.getInstance();
-  final String jsonUserSession = jsonEncode(userSession.toJson());
-  storage.setString('userSession', jsonUserSession);
-}
-
 Future<bool> sendCardLostToBackend(
     EthereumAddress chipAddress,
     EthereumAddress collectionAddress,
@@ -204,7 +136,7 @@ Future<bool> sendCardLostToBackend(
     String email,
     String name,
     String telNr) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url = '/collection/${collectionAddress.hex}/recovery';
   try {
     await dio.post(url, data: {
@@ -232,7 +164,7 @@ Future<bool> sendCardLostToBackend(
 
 //get creator info
 Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   try {
     final Response response = await dio.get('/creator/${tokenId.hex}');
     final Map creatorData = response.data;
@@ -274,7 +206,7 @@ Future<Map> getEthPrice(String cryptoSymbol) async {
 }
 
 Future<void> sendOfferItemInfoToBackend(OfferItemInputData dto) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url = '/offer';
   try {
     await dio.post(url, data: dto.toJson());
@@ -286,7 +218,7 @@ Future<void> sendOfferItemInfoToBackend(OfferItemInputData dto) async {
 }
 
 Future<void> cancelOfferBackendRequest(String offerHash) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url = '/offer/cancel/$offerHash';
   try {
     await dio.post(url);
@@ -301,7 +233,7 @@ Future<void> cancelOfferBackendRequest(String offerHash) async {
 Future<RaribleHashAndEncodedData> getRaribleOfferTypedDataHashAndEncodedData(
     Map typedData, RaribleV2Order order) async {
   try {
-    final Dio dio = getBackendClient();
+    final Dio dio = Backend.getBackendClient();
     final result = await dio.post('/offer/hash/rarible',
         data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
     print(result.data);
@@ -319,7 +251,7 @@ Future<RaribleHashAndEncodedData> getRaribleOfferTypedDataHashAndEncodedData(
 
 //get unredeemed purchases for tokenId
 Future<List<Purchase>> getUnredeemedPurchases(BigInt tokenId) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   try {
     final String tokenIdHex = convertTokenIdToEthereumAddress(tokenId);
     final Response response =
@@ -335,7 +267,7 @@ Future<List<Purchase>> getUnredeemedPurchases(BigInt tokenId) async {
 
 Future<void> postShippingInfoToBackend(
     Purchase purchase, ShippingInfo shippingInfo) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url =
       '/token/${convertTokenIdToEthereumAddress(purchase.token.id)}/purchase/${purchase.purchaseTxHash}/shippingInfo';
   try {
@@ -350,7 +282,7 @@ Future<void> postShippingInfoToBackend(
 // POST /token/:tokenId/purchase/:purchaseId/manualHandover with empty body
 
 Future<void> postManualHandoverToBackend(Purchase purchase) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
   final String url =
       '/token/${convertTokenIdToEthereumAddress(purchase.token.id)}/purchase/${purchase.purchaseTxHash}/manualHandover';
   try {
