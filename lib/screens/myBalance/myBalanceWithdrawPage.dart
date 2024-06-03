@@ -67,10 +67,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   @override
   void initState() {
     super.initState();
-
-    _addressController.value = const TextEditingValue(
-      text: '0xab3e7ac85ea6547705ddb69b25e6fa5f883458b2',
-    );
   }
 
   @override

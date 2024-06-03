@@ -57,20 +57,22 @@ class MyBalanceWithdrawConfirmationDialog extends StatelessWidget {
                 const SizedBox(
                   width: 16,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildValue(
-                      context,
-                      '${address.substring(0, 7)}...${address.substring(address.length - 4)}',
-                    ),
-                    _buildValue(context, amount),
-                    _buildValue(context, item.name),
-                    _buildValue(
-                      context,
-                      chainConfig[item.chain]!.networkName,
-                    ),
-                  ],
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildValue(
+                        context,
+                        '${address.substring(0, 7)}...${address.substring(address.length - 4)}',
+                      ),
+                      _buildValue(context, amount),
+                      _buildValue(context, item.name),
+                      _buildValue(
+                        context,
+                        chainConfig[item.chain]!.networkName,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -117,6 +119,7 @@ class MyBalanceWithdrawConfirmationDialog extends StatelessWidget {
       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
             fontWeight: FontWeight.bold,
           ),
+      overflow: TextOverflow.ellipsis,
     );
   }
 }
