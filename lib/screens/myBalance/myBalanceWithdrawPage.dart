@@ -110,8 +110,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       ethPriceProvider(item.symbol),
     );
 
-    print(item.balanceInEther);
-
     return CustomOverlay(
       show: _processing,
       content: SpinningLoadingSvg(

@@ -414,27 +414,7 @@ Future<String> sendPersonalSignRequest(
     }
 
     try {
-      if (Platform.isAndroid) {
-        return signWithPrivateKey();
-      }
-
-      await Web3AuthFlutter.request(
-        cfg,
-        'personal_sign',
-        requestParams,
-      ).catchError((_) {});
-
-      final res = await Web3AuthUtils.getSignResult(
-          maxRetries: 3,
-          delay: const Duration(
-            seconds: 1,
-          ));
-
-      if (res == null) {
-        return signWithPrivateKey();
-      }
-
-      return res;
+      return await signWithPrivateKey();
     } catch (e, st) {
       Sentry.captureException(e, stackTrace: st);
 
