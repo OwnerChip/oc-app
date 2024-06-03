@@ -94,13 +94,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   Widget build(BuildContext context) {
     final OCNFTsForOwnerData ocNFTsForOwnerData =
         ref.watch(ocNFTsForOwnerProvider);
-    final OCNFTsMintedByUserData ocNFTsMinterByUserNotifier =
+    final OCNFTsMintedByUserData ocNFTsMintedByUserNotifier =
         ref.watch(ocNFTsMintedByUserNotifierProvider);
 
     final UserSession? userSession = ref.watch(userSessionProvider);
-
-    final Set<String> unique =
-        ocNFTsMinterByUserNotifier.data.map((e) => e.tokenId).toSet();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -136,7 +133,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
               ),
               // Created by me
               _buildGalleryPage(
-                ocNFTsForOwnerData: ocNFTsMinterByUserNotifier,
+                ocNFTsForOwnerData: ocNFTsMintedByUserNotifier,
                 refreshController: _mintedNftsRefreshController,
                 userSession: userSession,
                 getNotifier: () =>
