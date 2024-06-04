@@ -278,34 +278,28 @@ Future<String> sendPersonalSignRequest(
   String message,
   EthereumAddress walletAddress,
   W3MSession? wcSession,
-  Web3AuthNotifierData web3AuthData,
-  WalletType walletType,
-) async {
+  WalletType walletType, {
+  bool siweMessage = false,
+  int chainId = 1,
+}) async {
   List<int> utf8CodeUnits = utf8.encode(message);
   String hexUtf8EncodedMessage =
-      "0x" + utf8CodeUnits.map((e) => e.toRadixString(16)).join();
+      "0x${utf8CodeUnits.map((e) => e.toRadixString(16)).join()}";
 
-  final requestParams = [hexUtf8EncodedMessage, walletAddress.toString()];
+  final requestParams = [
+    siweMessage ? message : hexUtf8EncodedMessage,
+    walletAddress.toString()
+  ];
 
   if (walletType.type == EWalletType.web3auth) {
-    // final cfg = ChainConfig(
-    //   chainId: '11155111',
-    //   rpcTarget:
-    //       "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
-    // );
-    // TODO: Web3Auth doesn't open the correct network
-    // it always opens eth mainnet
-    final cfg = ChainConfig(
-      chainId: 'eip155:1',
-      rpcTarget: chainConfig[1]!.rpcUrl,
-    );
-
     Future<String> signWithPrivateKey() async {
       final priv = await Web3AuthFlutter.getPrivKey();
       final credentials = EthPrivateKey.fromHex(priv);
+      
       final res = credentials.signPersonalMessageToUint8List(
-          Uint8List.fromList(utf8CodeUnits),
-          chainId: 1);
+        Uint8List.fromList(utf8CodeUnits),
+        chainId: chainId,
+      );
 
       return '0x${hex.encode(res)}';
     }
@@ -324,10 +318,7 @@ Future<String> sendPersonalSignRequest(
     try {
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
-        chainId: 'eip155:1',
-        // chainId: w3mService.selectedChain?.chainId == null
-        // ? 'eip155:1'
-        // : 'eip155:${w3mService.selectedChain?.chainId}',
+        chainId: 'eip155:$chainId',
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,

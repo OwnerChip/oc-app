@@ -1,5 +1,6 @@
 import "package:dio/dio.dart";
 import "package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart";
+import "package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart";
 import "package:ownerchip_whitelabel/services/backend/backend.services.dart";
 import "package:retrofit/retrofit.dart";
 
@@ -23,5 +24,10 @@ abstract class BackendAuthService {
   Future<String> getSessionExpiration({
     @Path("expiration") required int expiration,
     @Body() required GetSessionExpirationPayload payload,
+  });
+
+  @POST("/session/siwe")
+  Future<String> validateSiwe({
+    @Body() required ValidateSiwePayload body,
   });
 }

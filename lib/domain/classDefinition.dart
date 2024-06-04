@@ -154,9 +154,16 @@ class UserSession {
   final EthereumAddress userWalletAddress;
   final bool isOwnerCard;
   final int expiryDate;
+  final String jwt;
 
-  UserSession(this.sessionId, this.signatureData, this.userWalletAddress,
-      this.isOwnerCard, this.expiryDate);
+  UserSession(
+    this.sessionId,
+    this.signatureData,
+    this.userWalletAddress,
+    this.isOwnerCard,
+    this.expiryDate,
+    this.jwt,
+  );
 
   Map<String, dynamic> toJson() => {
         'sessionId': sessionId,
@@ -164,6 +171,7 @@ class UserSession {
         'userWalletAddress': userWalletAddress.hex,
         'isOwnerCard': isOwnerCard,
         'expiryDate': expiryDate.toString(),
+        'jwt': jwt,
       };
 
   UserSession.fromJson(Map<String, dynamic> json)
@@ -171,7 +179,10 @@ class UserSession {
         signatureData = msgSignatureFromJson(json['signatureData']),
         userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
         isOwnerCard = json['isOwnerCard'],
-        expiryDate = int.parse(json['expiryDate']);
+        expiryDate = int.parse(
+          json['expiryDate'],
+        ),
+        jwt = json['jwt'];
 }
 
 class CreatorData {

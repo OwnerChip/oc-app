@@ -123,14 +123,28 @@ Future<void> onTapAuth(
 
   //get sessionid from backend (only if not already set)
   final oldUserSession = ref.read(userSessionProvider);
-  String sessionId = oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
+  String sessionId =
+      oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
   bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
 
-  String message =
-      "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
-
+  final siweMessage = BackendAuth.createSiweMessage(
+    address: userWalletAddress,
+    statement: "Sign in with Ethereum to the app.",
+    nonce: sessionId,
+  );
   String hexSignature = await sendPersonalSignRequest(
-      ref, message, userWalletAddress, session, web3AuthData, walletType);
+    ref,
+    siweMessage[1],
+    userWalletAddress,
+    session,
+    walletType,
+    siweMessage: true,
+  );
+
+  final jwt = await BackendAuth.validateSiwe(
+    message: siweMessage[0],
+    signature: hexSignature,
+  );
 
   MsgSignature signature = hexSignatureToRSV(hexSignature);
 
@@ -138,8 +152,14 @@ Future<void> onTapAuth(
   int sessionExpirationDate = await BackendAuth.getSessionExpiration(
       sevenDaysInSeconds, sessionId, userWalletAddress, signature);
 
-  UserSession userSession = UserSession(sessionId, signature,
-      ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
+  UserSession userSession = UserSession(
+    sessionId,
+    signature,
+    ref.read(userAddressProvider),
+    isOwnerCard,
+    sessionExpirationDate,
+    jwt,
+  );
 
   ref.read(userSessionProvider.notifier).state = userSession;
 

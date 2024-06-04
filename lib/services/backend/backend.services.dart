@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry/sentry.dart';
 import 'package:sentry_dio/sentry_dio.dart';
@@ -14,14 +15,20 @@ import 'package:web3dart/web3dart.dart';
 abstract class Backend {
   /// get OC backend client (with sentry interceptor)
   static getBackendClient() {
-    final client = Dio(BaseOptions(
+    final client = Dio(
+      BaseOptions(
         baseUrl: dotenv.get('IS_INTERNAL') == 'true'
             ? dotenv.get('OC_BACKEND_URL_TEST')
             : dotenv.get('OC_BACKEND_URL'),
-        headers: {
-          "app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'),
-          "lang": "en"
-        }));
+        headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"},
+
+      ),
+
+    );
+
+    client.interceptors.add(
+      TalkerDioLoggerExtension.instance,
+    );
 
     client.addSentry();
 
