@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
@@ -117,7 +118,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, burnFunctionSignature);
+          await BackendMetaTx.checkMetaTx(config.collectionId, burnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -228,7 +229,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, transferFromFunctionSignature);
+          await BackendMetaTx.checkMetaTx(config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -360,7 +361,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, recoverTokenFunctionSignature);
+          await BackendMetaTx.checkMetaTx(config.collectionId, recoverTokenFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -492,7 +493,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response = await checkMetaTx(
+      final List response = await BackendMetaTx.checkMetaTx(
           config.collectionId, cancelMarketplaceOfferSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
@@ -628,7 +629,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, redeemItemFunctionSignature);
+          await BackendMetaTx.checkMetaTx(config.collectionId, redeemItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 

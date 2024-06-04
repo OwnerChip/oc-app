@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -135,7 +136,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       WalletType? walletType) async {
     //check if user is allowed to use gas station
     final List response =
-        await checkMetaTx(twinCollectionId, mintFunctionSignature);
+        await BackendMetaTx.checkMetaTx(twinCollectionId, mintFunctionSignature);
     final bool canUseGasStation = response[0];
     final metaTxAgreementId = response[1];
 
@@ -283,7 +284,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     try {
       //check if user is allowed to use gas station
       final List response =
-          await checkMetaTx(config.collectionId, offerItemFunctionSignature);
+          await BackendMetaTx.checkMetaTx(config.collectionId, offerItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 

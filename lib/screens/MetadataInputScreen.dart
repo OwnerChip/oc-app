@@ -5,6 +5,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
@@ -187,7 +188,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //check if user is allowed to use gas station
       final List response =
-          await checkMetaTx(collectionId, mintFunctionSignature);
+          await BackendMetaTx.checkMetaTx(collectionId, mintFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 

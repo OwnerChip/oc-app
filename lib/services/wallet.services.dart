@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
@@ -162,7 +163,7 @@ Future<String> makeAndSendGaslessTx(
       }
     }
 
-    String txnHash = await sendGaslessRequest(
+    String txnHash = await BackendMetaTx.sendGaslessRequest(
         toAddress, signature, metaTxAgreementId, request);
     return txnHash;
   } catch (e) {
