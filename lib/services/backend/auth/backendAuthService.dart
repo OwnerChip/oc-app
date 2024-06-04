@@ -8,12 +8,22 @@ part "backendAuthService.g.dart";
 
 @RestApi()
 abstract class BackendAuthService {
-  static final BackendAuthService _instance = BackendAuthService();
+  static BackendAuthService _instance = BackendAuthService();
 
   static BackendAuthService get instance => _instance;
 
-  factory BackendAuthService() {
-    final dio = Backend.getBackendClient();
+  static recreate(String? jwt) {
+    _instance = BackendAuthService(
+      jwt: jwt,
+    );
+  }
+
+  factory BackendAuthService({
+    String? jwt,
+  }) {
+    final dio = Backend.getBackendClient(
+      jwt: jwt,
+    );
     return _BackendAuthService(dio, baseUrl: "${dio.options.baseUrl}/auth");
   }
 

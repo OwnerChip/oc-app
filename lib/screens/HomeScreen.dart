@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -125,6 +126,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
+            Backend.recreateServices(backendSession.jwt);
           } else {
             if (privKey == null) {}
           }
@@ -139,12 +141,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(wcSessionProvider.notifier).state = wcSession;
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
+            Backend.recreateServices(backendSession.jwt);
           } else {
             //remove session and wallet type from storage
             storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
+            Backend.recreateServices(null);
           }
         }
       } else {
@@ -153,6 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('walletType');
         storage.remove('userSession');
         wcService?.disconnect();
+        Backend.recreateServices(null);
       }
 
       if (!shippingPopupIsShown) {
@@ -298,7 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       appBar: const CustomAppBar(
         showBackButton: false,
       ),
-      body:           ScreenBodyLayout(
+      body: ScreenBodyLayout(
         withScrollView: false,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         flexSides: 0,
@@ -306,9 +311,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         children: [
           dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
               ? const Text(
-            'INTERNAL',
-            style: TextStyle(color: Colors.red, fontSize: 20),
-          )
+                  'INTERNAL',
+                  style: TextStyle(color: Colors.red, fontSize: 20),
+                )
               : Container(),
 
           // MIDDLE CONTENT
@@ -319,7 +324,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               CustomHomeScreenButton(
                   text: context.loc.scanning,
                   svgPath:
-                  '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
+                      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
                   onTap: () => onButtonPress(false)),
               const SizedBox(height: 40),
               CustomRoundedButton(
@@ -331,19 +336,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ref.read(userSessionProvider) == null
                   ? Container()
                   : relevantCollections.when(
-                  data: (data) => data.hasAnyMinterRole! &&
-                      ref.read(userSessionProvider) != null
-                      ? Padding(
-                      padding: EdgeInsets.only(bottom: 20),
-                      child: CustomRoundedButton(
-                        width: 250,
-                        text: context.loc.initializeChip,
-                        onPressed: () => onButtonPress(true),
-                      ))
-                      : Container(),
-                  loading: () => SizedBox(
-                      height: 40, child: Text(context.loc.loading)),
-                  error: (err, stack) => Container()),
+                      data: (data) => data.hasAnyMinterRole! &&
+                              ref.read(userSessionProvider) != null
+                          ? Padding(
+                              padding: EdgeInsets.only(bottom: 20),
+                              child: CustomRoundedButton(
+                                width: 250,
+                                text: context.loc.initializeChip,
+                                onPressed: () => onButtonPress(true),
+                              ))
+                          : Container(),
+                      loading: () => SizedBox(
+                          height: 40, child: Text(context.loc.loading)),
+                      error: (err, stack) => Container()),
             ],
           ),
 
@@ -361,13 +366,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               //if stebo app show additional button
               dotenv.get('APP_ID') == 'stebo'
                   ? Column(children: [
-                CustomOutlinedButton(
-                    buttonText: 'SteboArt',
-                    onPressed: () => launchUrl(
-                        Uri.parse('https://www.steboart.com'),
-                        mode: LaunchMode.externalApplication)),
-                const SizedBox(height: 20),
-              ])
+                      CustomOutlinedButton(
+                          buttonText: 'SteboArt',
+                          onPressed: () => launchUrl(
+                              Uri.parse('https://www.steboart.com'),
+                              mode: LaunchMode.externalApplication)),
+                      const SizedBox(height: 20),
+                    ])
                   : Container(),
               CustomOutlinedButton(
                 buttonText: context.loc.more,

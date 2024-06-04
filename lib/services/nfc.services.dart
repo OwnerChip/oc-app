@@ -260,15 +260,18 @@ Future<void> authenticateCard(
     WidgetRef ref, BuildContext context, String pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    final message = BackendAuth.createSiweMessage(
+    final String message =
+        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+
+    final siweMessage = BackendAuth.createSiweMessage(
       address: createFirstKeyChipResponse[0],
-      statement: "Sign in with Ethereum to the app.",
+      statement: message,
       nonce: sessionId,
     );
-    final Uint8List msgHashToSign = keccakUtf8(message[1]);
+    Uint8List msgHashToSign = keccakUtf8(siweMessage[1]);
     final bool pinVerified = await verifyPin(nfc, pin);
     final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
-    final MsgSignature signature = await signHash(
+    MsgSignature signature = await signHash(
       nfc,
       0x01,
       cardWalletAddress,
@@ -281,8 +284,18 @@ Future<void> authenticateCard(
     final vHex = signature.v.toRadixString(16).padLeft(2, '0');
 
     final jwt = await BackendAuth.validateSiwe(
-      message: message[0],
+      message: siweMessage[0],
       signature: "0x$rHex$sHex$vHex",
+    );
+
+    msgHashToSign = keccakUtf8(message);
+
+    signature = await signHash(
+      nfc,
+      0x01,
+      cardWalletAddress,
+      msgHashToSign,
+      false,
     );
 
     await BackendAuth.saveUserSession(
@@ -292,6 +305,8 @@ Future<void> authenticateCard(
       ref,
       jwt,
     );
+
+    Backend.recreateServices(jwt);
   }
 
   return await scanClosure(

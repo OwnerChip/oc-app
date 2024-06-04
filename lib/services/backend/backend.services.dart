@@ -6,6 +6,9 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry/sentry.dart';
@@ -14,16 +17,20 @@ import 'package:web3dart/web3dart.dart';
 
 abstract class Backend {
   /// get OC backend client (with sentry interceptor)
-  static getBackendClient() {
+  static getBackendClient({
+    String? jwt,
+  }) {
     final client = Dio(
       BaseOptions(
         baseUrl: dotenv.get('IS_INTERNAL') == 'true'
             ? dotenv.get('OC_BACKEND_URL_TEST')
             : dotenv.get('OC_BACKEND_URL'),
-        headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"},
-
+        headers: {
+          "app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'),
+          "lang": "en",
+          "Authorization": jwt != null ? "Bearer $jwt" : "",
+        },
       ),
-
     );
 
     client.interceptors.add(
@@ -33,6 +40,12 @@ abstract class Backend {
     client.addSentry();
 
     return client;
+  }
+
+  static void recreateServices(String? jwt) {
+    talker.info('Recreating backend services with new JWT.\n$jwt');
+    BackendAuthService.recreate(jwt);
+    BackendMetaTxService.recreate(jwt);
   }
 }
 

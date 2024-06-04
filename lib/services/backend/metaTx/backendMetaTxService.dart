@@ -7,12 +7,22 @@ part 'backendMetaTxService.g.dart';
 
 @RestApi()
 abstract class BackendMetaTxService {
-  static final BackendMetaTxService _instance = BackendMetaTxService();
+  static BackendMetaTxService _instance = BackendMetaTxService();
 
   static BackendMetaTxService get instance => _instance;
 
-  factory BackendMetaTxService() {
-    final dio = Backend.getBackendClient();
+  static void recreate(String? jwt) {
+    _instance = BackendMetaTxService(
+      jwt: jwt,
+    );
+  }
+
+  factory BackendMetaTxService({
+    String? jwt,
+  }) {
+    final dio = Backend.getBackendClient(
+      jwt: jwt,
+    );
     return _BackendMetaTxService(dio, baseUrl: dio.options.baseUrl);
   }
 

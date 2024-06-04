@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
@@ -98,6 +99,9 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                             storage.remove('walletType');
                             storage.remove('userSession');
 
+                            // clean up services
+                            Backend.recreateServices(null);
+
                             ref.refresh(web3AuthNotifierProvider);
                             await Web3AuthFlutter.logout().catchError((_) {});
 
@@ -109,6 +113,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                                       message:
                                           'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
                             }
+
                           },
                         )
                       : IconButton(
