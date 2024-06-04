@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
@@ -117,8 +118,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
 
-      final List response =
-          await BackendMetaTx.checkMetaTx(config.collectionId, burnFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, burnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -228,8 +229,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
 
-      final List response =
-          await BackendMetaTx.checkMetaTx(config.collectionId, transferFromFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -360,8 +361,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await BackendMetaTx.checkMetaTx(config.collectionId, recoverTokenFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, recoverTokenFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -554,7 +555,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
-        await cancelOfferBackendRequest(offer.offerHash);
+        await BackendOffer.cancelOfferBackendRequest(
+          offer.offerHash,
+        );
         sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
             tags: {
@@ -628,8 +631,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await BackendMetaTx.checkMetaTx(config.collectionId, redeemItemFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, redeemItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 

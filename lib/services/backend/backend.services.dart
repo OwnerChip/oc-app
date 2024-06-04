@@ -5,10 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
-import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOfferService.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry/sentry.dart';
@@ -46,6 +45,7 @@ abstract class Backend {
     talker.info('Recreating backend services with new JWT.\n$jwt');
     BackendAuthService.recreate(jwt);
     BackendMetaTxService.recreate(jwt);
+    BackendOfferService.recreate(jwt);
   }
 }
 
@@ -189,49 +189,10 @@ Future<Map> getEthPrice(String cryptoSymbol) async {
   }
 }
 
-Future<void> sendOfferItemInfoToBackend(OfferItemInputData dto) async {
-  final Dio dio = Backend.getBackendClient();
-  final String url = '/offer';
-  try {
-    await dio.post(url, data: dto.toJson());
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
-  }
-}
 
-Future<void> cancelOfferBackendRequest(String offerHash) async {
-  final Dio dio = Backend.getBackendClient();
-  final String url = '/offer/cancel/$offerHash';
-  try {
-    await dio.post(url);
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
-  }
-}
 
-// backend encodes message and returns hash of typed data
-Future<RaribleHashAndEncodedData> getRaribleOfferTypedDataHashAndEncodedData(
-    Map typedData, RaribleV2Order order) async {
-  try {
-    final Dio dio = Backend.getBackendClient();
-    final result = await dio.post('/offer/hash/rarible',
-        data: jsonEncode({'typedData': typedData, 'message': order.toJson()}));
-    print(result.data);
-    return RaribleHashAndEncodedData(
-        result.data['typedDataHash'], result.data['encodedData']);
-  } catch (e, s) {
-    Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-    rethrow;
-  }
-}
+
+
 
 //get unredeemed purchases for tokenId
 Future<List<Purchase>> getUnredeemedPurchases(BigInt tokenId) async {

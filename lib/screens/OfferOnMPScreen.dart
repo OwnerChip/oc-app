@@ -14,6 +14,8 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/payloads/offerItemPayload.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -347,7 +349,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         var response = await createRaribleOrder(config.chainId, order);
 
         //call backend with info about offering
-        OfferItemInputData offerItemInputData = OfferItemInputData(
+        final offerItemInputData = OfferItemPayload(
             tokenId: convertTokenIdToEthereumAddress(config.tokenId),
             offerPrice: priceInPrimaryChainCurrency.toString(),
             offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
@@ -363,7 +365,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
             offchainOfferId: response['id']);
 
-        await sendOfferItemInfoToBackend(offerItemInputData);
+        await BackendOffer.sendOfferItemInfoToBackend(offerItemInputData);
 
         sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_SUCCESS",

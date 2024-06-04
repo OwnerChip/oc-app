@@ -205,52 +205,6 @@ class CreatorData {
   });
 }
 
-class OfferItemInputData {
-  final String tokenId;
-  final String offerPrice;
-  final String offerCurrency;
-  final String sellerWalletAddress;
-  final String sellerPayoutAddress;
-  final String sellerEmail;
-  final int validUntil;
-  final String salt;
-  final String encodedData;
-  final String typedDataHash;
-  final String chipSignature;
-  final String marketplaceContract;
-  final String offchainOfferId;
-
-  const OfferItemInputData(
-      {required this.tokenId,
-      required this.offerPrice,
-      required this.offerCurrency,
-      required this.sellerWalletAddress,
-      required this.sellerPayoutAddress,
-      required this.sellerEmail,
-      required this.validUntil,
-      required this.salt,
-      required this.encodedData,
-      required this.typedDataHash,
-      required this.chipSignature,
-      required this.marketplaceContract,
-      required this.offchainOfferId});
-
-  Map<String, dynamic> toJson() => {
-        'tokenId': tokenId,
-        'offerPrice': offerPrice,
-        'offerCurrency': offerCurrency,
-        'sellerWalletAddress': sellerWalletAddress,
-        'sellerPayoutAddress': sellerPayoutAddress,
-        'sellerEmail': sellerEmail,
-        'validUntil': validUntil,
-        'salt': salt,
-        'encodedData': encodedData,
-        'typedDataHash': typedDataHash,
-        'chipSignature': chipSignature,
-        'marketplaceContract': marketplaceContract,
-        'offchainOfferId': offchainOfferId
-      };
-}
 
 class RaribleHashAndEncodedData {
   final String typedDataHash;

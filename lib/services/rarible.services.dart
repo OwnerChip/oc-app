@@ -3,6 +3,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/marketplace/types.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:dio/dio.dart';
@@ -78,8 +79,10 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
 Future<RaribleHashAndEncodedData> getRaribleOrderTypedDataHash(
     int chainId, RaribleV2Order order) async {
   //call backend to get hash of typed data & encoded data
-  return await getRaribleOfferTypedDataHashAndEncodedData(
-      getRaribleMakeOrderTypeData(chainId), order);
+  return await BackendOffer.getRaribleOfferTypedDataHashAndEncodedData(
+    getRaribleMakeOrderTypeData(chainId),
+    order,
+  );
 }
 
 // create rarible order api call
