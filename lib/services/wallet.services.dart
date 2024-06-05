@@ -360,6 +360,9 @@ Future<String> makeAndSendNormalTx(
     );
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
+
+    await wcSwitchToChainConditionally(w3mService, chainId);
+
     w3mService!.launchConnectedWallet();
 
     txnHash = await wc.request(
@@ -373,6 +376,24 @@ Future<String> makeAndSendNormalTx(
   }
 
   return txnHash;
+}
+
+Future<void> wcSwitchToChainConditionally(
+    W3MService? w3mService, int chainId) async {
+  final chain = w3mService?.selectedChain;
+  if (chain == null || chain.chainId != chainId.toString()) {
+    final chain = chainConfig[chainId]!;
+    w3mService!.launchConnectedWallet();
+    await w3mService.requestSwitchToChain(
+      W3MChainInfo(
+        chainName: chain.networkName,
+        chainId: chainId.toString(),
+        namespace: "",
+        tokenName: chain.nativeTokenSymbol,
+        rpcUrl: chain.rpcUrl,
+      ),
+    );
+  }
 }
 
 //personal sign
@@ -425,6 +446,11 @@ Future<String> sendPersonalSignRequest(
     w3mService!.launchConnectedWallet();
 
     try {
+      await wcSwitchToChainConditionally(
+        w3mService,
+        1,
+      );
+
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
         chainId: 'eip155:1',
