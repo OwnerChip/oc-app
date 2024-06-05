@@ -100,7 +100,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
-            approveFunctionSignature, // APPROVE
+            approveFunctionSignature,
+            // APPROVE
             config.chainId,
             config.collectionId,
             signatureData,
@@ -121,6 +122,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             approveFunctionSignature,
             config.chainId,

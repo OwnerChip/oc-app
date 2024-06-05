@@ -18,8 +18,8 @@ import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/utils/web3authUtils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -253,6 +253,7 @@ Future<void> _wcCheckERC20Allowance(
 //It then returns the txnHash.
 
 Future<String> makeAndSendNormalTx(
+  BuildContext context,
   WidgetRef ref,
   String functionSignatureHash,
   int chainId,
@@ -312,11 +313,11 @@ Future<String> makeAndSendNormalTx(
     throw Exception('Wallet type not found');
   }
 
-  if (walletType.type == EWalletType.web3auth) {
+  if ([EWalletType.ownerCard, EWalletType.web3auth].contains(walletType.type)) {
     final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
-    final credentials =
-        EthPrivateKey.fromHex(await Web3AuthFlutter.getPrivKey());
     final params = txParams[0];
+
+    Uint8List signature = Uint8List(0);
 
     Uint8List hexToBytes(String hexString) {
       // Ensure the hex string does not contain the '0x' prefix
@@ -326,38 +327,73 @@ Future<String> makeAndSendNormalTx(
       return Uint8List.fromList(hex.decode(hexString));
     }
 
-    final transaction = Transaction(
-      from: walletAddress,
-      to: toAddress,
-      data: params['data'] != null ? hexToBytes(params['data']) : null,
-      gasPrice: params['gasPrice'] != null
-          ? EtherAmount.inWei(BigInt.parse(
-              params['gasPrice'].toString().substring(2),
-              radix: 16,
-            ))
-          : null,
-      maxGas: params["gas"] != null
-          ? BigInt.parse(
-              params['gas'].toString().substring(
-                    2,
+    if (walletType.type == EWalletType.ownerCard) {
+      final hash = TypedDataUtil.hashMessage(
+        jsonData: params[0],
+        version: TypedDataVersion.V4,
+      );
+
+      var cardSignature =
+          // ignore: use_build_context_synchronously
+          await Navigator.pushNamed(context, PinScreen.routeName,
+              arguments: PinScreenArguments(
+                  activeFeature: PinScreenActiveFeature.verifyPinTx,
+                  callback: (String pin) async {
+                    return await makeCardSignature(
+                      ref,
+                      context,
+                      hash,
+                      () {},
+                      pin,
+                    );
+                  })) as MsgSignature;
+
+      signature = Uint8List.fromList([
+        ...hex.decode(cardSignature.r.toRadixString(16).padLeft(64, '0')),
+        ...hex.decode(cardSignature.s.toRadixString(16).padLeft(64, '0')),
+        cardSignature.v,
+      ]);
+    } else if (walletType.type == EWalletType.web3auth) {
+      signature = await client.signTransaction(
+        EthPrivateKey.fromHex(
+          await Web3AuthFlutter.getPrivKey(),
+        ),
+        Transaction(
+          from: walletAddress,
+          to: toAddress,
+          data: params['data'] != null ? hexToBytes(params['data']) : null,
+          gasPrice: params['gasPrice'] != null
+              ? EtherAmount.inWei(BigInt.parse(
+                  params['gasPrice'].toString().substring(2),
+                  radix: 16,
+                ))
+              : null,
+          maxGas: params["gas"] != null
+              ? BigInt.parse(
+                  params['gas'].toString().substring(
+                        2,
+                      ),
+                  radix: 16,
+                ).toInt()
+              : null,
+          value: params['value'] != null
+              ? EtherAmount.inWei(
+                  BigInt.parse(
+                    params['value'].toString().substring(2),
+                    radix: 16,
                   ),
-              radix: 16,
-            ).toInt()
-          : null,
-      value: params['value'] != null
-          ? EtherAmount.inWei(
-              BigInt.parse(
-                params['value'].toString().substring(2),
-                radix: 16,
-              ),
-            )
-          : null,
+                )
+              : null,
+        ),
+        chainId: chainId,
+      );
+    }
+
+    txnHash = await client.sendRawTransaction(
+      signature,
     );
-    txnHash = await client.sendTransaction(
-      credentials,
-      transaction,
-      chainId: chainId,
-    );
+
+    talker.log('Transaction sent: $txnHash');
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
 

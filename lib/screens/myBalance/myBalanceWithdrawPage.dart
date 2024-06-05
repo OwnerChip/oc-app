@@ -618,6 +618,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       // gas station is not available
 
       final txHash = await makeAndSendNormalTx(
+        context,
         ref,
         erc20TransferFunctionSignature,
         item.chain,
@@ -647,6 +648,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     required WalletType walletType,
   }) async {
     return await makeAndSendNormalTx(
+      context,
       ref,
       "",
       item.chain,

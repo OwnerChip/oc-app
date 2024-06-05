@@ -181,6 +181,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           mintVoucherFunctionSignature,
           chainId,
@@ -315,6 +316,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           offerItemFunctionSignature,
           config.chainId,
