@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'backendAnalyticsService.dart';
+part of 'backendAppService.dart';
 
 // **************************************************************************
 // RetrofitGenerator
@@ -8,8 +8,8 @@ part of 'backendAnalyticsService.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers
 
-class _BackendAnalyticsService implements BackendAnalyticsService {
-  _BackendAnalyticsService(
+class _BackendAppService implements BackendAppService {
+  _BackendAppService(
     this._dio, {
     this.baseUrl,
   });
@@ -35,7 +35,7 @@ class _BackendAnalyticsService implements BackendAnalyticsService {
     )
         .compose(
           _dio.options,
-          '/app/${packageName}/action',
+          '/${packageName}/action',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -44,6 +44,35 @@ class _BackendAnalyticsService implements BackendAnalyticsService {
           _dio.options.baseUrl,
           baseUrl,
         ))));
+  }
+
+  @override
+  Future<HttpResponse<dynamic>> getAppCollections(
+      {required String packageName}) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result =
+        await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/${packageName}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = _result.data;
+    final httpResponse = HttpResponse(value, _result);
+    return httpResponse;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

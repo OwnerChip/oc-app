@@ -50,13 +50,11 @@ abstract class BackendOffer extends Backend {
         },
       );
 
-      final data = jsonDecode(result.data);
-
-      talker.debug(data);
+      talker.debug(result.data);
 
       return RaribleHashAndEncodedData(
-        data['typedDataHash'],
-        data['encodedData'],
+        result.data['typedDataHash'],
+        result.data['encodedData'],
       );
     } catch (e, s) {
       Sentry.captureException(

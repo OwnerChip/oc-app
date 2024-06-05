@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
@@ -221,7 +221,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     throw Exception(
                                         'Could not launch ${link.url}');
                                   }
-                                  BackendAnalytics.sendAnalyticsTrace(session?.sessionId ?? "",
+                                  BackendApp.sendAnalyticsTrace(session?.sessionId ?? "",
                                       "", "DESCRIPTION_VIEW",
                                       tags: {
                                         'connectedWallet': connectedWallet.hex,
@@ -307,7 +307,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
-                                          BackendAnalytics.sendAnalyticsTrace(
+                                          BackendApp.sendAnalyticsTrace(
                                               session?.sessionId ?? "",
                                               e.backendUuid,
                                               "ATTACHMENT_VIEW",
@@ -351,7 +351,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
-                                          BackendAnalytics.sendAnalyticsTrace(
+                                          BackendApp.sendAnalyticsTrace(
                                               session?.sessionId ?? "",
                                               e.backendUuid,
                                               "ATTACHMENT_VIEW",

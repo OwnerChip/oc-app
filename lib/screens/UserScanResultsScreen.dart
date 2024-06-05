@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
@@ -113,7 +113,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      BackendAnalytics.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
@@ -173,7 +173,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
-        BackendAnalytics.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId)
@@ -193,7 +193,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       burnProcess.throwable = e;
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
-      BackendAnalytics.sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
         'error': e,
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
@@ -224,7 +224,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         loadingText = context.loc.receivingToken;
       });
 
-      BackendAnalytics.sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
@@ -286,7 +286,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         // send status to analytics
         claimProcess.finish();
-        BackendAnalytics.sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId)
@@ -322,7 +322,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       claimProcess.throwable = e;
       claimProcess.status = const SpanStatus.aborted();
       claimProcess.finish();
-      BackendAnalytics.sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
@@ -412,7 +412,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
-        BackendAnalytics.sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_RECOVERY_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -455,7 +455,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      BackendAnalytics.sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_RECOVERY_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -559,7 +559,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         await BackendOffer.cancelOfferBackendRequest(
           offer.offerHash,
         );
-        BackendAnalytics.sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -602,7 +602,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      BackendAnalytics.sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -683,7 +683,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status) {
-        BackendAnalytics.sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -725,7 +725,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      BackendAnalytics.sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_REDEMPTION_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,

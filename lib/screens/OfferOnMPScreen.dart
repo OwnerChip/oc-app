@@ -12,7 +12,7 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
@@ -368,7 +368,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
         await BackendOffer.sendOfferItemInfoToBackend(offerItemInputData);
 
-        BackendAnalytics.sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -437,7 +437,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         isLoading = false;
       });
       await Sentry.captureException(e, stackTrace: s);
-      BackendAnalytics.sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_OFFER_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,

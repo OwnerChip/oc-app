@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -189,7 +189,7 @@ Future<void> onTapAuth(
   await ref.refresh(ocNFTsForOwnerProvider);
   await ref.refresh(ocNFTsMintedByUserNotifierProvider);
 
-  BackendAnalytics.sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
+  BackendApp.sendAnalyticsTrace(sessionId, "", "LOGIN_SUCCESS", tags: {
     'connectedWallet': userWalletAddress.hex,
     'walletType': walletType.name,
   });

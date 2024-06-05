@@ -5,8 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
-import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
-import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalyticsService.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendAppService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOfferService.dart';
@@ -48,7 +48,7 @@ abstract class Backend {
     BackendAuthService.recreate(jwt);
     BackendMetaTxService.recreate(jwt);
     BackendOfferService.recreate(jwt);
-    BackendAnalyticsService.recreate(jwt);
+    BackendAppService.recreate(jwt);
   }
 }
 
@@ -73,15 +73,6 @@ Future<void> sendCardInitToBackend(
   }
 }
 
-// get a list of all collections associated with a specific app
-Future<Map> getAppCollections() async {
-  final Dio dio = Backend.getBackendClient();
-  final appId = dotenv.get('BITRISEIO_PACKAGE_NAME');
-  final String url = '/app/$appId';
-
-  final response = await dio.get(url);
-  return response.data;
-}
 
 // gets the hash that needs to be used to sign a gasless tx request.
 Future<String> getEthSignTypedDataSignature(

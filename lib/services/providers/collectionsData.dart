@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -20,7 +21,7 @@ final appCollectionProvider =
 
   // first, try to get the collections from the backend
   try {
-    final data = await getAppCollections();
+    final data = await BackendApp.getAppCollections();
     final rawCollections = data['collections'];
     collections =
         BlockchainCollectionList(groupCollectionsByChainId(rawCollections));
