@@ -28,6 +28,7 @@ import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:convert/convert.dart';
+import 'package:web3dart/src/utils/rlp.dart' as rlp;
 
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -247,6 +248,120 @@ Future<void> _wcCheckERC20Allowance(
   }
 }
 
+Future<EtherAmount> _getMaxPriorityFeePerGas() {
+  // We may want to compute this more accurately in the future,
+  // using the formula "check if the base fee is correct".
+  // See: https://eips.ethereum.org/EIPS/eip-1559
+  return Future.value(EtherAmount.inWei(BigInt.from(1000000000)));
+}
+
+// Max Fee = (2 * Base Fee) + Max Priority Fee
+Future<EtherAmount> _getMaxFeePerGas(
+  Web3Client client,
+  BigInt maxPriorityFeePerGas,
+) async {
+  final blockInformation = await client.getBlockInformation();
+  final baseFeePerGas = blockInformation.baseFeePerGas;
+
+  if (baseFeePerGas == null) {
+    return EtherAmount.zero();
+  }
+
+  return EtherAmount.inWei(
+    baseFeePerGas.getInWei * BigInt.from(2) + maxPriorityFeePerGas,
+  );
+}
+
+List<dynamic> _encodeToRlp(Transaction transaction, MsgSignature? signature) {
+  final list = [
+    transaction.nonce,
+    transaction.gasPrice?.getInWei,
+    transaction.maxGas,
+  ];
+
+  if (transaction.to != null) {
+    list.add(transaction.to!.addressBytes);
+  } else {
+    list.add('');
+  }
+
+  list
+    ..add(transaction.value?.getInWei)
+    ..add(transaction.data);
+
+  if (signature != null) {
+    list
+      ..add(signature.v)
+      ..add(signature.r)
+      ..add(signature.s);
+  }
+
+  return list;
+}
+
+Future<Transaction> _fillMissingData({
+  required Transaction transaction,
+  int? chainId,
+  bool loadChainIdFromNetwork = false,
+  Web3Client? client,
+}) async {
+  if (loadChainIdFromNetwork && chainId != null) {
+    throw ArgumentError(
+      "You can't specify loadChainIdFromNetwork and specify a custom chain id!",
+    );
+  }
+
+  final sender = transaction.from!;
+  var gasPrice = transaction.gasPrice;
+
+  if (client == null &&
+      (transaction.nonce == null ||
+          transaction.maxGas == null ||
+          loadChainIdFromNetwork ||
+          (!transaction.isEIP1559 && gasPrice == null))) {
+    throw ArgumentError('Client is required to perform network actions');
+  }
+
+  if (!transaction.isEIP1559 && gasPrice == null) {
+    gasPrice = await client!.getGasPrice();
+  }
+
+  var maxFeePerGas = transaction.maxFeePerGas;
+  var maxPriorityFeePerGas = transaction.maxPriorityFeePerGas;
+
+  if (transaction.isEIP1559) {
+    maxPriorityFeePerGas ??= await _getMaxPriorityFeePerGas();
+    maxFeePerGas ??= await _getMaxFeePerGas(
+      client!,
+      maxPriorityFeePerGas.getInWei,
+    );
+  }
+
+  return transaction.copyWith(
+    value: transaction.value ?? EtherAmount.zero(),
+    maxGas: transaction.maxGas ??
+        await client!
+            .estimateGas(
+              sender: sender,
+              to: transaction.to,
+              data: transaction.data,
+              value: transaction.value,
+              gasPrice: gasPrice,
+              maxPriorityFeePerGas: maxPriorityFeePerGas,
+              maxFeePerGas: maxFeePerGas,
+            )
+            .then((bigInt) => bigInt.toInt()),
+    from: sender,
+    data: transaction.data ?? Uint8List(0),
+    gasPrice: gasPrice,
+    nonce: transaction.nonce ??
+        await client!
+            .getTransactionCount(sender, atBlock: const BlockNum.pending()),
+    maxPriorityFeePerGas: maxPriorityFeePerGas,
+    maxFeePerGas: maxFeePerGas,
+  );
+}
+
 // This code creates a normal transaction.
 //It calls the buildEthSendTransactionRequest function to get the transaction parameters,
 //and then sends a custom request to the WalletConnect client to send the transaction.
@@ -327,13 +442,48 @@ Future<String> makeAndSendNormalTx(
       return Uint8List.fromList(hex.decode(hexString));
     }
 
-    if (walletType.type == EWalletType.ownerCard) {
-      final hash = TypedDataUtil.hashMessage(
-        jsonData: params[0],
-        version: TypedDataVersion.V4,
-      );
+    final transaction = await _fillMissingData(
+      transaction: Transaction(
+        from: walletAddress,
+        to: toAddress,
+        data:
+            params['data'] != null ? hexToBytes(params['data']) : Uint8List(0),
+        gasPrice: params['gasPrice'] != null
+            ? EtherAmount.inWei(BigInt.parse(
+                params['gasPrice'].toString().substring(2),
+                radix: 16,
+              ))
+            : null,
+        maxGas: params["gas"] != null
+            ? BigInt.parse(
+                params['gas'].toString().substring(
+                      2,
+                    ),
+                radix: 16,
+              ).toInt()
+            : null,
+        value: params['value'] != null
+            ? EtherAmount.inWei(
+                BigInt.parse(
+                  params['value'].toString().substring(2),
+                  radix: 16,
+                ),
+              )
+            : EtherAmount.zero(),
+        nonce: params['nonce'] != null
+            ? int.parse(params['nonce'].toString().substring(2), radix: 16)
+            : null,
+      ),
+      chainId: chainId,
+      client: client,
+    );
 
-      var cardSignature =
+    final hash = transaction.getUnsignedSerialized(chainId: chainId);
+
+    final MsgSignature msgSignature;
+
+    if (walletType.type == EWalletType.ownerCard) {
+      msgSignature =
           // ignore: use_build_context_synchronously
           await Navigator.pushNamed(context, PinScreen.routeName,
               arguments: PinScreenArguments(
@@ -347,47 +497,23 @@ Future<String> makeAndSendNormalTx(
                       pin,
                     );
                   })) as MsgSignature;
+    } else {
+      final priv = await Web3AuthFlutter.getPrivKey();
 
-      signature = Uint8List.fromList([
-        ...hex.decode(cardSignature.r.toRadixString(16).padLeft(64, '0')),
-        ...hex.decode(cardSignature.s.toRadixString(16).padLeft(64, '0')),
-        cardSignature.v,
-      ]);
-    } else if (walletType.type == EWalletType.web3auth) {
-      signature = await client.signTransaction(
-        EthPrivateKey.fromHex(
-          await Web3AuthFlutter.getPrivKey(),
-        ),
-        Transaction(
-          from: walletAddress,
-          to: toAddress,
-          data: params['data'] != null ? hexToBytes(params['data']) : null,
-          gasPrice: params['gasPrice'] != null
-              ? EtherAmount.inWei(BigInt.parse(
-                  params['gasPrice'].toString().substring(2),
-                  radix: 16,
-                ))
-              : null,
-          maxGas: params["gas"] != null
-              ? BigInt.parse(
-                  params['gas'].toString().substring(
-                        2,
-                      ),
-                  radix: 16,
-                ).toInt()
-              : null,
-          value: params['value'] != null
-              ? EtherAmount.inWei(
-                  BigInt.parse(
-                    params['value'].toString().substring(2),
-                    radix: 16,
-                  ),
-                )
-              : null,
-        ),
+      final Credentials creds = EthPrivateKey.fromHex(priv);
+
+      msgSignature = creds.signToEcSignature(
+        hash,
         chainId: chainId,
+        isEIP1559: false,
       );
     }
+
+    signature = uint8ListFromList(
+      rlp.encode(
+        _encodeToRlp(transaction, msgSignature),
+      ),
+    );
 
     txnHash = await client.sendRawTransaction(
       signature,
