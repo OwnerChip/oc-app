@@ -5,6 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
+import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
+import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalyticsService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOfferService.dart';
@@ -32,9 +34,9 @@ abstract class Backend {
       ),
     );
 
-    client.interceptors.add(
-      TalkerDioLoggerExtension.instance,
-    );
+    // client.interceptors.add(
+    //   TalkerDioLoggerExtension.instance,
+    // );
 
     client.addSentry();
 
@@ -46,6 +48,7 @@ abstract class Backend {
     BackendAuthService.recreate(jwt);
     BackendMetaTxService.recreate(jwt);
     BackendOfferService.recreate(jwt);
+    BackendAnalyticsService.recreate(jwt);
   }
 }
 
@@ -90,27 +93,6 @@ Future<String> getEthSignTypedDataSignature(
   return response.data; //hash
 }
 
-// This function will post a user action to the analytics backend.
-Future<void> sendAnalyticsTrace(String caseId, String description, String type,
-    {Map<String, dynamic>? tags}) async {
-  final Dio dio = Backend.getBackendClient();
-  final String url = '/app/${dotenv.get('BITRISEIO_PACKAGE_NAME')}/action';
-  //make post request with dio (do not care about response)
-  try {
-    await dio.post(url, data: {
-      "case_id": caseId,
-      "description": description,
-      "type": type,
-      "tags": jsonEncode(tags)
-    });
-  } catch (e, s) {
-    await Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-  }
-}
 
 Future<bool> sendCardLostToBackend(
     EthereumAddress chipAddress,

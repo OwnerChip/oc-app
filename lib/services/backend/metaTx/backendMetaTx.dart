@@ -13,16 +13,15 @@ abstract class BackendMetaTx extends Backend {
     EthereumAddress collectionId,
     String functionSignatureHash,
   ) async {
-    final service = BackendMetaTxService.instance;
-
-    try {
-      final response = await service.checkMetaTx(
-          collectionId: collectionId.hex,
-          functionSignatureHash: functionSignatureHash);
-      return [true, response];
-    } catch (e) {
-      return [false, e];
-    }
+    return await BackendMetaTxService.instance
+        .checkMetaTx(
+            collectionId: collectionId.hex,
+            functionSignatureHash: functionSignatureHash)
+        .then((e) {
+      return [true, e];
+    }, onError: (e) {
+      return [false, e.toString()];
+    });
   }
 
   // This function will send a gasless request to the backend. The backend will then
@@ -33,10 +32,7 @@ abstract class BackendMetaTx extends Backend {
     String metaTxAgreementId,
     Map<String, dynamic> txRequest,
   ) async {
-
-    //make post request with dio
-    final service = BackendMetaTxService.instance;
-    return service.sendGaslessRequest(
+    return BackendMetaTxService.instance.sendGaslessRequest(
       collectionId: collectionId.hex,
       body: SendGaslessRequestPayload(
           txSignature: txSignature,

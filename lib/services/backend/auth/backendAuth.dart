@@ -67,25 +67,23 @@ abstract class BackendAuth extends Backend {
     required Map<String, dynamic> message,
     required String signature,
   }) async {
-    final service = BackendAuthService.instance;
-    try {
-      return service.validateSiwe(
-        body: ValidateSiwePayload(
-          message: message,
-          signature: signature,
-        ),
-      );
-    } catch (e, s) {
-      await Sentry.captureException(
+    return BackendAuthService.instance
+        .validateSiwe(
+      body: ValidateSiwePayload(
+        message: message,
+        signature: signature,
+      ),
+    )
+        .catchError((e) {
+      Sentry.captureException(
         e,
-        stackTrace: s,
       );
       talker.error(
         e,
-        s,
       );
-      rethrow;
-    }
+
+      throw e;
+    });
   }
 
   /// get session expiration time
@@ -94,28 +92,29 @@ abstract class BackendAuth extends Backend {
       String sessionId,
       EthereumAddress userWalletAddress,
       MsgSignature signature) async {
-    final service = BackendAuthService.instance;
-    try {
-      return int.parse(
-        await service.getSessionExpiration(
-          expiration: sessionDuration,
-          payload: GetSessionExpirationPayload(
-            sessionId: sessionId,
-            userWalletSignature: WalletSignature.fromMsgSignature(
-              signature,
-            ),
-            walletAddress: userWalletAddress.hex,
+    return int.parse(
+      await BackendAuthService.instance
+          .getSessionExpiration(
+        expiration: sessionDuration,
+        payload: GetSessionExpirationPayload(
+          sessionId: sessionId,
+          userWalletSignature: WalletSignature.fromMsgSignature(
+            signature,
           ),
+          walletAddress: userWalletAddress.hex,
         ),
-      );
-    } catch (e, s) {
-      await Sentry.captureException(
-        e,
-        stackTrace: s,
-      );
-      print(e);
-      return 0;
-    }
+      )
+          .catchError((e) {
+        Sentry.captureException(
+          e,
+        );
+        talker.error(
+          e,
+        );
+
+        throw e;
+      }),
+    );
   }
 
   /// save a userSession of a OwnerCard
@@ -155,16 +154,15 @@ abstract class BackendAuth extends Backend {
   static Future<String> getSessionId() async {
     final service = BackendAuthService.instance;
 
-    try {
-      return service.getSessionId();
-    } catch (e, s) {
-      await Sentry.captureException(
+    return service.getSessionId().catchError((e) {
+      Sentry.captureException(
         e,
-        stackTrace: s,
       );
-      print(e);
-      //fallback!
+      talker.error(
+        e,
+      );
+
       return makeRandomInt().toString();
-    }
+    });
   }
 }

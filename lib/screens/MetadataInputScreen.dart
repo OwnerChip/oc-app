@@ -5,6 +5,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
@@ -150,7 +151,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     try {
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
-      sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
+      BackendAnalytics.sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet.hex});
 
       /////////// TWIN METADATA ///////////
@@ -179,7 +180,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       if (twinTokenMetadataCID != '' || voucherTokenMetadataCID != '') {
         ipfsProcess.finish();
-        sendAnalyticsTrace(
+        BackendAnalytics.sendAnalyticsTrace(
             sessionId, twinTokenMetadataCID, "IPFS_UPLOAD_FINISHED", tags: {
           'connectedWallet': connectedWallet.hex,
           'cid': twinTokenMetadataCID
@@ -199,7 +200,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
+      BackendAnalytics.sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'gasStation': canUseGasStation
       });
@@ -253,7 +254,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status) {
         mintProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
+        BackendAnalytics.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,
           'gasStation': canUseGasStation
         });
@@ -286,7 +287,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       }
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
-      sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
+      BackendAnalytics.sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
           tags: {'connectedWallet': connectedWallet.hex});
       mintProcess.throwable = e;
       mintProcess.status = const SpanStatus.aborted();

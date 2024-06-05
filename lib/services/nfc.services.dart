@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -57,7 +58,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
     BigInt chipTokenId = createFirstKeyChipResponse[1];
     bool ndefTagInitialized = createFirstKeyChipResponse[2];
     if (ndefTagInitialized) {
-      sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+      BackendAnalytics.sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
     }
 
     //set chip info data in provider
@@ -78,7 +79,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
 
     //TOKEN DOES NOT EXIST
     if (config.collectionId == zeroAddress) {
-      sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+      BackendAnalytics.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
           tags: {"chipWallet": chipWalletAddress});
 
       //decide if chain selector screen should be shown
@@ -148,7 +149,7 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
 
       //TOKEN DOES NOT EXIST
       if (config.collectionId == zeroAddress) {
-        sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+        BackendAnalytics.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
             tags: {"chipWallet": chipWalletAddress});
 
         Navigator.pushNamed(
@@ -215,7 +216,7 @@ Future<void> verifyAuthenticity(
         hashedMsg,
         signature);
 
-    sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_POSITIVE",
+    BackendAnalytics.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_POSITIVE",
         tags: {"chipWallet": chipWalletAddress});
   } catch (e) {
     //TOKEN IS NOT AUTHENTIC
@@ -405,7 +406,7 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
     BigInt chipTokenId = createFirstKeyChipResponse[1];
     bool ndefTagInitialized = createFirstKeyChipResponse[2];
     if (ndefTagInitialized) {
-      sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+      BackendAnalytics.sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
     }
 
     //set chip info data in provider
@@ -515,7 +516,7 @@ Future<dynamic> scanClosure(
           completer.complete(result);
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
-          sendAnalyticsTrace(sessionId, '', analyticsType,
+          BackendAnalytics.sendAnalyticsTrace(sessionId, '', analyticsType,
               tags: {"chipWallet": createFirstKeyChipResponse[0].hex});
         } catch (e, stackTrace) {
           String errorMessage = e.toString();
@@ -542,7 +543,7 @@ Future<dynamic> scanClosure(
           }
           //LOG ERROR
           print(e);
-          sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
+          BackendAnalytics.sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
           scanProcess.throwable = e;
           scanProcess.status = const SpanStatus.deadlineExceeded();
           scanProcess.finish();

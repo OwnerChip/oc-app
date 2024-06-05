@@ -10,6 +10,7 @@ import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -221,7 +222,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
 
-      sendAnalyticsTrace(userSession.sessionId,
+      BackendAnalytics.sendAnalyticsTrace(userSession.sessionId,
           attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -293,7 +294,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
       if (file != null) {
-        sendAnalyticsTrace(
+        BackendAnalytics.sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -357,7 +358,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
 
       if (status == 'OK') {
-        sendAnalyticsTrace(
+        BackendAnalytics.sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -445,7 +446,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       file = null;
     });
 
-    sendAnalyticsTrace(
+    BackendAnalytics.sendAnalyticsTrace(
         userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
         tags: {
           'connectedWallet': ref.read(userAddressProvider).hex,

@@ -4,6 +4,7 @@ import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/services/backend/analytics/backendAnalytics.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -84,7 +85,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         loadingText = context.loc.transferInProgress;
       });
 
-      sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
+      BackendAnalytics.sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
@@ -164,7 +165,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
         // send status to analytics
         transferProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
+        BackendAnalytics.sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId),
@@ -181,7 +182,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       transferProcess.throwable = e;
       transferProcess.status = const SpanStatus.aborted();
       transferProcess.finish();
-      sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
+      BackendAnalytics.sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
