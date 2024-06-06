@@ -139,7 +139,7 @@ Future<String> makeAndSendGaslessTx(
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-      await wcSwitchToChainConditionally(w3mService, chainId);;
+      await wcSwitchToChainConditionally(w3mService, chainId);
 
       w3mService!.launchConnectedWallet();
 
@@ -481,7 +481,8 @@ Future<String> makeAndSendNormalTx(
       client: client,
     );
 
-    final hash = transaction.getUnsignedSerialized(chainId: chainId);
+    final rawTx = transaction.getUnsignedSerialized(chainId: chainId);
+    final hash = keccak256(rawTx);
 
     final MsgSignature msgSignature;
 
@@ -506,20 +507,15 @@ Future<String> makeAndSendNormalTx(
       final Credentials creds = EthPrivateKey.fromHex(priv);
 
       msgSignature = creds.signToEcSignature(
-        hash,
+        rawTx,
         chainId: chainId,
-        isEIP1559: false,
       );
     }
 
-    signature = uint8ListFromList(
-      rlp.encode(
-        _encodeToRlp(transaction, msgSignature),
-      ),
-    );
+    final signedTx = rlp.encode(_encodeToRlp(transaction, msgSignature));
 
     txnHash = await client.sendRawTransaction(
-      signature,
+      uint8ListFromList(signedTx),
     );
 
     talker.log('Transaction sent: $txnHash');
