@@ -67,7 +67,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   void initState() {
     super.initState();
 
-    _addressController.text = "0x0593b973a608707287A2b10848921b62bF1Fe97F";
+    // _addressController.text = "0x0593b973a608707287A2b10848921b62bF1Fe97F";
   }
 
   @override
@@ -142,42 +142,45 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       Expanded(
                         child: Stack(
                           children: [
-                            TextFormField(
-                              controller: _addressController,
-                              focusNode: _addressFocusNode,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (_addressFocusNode.hasFocus) {
-                                  return null;
-                                }
+                            SizedBox(
+                              height: 48,
+                              child: TextFormField(
+                                controller: _addressController,
+                                focusNode: _addressFocusNode,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: (value) {
+                                  if (_addressFocusNode.hasFocus) {
+                                    return null;
+                                  }
 
-                                if (value == null || value.isEmpty) {
-                                  return context
-                                      .loc.myBalanceWithdrawWrongAddress;
-                                }
-                                try {
-                                  EthereumAddress.fromHex(value);
-                                } catch (e) {
-                                  return context
-                                      .loc.myBalanceWithdrawWrongAddress;
-                                }
-                                return null;
-                              },
-                              decoration: customInputDecoration(
-                                context,
-                                context.loc.myBalanceReceivingWalletAddress,
-                              ).copyWith(
-                                contentPadding: const EdgeInsets.only(
-                                  right: 64,
-                                  left: 12,
+                                  if (value == null || value.isEmpty) {
+                                    return context
+                                        .loc.myBalanceWithdrawWrongAddress;
+                                  }
+                                  try {
+                                    EthereumAddress.fromHex(value);
+                                  } catch (e) {
+                                    return context
+                                        .loc.myBalanceWithdrawWrongAddress;
+                                  }
+                                  return null;
+                                },
+                                decoration: customInputDecoration(
+                                  context,
+                                  context.loc.myBalanceReceivingWalletAddress,
+                                ).copyWith(
+                                  contentPadding: const EdgeInsets.only(
+                                    right: 64,
+                                    left: 12,
+                                  ),
                                 ),
+                                onChanged: (value) {
+                                  if (mounted) {
+                                    setState(() {});
+                                  }
+                                },
                               ),
-                              onChanged: (value) {
-                                if (mounted) {
-                                  setState(() {});
-                                }
-                              },
                             ),
                             Positioned(
                               right: 12,
@@ -222,44 +225,47 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       ),
                       Row(
                         children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _amountController,
-                              focusNode: _amountFocusNode,
-                              decoration: customInputDecoration(
-                                context,
-                                context.loc.myBalanceCryptoAmount,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d+\.?\d{0,18}'),
+                          Flexible(
+                            child: SizedBox(
+                              height: 48,
+                              child: TextFormField(
+                                controller: _amountController,
+                                focusNode: _amountFocusNode,
+                                decoration: customInputDecoration(
+                                  context,
+                                  context.loc.myBalanceCryptoAmount,
                                 ),
-                              ],
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                try {
-                                  if (value != null &&
-                                      double.parse(value) >
-                                          item.balanceInEther) {
-                                    return context
-                                        .loc.myBalanceWithdrawSufficientFunds;
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d+\.?\d{0,18}'),
+                                  ),
+                                ],
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: (value) {
+                                  try {
+                                    if (value != null &&
+                                        double.parse(value) >
+                                            item.balanceInEther) {
+                                      return context
+                                          .loc.myBalanceWithdrawSufficientFunds;
+                                    }
+                                  } catch (e) {
+                                    return null;
                                   }
-                                } catch (e) {
                                   return null;
-                                }
-                                return null;
-                              },
-                              onChanged: (value) {
-                                _updateAmount(
-                                  item,
-                                );
-                                _maxAmount = false;
+                                },
+                                onChanged: (value) {
+                                  _updateAmount(
+                                    item,
+                                  );
+                                  _maxAmount = false;
 
-                                if (mounted) {
-                                  setState(() {});
-                                }
-                              },
+                                  if (mounted) {
+                                    setState(() {});
+                                  }
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(

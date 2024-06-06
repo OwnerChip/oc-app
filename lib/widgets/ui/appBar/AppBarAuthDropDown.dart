@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
@@ -33,23 +34,23 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   @override
   Widget build(BuildContext context) {
     final userSession = ref.watch(userSessionProvider);
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: () {
-            widget.closeOverlay();
-          },
-          child: Container(
-            color: Colors.black.withOpacity(0.05),
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          GestureDetector(
+            onTap: () {
+              widget.closeOverlay();
+            },
+            child: Container(
+              color: Colors.black.withOpacity(0.05),
+            ),
           ),
-        ),
-        Positioned(
-          right: 12,
-          top: CustomAppBar.kCustomAppBarHeight - 16,
-          width: 220,
-          height: 120,
-          child: Material(
-            color: Colors.transparent,
+          Positioned(
+            right: 12,
+            top: CustomAppBar.kCustomAppBarHeight - 16,
+            width: 220,
+            height: 120,
             child: Container(
               decoration: BoxDecoration(
                 color: CustomColors(dotenv.get('APP_ID')).cardColor,
@@ -73,53 +74,73 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: userSession != null
                       ? [
-                          GestureDetector(
-                            onTap: _copyAddress,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${userSession.userWalletAddress.hex.substring(0, 7)}...${userSession.userWalletAddress.hex.substring(userSession.userWalletAddress.hex.length - 4)}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall!
-                                      .copyWith(fontSize: 12),
-                                ),
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                const Icon(Icons.copy),
-                              ],
-                            ),
-                          ),
+                          _buildItem(
+                              context,
+                              (
+                                BuildContext context,
+                              ) =>
+                                  InkWell(
+                                    onTap: _copyAddress,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '${userSession.userWalletAddress.hex.substring(0, 7)}...${userSession.userWalletAddress.hex.substring(userSession.userWalletAddress.hex.length - 4)}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall!
+                                              .copyWith(fontSize: 12),
+                                        ),
+                                        const SizedBox(
+                                          width: 12,
+                                        ),
+                                        const Icon(Icons.copy),
+                                      ],
+                                    ),
+                                  )),
                           _buildDivider(),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context)
-                                  .popUntil((route) => route.isFirst);
-                              Navigator.of(context)
-                                  .pushNamed(MyBalancePage.routeName);
-                              widget.closeOverlay();
-                            },
-                            child: Text(
-                              context.loc.appbarMyBalanceButton,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ),
+                          _buildItem(
+                              context,
+                              (context) => GestureDetector(
+                                    onTap: () {
+                                      _onBalanceClicked(context);
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          context.loc.appbarMyBalanceButton,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  )),
                           _buildDivider(),
-                          GestureDetector(
-                            onTap: () {
-                              _disconnect(context);
-                              Navigator.of(context)
-                                  .popUntil((route) => route.isFirst);
-                              widget.closeOverlay();
-                            },
-                            child: Text(
-                              context.loc.logout,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          )
+                          _buildItem(
+                              context,
+                              (context) => GestureDetector(
+                                    onTap: () {
+                                      _onLogoutClicked(context);
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          context.loc.logout,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  )),
                         ]
                       : [
                           CircularProgressIndicator(),
@@ -128,9 +149,34 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
+  }
+
+  Widget _buildItem(
+    BuildContext context,
+    Widget Function(
+      BuildContext context,
+    ) builder,
+  ) {
+    return SizedBox(
+      width: 200,
+      height: 24,
+      child: builder(context),
+    );
+  }
+
+  void _onLogoutClicked(BuildContext context) {
+    _disconnect(context);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    widget.closeOverlay();
+  }
+
+  void _onBalanceClicked(BuildContext context) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    Navigator.of(context).pushNamed(MyBalancePage.routeName);
+    widget.closeOverlay();
   }
 
   void _copyAddress() {

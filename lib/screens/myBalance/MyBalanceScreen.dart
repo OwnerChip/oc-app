@@ -71,7 +71,9 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
         ),
         body: SafeArea(
           child: PageView(
-            physics: _getCanPop() ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            physics: _getCanPop()
+                ? const NeverScrollableScrollPhysics()
+                : const BouncingScrollPhysics(),
             controller: _pageController,
             onPageChanged: (index) {
               _currentPage = index;
@@ -294,6 +296,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                       item.name,
                       style: Theme.of(context).textTheme.displaySmall!.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                     ),
                   ],
