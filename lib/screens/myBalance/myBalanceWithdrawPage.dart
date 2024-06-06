@@ -67,6 +67,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   @override
   void initState() {
     super.initState();
+
+    _addressController.text = "0x0593b973a608707287A2b10848921b62bF1Fe97F";
   }
 
   @override
@@ -482,7 +484,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     sendAnalyticsTrace(ref.read(userSessionProvider)?.sessionId ?? "unknown",
         description, type,
         tags: {
-          "from": ref.read(userSessionProvider)?.userWalletAddress,
+          "from": ref.read(userSessionProvider)?.userWalletAddress.hex,
           "to": _getReceivingAddress()?.hex,
           "amount": _amount.toString(),
           "balance": item.balance.toString(),
