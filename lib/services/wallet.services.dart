@@ -275,33 +275,6 @@ Future<EtherAmount> _getMaxFeePerGas(
   );
 }
 
-List<dynamic> _encodeToRlp(Transaction transaction, MsgSignature? signature) {
-  final list = [
-    transaction.nonce,
-    transaction.gasPrice?.getInWei,
-    transaction.maxGas,
-  ];
-
-  if (transaction.to != null) {
-    list.add(transaction.to!.addressBytes);
-  } else {
-    list.add('');
-  }
-
-  list
-    ..add(transaction.value?.getInWei)
-    ..add(transaction.data);
-
-  if (signature != null) {
-    list
-      ..add(signature.v)
-      ..add(signature.r)
-      ..add(signature.s);
-  }
-
-  return list;
-}
-
 Future<Transaction> _fillMissingData({
   required Transaction transaction,
   int? chainId,
@@ -365,6 +338,31 @@ Future<Transaction> _fillMissingData({
   );
 }
 
+List<dynamic> _encodeToRlp(
+  Transaction transaction,
+  MsgSignature? signature, {
+  required int chainId,
+}) {
+  final list = [
+    transaction.nonce,
+    transaction.gasPrice?.getInWei,
+    transaction.maxGas,
+    transaction.to?.addressBytes ?? Uint8List(0),
+    // Ensure addressBytes is not null
+    transaction.value?.getInWei,
+    transaction.data ?? Uint8List(0),
+    // Ensure data is not null
+  ];
+
+  if (signature != null) {
+    list
+      ..add(signature.v)
+      ..add(signature.r)
+      ..add(signature.s);
+  }
+
+  return list;
+}
 // This code creates a normal transaction.
 //It calls the buildEthSendTransactionRequest function to get the transaction parameters,
 //and then sends a custom request to the WalletConnect client to send the transaction.
@@ -481,7 +479,17 @@ Future<String> makeAndSendNormalTx(
       client: client,
     );
 
-    final rawTx = transaction.getUnsignedSerialized(chainId: chainId);
+    final encoded = _encodeToRlp(
+      transaction,
+      MsgSignature(
+        BigInt.zero,
+        BigInt.zero,
+        chainId,
+      ),
+      chainId: chainId,
+    );
+
+    final rawTx = Uint8List.fromList(rlp.encode(encoded));
     final hash = keccak256(rawTx);
 
     final MsgSignature msgSignature;
@@ -512,7 +520,13 @@ Future<String> makeAndSendNormalTx(
       );
     }
 
-    final signedTx = rlp.encode(_encodeToRlp(transaction, msgSignature));
+    final signedTx = rlp.encode(
+      _encodeToRlp(
+        transaction,
+        msgSignature,
+        chainId: chainId,
+      ),
+    );
 
     txnHash = await client.sendRawTransaction(
       uint8ListFromList(signedTx),

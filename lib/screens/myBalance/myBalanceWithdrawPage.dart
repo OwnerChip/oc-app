@@ -207,9 +207,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       ),
                     ],
                   ),
-                  const Spacer(
-                    flex: 1,
-                  ),
+                  const Spacer(),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -235,13 +233,14 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                                   context,
                                   context.loc.myBalanceCryptoAmount,
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
                                   decimal: true,
-                                  signed: true,
+                                  signed: false,
                                 ),
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d+\.?\d{0,18}'),
+                                    RegExp(r'^\d*([,.]?\d{0,18})?'),
                                   ),
                                 ],
                                 autovalidateMode:
@@ -249,7 +248,10 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                                 validator: (value) {
                                   try {
                                     if (value != null &&
-                                        double.parse(value) >
+                                        double.parse(value.replaceAll(
+                                              ",",
+                                              ".",
+                                            )) >
                                             item.balanceInEther) {
                                       return context
                                           .loc.myBalanceWithdrawSufficientFunds;
@@ -509,7 +511,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   void _updateAmount(MyBalanceListItem item) {
     try {
       _amount = BigInt.from(
-        double.parse(_amountController.text) *
+        double.parse(_amountController.text.replaceAll(",", ".")) *
             pow(
               10,
               item.decimals,
