@@ -87,6 +87,7 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
                   duration: const Duration(milliseconds: 500),
                   curve: Curves.easeInOut,
                 );
+                FocusScope.of(context).unfocus();
               },
             ),
           ],

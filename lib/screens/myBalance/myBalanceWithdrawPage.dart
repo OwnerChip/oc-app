@@ -22,6 +22,7 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -56,8 +57,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
   BigInt _amount = BigInt.zero;
   bool _processing = false;
-  bool _success = false;
-  bool _error = false;
 
   bool _maxAmount = false;
 
@@ -77,8 +76,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       _amount = BigInt.zero;
       _addressController.clear();
       _amountController.clear();
-      _success = false;
-      _error = false;
+      _processing = false;
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -115,32 +113,11 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     return CustomOverlay(
       show: _processing,
       content: SpinningLoadingSvg(
-          onPressed: _success || _error
-              ? () {
-                  if (mounted) {
-                    setState(() {
-                      _processing = false;
-                    });
-                  }
-
-                  _amountController.clear();
-                  _addressController.clear();
-
-                  FocusScope.of(context).unfocus();
-
-                  widget.onBack();
-                }
-              : null,
           buttonText: context.loc.myBalanceWithdrawBackButton,
           secondaryButton: false,
-          loadingText: _success
-              ? context.loc.myBalanceWithdrawSuccessText
-              : _error
-                  ? context.loc.myBalanceWithdrawErrorText
-                  : context.loc.myBalanceWithdrawLoadingText,
-          rotateIcon: !_success && !_error,
-          svgPath:
-              '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/${_success ? "check.svg" : _error ? "triangle_small.svg" : 'chip_dark_blue.svg'}'),
+          loadingText: context.loc.myBalanceWithdrawLoadingText,
+          rotateIcon: true,
+          svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg'),
       child: GestureDetector(
         child: Container(
           width: double.infinity,
@@ -420,7 +397,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       final userSession = ref.read(userSessionProvider);
 
       if (walletType == null || userSession == null || wc == null) {
-        _error = true;
+        _showErrorSnackBar();
+        widget.onBack();
 
         _sendAnalytics(
           item,
@@ -458,7 +436,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
           walletType: walletType,
         );
       }
-      _success = true;
+
+      _showSuccessSnackBar();
+      widget.onBack();
 
       _sendAnalytics(item,
           description: "Transaction sent successfully",
@@ -467,13 +447,36 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       _sendAnalytics(item,
           description: "Error sending transaction: ${e.toString()}",
           type: "SENDING_TRANSACTION_ERROR");
-      _error = true;
+
+      _showErrorSnackBar();
+      widget.onBack();
+
       talker.error("Error sending transaction: $e", e, st);
     }
 
     if (mounted) {
       setState(() {});
     }
+  }
+
+  void _showSuccessSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(
+        context.loc.successHeadingSnackbar,
+        context.loc.myBalanceWithdrawSuccessText,
+        "success",
+      ),
+    );
+  }
+
+  void _showErrorSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        context.loc.myBalanceWithdrawErrorText,
+        "error",
+      ),
+    );
   }
 
   void _sendAnalytics(
