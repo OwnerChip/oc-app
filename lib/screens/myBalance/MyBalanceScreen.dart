@@ -42,55 +42,62 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
     super.dispose();
   }
 
+  bool _getCanPop() {
+    return _currentPage == 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(myBalanceNotifierProvider);
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        text: context.loc.myBalanceTitle,
-        overrideBackButton: () {
-          if (_currentPage == 1) {
-            FocusScope.of(context).unfocus();
+    return PopScope(
+      canPop: _getCanPop(),
+      child: Scaffold(
+        appBar: CustomAppBar(
+          text: context.loc.myBalanceTitle,
+          overrideBackButton: () {
+            if (_currentPage == 1) {
+              FocusScope.of(context).unfocus();
 
-            _pageController.animateToPage(
-              0,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.ease,
-            );
-          } else {
-            Navigator.of(context).pop();
-          }
-        },
-      ),
-      body: SafeArea(
-        child: PageView(
-          physics: const NeverScrollableScrollPhysics(),
-          controller: _pageController,
-          onPageChanged: (index) {
-            _currentPage = index;
-            if (mounted) {
-              setState(() {});
+              _pageController.animateToPage(
+                0,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.ease,
+              );
+            } else {
+              Navigator.of(context).pop();
             }
           },
-          children: [
-            _buildList(
-              context,
-              data: data,
-              key: const PageStorageKey('myBalanceList'),
-            ),
-            MyBalanceWithdrawPage(
-              isVisible: _currentPage == 1,
-              onBack: () {
-                _pageController.animateToPage(
-                  0,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOut,
-                );
-                FocusScope.of(context).unfocus();
-              },
-            ),
-          ],
+        ),
+        body: SafeArea(
+          child: PageView(
+            physics: _getCanPop() ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            controller: _pageController,
+            onPageChanged: (index) {
+              _currentPage = index;
+              if (mounted) {
+                setState(() {});
+              }
+            },
+            children: [
+              _buildList(
+                context,
+                data: data,
+                key: const PageStorageKey('myBalanceList'),
+              ),
+              MyBalanceWithdrawPage(
+                isVisible: _currentPage == 1,
+                onBack: () {
+                  _pageController.animateToPage(
+                    0,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                  );
+                  FocusScope.of(context).unfocus();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
