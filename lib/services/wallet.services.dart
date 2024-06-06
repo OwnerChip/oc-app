@@ -495,7 +495,7 @@ Future<String> makeAndSendNormalTx(
     final MsgSignature msgSignature;
 
     if (walletType.type == EWalletType.ownerCard) {
-      msgSignature =
+      final sig =
           // ignore: use_build_context_synchronously
           await Navigator.pushNamed(context, PinScreen.routeName,
               arguments: PinScreenArguments(
@@ -509,6 +509,9 @@ Future<String> makeAndSendNormalTx(
                       pin,
                     );
                   })) as MsgSignature;
+
+      msgSignature =
+          MsgSignature(sig.r, sig.s, sig.v + (chainId * 2 + 35));
     } else {
       final priv = await Web3AuthFlutter.getPrivKey();
 
