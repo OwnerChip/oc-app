@@ -138,6 +138,9 @@ Future<String> makeAndSendGaslessTx(
       signature = msgSignatureToHex(cardSignature);
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
+
+      await wcSwitchToChainConditionally(w3mService, chainId);;
+
       w3mService!.launchConnectedWallet();
 
       toggleLoading();
