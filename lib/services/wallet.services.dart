@@ -571,6 +571,12 @@ Future<void> wcSwitchToChainConditionally(
         rpcUrl: chain.rpcUrl,
       ),
     );
+
+    // Wait for the network to change
+    // so that we can redirect the user to the wallet app again
+    // because <launchConnectedWallet> does not work after switching the chain
+    // (because the application is still in the background)
+    await Future.delayed(const Duration(seconds: 5));
   }
 }
 
