@@ -85,7 +85,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
   @override
   void dispose() {
+    _addressFocusNode.dispose();
     _addressController.dispose();
+    _amountFocusNode.dispose();
     _amountController.dispose();
     super.dispose();
   }
@@ -143,6 +145,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                               focusNode: _addressFocusNode,
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
+                              autofocus: false,
                               validator: (value) {
                                 if (_addressFocusNode.hasFocus) {
                                   return null;
@@ -220,7 +223,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                             height: 48,
                             child: TextFormField(
                               controller: _amountController,
-                              focusNode: _amountFocusNode,
                               decoration: customInputDecoration(
                                 context,
                                 context.loc.myBalanceCryptoAmount,
@@ -228,8 +230,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                               keyboardType:
                                   const TextInputType.numberWithOptions(
                                 decimal: true,
-                                signed: false,
                               ),
+                              focusNode: _amountFocusNode,
                               inputFormatters: [
                                 FilteringTextInputFormatter.allow(
                                   RegExp(r'^\d*([,.]?\d{0,18})?'),
@@ -237,6 +239,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                               ],
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
+                              autofocus: false,
                               validator: (value) {
                                 try {
                                   if (value != null &&
@@ -361,7 +364,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   }
 
   Future<void> _onSend(MyBalanceListItem item) async {
-    FocusScope.of(context).unfocus();
+    // _addressFocusNode.unfocus();
+    // _amountFocusNode.unfocus();
+    FocusScope.of(context).requestFocus(FocusNode());
 
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
