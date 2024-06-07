@@ -334,7 +334,7 @@ Future<String> sendPersonalSignRequest(
 }
 
 Future<String> getGaslessTxHash(request, collectionId) async {
-  String hash = await getEthSignTypedDataSignature(collectionId, request);
+  String hash = await BackendMetaTx.getEthSignTypedDataSignature(collectionId, request);
 
   return hash;
 }

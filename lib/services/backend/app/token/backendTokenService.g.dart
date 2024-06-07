@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'backendMetaTxService.dart';
+part of 'backendTokenService.dart';
 
 // **************************************************************************
 // RetrofitGenerator
@@ -8,8 +8,8 @@ part of 'backendMetaTxService.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers
 
-class _BackendMetaTxService implements BackendMetaTxService {
-  _BackendMetaTxService(
+class _BackendTokenService implements BackendTokenService {
+  _BackendTokenService(
     this._dio, {
     this.baseUrl,
   });
@@ -19,52 +19,53 @@ class _BackendMetaTxService implements BackendMetaTxService {
   String? baseUrl;
 
   @override
-  Future<String> checkMetaTx({
-    required String collectionId,
-    required String functionSignatureHash,
-  }) async {
+  Future<List<Purchase>> getUnredeemedPurchases(String tokenIdHex) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
+    final _result =
+        await _dio.fetch<List<dynamic>>(_setStreamType<List<Purchase>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-        .compose(
-          _dio.options,
-          '/collection/${collectionId}/metaTx/${functionSignatureHash}',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        ))));
-    final value = _result.data!;
+            .compose(
+              _dio.options,
+              '/${tokenIdHex}/purchase/unredeemed',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    var value = _result.data!
+        .map((dynamic i) => Purchase.fromJson(i as Map<String, dynamic>))
+        .toList();
     return value;
   }
 
   @override
-  Future<String> sendGaslessRequest({
-    required String collectionId,
-    required SendGaslessRequestPayload body,
-  }) async {
+  Future<void> postShippingInfoToBackend(
+    String tokenIdHex,
+    String purchaseTxHash,
+    ShippingInfo shippingInfo,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
-    _data.addAll(body.toJson());
-    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
+    _data.addAll(shippingInfo.toJson());
+    await _dio.fetch<void>(_setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
         .compose(
           _dio.options,
-          '/collection/${collectionId}/metaTx',
+          '/${tokenIdHex}/purchase/${purchaseTxHash}/shippingInfo',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -73,28 +74,25 @@ class _BackendMetaTxService implements BackendMetaTxService {
           _dio.options.baseUrl,
           baseUrl,
         ))));
-    final value = _result.data!;
-    return value;
   }
 
   @override
-  Future<String> getEthSignTypedDataSignature({
-    required String collectionId,
-    required Map<String, dynamic> body,
-  }) async {
+  Future<void> postManualHandoverToBackend(
+    String tokenIdHex,
+    String purchaseTxHash,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
-    final _data = <String, dynamic>{};
-    _data.addAll(body);
-    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
+    const Map<String, dynamic>? _data = null;
+    await _dio.fetch<void>(_setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
         .compose(
           _dio.options,
-          '/collection/${collectionId}/metaTx/hash',
+          '/${tokenIdHex}/purchase/${purchaseTxHash}/manualHandover',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -103,8 +101,6 @@ class _BackendMetaTxService implements BackendMetaTxService {
           _dio.options.baseUrl,
           baseUrl,
         ))));
-    final value = _result.data!;
-    return value;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

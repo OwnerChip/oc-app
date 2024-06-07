@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendAppService.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/token/backendTokenService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOfferService.dart';
@@ -31,6 +32,9 @@ abstract class Backend {
           "lang": "en",
           "Authorization": jwt != null ? "Bearer $jwt" : "",
         },
+        validateStatus: (status) {
+          return status != null && status < 500;
+        },
       ),
     );
 
@@ -49,6 +53,7 @@ abstract class Backend {
     BackendMetaTxService.recreate(jwt);
     BackendOfferService.recreate(jwt);
     BackendAppService.recreate(jwt);
+    BackendTokenService.recreate(jwt);
   }
 }
 
@@ -73,16 +78,6 @@ Future<void> sendCardInitToBackend(
   }
 }
 
-
-// gets the hash that needs to be used to sign a gasless tx request.
-Future<String> getEthSignTypedDataSignature(
-    EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
-  final Dio dio = Backend.getBackendClient();
-  final String url = '/collection/$collectionId/metatx/hash';
-  //make post request with dio
-  final response = await dio.post(url, data: txRequest);
-  return response.data; //hash
-}
 
 
 Future<bool> sendCardLostToBackend(
@@ -166,48 +161,3 @@ Future<Map> getEthPrice(String cryptoSymbol) async {
 
 
 
-
-//get unredeemed purchases for tokenId
-Future<List<Purchase>> getUnredeemedPurchases(BigInt tokenId) async {
-  final Dio dio = Backend.getBackendClient();
-  try {
-    final String tokenIdHex = convertTokenIdToEthereumAddress(tokenId);
-    final Response response =
-        await dio.get('/token/$tokenIdHex/purchase/unredeemed');
-    final List<dynamic> purchases = response.data;
-    return purchases.map((e) => Purchase.fromJson(e)).toList();
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
-  }
-}
-
-Future<void> postShippingInfoToBackend(
-    Purchase purchase, ShippingInfo shippingInfo) async {
-  final Dio dio = Backend.getBackendClient();
-  final String url =
-      '/token/${convertTokenIdToEthereumAddress(purchase.token.id)}/purchase/${purchase.purchaseTxHash}/shippingInfo';
-  try {
-    await dio.post(url, data: shippingInfo.toJson());
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
-  }
-}
-
-// POST /token/:tokenId/purchase/:purchaseId/manualHandover with empty body
-
-Future<void> postManualHandoverToBackend(Purchase purchase) async {
-  final Dio dio = Backend.getBackendClient();
-  final String url =
-      '/token/${convertTokenIdToEthereumAddress(purchase.token.id)}/purchase/${purchase.purchaseTxHash}/manualHandover';
-  try {
-    await dio.post(url);
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
-  }
-}

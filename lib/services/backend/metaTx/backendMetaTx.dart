@@ -40,4 +40,17 @@ abstract class BackendMetaTx extends Backend {
           txRequest: txRequest),
     );
   }
+
+  // gets the hash that needs to be used to sign a gasless tx request.
+  static Future<String> getEthSignTypedDataSignature(
+      EthereumAddress collectionId, Map<String, dynamic> txRequest) async {
+    return BackendMetaTxService.instance
+        .getEthSignTypedDataSignature(
+      collectionId: collectionId.hex,
+      body: txRequest,
+    )
+        .catchError((e) {
+      throw e;
+    });
+  }
 }

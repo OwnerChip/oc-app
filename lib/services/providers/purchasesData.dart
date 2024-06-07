@@ -4,11 +4,9 @@ import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:web3dart/web3dart.dart';
 
 final unredeemedVoucherNftsProvider =
@@ -16,7 +14,7 @@ final unredeemedVoucherNftsProvider =
   List<AlchemyNFTAsset> voucherNftsOwnedByUser =
       await ref.read(voucherNftsOwnedByUserProvider.future);
   List<Future<List<Purchase>>> unredeemedPurchasesList = voucherNftsOwnedByUser
-      .map((e) => getUnredeemedPurchases(BigInt.parse(e.tokenId)))
+      .map((e) => BackendToken.getUnredeemedPurchases(BigInt.parse(e.tokenId)))
       .toList();
 
   List<Purchase> unredeemedPurchases = [];

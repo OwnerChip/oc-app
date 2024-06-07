@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -576,7 +577,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
             buttonText: context.loc.manualHandover,
             onPressed: () async {
               try {
-                await postManualHandoverToBackend(unredeemedPurchases.first);
+                await BackendToken.postManualHandoverToBackend(unredeemedPurchases.first);
                 ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
                     context.loc.successHeadingSnackbar,
                     context.loc.successManualHandover,

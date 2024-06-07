@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
@@ -1162,7 +1163,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                       loading: () => Container());
                                                                                 } else {
                                                                                   return FutureBuilder<List>(
-                                                                                      future: getUnredeemedPurchases(chipInfo.tokenId),
+                                                                                      future: BackendToken.getUnredeemedPurchases(chipInfo.tokenId),
                                                                                       builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
                                                                                         if (snapshot.hasData) {
                                                                                           if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {

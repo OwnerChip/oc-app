@@ -37,4 +37,10 @@ abstract class BackendMetaTxService {
     @Path("collectionId") required String collectionId,
     @Body() required SendGaslessRequestPayload body,
   });
+
+  @POST("/collection/{collectionId}/metaTx/hash")
+  Future<String> getEthSignTypedDataSignature({
+    @Path("collectionId") required String collectionId,
+    @Body() required Map<String, dynamic> body,
+  });
 }
