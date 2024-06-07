@@ -45,7 +45,7 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CryptoCurrencyDropdown.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
@@ -90,10 +90,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     _setCurrencyDropDownValuesFuture = setCurrencyDropDownValues();
 
     UserSession? userSession = ref.read(userSessionProvider);
-    final wallet = ref.read(walletTypeProvider);
-    if (userSession != null &&
-        !userSession.isOwnerCard &&
-        wallet?.type != EWalletType.web3auth) {
+    if (userSession != null) {
       _sellerPayoutInputController.value = TextEditingValue(
           text: userSession.userWalletAddress.toString(),
           selection: TextSelection.fromPosition(TextPosition(
@@ -184,6 +181,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           mintVoucherFunctionSignature,
           chainId,
@@ -318,6 +316,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           offerItemFunctionSignature,
           config.chainId,
@@ -339,7 +338,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
 
       //if transaction is mined, then navigate to NFTDetailsScreen
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
         await Future.delayed(const Duration(seconds: 2));

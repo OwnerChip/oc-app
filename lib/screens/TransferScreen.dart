@@ -25,7 +25,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 
@@ -100,7 +100,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
-            approveFunctionSignature, // APPROVE
+            approveFunctionSignature,
+            // APPROVE
             config.chainId,
             config.collectionId,
             signatureData,
@@ -121,6 +122,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             approveFunctionSignature,
             config.chainId,
@@ -136,7 +138,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         //this means transfer succeeded
         setState(() {
           isRotating = false;

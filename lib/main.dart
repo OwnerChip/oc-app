@@ -1,5 +1,6 @@
 //import packages
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,7 @@ import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenUserComplete.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
@@ -159,6 +161,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
             const OnboardingScreenWithSteps(),
         OnboardingScreenUserComplete.routeName: (context) =>
             const OnboardingScreenUserComplete(),
+        MyBalancePage.routeName: (context) => const MyBalancePage(),
       },
     );
   }

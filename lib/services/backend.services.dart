@@ -5,6 +5,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/crypto.dart';
@@ -110,13 +111,23 @@ Future<void> sendAnalyticsTrace(String caseId, String description, String type,
   final Dio dio = getBackendClient();
   final String url = '/app/${dotenv.get('BITRISEIO_PACKAGE_NAME')}/action';
   //make post request with dio (do not care about response)
+  final data = {
+    "case_id": caseId,
+    "description": description,
+    "type": type,
+    "tags": jsonEncode(tags)
+  };
+
+  talker.info(
+    'Sending analytics trace',
+    data,
+  );
+
   try {
-    await dio.post(url, data: {
-      "case_id": caseId,
-      "description": description,
-      "type": type,
-      "tags": jsonEncode(tags)
-    });
+    await dio.post(
+      url,
+      data: data,
+    );
   } catch (e, s) {
     await Sentry.captureException(
       e,
@@ -183,7 +194,8 @@ Future<void> saveUserSession(
       sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
 
   ref.read(userAddressProvider.notifier).state = cardWalletAddress;
-  ref.read(walletTypeProvider.notifier).state = walletConfig[EWalletType.ownerCard];
+  ref.read(walletTypeProvider.notifier).state =
+      walletConfig[EWalletType.ownerCard];
   const isOwnerCard = true;
   UserSession userSession = UserSession(sessionId, signature,
       ref.read(userAddressProvider), isOwnerCard, sessionExpirationDate);
