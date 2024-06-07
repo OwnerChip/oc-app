@@ -1,7 +1,7 @@
+import "package:dio/dio.dart";
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:retrofit/http.dart';
-import "package:dio/dio.dart";
+import 'package:retrofit/retrofit.dart';
 
 part 'backendTokenService.g.dart';
 
@@ -27,7 +27,8 @@ abstract class BackendTokenService {
   }
 
   @GET("/{tokenIdHex}/purchase/unredeemed")
-  Future<List<Purchase>> getUnredeemedPurchases(
+  // TODO: Fix the type of the response once json serialization changes are in
+  Future<HttpResponse> getUnredeemedPurchases(
       @Path("tokenIdHex") String tokenIdHex);
 
   @POST("/{tokenIdHex}/purchase/{purchaseTxHash}/shippingInfo")

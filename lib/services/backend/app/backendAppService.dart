@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:retrofit/http.dart';
 import 'package:retrofit/retrofit.dart';
 
 import 'payloads/sendAnalyticsPayload.dart';

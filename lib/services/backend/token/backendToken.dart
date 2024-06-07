@@ -1,6 +1,7 @@
+
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/services/backend/app/token/backendTokenService.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendTokenService.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -11,9 +12,19 @@ abstract class BackendToken extends Backend {
     final service = BackendTokenService.instance;
     try {
       final String tokenIdHex = convertTokenIdToEthereumAddress(tokenId);
-      return await service.getUnredeemedPurchases(tokenIdHex).catchError((e) {
+      final response =
+          await service.getUnredeemedPurchases(tokenIdHex).catchError((e) {
         throw e;
       });
+      final List<Purchase> purchases = [];
+
+      for (final purchase in response.data) {
+        purchases.add(
+          Purchase.fromJson(purchase as Map<String, dynamic>),
+        );
+      }
+
+      return purchases;
     } catch (e, st) {
       Sentry.captureException(e);
       talker.error(e, st);

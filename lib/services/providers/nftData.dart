@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
 import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -130,7 +131,7 @@ final creatorDataProvider =
   ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   try {
     final CreatorData creatorData =
-        await getCreatorData(chipInfo.chipEthereumAddress);
+        await BackendCreator.getCreatorData(chipInfo.chipEthereumAddress);
     return creatorData;
   } catch (err) {
     rethrow;

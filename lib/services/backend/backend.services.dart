@@ -1,30 +1,27 @@
-import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
-import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendAppService.dart';
-import 'package:ownerchip_whitelabel/services/backend/app/token/backendTokenService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
+import 'package:ownerchip_whitelabel/services/backend/collection/backendCollectionService.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/backendCreatorService.dart';
+import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomerService.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOfferService.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendTokenService.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry/sentry.dart';
 import 'package:sentry_dio/sentry_dio.dart';
-import 'package:web3dart/web3dart.dart';
 
 abstract class Backend {
   /// get OC backend client (with sentry interceptor)
   static getBackendClient({
     String? jwt,
+    bool forceProduction = false,
   }) {
     final client = Dio(
       BaseOptions(
-        baseUrl: dotenv.get('IS_INTERNAL') == 'true'
+        baseUrl: dotenv.get('IS_INTERNAL') == 'true' && !forceProduction
             ? dotenv.get('OC_BACKEND_URL_TEST')
             : dotenv.get('OC_BACKEND_URL'),
         headers: {
@@ -54,89 +51,9 @@ abstract class Backend {
     BackendOfferService.recreate(jwt);
     BackendAppService.recreate(jwt);
     BackendTokenService.recreate(jwt);
-  }
-}
-
-Future<void> sendCardInitToBackend(
-    String customerId, EthereumAddress chipAddress) async {
-  // send to prod API so that the owner card data is available in the prod DB
-  final client = Dio(BaseOptions(
-      baseUrl: dotenv.get('OC_BACKEND_URL'),
-      headers: {"app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'), "lang": "en"}));
-  client.addSentry();
-  final String url = '/customer/$customerId/ownercard';
-  try {
-    final _ = await client.post(url, data: {
-      'id': chipAddress.hex,
-    });
-  } catch (e, s) {
-    Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-  }
-}
-
-
-
-Future<bool> sendCardLostToBackend(
-    EthereumAddress chipAddress,
-    EthereumAddress collectionAddress,
-    SignatureData chipSignature,
-    String sessionId,
-    String email,
-    String name,
-    String telNr) async {
-  final Dio dio = Backend.getBackendClient();
-  final String url = '/collection/${collectionAddress.hex}/recovery';
-  try {
-    await dio.post(url, data: {
-      'name': name,
-      'email': email,
-      'telNr': telNr,
-      'sessionId': sessionId,
-      'chipAddress': chipAddress.hex,
-      'chipSignature': {
-        'r': convertSignatureParamToHexString(chipSignature.signature.r),
-        's': convertSignatureParamToHexString(chipSignature.signature.s),
-        'v': chipSignature.signature.v,
-      }
-    });
-    return true;
-  } catch (e, s) {
-    Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-    return false;
-  }
-}
-
-//get creator info
-Future<CreatorData> getCreatorData(EthereumAddress tokenId) async {
-  final Dio dio = Backend.getBackendClient();
-  try {
-    final Response response = await dio.get('/creator/${tokenId.hex}');
-    final Map creatorData = response.data;
-
-    bool hasActiveOffer = creatorData["token"]["hasActiveOffer"];
-
-    return CreatorData(
-      name: creatorData['name'],
-      affiliation: creatorData['affiliation'],
-      email: creatorData['email'],
-      walletAddress: EthereumAddress.fromHex(creatorData['address']),
-      createdAt: DateTime.parse(creatorData['token']['mintedAt']),
-      hasActiveOffer: hasActiveOffer,
-      tokenForWhichCreatorDataWasRequested:
-          Token.fromJson(creatorData['token']),
-    );
-  } catch (e) {
-    Sentry.captureException(e);
-    print(e);
-    rethrow;
+    BackendCollectionService.recreate(jwt);
+    BackendCustomerService.recreate(jwt);
+    BackendCreatorService.recreate(jwt);
   }
 }
 
@@ -156,8 +73,3 @@ Future<Map> getEthPrice(String cryptoSymbol) async {
     rethrow;
   }
 }
-
-
-
-
-

@@ -9,6 +9,8 @@ import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
+import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -425,7 +427,7 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
     if (tokenInfo.collectionId != zeroAddress) {
-      return await sendCardLostToBackend(createFirstKeyChipResponse[0],
+      return await BackendCollection.sendCardLostToBackend(createFirstKeyChipResponse[0],
           tokenInfo.collectionId, chipSignature, sessionId, email, name, telNr);
     } else {
       throw context.loc.tokenDoesNotExist;
@@ -449,7 +451,7 @@ Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
       await writeKeyToSlotZero(nfc, seed);
       pubKeyZero = await getPubKeyN(nfc, 0x00);
     }
-    sendCardInitToBackend(customerId, createFirstKeyChipResponse[0]);
+    BackendCustomer.sendCardInitToBackend(customerId, createFirstKeyChipResponse[0]);
 
     EthereumAddress cardWalletAddress = EthereumAddress.fromHex(
         "0x${bytesToHex(publicKeyToAddress(pubKeyZero))}");

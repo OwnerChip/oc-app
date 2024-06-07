@@ -19,13 +19,14 @@ class _BackendTokenService implements BackendTokenService {
   String? baseUrl;
 
   @override
-  Future<List<Purchase>> getUnredeemedPurchases(String tokenIdHex) async {
+  Future<HttpResponse<dynamic>> getUnredeemedPurchases(
+      String tokenIdHex) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result =
-        await _dio.fetch<List<dynamic>>(_setStreamType<List<Purchase>>(Options(
+        await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -41,10 +42,9 @@ class _BackendTokenService implements BackendTokenService {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    var value = _result.data!
-        .map((dynamic i) => Purchase.fromJson(i as Map<String, dynamic>))
-        .toList();
-    return value;
+    final value = _result.data;
+    final httpResponse = HttpResponse(value, _result);
+    return httpResponse;
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/services/backend/app/token/backendToken.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:web3dart/web3dart.dart';
