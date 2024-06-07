@@ -428,17 +428,18 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
 
       await _estimateGas(item);
 
+      final String txHash;
+
       if (item.token == null) {
-        final txHash = await _makeNormalNativeTransaction(
+        txHash = await _makeNormalNativeTransaction(
             item: item,
             chipSignature: chipSignature,
             userSession: userSession,
             wc: wc,
             wcSession: wcSession,
             walletType: walletType);
-        talker.info("Transaction sent: $txHash");
       } else {
-        await _makeTokenTransaction(
+        txHash = await _makeTokenTransaction(
           context: context,
           item: item,
           chipSignature: chipSignature,
@@ -447,6 +448,28 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
           wcSession: wcSession,
           walletType: walletType,
         );
+      }
+
+      final result = await getTxnReceipt(
+        chainConfig[item.chain]!.rpcUrl,
+        txHash,
+      );
+
+      if (result == null || result.status == false) {
+        _showErrorSnackBar();
+        widget.onBack();
+
+        _sendAnalytics(
+          item,
+          description: "Error sending transaction: Transaction not found",
+          type: "SENDING_TRANSACTION_ERROR",
+        );
+
+        if (mounted) {
+          setState(() {});
+        }
+
+        return;
       }
 
       _showSuccessSnackBar();
@@ -592,7 +615,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     }
   }
 
-  Future<void> _makeTokenTransaction({
+  Future<String> _makeTokenTransaction({
     required BuildContext context,
     required MyBalanceListItem item,
     required SignatureData chipSignature,
@@ -631,6 +654,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       );
 
       talker.info("Transaction sent: $txHash");
+
+      return txHash;
     } else {
       // gas station is not available
 
@@ -653,6 +678,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       );
 
       talker.info("Transaction sent: $txHash");
+
+      return txHash;
     }
   }
 

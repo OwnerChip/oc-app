@@ -159,7 +159,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         //this means burn succeeded
         setState(() {
           isRotating = false;
@@ -272,7 +272,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
@@ -408,7 +408,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
@@ -553,7 +553,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
@@ -682,7 +682,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
             tags: {

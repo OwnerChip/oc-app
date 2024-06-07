@@ -251,7 +251,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           await getTxnReceipt(getRPCUrlFromChainId(chainId), txnHash);
 
       //if transaction is mined, then navigate to NFTDetailsScreen
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         mintProcess.finish();
         sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,

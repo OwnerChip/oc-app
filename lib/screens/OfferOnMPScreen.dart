@@ -338,7 +338,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
 
       //if transaction is mined, then navigate to NFTDetailsScreen
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
         await Future.delayed(const Duration(seconds: 2));

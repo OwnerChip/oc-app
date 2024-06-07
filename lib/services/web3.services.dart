@@ -588,7 +588,7 @@ Future<EthereumAddress> getCollectionId(
   }
 }
 
-Future<dynamic> getTxnReceipt(String chainRpcUrl, String txnHash) async {
+Future<TransactionReceipt?> getTxnReceipt(String chainRpcUrl, String txnHash) async {
   final web3Client = getWeb3Client(chainRpcUrl);
 
   try {
@@ -599,7 +599,7 @@ Future<dynamic> getTxnReceipt(String chainRpcUrl, String txnHash) async {
     return txnReceipt;
   } catch (e) {
     print('Error while fetching txn receipt: $e');
-    return e;
+    return null;
   }
 }
 

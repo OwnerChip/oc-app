@@ -138,7 +138,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         //this means transfer succeeded
         setState(() {
           isRotating = false;
