@@ -156,7 +156,8 @@ final voucherTokenOwnerProvider =
   return voucherTokenOwner;
 });
 
-final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
+final getNftsForOwnerProvider =
+    FutureProvider.autoDispose<Map<int, List<OcOwnedNft>>?>((ref) async {
   List chainIds = chainConfig.keys.toList();
   //remove polygon mumbai testnet from chainIds, so that we do not use alchemy APIs for this chain
   chainIds.remove(80001);
@@ -248,11 +249,11 @@ final ocNFTsMintedByUserNotifierProvider =
 
 final voucherNftsOwnedByUserProvider =
     FutureProvider.autoDispose<List<AlchemyNFTAsset>>((ref) async {
-  Map? nftsForOwnerByChainId = await ref.watch(getNftsForOwnerProvider.future);
+  Map<int, List<OcOwnedNft>>? nftsForOwnerByChainId =
+      await ref.watch(getNftsForOwnerProvider.future);
   if (nftsForOwnerByChainId == null) {
     return [];
   }
-  nftsForOwnerByChainId = nftsForOwnerByChainId as Map<int, List<OcOwnedNft>>;
 
   final BlockchainCollectionList collections =
       await ref.read(appCollectionProvider.future);

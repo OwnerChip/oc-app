@@ -6,7 +6,7 @@ class AlchemyNFTAsset {
   String? description;
   String tokenUri;
   AlchemyNftAssetImage image;
-  AlchemyRaw raw;
+  AlchemyRaw? raw;
   dynamic collection; // Since the type is not specified
   Mint mint;
   dynamic owners; // Since the type is not specified
@@ -40,7 +40,7 @@ class AlchemyNFTAsset {
       description: json['description'],
       tokenUri: json['tokenUri'] ?? '',
       image: AlchemyNftAssetImage.fromJson(json['image'] ?? {}),
-      raw: AlchemyRaw.fromJson(json['raw'] ?? {}),
+      raw: json['raw'] != null ? AlchemyRaw.fromJson( json['raw']) : null,
       collection: json['collection'],
       mint: Mint.fromJson(json['mint'] ?? {}),
       owners: json['owners'],
