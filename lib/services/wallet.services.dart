@@ -511,7 +511,7 @@ Future<String> makeAndSendNormalTx(
                   })) as MsgSignature;
 
       msgSignature =
-          MsgSignature(sig.r, sig.s, sig.v + (chainId * 2 + 35));
+          MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
     } else {
       final priv = await Web3AuthFlutter.getPrivKey();
 
