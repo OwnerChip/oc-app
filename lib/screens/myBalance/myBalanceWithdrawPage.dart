@@ -34,11 +34,15 @@ class MyBalanceWithdrawPage extends ConsumerStatefulWidget {
   const MyBalanceWithdrawPage({
     super.key,
     required this.onBack,
+    required this.onProcessing,
     this.isVisible = false,
   });
 
   final VoidCallback onBack;
   final bool isVisible;
+
+  final bool processing = false;
+  final Function(bool processing) onProcessing;
 
   @override
   ConsumerState<MyBalanceWithdrawPage> createState() {
@@ -56,7 +60,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   final TextEditingController _amountController = TextEditingController();
 
   BigInt _amount = BigInt.zero;
-  bool _processing = false;
 
   bool _maxAmount = false;
 
@@ -76,7 +79,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       _amount = BigInt.zero;
       _addressController.clear();
       _amountController.clear();
-      _processing = false;
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -94,7 +96,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         _amountController.text.isNotEmpty &&
         _amount > BigInt.zero &&
         _amount <= item.balance &&
-        !_processing;
+        !widget.processing;
   }
 
   @override
@@ -110,258 +112,247 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       ethPriceProvider(item.symbol),
     );
 
-    return CustomOverlay(
-      show: _processing,
-      content: SpinningLoadingSvg(
-          buttonText: context.loc.myBalanceWithdrawBackButton,
-          secondaryButton: false,
-          loadingText: context.loc.myBalanceWithdrawLoadingText,
-          rotateIcon: true,
-          svgPath: '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg'),
-      child: GestureDetector(
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
+    return GestureDetector(
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24.0,
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  const SizedBox(
-                    height: 32,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            SizedBox(
-                              height: 48,
-                              child: TextFormField(
-                                controller: _addressController,
-                                focusNode: _addressFocusNode,
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                validator: (value) {
-                                  if (_addressFocusNode.hasFocus) {
-                                    return null;
-                                  }
-
-                                  if (value == null || value.isEmpty) {
-                                    return context
-                                        .loc.myBalanceWithdrawWrongAddress;
-                                  }
-                                  try {
-                                    EthereumAddress.fromHex(value);
-                                  } catch (e) {
-                                    return context
-                                        .loc.myBalanceWithdrawWrongAddress;
-                                  }
-                                  return null;
-                                },
-                                decoration: customInputDecoration(
-                                  context,
-                                  context.loc.myBalanceReceivingWalletAddress,
-                                ).copyWith(
-                                  contentPadding: const EdgeInsets.only(
-                                    right: 64,
-                                    left: 12,
-                                  ),
-                                ),
-                                onChanged: (value) {
-                                  if (mounted) {
-                                    setState(() {});
-                                  }
-                                },
-                              ),
-                            ),
-                            Positioned(
-                              right: 12,
-                              top: 12,
-                              bottom: 0,
-                              child: InkWell(
-                                onTap: () {
-                                  Clipboard.getData('text/plain').then((value) {
-                                    if (value != null) {
-                                      _addressController.text =
-                                          value.text ?? '';
-                                      if (mounted) {
-                                        setState(() {});
-                                      }
-                                    }
-                                  });
-                                },
-                                child: Text(context
-                                    .loc.myBalanceWithdrawPasteAddressButton),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        context.loc.myBalanceWithdrawMaxAmount(
-                            item.balanceInEtherString),
-                        style:
-                            Theme.of(context).textTheme.bodyMedium!.copyWith(),
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Row(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(
+                  height: 32,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Stack(
                         children: [
-                          Flexible(
-                            child: SizedBox(
-                              height: 48,
-                              child: TextFormField(
-                                controller: _amountController,
-                                focusNode: _amountFocusNode,
-                                decoration: customInputDecoration(
-                                  context,
-                                  context.loc.myBalanceCryptoAmount,
-                                ),
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                  signed: false,
-                                ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*([,.]?\d{0,18})?'),
-                                  ),
-                                ],
-                                autovalidateMode:
-                                    AutovalidateMode.onUserInteraction,
-                                validator: (value) {
-                                  try {
-                                    if (value != null &&
-                                        double.parse(value.replaceAll(
-                                              ",",
-                                              ".",
-                                            )) >
-                                            item.balanceInEther) {
-                                      return context
-                                          .loc.myBalanceWithdrawSufficientFunds;
-                                    }
-                                  } catch (e) {
-                                    return null;
-                                  }
+                          SizedBox(
+                            height: 48,
+                            child: TextFormField(
+                              controller: _addressController,
+                              focusNode: _addressFocusNode,
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                if (_addressFocusNode.hasFocus) {
                                   return null;
-                                },
-                                onChanged: (value) {
-                                  _updateAmount(
-                                    item,
-                                  );
-                                  _maxAmount = false;
+                                }
 
-                                  if (mounted) {
-                                    setState(() {});
-                                  }
-                                },
+                                if (value == null || value.isEmpty) {
+                                  return context
+                                      .loc.myBalanceWithdrawWrongAddress;
+                                }
+                                try {
+                                  EthereumAddress.fromHex(value);
+                                } catch (e) {
+                                  return context
+                                      .loc.myBalanceWithdrawWrongAddress;
+                                }
+                                return null;
+                              },
+                              decoration: customInputDecoration(
+                                context,
+                                context.loc.myBalanceReceivingWalletAddress,
+                              ).copyWith(
+                                contentPadding: const EdgeInsets.only(
+                                  right: 64,
+                                  left: 12,
+                                ),
                               ),
+                              onChanged: (value) {
+                                if (mounted) {
+                                  setState(() {});
+                                }
+                              },
                             ),
                           ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Text(
-                            item.name,
-                            style: Theme.of(context)
-                                .textTheme
-                                .displaySmall!
-                                .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          Positioned(
+                            right: 12,
+                            top: 12,
+                            bottom: 0,
+                            child: InkWell(
+                              onTap: () {
+                                Clipboard.getData('text/plain').then((value) {
+                                  if (value != null) {
+                                    _addressController.text = value.text ?? '';
+                                    if (mounted) {
+                                      setState(() {});
+                                    }
+                                  }
+                                });
+                              },
+                              child: Text(context
+                                  .loc.myBalanceWithdrawPasteAddressButton),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      fiatPrice.when(
-                        data: (data) {
-                          final priceInFiat = data['EUR']!;
-                          return Text(
-                            "${((_amount / BigInt.from(pow(10, item.decimals))).toDouble() * priceInFiat).toStringAsFixed(2)} €",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(),
-                          );
-                        },
-                        error: (error, st) {
-                          return const SizedBox();
-                        },
-                        loading: () {
-                          return SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: CustomColors(
-                                dotenv.get('APP_ID'),
-                              ).primaryColor,
-                              strokeWidth: 1,
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      context.loc.myBalanceWithdrawMaxAmount(
+                          item.balanceInEtherString),
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(),
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: SizedBox(
+                            height: 48,
+                            child: TextFormField(
+                              controller: _amountController,
+                              focusNode: _amountFocusNode,
+                              decoration: customInputDecoration(
+                                context,
+                                context.loc.myBalanceCryptoAmount,
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                                signed: false,
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*([,.]?\d{0,18})?'),
+                                ),
+                              ],
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              validator: (value) {
+                                try {
+                                  if (value != null &&
+                                      double.parse(value.replaceAll(
+                                            ",",
+                                            ".",
+                                          )) >
+                                          item.balanceInEther) {
+                                    return context
+                                        .loc.myBalanceWithdrawSufficientFunds;
+                                  }
+                                } catch (e) {
+                                  return null;
+                                }
+                                return null;
+                              },
+                              onChanged: (value) {
+                                _updateAmount(
+                                  item,
+                                );
+                                _maxAmount = false;
+
+                                if (mounted) {
+                                  setState(() {});
+                                }
+                              },
                             ),
-                          );
-                        },
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: CustomOutlinedButton(
-                          onPressed: () async {
-                            _maxAmount = true;
-                            _estimateGas(
-                              item,
-                              all: true,
-                            ).then((_) {
-                              _setMaxAmount(item);
-                            });
-                            if (mounted) {
-                              setState(() {});
-                            }
-                          },
-                          buttonText: context.loc.myBalanceSendMaxButton,
+                          ),
                         ),
-                      )
-                    ],
-                  ),
-                  const Spacer(
-                    flex: 2,
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 300),
-                      opacity: _isSendAvailable(item) ? 1.0 : 0.5,
-                      child: CustomRoundedButton(
-                        onPressed: () {
-                          _onSend(item);
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          item.name,
+                          style: Theme.of(context)
+                              .textTheme
+                              .displaySmall!
+                              .copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    fiatPrice.when(
+                      data: (data) {
+                        final priceInFiat = data['EUR']!;
+                        return Text(
+                          "${((_amount / BigInt.from(pow(10, item.decimals))).toDouble() * priceInFiat).toStringAsFixed(2)} €",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium!
+                              .copyWith(),
+                        );
+                      },
+                      error: (error, st) {
+                        return const SizedBox();
+                      },
+                      loading: () {
+                        return SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            color: CustomColors(
+                              dotenv.get('APP_ID'),
+                            ).primaryColor,
+                            strokeWidth: 1,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: CustomOutlinedButton(
+                        onPressed: () async {
+                          _maxAmount = true;
+                          _estimateGas(
+                            item,
+                            all: true,
+                          ).then((_) {
+                            _setMaxAmount(item);
+                          });
+                          if (mounted) {
+                            setState(() {});
+                          }
                         },
-                        text: context.loc.myBalanceSendButton,
+                        buttonText: context.loc.myBalanceSendMaxButton,
                       ),
+                    )
+                  ],
+                ),
+                const Spacer(
+                  flex: 2,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: _isSendAvailable(item) ? 1.0 : 0.5,
+                    child: CustomRoundedButton(
+                      onPressed: () {
+                        _onSend(item);
+                      },
+                      text: context.loc.myBalanceSendButton,
                     ),
                   ),
-                  const SizedBox(
-                    height: 32,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(
+                  height: 32,
+                ),
+              ],
             ),
           ),
         ),
@@ -391,7 +382,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         }
       }
 
-      _processing = true;
+      widget.onProcessing(true);
 
       if (mounted) {
         setState(() {});
@@ -429,6 +420,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       await _estimateGas(item);
 
       final String txHash;
+
+      FocusScope.of(context).unfocus();
 
       if (item.token == null) {
         txHash = await _makeNormalNativeTransaction(

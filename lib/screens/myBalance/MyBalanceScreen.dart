@@ -8,7 +8,9 @@ import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotif
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifierData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
@@ -27,6 +29,8 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
   final RefreshController _refreshController = RefreshController();
 
   int _currentPage = 0;
+
+  bool _processing = false;
 
   @override
   void initState() {
@@ -52,53 +56,73 @@ class _MyBalancePageState extends ConsumerState<MyBalancePage> {
 
     return PopScope(
       canPop: _getCanPop(),
-      child: Scaffold(
-        appBar: CustomAppBar(
-          text: context.loc.myBalanceTitle,
-          overrideBackButton: () {
-            if (_currentPage == 1) {
-              FocusScope.of(context).unfocus();
+      child: CustomOverlay(
+        show: _processing,
+        content: SpinningLoadingSvg(
+            buttonText: context.loc.myBalanceWithdrawBackButton,
+            secondaryButton: false,
+            loadingText: context.loc.myBalanceWithdrawLoadingText,
+            rotateIcon: true,
+            svgPath:
+                '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg'),
+        child: Scaffold(
+          appBar: CustomAppBar(
+            text: context.loc.myBalanceTitle,
+            overrideBackButton: () {
+              if (_currentPage == 1) {
+                FocusScope.of(context).unfocus();
 
-              _pageController.animateToPage(
-                0,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.ease,
-              );
-            } else {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-        body: SafeArea(
-          child: PageView(
-            physics: _getCanPop()
-                ? const NeverScrollableScrollPhysics()
-                : const BouncingScrollPhysics(),
-            controller: _pageController,
-            onPageChanged: (index) {
-              _currentPage = index;
-              if (mounted) {
-                setState(() {});
+                _pageController.animateToPage(
+                  0,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.ease,
+                );
+              } else {
+                Navigator.of(context).pop();
               }
             },
-            children: [
-              _buildList(
-                context,
-                data: data,
-                key: const PageStorageKey('myBalanceList'),
-              ),
-              MyBalanceWithdrawPage(
-                isVisible: _currentPage == 1,
-                onBack: () {
-                  _pageController.animateToPage(
-                    0,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeInOut,
-                  );
-                  FocusScope.of(context).unfocus();
-                },
-              ),
-            ],
+          ),
+          body: SafeArea(
+            child: PageView(
+              physics: _getCanPop()
+                  ? const NeverScrollableScrollPhysics()
+                  : const BouncingScrollPhysics(),
+              controller: _pageController,
+              onPageChanged: (index) {
+                _currentPage = index;
+                if (_currentPage == 0) {
+                  _processing = false;
+                }
+
+                if (mounted) {
+                  setState(() {});
+                }
+              },
+              children: [
+                _buildList(
+                  context,
+                  data: data,
+                  key: const PageStorageKey('myBalanceList'),
+                ),
+                MyBalanceWithdrawPage(
+                  isVisible: _currentPage == 1,
+                  onProcessing: (value) {
+                    _processing = value;
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
+                  onBack: () {
+                    _pageController.animateToPage(
+                      0,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeInOut,
+                    );
+                    FocusScope.of(context).unfocus();
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

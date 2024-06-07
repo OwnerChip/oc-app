@@ -76,71 +76,60 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                       ? [
                           _buildItem(
                               context,
+                              _copyAddress,
                               (
                                 BuildContext context,
                               ) =>
-                                  InkWell(
-                                    onTap: _copyAddress,
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          '${userSession.userWalletAddress.hex.substring(0, 7)}...${userSession.userWalletAddress.hex.substring(userSession.userWalletAddress.hex.length - 4)}',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headlineSmall!
-                                              .copyWith(fontSize: 12),
-                                        ),
-                                        const SizedBox(
-                                          width: 12,
-                                        ),
-                                        const Icon(Icons.copy),
-                                      ],
-                                    ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '${userSession.userWalletAddress.hex.substring(0, 7)}...${userSession.userWalletAddress.hex.substring(userSession.userWalletAddress.hex.length - 4)}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall!
+                                            .copyWith(fontSize: 12),
+                                      ),
+                                      const SizedBox(
+                                        width: 12,
+                                      ),
+                                      const Icon(Icons.copy),
+                                    ],
                                   )),
                           _buildDivider(),
                           _buildItem(
-                              context,
-                              (context) => GestureDetector(
-                                    onTap: () {
-                                      _onBalanceClicked(context);
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          context.loc.appbarMyBalanceButton,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
-                                        ),
-                                      ],
-                                    ),
-                                  )),
+                            context,
+                            () {
+                              _onBalanceClicked(context);
+                            },
+                            (context) => Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  context.loc.appbarMyBalanceButton,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
                           _buildDivider(),
                           _buildItem(
-                              context,
-                              (context) => GestureDetector(
-                                    onTap: () {
-                                      _onLogoutClicked(context);
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          context.loc.logout,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
-                                        ),
-                                      ],
-                                    ),
-                                  )),
+                            context,
+                            () {
+                              _onLogoutClicked(context);
+                            },
+                            (context) => Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  context.loc.logout,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
                         ]
                       : [
                           CircularProgressIndicator(),
@@ -156,14 +145,19 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
 
   Widget _buildItem(
     BuildContext context,
+    VoidCallback onTap,
     Widget Function(
       BuildContext context,
     ) builder,
   ) {
-    return SizedBox(
-      width: 200,
-      height: 24,
-      child: builder(context),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 200,
+        height: 24,
+        color: Colors.transparent,
+        child: builder(context),
+      ),
     );
   }
 
