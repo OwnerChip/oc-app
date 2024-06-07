@@ -70,6 +70,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
     try {
       var value = await navArgs.callback(pin);
       if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinTx) {
+        FocusScope.of(context).unfocus();
         Navigator.pop(context, value);
       }
     } catch (e) {
