@@ -14,19 +14,26 @@ class JwtToken {
   Map<String, dynamic> toJson() => _$JwtTokenToJson(this);
 
   final String raw;
-  final String walletAddress;
+  final String? walletAddress;
   final String sessionId;
   final String role;
-  final int iat;
-  final int exp;
+  @JsonKey(name: 'iat')
+  final int iatS;
+
+  int get iat => iatS * 1000;
+
+  @JsonKey(name: 'exp')
+  final int expS;
+
+  int get exp => expS * 1000;
 
   const JwtToken({
     required this.raw,
     required this.walletAddress,
     required this.sessionId,
     required this.role,
-    required this.iat,
-    required this.exp,
+    required this.iatS,
+    required this.expS,
   });
 
   factory JwtToken.decode(String jwt) {
@@ -70,5 +77,10 @@ class JwtToken {
     }
 
     return utf8.decode(base64Url.decode(output));
+  }
+
+  @override
+  String toString() {
+    return 'JwtToken{raw: $raw, walletAddress: $walletAddress, sessionId: $sessionId, role: $role, iat: $iat, exp: $exp}';
   }
 }

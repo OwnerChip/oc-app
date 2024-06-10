@@ -1,7 +1,8 @@
 //package imports
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+
+import 'package:convert/convert.dart';
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,33 +11,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+//misc imports
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+//service imports
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/utils/web3authUtils.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:convert/convert.dart';
-
-//misc imports
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/domain/eip155.dart';
-
-//service imports
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
+import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 Uri convertToWcLink({
   required String appLink,

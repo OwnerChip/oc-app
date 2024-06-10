@@ -8,14 +8,17 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -107,9 +110,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         final backendSession =
             UserSession.fromJson(jsonDecode(storedUserSession));
 
-        double nowPlusThreeDays =
-            DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
-
         if (walletType.type == EWalletType.web3auth) {
           String? privKey;
           try {
@@ -120,7 +120,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             );
           }
 
-          if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
+          if (privKey != null &&
+              backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
             ref.read(userAddressProvider.notifier).state =
                 EthPrivateKey.fromHex(privKey).address;
 
@@ -136,19 +137,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           //check if the stored session expires in less than three days; if yes, remove it
           //Note: WalletConnect session duration is 7 days
 
-          if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
-              backendSession.expiryDate > nowPlusThreeDays) {
+          if ((wcSession.expiry ?? 0) > BackendAuth.nowPlusThreeHours() &&
+              backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
             ref.read(wcSessionProvider.notifier).state = wcSession;
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
-            Backend.recreateServices(backendSession.jwt.raw);
           } else {
             //remove session and wallet type from storage
             storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            Backend.recreateServices(null);
+            await BackendAuth.initGuestSession(ref: ref);
           }
         }
       } else {
@@ -157,7 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('walletType');
         storage.remove('userSession');
         wcService?.disconnect();
-        Backend.recreateServices(null);
+        await BackendAuth.initGuestSession(ref: ref);
       }
 
       if (!shippingPopupIsShown) {

@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/walletSignature/walletSignature.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart';
@@ -20,6 +21,14 @@ import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 abstract class BackendAuth extends Backend {
+  static int nowPlusThreeHours() => DateTime.now()
+      .add(
+        const Duration(
+          hours: 3,
+        ),
+      )
+      .millisecondsSinceEpoch;
+
   /// returns a tuple of [Map, String].
   /// Map: the message to be signed.
   /// String: SIWE message.
@@ -58,6 +67,60 @@ abstract class BackendAuth extends Backend {
       },
       message
     ];
+  }
+
+  static Future<void> initGuestSession({
+    required WidgetRef ref,
+  }) async {
+    try {
+      final session = ref.read(userSessionProvider);
+
+      if (session == null) {
+        final storage = await SharedPreferences.getInstance();
+
+        final cached = storage.getString("guestSession");
+
+        // create a guest session
+        if (cached != null &&
+            JwtToken.decode(cached).exp > BackendAuth.nowPlusThreeHours()) {
+          talker
+              .info("recreating services with cached guest session \n $cached");
+          final jwt = JwtToken.decode(cached);
+          Backend.recreateServices(jwt.raw);
+        } else {
+          talker.info("creating new guest session");
+          final newJwt =
+              JwtToken.decode(await BackendAuth.createGuestSession());
+          storage.setString("guestSession", newJwt.raw);
+          print(newJwt.exp);
+          Backend.recreateServices(newJwt.raw);
+          talker.info("new guest session created \n $newJwt");
+        }
+      }
+    } catch (e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+      talker.info(
+          "error creating guest session, recreating services with no jwt");
+      Backend.recreateServices(null);
+    }
+  }
+
+  static Future<String> createGuestSession() async {
+    return BackendAuthService.instance.createGuestSession().catchError((e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+
+      throw e;
+    });
   }
 
   /// validate a SIWE message

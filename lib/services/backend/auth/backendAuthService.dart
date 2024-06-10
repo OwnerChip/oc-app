@@ -40,4 +40,7 @@ abstract class BackendAuthService {
   Future<String> validateSiwe({
     @Body() required ValidateSiwePayload body,
   });
+
+  @POST("/session/guest")
+  Future<String> createGuestSession();
 }
