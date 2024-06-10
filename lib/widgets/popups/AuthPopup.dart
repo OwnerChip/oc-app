@@ -150,30 +150,13 @@ Future<void> onTapAuth(
     signature: hexSignature,
   );
 
-  hexSignature = await sendPersonalSignRequest(
-    ref,
-    message,
-    userWalletAddress,
-    session,
-    walletType,
-  );
-
   MsgSignature signature = hexSignatureToRSV(hexSignature);
-
-  int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-  int sessionExpirationDate = await BackendAuth.getSessionExpiration(
-    sevenDaysInSeconds,
-    sessionId,
-    userWalletAddress,
-    signature,
-  );
 
   UserSession userSession = UserSession(
     sessionId,
     signature,
     ref.read(userAddressProvider),
     isOwnerCard,
-    sessionExpirationDate,
     jwt,
   );
   Backend.recreateServices(jwt);

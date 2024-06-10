@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
@@ -153,17 +158,18 @@ class UserSession {
   final MsgSignature signatureData;
   final EthereumAddress userWalletAddress;
   final bool isOwnerCard;
-  final int expiryDate;
-  final String jwt;
+
+  int get expiryDate => jwt.exp;
+
+  late final JwtToken jwt;
 
   UserSession(
     this.sessionId,
     this.signatureData,
     this.userWalletAddress,
     this.isOwnerCard,
-    this.expiryDate,
-    this.jwt,
-  );
+    String jwt,
+  ) : jwt = JwtToken.decode(jwt);
 
   Map<String, dynamic> toJson() => {
         'sessionId': sessionId,
@@ -171,7 +177,7 @@ class UserSession {
         'userWalletAddress': userWalletAddress.hex,
         'isOwnerCard': isOwnerCard,
         'expiryDate': expiryDate.toString(),
-        'jwt': jwt,
+        'jwt': jwt.toJson(),
       };
 
   UserSession.fromJson(Map<String, dynamic> json)
@@ -179,10 +185,7 @@ class UserSession {
         signatureData = msgSignatureFromJson(json['signatureData']),
         userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
         isOwnerCard = json['isOwnerCard'],
-        expiryDate = int.parse(
-          json['expiryDate'],
-        ),
-        jwt = json['jwt'];
+        jwt = JwtToken.fromJson(json['jwt']);
 }
 
 class CreatorData {
@@ -204,7 +207,6 @@ class CreatorData {
     required this.tokenForWhichCreatorDataWasRequested,
   });
 }
-
 
 class RaribleHashAndEncodedData {
   final String typedDataHash;

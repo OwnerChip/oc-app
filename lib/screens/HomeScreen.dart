@@ -126,7 +126,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
-            Backend.recreateServices(backendSession.jwt);
+            Backend.recreateServices(backendSession.jwt.raw);
           } else {
             if (privKey == null) {}
           }
@@ -141,7 +141,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(wcSessionProvider.notifier).state = wcSession;
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
-            Backend.recreateServices(backendSession.jwt);
+            Backend.recreateServices(backendSession.jwt.raw);
           } else {
             //remove session and wallet type from storage
             storage.remove('session');

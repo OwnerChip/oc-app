@@ -124,10 +124,6 @@ abstract class BackendAuth extends Backend {
     WidgetRef ref,
     String jwt,
   ) async {
-    int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-    int sessionExpirationDate = await getSessionExpiration(
-        sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
-
     ref.read(userAddressProvider.notifier).state = cardWalletAddress;
     ref.read(walletTypeProvider.notifier).state =
         walletConfig[EWalletType.ownerCard];
@@ -137,7 +133,6 @@ abstract class BackendAuth extends Backend {
       signature,
       ref.read(userAddressProvider),
       isOwnerCard,
-      sessionExpirationDate,
       jwt,
     );
 

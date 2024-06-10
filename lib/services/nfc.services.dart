@@ -271,7 +271,9 @@ Future<void> authenticateCard(
       statement: message,
       nonce: sessionId,
     );
-    Uint8List msgHashToSign = keccakUtf8(siweMessage[1]);
+
+    final prefixedMessage = "\x19Ethereum Signed Message:\n${siweMessage[1].length}${siweMessage[1]}";
+    Uint8List msgHashToSign = keccakUtf8(prefixedMessage);
     final bool pinVerified = await verifyPin(nfc, pin);
     final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
@@ -289,16 +291,6 @@ Future<void> authenticateCard(
     final jwt = await BackendAuth.validateSiwe(
       message: siweMessage[0],
       signature: "0x$rHex$sHex$vHex",
-    );
-
-    msgHashToSign = keccakUtf8(message);
-
-    signature = await signHash(
-      nfc,
-      0x01,
-      cardWalletAddress,
-      msgHashToSign,
-      false,
     );
 
     await BackendAuth.saveUserSession(
