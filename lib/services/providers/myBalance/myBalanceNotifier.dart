@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
@@ -16,6 +17,7 @@ class MyBalanceNotifier extends Notifier<MyBalanceNotifierData> {
   static final Map<int, String> _listItemAssetPath = {
     1: "assets/images/common/eth_icon.png",
     137: "assets/images/common/matic_icon.png",
+    11155111: "assets/images/common/eth_icon.png",
   };
 
   @override
@@ -33,6 +35,7 @@ class MyBalanceNotifier extends Notifier<MyBalanceNotifierData> {
       final newListItems = <MyBalanceListItem>[];
 
       for (final chain in chainConfig.entries) {
+
         final client = getWeb3Client(chain.value.rpcUrl);
         final balance =
             (await client.getBalance(userSession.userWalletAddress)).getInWei;

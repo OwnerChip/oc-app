@@ -30,10 +30,39 @@ final ethereumMainnet = BlockchainConfig(
     alchemyBaseUrl: "https://eth-mainnet.g.alchemy.com/",
     blockchainExplorerUrl: "https://etherscan.com/token");
 
-final Map<int, BlockchainConfig> chainConfig = {
+final sepoliaTestnet = BlockchainConfig(
+  networkName: "Sepolia Testnet",
+  nativeTokenSymbol: "ETH",
+  rpcUrl: "https://eth-sepolia.api.onfinality.io/public",
+  registryContract: "0x8Dcc2016E0dEe536D238562dC2a46c8EEf2aac86",
+  controllerContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
+  forwarderContract: "0x4e63de97Cd856b9D835dB1656948E5227622F829",
+  openseaUrl: "https://opensea.io/assets",
+  raribleUrl: "https://testnet.rarible.com/token",
+  raribleEnum: "ETHEREUM",
+  alchemyBaseUrl: "https://eth-sepolia.api.onfinality.io/public",
+  blockchainExplorerUrl: "https://sepolia.etherscan.io/token",
+  internal: true,
+);
+
+final Map<int, BlockchainConfig> _chainConfig = {
   1: ethereumMainnet,
   137: polygonMainnet,
+  11155111: sepoliaTestnet,
 };
+
+Map<int, BlockchainConfig> get chainConfig {
+  final Map<int, BlockchainConfig> configs = Map.from(_chainConfig);
+
+  for (final chain in configs.entries) {
+    if (chain.value.internal && dotenv.get("IS_INTERNAL") != "true") {
+      continue;
+    }
+    configs[chain.key] = chain.value;
+  }
+
+  return configs;
+}
 
 final Map<int, List<BlockchainToken>> chainTokenConfigs = {
   1: [
@@ -85,4 +114,5 @@ final Map<int, List<BlockchainToken>> chainTokenConfigs = {
     //   decimals: 6,
     // ),
   ],
+  11155111: [],
 };
