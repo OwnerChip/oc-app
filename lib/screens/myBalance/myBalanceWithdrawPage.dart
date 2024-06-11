@@ -624,61 +624,27 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   }) async {
     final blockchainToken = chainTokenConfigs[item.chain]![item.token!];
 
-    final metaTx = await checkMetaTx(
-      blockchainToken.contractAddress,
+    final txHash = await makeAndSendNormalTx(
+      context,
+      ref,
       erc20TransferFunctionSignature,
+      item.chain,
+      blockchainToken.contractAddress,
+      chipSignature,
+      userSession.userWalletAddress,
+      wc,
+      wcSession,
+      walletType,
+      // convert double to BigInt
+      amount: _amount,
+      toAccount: _getReceivingAddress()!,
+      gasPrice: _gasPrice,
+      gasAmount: _gasAmount,
     );
 
-    if (metaTx[0]) {
-      final metaTxAgreementId = metaTx[1];
+    talker.info("Transaction sent: $txHash");
 
-      final txHash = await makeAndSendGaslessTx(
-        ref,
-        context,
-        erc20TransferFromFunctionSignature,
-        item.chain,
-        blockchainToken.contractAddress,
-        chipSignature,
-        userSession.userWalletAddress,
-        wc,
-        wcSession,
-        metaTxAgreementId,
-        walletType,
-        toggleLoading: () {},
-        toAccount: _getReceivingAddress()!,
-        amount: _amount,
-        token: blockchainToken,
-        gasAmount: _gasAmount,
-      );
-
-      talker.info("Transaction sent: $txHash");
-
-      return txHash;
-    } else {
-      // gas station is not available
-
-      final txHash = await makeAndSendNormalTx(
-        context,
-        ref,
-        erc20TransferFunctionSignature,
-        item.chain,
-        blockchainToken.contractAddress,
-        chipSignature,
-        userSession.userWalletAddress,
-        wc,
-        wcSession,
-        walletType,
-        // convert double to BigInt
-        amount: _amount,
-        toAccount: _getReceivingAddress()!,
-        gasPrice: _gasPrice,
-        gasAmount: _gasAmount,
-      );
-
-      talker.info("Transaction sent: $txHash");
-
-      return txHash;
-    }
+    return txHash;
   }
 
   Future<String> _makeNormalNativeTransaction({

@@ -146,7 +146,8 @@ Future<String> makeAndSendGaslessTx(
       toggleLoading();
 
       // check if the user allowed the forwarder contract to spend their tokens
-      if (chainConfig[chainId]!.forwarderContract != null) {
+      if (chainConfig[chainId]!.forwarderContract != null &&
+          token != null) {
         await _wcCheckERC20Allowance(
           token,
           walletAddress,
@@ -559,13 +560,32 @@ Future<String> makeAndSendNormalTx(
 Future<void> wcSwitchToChainConditionally(
     W3MService? w3mService, int chainId) async {
   final chain = w3mService?.selectedChain;
-  if (chain == null || chain.chainId != chainId.toString()) {
+  if (chain == null ||
+      chain.chainId.replaceAll("eip155:", "") != chainId.toString()) {
     final chain = chainConfig[chainId]!;
     w3mService!.launchConnectedWallet();
+
+    // get available chains, if no added chain, add the chain
+    // if added chain, switch to the chain
+    final chains = w3mService.getApprovedChains();
+    if (!(chains ?? [])
+        .map((e) => e.replaceAll("eip155:", ""))
+        .contains(chainId.toString())) {
+      await w3mService.requestAddChain(
+        W3MChainInfo(
+          chainName: chain.networkName,
+          chainId: "$chainId",
+          namespace: "",
+          tokenName: chain.nativeTokenSymbol,
+          rpcUrl: chain.rpcUrl,
+        ),
+      );
+    }
+
     await w3mService.requestSwitchToChain(
       W3MChainInfo(
         chainName: chain.networkName,
-        chainId: chainId.toString(),
+        chainId: "$chainId",
         namespace: "",
         tokenName: chain.nativeTokenSymbol,
         rpcUrl: chain.rpcUrl,

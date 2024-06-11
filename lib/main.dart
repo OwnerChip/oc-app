@@ -1,6 +1,7 @@
 //import packages
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -67,9 +68,10 @@ void main(List<String> args) async {
 
   //init sentry
   await SentryFlutter.init((options) {
-    options.dsn = dotenv.env['SENTRY_DSN']!;
+    options.dsn = kDebugMode ? "" : dotenv.env['SENTRY_DSN']!;
     options.tracesSampleRate = 1.0;
-    options.environment = dotenv.env['BITRISEIO_PACKAGE_NAME']!;
+    options.environment =
+        kDebugMode ? "" : dotenv.env['BITRISEIO_PACKAGE_NAME']!;
   },
       appRunner: () => runApp(ProviderScope(
               child: MyApp(

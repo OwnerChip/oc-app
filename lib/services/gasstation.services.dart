@@ -35,7 +35,7 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
     },
     'domain': {
       'name': 'MinimalForwarder',
-      'version': '0.0.2',
+      'version': '0.0.3',
       'verifyingContract': verifyingContract,
     },
     'primaryType': 'ForwardRequest',
