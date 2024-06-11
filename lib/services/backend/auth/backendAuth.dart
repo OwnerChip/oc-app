@@ -21,13 +21,15 @@ import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 abstract class BackendAuth extends Backend {
-  static int nowPlusThreeHours() => DateTime.now()
-      .add(
-        const Duration(
-          hours: 3,
-        ),
-      )
-      .millisecondsSinceEpoch;
+  static int nowPlusThreeHours() =>
+      DateTime.now()
+          .add(
+            const Duration(
+              hours: 3,
+            ),
+          )
+          .millisecondsSinceEpoch ~/
+      1000;
 
   /// returns a tuple of [Map, String].
   /// Map: the message to be signed.
@@ -185,8 +187,27 @@ abstract class BackendAuth extends Backend {
     EthereumAddress cardWalletAddress,
     MsgSignature signature,
     WidgetRef ref,
-    String jwt,
+    String? jwt,
   ) async {
+    late JwtToken jwtToken;
+
+    if (jwt == null) {
+      int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+      int sessionExpirationDate = await getSessionExpiration(
+          sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
+
+      jwtToken = JwtToken(
+        raw: "",
+        walletAddress: cardWalletAddress.hex,
+        sessionId: sessionId,
+        role: "user",
+        iat: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        exp: sessionExpirationDate ~/ 1000,
+      );
+    } else {
+      jwtToken = JwtToken.decode(jwt);
+    }
+
     ref.read(userAddressProvider.notifier).state = cardWalletAddress;
     ref.read(walletTypeProvider.notifier).state =
         walletConfig[EWalletType.ownerCard];
@@ -196,15 +217,23 @@ abstract class BackendAuth extends Backend {
       signature,
       ref.read(userAddressProvider),
       isOwnerCard,
-      jwt,
+      jwtToken,
     );
 
     ref.read(userSessionProvider.notifier).state = userSession;
+    ref.read(walletTypeProvider.notifier).state =
+        walletConfig[EWalletType.ownerCard];
 
     //persist session date
     final SharedPreferences storage = await SharedPreferences.getInstance();
-    final String jsonUserSession = jsonEncode(userSession.toJson());
-    storage.setString('userSession', jsonUserSession);
+    storage.setString(
+      'userSession',
+      jsonEncode(userSession.toJson()),
+    );
+    storage.setString(
+      'walletType',
+      jsonEncode(walletConfig[EWalletType.ownerCard]!.toJson()),
+    );
   }
 
   // This function requests a Session Id from the backend

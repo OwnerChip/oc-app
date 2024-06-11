@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
@@ -120,7 +121,9 @@ Future<void> onTapAuth(
           context.loc.pleaseTryAgainLater, 'error'),
     );
     //remove auth popup
-    Navigator.pop(context, false);
+    if (Navigator.of(context).canPop()) {
+      Navigator.pop(context, false);
+    }
     return;
   }
 
@@ -130,38 +133,71 @@ Future<void> onTapAuth(
       oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
   bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
 
-  final String message =
-      "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+  late final JwtToken token;
+  late final MsgSignature signature;
 
-  final siweMessage = BackendAuth.createSiweMessage(
-    address: userWalletAddress,
-    statement: message,
-    nonce: sessionId,
-  );
-  String hexSignature = await sendPersonalSignRequest(
-    ref,
-    siweMessage[1],
-    userWalletAddress,
-    session,
-    walletType,
-    siweMessage: true,
-  );
+  try {
+    final String message =
+        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
 
-  final jwt = await BackendAuth.validateSiwe(
-    message: siweMessage[0],
-    signature: hexSignature,
-  );
+    final siweMessage = BackendAuth.createSiweMessage(
+      address: userWalletAddress,
+      statement: message,
+      nonce: sessionId,
+    );
+    String hexSignature = await sendPersonalSignRequest(
+      ref,
+      siweMessage[1],
+      userWalletAddress,
+      session,
+      walletType,
+      siweMessage: true,
+    );
 
-  MsgSignature signature = hexSignatureToRSV(hexSignature);
+    final jwt = await BackendAuth.validateSiwe(
+      message: siweMessage[0],
+      signature: hexSignature,
+    );
+
+    token = JwtToken.decode(jwt);
+
+    signature = hexSignatureToRSV(hexSignature);
+  } catch (e, st) {
+    String message =
+        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+
+    String hexSignature = await sendPersonalSignRequest(
+      ref,
+      message,
+      userWalletAddress,
+      session,
+      walletType,
+    );
+
+    signature = hexSignatureToRSV(hexSignature);
+
+    int sevenDaysInSeconds = 60 * 60 * 24 * 7;
+    int sessionExpirationDate = await BackendAuth.getSessionExpiration(
+        sevenDaysInSeconds, sessionId, userWalletAddress, signature);
+
+    token = JwtToken(
+      raw: "",
+      walletAddress: userWalletAddress.hex,
+      sessionId: sessionId,
+      role: "user",
+      iat: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      exp: sessionExpirationDate,
+    );
+  }
 
   UserSession userSession = UserSession(
     sessionId,
     signature,
     ref.read(userAddressProvider),
     isOwnerCard,
-    jwt,
+    token,
   );
-  Backend.recreateServices(jwt);
+  Backend.recreateServices(token.raw);
 
   ref.read(userSessionProvider.notifier).state = userSession;
 
@@ -169,6 +205,7 @@ Future<void> onTapAuth(
   final SharedPreferences storage = await SharedPreferences.getInstance();
   final String jsonUserSession = jsonEncode(userSession.toJson());
   storage.setString('userSession', jsonUserSession);
+  storage.setString('walletType', jsonEncode(walletType.toJson()));
 
   ref.refresh(findAllMinterRolesProvider);
   ref.refresh(ocNFTsForOwnerProvider);
@@ -186,5 +223,7 @@ Future<void> onTapAuth(
         context.loc.walletIsConnected, 'success'),
   );
 
-  Navigator.pop(context, true);
+  if (Navigator.of(context).canPop()) {
+    Navigator.pop(context, true);
+  }
 }

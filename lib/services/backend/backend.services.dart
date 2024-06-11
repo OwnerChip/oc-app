@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendAppService.dart';
@@ -46,7 +45,12 @@ abstract class Backend {
   }
 
   static void recreateServices(String? jwt) {
+    if (jwt != null && jwt.isEmpty) {
+      jwt = null;
+    }
+
     talker.info('Recreating backend services with new JWT.\n$jwt');
+
     BackendAuthService.recreate(jwt);
     BackendMetaTxService.recreate(jwt);
     BackendOfferService.recreate(jwt);

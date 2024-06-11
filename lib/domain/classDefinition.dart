@@ -167,9 +167,8 @@ class UserSession {
     this.sessionId,
     this.signatureData,
     this.userWalletAddress,
-    this.isOwnerCard,
-    String jwt,
-  ) : jwt = JwtToken.decode(jwt);
+    this.isOwnerCard, this.jwt,
+  );
 
   Map<String, dynamic> toJson() => {
         'sessionId': sessionId,

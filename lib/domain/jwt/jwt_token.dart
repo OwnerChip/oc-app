@@ -17,23 +17,16 @@ class JwtToken {
   final String? walletAddress;
   final String sessionId;
   final String role;
-  @JsonKey(name: 'iat')
-  final int iatS;
-
-  int get iat => iatS * 1000;
-
-  @JsonKey(name: 'exp')
-  final int expS;
-
-  int get exp => expS * 1000;
+  final int iat;
+  final int exp;
 
   const JwtToken({
     required this.raw,
     required this.walletAddress,
     required this.sessionId,
     required this.role,
-    required this.iatS,
-    required this.expS,
+    required this.iat,
+    required this.exp,
   });
 
   factory JwtToken.decode(String jwt) {

@@ -11,8 +11,8 @@ JwtToken _$JwtTokenFromJson(Map<String, dynamic> json) => JwtToken(
       walletAddress: json['walletAddress'] as String?,
       sessionId: json['sessionId'] as String,
       role: json['role'] as String,
-      iatS: (json['iat'] as num).toInt(),
-      expS: (json['exp'] as num).toInt(),
+      iat: (json['iat'] as num).toInt(),
+      exp: (json['exp'] as num).toInt(),
     );
 
 Map<String, dynamic> _$JwtTokenToJson(JwtToken instance) => <String, dynamic>{
@@ -20,6 +20,6 @@ Map<String, dynamic> _$JwtTokenToJson(JwtToken instance) => <String, dynamic>{
       'walletAddress': instance.walletAddress,
       'sessionId': instance.sessionId,
       'role': instance.role,
-      'iat': instance.iatS,
-      'exp': instance.expS,
+      'iat': instance.iat,
+      'exp': instance.exp,
     };

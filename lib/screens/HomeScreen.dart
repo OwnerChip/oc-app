@@ -95,18 +95,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       FlutterNativeSplash.remove();
     }
 
+    final storage = await SharedPreferences.getInstance();
+
     try {
       final wcService = ref.read(w3mServiceProvider);
-
-      final storage = await SharedPreferences.getInstance();
 
       final storedWcSession = storage.getString('session');
       final storedWalletType = storage.getString('walletType');
       final storedUserSession = storage.getString('userSession');
       //check if a session is stored
-      if (storedWcSession != null &&
-          storedWalletType != null &&
-          storedUserSession != null) {
+      if (storedWalletType != null &&
+          ((storedUserSession != null &&
+                  UserSession.fromJson(jsonDecode(storedUserSession))
+                      .isOwnerCard) ||
+              (storedWcSession != null && storedUserSession != null))) {
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
             UserSession.fromJson(jsonDecode(storedUserSession));
@@ -132,8 +134,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           } else {
             if (privKey == null) {}
           }
+        } else if (walletType.type == EWalletType.ownerCard) {
+          if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
+            ref.read(userAddressProvider.notifier).state =
+                backendSession.userWalletAddress;
+            ref.read(walletTypeProvider.notifier).state = walletType;
+            ref.read(userSessionProvider.notifier).state = backendSession;
+            Backend.recreateServices(backendSession.jwt.raw);
+          } else {
+            //remove session and wallet type from storage
+            storage.remove('session');
+            storage.remove('walletType');
+            storage.remove('userSession');
+            wcService?.disconnect();
+            await BackendAuth.initGuestSession(ref: ref);
+          }
         } else {
-          final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession));
+          final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession!));
 
           //check if the stored session expires in less than three days; if yes, remove it
           //Note: WalletConnect session duration is 7 days
@@ -173,6 +190,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         e,
         stackTrace: st,
       );
+      talker.error(
+          "Error initializing persisted state: $e \n proceeding with guest session.");
+      storage.remove('session');
+      storage.remove('walletType');
+      storage.remove('userSession');
+      await BackendAuth.initGuestSession(ref: ref);
     } finally {
       FlutterNativeSplash.remove();
     }
