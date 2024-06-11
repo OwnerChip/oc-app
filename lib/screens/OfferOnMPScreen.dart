@@ -76,10 +76,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   bool isRotating = true;
   String currencyDropdownValue = 'MATIC';
   bool raribleCheck = true;
-  List<String> allDropdownValues = [
-    'MATIC',
-    'EUR'
-  ]; //TODO: support other currencies //attention: order of items is important
+  List<String> allDropdownValues = [];
   Future<bool>?
       _setCurrencyDropDownValuesFuture; //future used for currency dropdown FutureBuilder
 
@@ -106,8 +103,12 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final TokenChainAndCollection config =
         await ref.read(findTokenProvider(chipInfo.tokenId).future);
     String currencySymbol = chainConfig[config.chainId]!.nativeTokenSymbol;
+    final tokens = chainTokenConfigs[config.chainId]!;
     setState(() {
-      allDropdownValues = [currencySymbol, 'EUR'];
+      allDropdownValues = [
+        currencySymbol,
+        ...tokens.map((token) => token.symbol),
+      ];
       currencyDropdownValue = currencySymbol;
     });
     return true;
@@ -213,14 +214,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
         chainConfig[config.chainId]!.controllerContract);
 
-    final double priceInPrimaryChainCurrency;
-    if (currencyDropdownValue == 'EUR') {
-      priceInPrimaryChainCurrency =
-          await convertEurToToCrypto(price, allDropdownValues[0]) *
-              1000000000000000000;
-    } else {
-      priceInPrimaryChainCurrency = price * 1000000000000000000;
-    }
+    final double priceInPrimaryChainCurrency = price * 1000000000000000000;
     setState(() {
       isLoading = true;
       overlayContentType = context.loc.loading;
@@ -446,13 +440,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     }
   }
 
-  Future<double> convertEurToToCrypto(
-      double price, String cryptoCurrencySymbol) async {
-    Map conversionRates =
-        await ref.read(ethPriceProvider(allDropdownValues[0]).future);
-    return price / conversionRates['EUR'];
-  }
-
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
     cancellableOperation?.cancel();
     cancellableOperation =
@@ -469,7 +456,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   @override
   Widget build(BuildContext context) {
     AsyncValue<Map> ethPriceEur =
-        ref.watch(ethPriceProvider(allDropdownValues[0]));
+        ref.watch(ethPriceProvider(currencyDropdownValue));
     return CustomOverlay(
         show: isLoading,
         content: SpinningLoadingSvg(
@@ -669,10 +656,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                 ),
                                 Text(
                                   '${currencyDropdownValue == 'EUR' ? allDropdownValues[0] : 'EUR'} ${ethPriceEur.when(data: (data) {
-                                        if (currencyDropdownValue == 'EUR')
-                                          return '${(price / data['EUR']).toStringAsFixed(6)}';
-                                        else
-                                          return '${(price * data['EUR']).toStringAsFixed(2)}';
+                                        if (currencyDropdownValue == 'EUR') {
+                                          return (price / data['EUR'])
+                                              .toStringAsFixed(6);
+                                        } else {
+                                          return (price * data['EUR'])
+                                              .toStringAsFixed(2);
+                                        }
                                       }, error: (e, s) => Container(), loading: () => 'Fetching price...')}',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 )
