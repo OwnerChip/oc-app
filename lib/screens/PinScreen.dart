@@ -17,7 +17,7 @@ import 'package:sentry/sentry.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:pinput/pinput.dart';
 
 class PinScreen extends ConsumerStatefulWidget {
@@ -70,6 +70,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
     try {
       var value = await navArgs.callback(pin);
       if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinTx) {
+        FocusScope.of(context).unfocus();
         Navigator.pop(context, value);
       }
     } catch (e) {

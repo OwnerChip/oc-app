@@ -11,6 +11,7 @@ class SpinningLoadingSvg extends StatelessWidget {
     Key? key,
     this.onPressed,
     this.loadingText = 'Loading...',
+    this.buttonText,
     this.secondaryButtonText = 'Troubleshoot',
     this.secondaryButtonUrl = 'https://www.ownerchip.com/en/support.html',
     required this.svgPath,
@@ -21,6 +22,7 @@ class SpinningLoadingSvg extends StatelessWidget {
     this.rotateIcon = true,
   }) : super(key: key);
 
+  final String? buttonText;
   final String loadingText;
   final String secondaryButtonText;
   final String secondaryButtonUrl;
@@ -53,7 +55,7 @@ class SpinningLoadingSvg extends StatelessWidget {
           const SizedBox(height: 20),
           onPressed != null
               ? CustomOutlinedButton(
-                  buttonText: context.loc.continueInBackground,
+                  buttonText: buttonText ?? context.loc.continueInBackground,
                   onPressed: () => onPressed!())
               : Container(),
           // secondary Button

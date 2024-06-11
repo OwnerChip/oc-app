@@ -38,7 +38,7 @@ import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
@@ -232,6 +232,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             (voucherCollectionId != null)
                 ? mintVoucherFunctionSignature
@@ -252,7 +253,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           await getTxnReceipt(getRPCUrlFromChainId(chainId), txnHash);
 
       //if transaction is mined, then navigate to NFTDetailsScreen
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         mintProcess.finish();
         BackendApp.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,

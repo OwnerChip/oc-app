@@ -249,7 +249,11 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
     bool pinVerified = await verifyPin(nfc, pin);
     EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
-        nfc, 0x01, cardWalletAddress, hexToBytes(msgHashToSign), false);
+        nfc,
+        0x01,
+        cardWalletAddress,
+        msgHashToSign is Uint8List ? msgHashToSign : hexToBytes(msgHashToSign),
+        false);
     return signature;
   }
 

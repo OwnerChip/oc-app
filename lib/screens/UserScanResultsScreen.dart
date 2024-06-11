@@ -49,7 +49,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 
@@ -149,6 +149,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             burnFunctionSignature,
             config.chainId,
@@ -162,7 +163,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         //this means burn succeeded
         setState(() {
           isRotating = false;
@@ -261,6 +262,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             transferFromFunctionSignature,
             config.chainId,
@@ -274,7 +276,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
@@ -395,6 +397,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           recoverTokenFunctionSignature,
           config.chainId,
@@ -409,7 +412,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
@@ -539,6 +542,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             cancelMarketplaceOfferSignature,
             config.chainId,
@@ -553,7 +557,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
@@ -669,6 +673,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             redeemItemFunctionSignature,
             config.chainId,
@@ -683,7 +688,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
             tags: {

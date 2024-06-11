@@ -36,12 +36,11 @@ final unredeemedVoucherNftsProvider =
 
 final voucherNftsOwnedByUserProvider =
     FutureProvider.autoDispose<List<AlchemyNFTAsset>>((ref) async {
-   Map? nftsForOwnerByChainId =
+  Map<int, List<OcOwnedNft>>? nftsForOwnerByChainId =
       await ref.watch(getNftsForOwnerProvider.future);
   if (nftsForOwnerByChainId == null) {
     return [];
   }
-  nftsForOwnerByChainId = nftsForOwnerByChainId as Map<int, List<OcOwnedNft>>;
   final BlockchainCollectionList collections =
       await ref.read(appCollectionProvider.future);
 
@@ -59,11 +58,15 @@ final voucherNftsOwnedByUserProvider =
   nftsForOwnerByChainId.forEach((chainId, nfts) {
     nftsForOwner.addAll(nfts);
   });
-  List voucherNftsOwnedByUser = nftsForOwner
-      .where((nft) => voucherContractsAllChains.contains(
-          EthereumAddress.fromHex(nft.contract.address.toString())))
+  List<OcOwnedNft> voucherNftsOwnedByUser = nftsForOwner
+      .where((nft) => voucherContractsAllChains
+          .contains(EthereumAddress.fromHex(nft.contract.address.toString())))
       .toList();
   final List<AlchemyNFTAsset> alchemyVoucherNftsOwnedByUser =
-      voucherNftsOwnedByUser.map((e) => AlchemyNFTAsset.fromJson(e)).toList();
+      voucherNftsOwnedByUser
+          .map(
+            (e) => AlchemyNFTAsset.fromJson(e.toJson()),
+          )
+          .toList();
   return alchemyVoucherNftsOwnedByUser;
 });
