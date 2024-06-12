@@ -4,6 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
@@ -25,7 +29,7 @@ import 'package:async/async.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -110,14 +114,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, burnFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, burnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -171,7 +175,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId)
@@ -191,7 +195,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       burnProcess.throwable = e;
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
-      sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
         'error': e,
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
@@ -222,14 +226,14 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         loadingText = context.loc.receivingToken;
       });
 
-      sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, transferFromFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -285,7 +289,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         // send status to analytics
         claimProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId)
@@ -321,7 +325,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       claimProcess.throwable = e;
       claimProcess.status = const SpanStatus.aborted();
       claimProcess.finish();
-      sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
@@ -361,8 +365,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, recoverTokenFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, recoverTokenFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -412,7 +416,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_RECOVERY_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -455,7 +459,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_RECOVERY_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -495,7 +499,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response = await checkMetaTx(
+      final List response = await BackendMetaTx.checkMetaTx(
           config.collectionId, cancelMarketplaceOfferSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
@@ -557,8 +561,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
-        await cancelOfferBackendRequest(offer.offerHash);
-        sendAnalyticsTrace(
+        await BackendOffer.cancelOfferBackendRequest(
+          offer.offerHash,
+        );
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -601,7 +607,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -631,8 +637,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, redeemItemFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, redeemItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -683,7 +689,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -725,7 +731,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_REDEMPTION_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -1162,7 +1168,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                       loading: () => Container());
                                                                                 } else {
                                                                                   return FutureBuilder<List>(
-                                                                                      future: getUnredeemedPurchases(chipInfo.tokenId),
+                                                                                      future: BackendToken.getUnredeemedPurchases(chipInfo.tokenId),
                                                                                       builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
                                                                                         if (snapshot.hasData) {
                                                                                           if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {

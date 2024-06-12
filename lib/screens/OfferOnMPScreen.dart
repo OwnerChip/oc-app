@@ -12,7 +12,11 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/payloads/offerItemPayload.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -133,7 +137,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       WalletType? walletType) async {
     //check if user is allowed to use gas station
     final List response =
-        await checkMetaTx(twinCollectionId, mintFunctionSignature);
+        await BackendMetaTx.checkMetaTx(twinCollectionId, mintFunctionSignature);
     final bool canUseGasStation = response[0];
     final metaTxAgreementId = response[1];
 
@@ -275,7 +279,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     try {
       //check if user is allowed to use gas station
       final List response =
-          await checkMetaTx(config.collectionId, offerItemFunctionSignature);
+          await BackendMetaTx.checkMetaTx(config.collectionId, offerItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -339,7 +343,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         var response = await createRaribleOrder(config.chainId, order);
 
         //call backend with info about offering
-        OfferItemInputData offerItemInputData = OfferItemInputData(
+        final offerItemInputData = OfferItemPayload(
             tokenId: convertTokenIdToEthereumAddress(config.tokenId),
             offerPrice: priceInPrimaryChainCurrency.toString(),
             offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
@@ -355,9 +359,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
             offchainOfferId: response['id']);
 
-        await sendOfferItemInfoToBackend(offerItemInputData);
+        await BackendOffer.sendOfferItemInfoToBackend(offerItemInputData);
 
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -426,7 +430,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         isLoading = false;
       });
       await Sentry.captureException(e, stackTrace: s);
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_OFFER_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,

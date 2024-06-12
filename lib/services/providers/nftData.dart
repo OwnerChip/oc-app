@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
@@ -6,9 +7,10 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
 import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nft/nftForOwner/nftForOwnerData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nft/nftForOwner/nftForOwnerNotifier.dart';
@@ -16,12 +18,10 @@ import 'package:ownerchip_whitelabel/services/providers/nft/nftMintedByUser/nftM
 import 'package:ownerchip_whitelabel/services/providers/nft/nftMintedByUser/nftMintedByUserNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 
 //**** TOKEN DATA ****
 
@@ -130,7 +130,7 @@ final creatorDataProvider =
   ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   try {
     final CreatorData creatorData =
-        await getCreatorData(chipInfo.chipEthereumAddress);
+        await BackendCreator.getCreatorData(chipInfo.chipEthereumAddress);
     return creatorData;
   } catch (err) {
     rethrow;

@@ -11,6 +11,8 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawConfirmationDialog.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
@@ -517,7 +519,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     required String description,
     required String type,
   }) {
-    sendAnalyticsTrace(ref.read(userSessionProvider)?.sessionId ?? "unknown",
+    BackendApp.sendAnalyticsTrace(ref.read(userSessionProvider)?.sessionId ?? "unknown",
         description, type,
         tags: {
           "from": ref.read(userSessionProvider)?.userWalletAddress.hex,

@@ -10,7 +10,8 @@ import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChooseFileButton.dart';
@@ -221,7 +222,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
 
-      sendAnalyticsTrace(userSession.sessionId,
+      BackendApp.sendAnalyticsTrace(userSession.sessionId,
           attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -293,7 +294,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
       if (file != null) {
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -357,7 +358,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
 
       if (status == 'OK') {
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -445,7 +446,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       file = null;
     });
 
-    sendAnalyticsTrace(
+    BackendApp.sendAnalyticsTrace(
         userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
         tags: {
           'connectedWallet': ref.read(userAddressProvider).hex,
