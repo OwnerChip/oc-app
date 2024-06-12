@@ -40,7 +40,7 @@ final sepoliaTestnet = BlockchainConfig(
   openseaUrl: "https://opensea.io/assets",
   raribleUrl: "https://testnet.rarible.com/token",
   raribleEnum: "ETHEREUM",
-  alchemyBaseUrl: "https://eth-sepolia.g.alchemy.com/v2${dotenv.env['ALCHEMY_API_KEY_SEPOLIA']}",
+  alchemyBaseUrl: "https://eth-sepolia.g.alchemy.com/",
   blockchainExplorerUrl: "https://sepolia.etherscan.io/token",
   internal: true,
 );
