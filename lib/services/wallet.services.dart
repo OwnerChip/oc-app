@@ -220,7 +220,6 @@ Future<void> _wcCheckERC20Allowance(
     W3MService w3mService) async {
   final contract = await token!.getDeployedContract();
   final function = contract.function('allowance');
-  ;
 
   final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
   final res = await client.call(

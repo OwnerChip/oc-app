@@ -221,8 +221,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     throw Exception(
                                         'Could not launch ${link.url}');
                                   }
-                                  BackendApp.sendAnalyticsTrace(session?.sessionId ?? "",
-                                      "", "DESCRIPTION_VIEW",
+                                  BackendApp.sendAnalyticsTrace(
+                                      session?.sessionId ?? "",
+                                      "",
+                                      "DESCRIPTION_VIEW",
                                       tags: {
                                         'connectedWallet': connectedWallet.hex,
                                         'chipWallet':
@@ -446,8 +448,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                 "Blockchain",
                               ], values: [
                                 // first, try to find collection in collections list
-                                allCollections
-                                    .collections[tokenInfoData.chainId]!
+                                (allCollections.collections[
+                                            tokenInfoData.chainId] ??
+                                        [])
                                     .firstWhere((collection) {
                                   return collection.id ==
                                       tokenInfoData.collectionId;
