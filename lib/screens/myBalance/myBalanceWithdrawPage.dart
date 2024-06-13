@@ -323,12 +323,17 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       child: CustomOutlinedButton(
                         onPressed: () async {
                           _maxAmount = true;
-                          _estimateGas(
-                            item,
-                            all: true,
-                          ).then((_) {
+                          if (item.token == null) {
+                            _estimateGas(
+                              item,
+                              all: true,
+                            ).then((_) {
+                              _setMaxAmount(item);
+                            });
+                          } else {
                             _setMaxAmount(item);
-                          });
+                          }
+
                           if (mounted) {
                             setState(() {});
                           }
@@ -519,8 +524,10 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     required String description,
     required String type,
   }) {
-    BackendApp.sendAnalyticsTrace(ref.read(userSessionProvider)?.sessionId ?? "unknown",
-        description, type,
+    BackendApp.sendAnalyticsTrace(
+        ref.read(userSessionProvider)?.sessionId ?? "unknown",
+        description,
+        type,
         tags: {
           "from": ref.read(userSessionProvider)?.userWalletAddress.hex,
           "to": _getReceivingAddress()?.hex,
@@ -595,23 +602,36 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   }
 
   void _setMaxAmount(MyBalanceListItem item) {
-    BigInt gasCost = _gasPrice! * _gasAmount! +
-        EtherAmount.fromInt(EtherUnit.gwei, 10).getInWei;
-    talker.info("Gas cost: $gasCost");
-    final maxTransferAmount = item.balance - gasCost;
-    talker.info("Max transfer amount: $maxTransferAmount");
+    if (item.token == null) {
+      BigInt gasCost = _gasPrice! * _gasAmount! +
+          EtherAmount.fromInt(EtherUnit.gwei, 10).getInWei;
+      talker.info("Gas cost: $gasCost");
+      final maxTransferAmount = item.balance - gasCost;
+      talker.info("Max transfer amount: $maxTransferAmount");
 
-    if (_maxAmount) {
-      if (maxTransferAmount < BigInt.zero) {
-        _amountController.text = "0";
-      } else {
-        final adjustedAmount =
-            maxTransferAmount / BigInt.from(pow(10, item.decimals));
-        _amountController.text = adjustedAmount.toStringAsFixed(item.decimals);
+      if (_maxAmount) {
+        if (maxTransferAmount < BigInt.zero) {
+          _amountController.text = "0";
+        } else {
+          final adjustedAmount =
+              maxTransferAmount / BigInt.from(pow(10, item.decimals));
+          _amountController.text =
+              adjustedAmount.toStringAsFixed(item.decimals);
+        }
+        _updateAmount(
+          item,
+        );
       }
-      _updateAmount(
-        item,
-      );
+    } else {
+      if (_maxAmount) {
+        final adjustedAmount =
+            item.balance / BigInt.from(pow(10, item.decimals));
+        _amountController.text =
+            adjustedAmount.toStringAsPrecision(item.decimals);
+        _updateAmount(
+          item,
+        );
+      }
     }
   }
 
