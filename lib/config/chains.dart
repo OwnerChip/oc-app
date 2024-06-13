@@ -52,9 +52,9 @@ final Map<int, BlockchainConfig> _chainConfig = {
 };
 
 Map<int, BlockchainConfig> get chainConfig {
-  final Map<int, BlockchainConfig> configs = Map.from(_chainConfig);
+  final Map<int, BlockchainConfig> configs = {};
 
-  for (final chain in configs.entries) {
+  for (final chain in _chainConfig.entries) {
     if (chain.value.internal && dotenv.get("IS_INTERNAL") != "true") {
       continue;
     }
