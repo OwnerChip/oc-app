@@ -307,6 +307,13 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   } else if (functionSignatureHash == recoverTokenFunctionSignature) {
     data =
         makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
+  } else if(functionSignatureHash == cancelMarketplaceOfferSignature) {
+    data = makeCancelOfferData(
+        functionSignatureHash,
+        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
+        randomValueHash,
+        signature,
+        encodedOfferData!);
   } else {
     throw Exception('Invalid function signature hash');
   }

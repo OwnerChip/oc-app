@@ -1,5 +1,7 @@
 //import packages
 
+import 'dart:math';
+
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,6 +27,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/rarible/orders/raribleOrders.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -32,6 +35,7 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
@@ -43,6 +47,7 @@ import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:collection/collection.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -136,8 +141,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       UserSession userSession,
       WalletType? walletType) async {
     //check if user is allowed to use gas station
-    final List response =
-        await BackendMetaTx.checkMetaTx(twinCollectionId, mintFunctionSignature);
+    final List response = await BackendMetaTx.checkMetaTx(
+        twinCollectionId, mintFunctionSignature);
     final bool canUseGasStation = response[0];
     final metaTxAgreementId = response[1];
 
@@ -161,30 +166,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       voucherTokenMetadataCID =
           await uploadFileToIPFS(jsonFileVoucher, 'application/json');
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-            mintVoucherFunctionSignature,
-            chainId,
-            voucherCollectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            twinTokenMetadataCID: twinTokenMetadataCID,
-            voucherTokenMetadataCID: voucherTokenMetadataCID,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
           context,
           ref,
@@ -193,12 +177,47 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           voucherCollectionId,
           signatureData,
           connectedWallet,
-          wc,
+          wc!,
           wcSession,
           walletType!,
           twinTokenMetadataCID: twinTokenMetadataCID,
           voucherTokenMetadataCID: voucherTokenMetadataCID,
         );
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
+              mintVoucherFunctionSignature,
+              chainId,
+              voucherCollectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              twinTokenMetadataCID: twinTokenMetadataCID,
+              voucherTokenMetadataCID: voucherTokenMetadataCID,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        talker.error(
+            'Minting voucher token failed with gassless tx, trying normal tx.');
+        await normalTx();
       }
     } catch (e) {
       rethrow;
@@ -218,7 +237,18 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
         chainConfig[config.chainId]!.controllerContract);
 
-    final double priceInPrimaryChainCurrency = price * 1000000000000000000;
+    final token = chainTokenConfigs[config.chainId]!.firstWhereOrNull(
+      (element) => element.symbol == currencyDropdownValue,
+    );
+
+    final double priceInPrimaryChainCurrency;
+
+    if (token == null) {
+      priceInPrimaryChainCurrency = price * 1000000000000000000;
+    } else {
+      priceInPrimaryChainCurrency = price * (pow(10, token.decimals));
+    }
+
     setState(() {
       isLoading = true;
       overlayContentType = context.loc.loading;
@@ -256,18 +286,21 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     });
 
     RaribleV2Order raribleV2Order = makeRaribleV2Order(
-        controllerContractAddress,
-        controllerContractAddress,
-        config.tokenId,
-        controllerContractAddress,
-        10000,
-        //TODO: fix this
-        0,
-        //TODO: fix this
-        voucherContractAddress!,
-        config.tokenId,
-        BigInt.from(priceInPrimaryChainCurrency),
-        null);
+      controllerContractAddress,
+      controllerContractAddress,
+      config.tokenId,
+      controllerContractAddress,
+      10000,
+      //TODO: fix this
+      0,
+      //TODO: fix this
+      voucherContractAddress!,
+      config.tokenId,
+      BigInt.from(priceInPrimaryChainCurrency),
+      null,
+      config.chainId,
+      token,
+    );
     final typedDataHashAndEncodedData =
         await getRaribleOrderTypedDataHash(config.chainId, raribleV2Order);
     final typedDataHash = typedDataHashAndEncodedData.typedDataHash;
@@ -278,41 +311,14 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
     try {
       //check if user is allowed to use gas station
-      final List response =
-          await BackendMetaTx.checkMetaTx(config.collectionId, offerItemFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, offerItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-            offerItemFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            typedDataHash: typedDataHash,
-            controllerContractId: controllerContractAddress,
-            tokenId: config.tokenId,
-            sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
-            salt: raribleV2Order.salt,
-            endTimestamp: raribleV2Order.end,
-            price: BigInt.from(priceInPrimaryChainCurrency),
-            encodedOfferData: typedDataHashAndEncodedData.encodedData,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
           context,
           ref,
@@ -321,7 +327,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           controllerContractAddress,
           signatureData,
           connectedWallet,
-          wc,
+          wc!,
           wcSession,
           walletType!,
           sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
@@ -330,6 +336,45 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           price: BigInt.from(priceInPrimaryChainCurrency),
         );
       }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
+              offerItemFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              typedDataHash: typedDataHash,
+              controllerContractId: controllerContractAddress,
+              tokenId: config.tokenId,
+              sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
+              salt: raribleV2Order.salt,
+              endTimestamp: raribleV2Order.end,
+              price: BigInt.from(priceInPrimaryChainCurrency),
+              encodedOfferData: typedDataHashAndEncodedData.encodedData,
+              toggleLoading: toggleLoading);
+        } else {
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+          await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        talker
+            .error('Offering token failed with gassless tx, trying normal tx.');
+        await normalTx();
+      }
+
+      talker.info("Transaction hash: $txnHash");
 
       //wait until TX is succeeded or failed
       var txnReceipt =
@@ -340,7 +385,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
         await Future.delayed(const Duration(seconds: 2));
-        var response = await createRaribleOrder(config.chainId, order);
+        var response = await RaribleOrders.createRaribleOrder(
+          chainId: config.chainId,
+          order: order,
+        );
 
         //call backend with info about offering
         final offerItemInputData = OfferItemPayload(
@@ -513,6 +561,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                               .cardColor),
                                   keyboardType: TextInputType.emailAddress,
                                   obscureText: false,
+                                  initialValue: email,
                                   onChanged: (value) {
                                     setState(() {
                                       email = value;
@@ -644,6 +693,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                   keyboardType: TextInputType.numberWithOptions(
                                       decimal: true),
                                   obscureText: false,
+                                  initialValue: price.toString(),
                                   onChanged: (value) {
                                     setState(() {
                                       if (value.isEmpty) {

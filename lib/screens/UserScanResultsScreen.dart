@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CreatorDataBoxContent.dart';
@@ -517,30 +518,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       String cancelTxCalldata = await prepareRaribleOrderCancellation(
           config.chainId, offer.offchainOfferId);
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            cancelMarketplaceOfferSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            controllerContractId: controllerContractAddress,
-            encodedOfferData: cancelTxCalldata,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
             context,
             ref,
@@ -549,11 +530,44 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             controllerContractAddress,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!,
             encodedOfferData: cancelTxCalldata);
       }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+              cancelMarketplaceOfferSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              controllerContractId: controllerContractAddress,
+              encodedOfferData: cancelTxCalldata,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch(e) {
+        await normalTx();
+      }
+
+      talker.info('txnHash: $txnHash');
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
@@ -607,6 +621,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
+      talker.error(e, s);
       BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
           tags: {

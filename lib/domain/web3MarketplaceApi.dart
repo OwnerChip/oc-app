@@ -1,13 +1,8 @@
+import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:web3dart/web3dart.dart';
 
 /** RARIBLE */
-
-final Map<int, String> raribleUpsertOrderApiUrls = {
-  1: 'https://ethereum-api.rarible.org/v0.1/orders',
-  137: 'https://polygon-api.rarible.org/v0.1/orders',
-  11155111: 'https://testnet-api.rarible.org/v0.1/orders',
-  // 80001: 'https://testnet-api.rarible.org/v0.1/order/orders/'
-};
 
 const String raribleNewApiBaseUrl = 'https://api.rarible.org/v0.1/';
 
@@ -32,41 +27,87 @@ class RaribleV2Order {
   final RaribleDataObject data;
   final EthereumAddress maker;
   final RaribleOrderFormAsset make;
-  final RaribleOrderFormAsset take;
+  final RaribleOrderFormAsset takeDeprecated;
+  final String take;
+  final Map<String, dynamic> takeType;
   final BigInt salt;
   final int start;
   final int end;
   final String signature;
 
-  RaribleV2Order(
-      {required this.data,
-      required this.maker,
-      required this.make,
-      required this.take,
-      required this.salt,
-      required this.start,
-      required this.end,
-      required this.signature});
+  final int chainId;
+
+  final BlockchainToken? blockchainToken;
+
+  RaribleV2Order({
+    required this.data,
+    required this.maker,
+    required this.make,
+    required this.take,
+    required this.takeType,
+    required this.takeDeprecated,
+    required this.salt,
+    required this.start,
+    required this.end,
+    required this.signature,
+    required this.chainId,
+    this.blockchainToken,
+  });
 
   RaribleV2Order setSignature(String signature) {
     return RaribleV2Order(
-        data: data,
-        maker: maker,
-        make: make,
-        take: take,
-        salt: salt,
-        start: start,
-        end: end,
-        signature: signature);
+      data: data,
+      maker: maker,
+      make: make,
+      take: take,
+      takeType: takeType,
+      takeDeprecated: takeDeprecated,
+      salt: salt,
+      start: start,
+      end: end,
+      signature: signature,
+      chainId: chainId,
+      blockchainToken: blockchainToken,
+    );
   }
 
   Map<String, dynamic> toJson() {
+    final chain = chainConfig[chainId]!;
+    return {
+      '@type': type,
+      'data': {
+        '@type': data.dataType,
+        'payouts': data.payouts.map((e) => e.toJson()).toList(),
+        'originFees': data.originFees.map((e) => e.toJson()).toList(),
+      },
+      'maker': "ETHEREUM:${maker.hex}",
+      'make': {
+        'assetType': {
+          '@type': make.assetType.assetClass,
+          'contract': "ETHEREUM:${make.assetType.contract?.hex}",
+          'tokenId': make.assetType.tokenId.toString(),
+        },
+        'value': make.value.toString(),
+      },
+      'take': {
+        'assetType': takeType,
+        'value': take.toString(),
+      },
+      'salt': salt.toString(),
+      'startedAt': start,
+      'endedAt': end,
+      'signature': signature,
+      "blockchain": chain.raribleEnum,
+    };
+  }
+
+  Map<String, dynamic> toJsonDeprecated() {
     return {
       'type': type,
       'data': {
         'dataType': data.dataType,
-        'payouts': data.payouts.map((e) => e.toJson()).toList(),
-        'originFees': data.originFees.map((e) => e.toJson()).toList(),
+        'payouts': data.payouts.map((e) => e.toJsonDeprecated()).toList(),
+        'originFees': data.originFees.map((e) => e.toJsonDeprecated()).toList(),
       },
       'maker': maker.hex,
       'make': {
@@ -79,11 +120,11 @@ class RaribleV2Order {
       },
       'take': {
         'assetType': {
-          'assetClass': take.assetType.assetClass,
-          'contract': take.assetType.contract?.hex,
-          'tokenId': take.assetType.tokenId.toString(),
+          'assetClass': takeType['@type'],
+          'contract': takeType['contract']?.toString().split(':')[1],
+          'tokenId': takeType['tokenId']?.toString(),
         },
-        'value': take.value.toString(),
+        'value': take.toString(),
       },
       'salt': salt.toString(),
       'start': start,
@@ -98,10 +139,11 @@ class RaribleDataObject {
   final List<RariblePayout> payouts;
   final List<RariblePayout> originFees;
 
-  RaribleDataObject(
-      {required this.dataType,
-      required this.payouts,
-      required this.originFees});
+  RaribleDataObject({
+    required this.dataType,
+    required this.payouts,
+    required this.originFees,
+  });
 
   Map<String, dynamic> toJson() {
     return {
@@ -139,7 +181,7 @@ class RaribleAssetType {
 
   Map<String, dynamic> toJson() {
     return {
-      'assetClass': assetClass,
+      'type': assetClass,
       'contract': contract?.hex,
       'tokenId': tokenId.toString(),
     };
@@ -150,9 +192,23 @@ class RariblePayout {
   final EthereumAddress account;
   final int value; // in bps (100=1%)
 
-  RariblePayout({required this.account, required this.value});
+  final int chainId;
+
+  RariblePayout({
+    required this.account,
+    required this.value,
+    required this.chainId,
+  });
 
   Map<String, dynamic> toJson() {
+    final chain = chainConfig[chainId]!;
+    return {
+      'account': "ETHEREUM:${account.hex}",
+      'value': value,
+    };
+  }
+
+  Map<String, dynamic> toJsonDeprecated() {
     return {
       'account': account.hex,
       'value': value,

@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/eip155.dart';
@@ -23,6 +24,7 @@ import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -154,8 +156,7 @@ Future<String> makeAndSendGaslessTx(
       toggleLoading();
 
       // check if the user allowed the forwarder contract to spend their tokens
-      if (chainConfig[chainId]!.forwarderContract != null &&
-          token != null) {
+      if (chainConfig[chainId]!.forwarderContract != null && token != null) {
         await _wcCheckERC20Allowance(
           token,
           walletAddress,
@@ -547,7 +548,16 @@ Future<String> makeAndSendNormalTx(
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-    await wcSwitchToChainConditionally(w3mService, chainId);
+    await wcSwitchToChainConditionally(w3mService, chainId).timeout(
+      const Duration(
+        seconds: 10,
+      ),
+      onTimeout: () {
+        talker.error('Failed to switch to chain');
+      },
+    ).catchError((e) {
+      talker.error('Failed to switch to chain: $e');
+    });
 
     w3mService!.launchConnectedWallet();
 
@@ -653,8 +663,10 @@ Future<String> sendPersonalSignRequest(
     try {
       await wcSwitchToChainConditionally(
         w3mService,
-        1,
-      );
+        chainId,
+      ).timeout(const Duration(seconds: 10)).catchError((e) {
+        talker.error('Failed to switch to chain: $e');
+      });
 
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
@@ -674,7 +686,8 @@ Future<String> sendPersonalSignRequest(
 }
 
 Future<String> getGaslessTxHash(request, collectionId) async {
-  String hash = await BackendMetaTx.getEthSignTypedDataSignature(collectionId, request);
+  String hash =
+      await BackendMetaTx.getEthSignTypedDataSignature(collectionId, request);
 
   return hash;
 }

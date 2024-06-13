@@ -44,7 +44,7 @@ abstract class BackendOffer extends Backend {
           .getRaribleOfferTypedDataHashAndEncodedData(
         {
           'typedData': typedData,
-          'message': order.toJson(),
+          'message': order.toJsonDeprecated(),
         },
       );
 

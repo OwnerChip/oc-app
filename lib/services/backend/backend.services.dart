@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendAppService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
@@ -35,9 +36,11 @@ abstract class Backend {
       ),
     );
 
-    // client.interceptors.add(
-    //   TalkerDioLoggerExtension.instance,
-    // );
+    if (kDebugMode) {
+      client.interceptors.add(
+        TalkerDioLoggerExtension.instance,
+      );
+    }
 
     client.addSentry();
 
