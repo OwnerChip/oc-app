@@ -87,9 +87,12 @@ Future<RaribleHashAndEncodedData> getRaribleOrderTypedDataHash(
 // create rarible order api call
 Future createRaribleOrder(int chainId, RaribleV2Order order) async {
   final String url = raribleUpsertOrderApiUrls[chainId]!;
+  final chain = chainConfig[chainId]!;
   try {
     final Dio dio = Dio();
-    dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
+    dio.options.headers['X-API-KEY'] = chain.internal
+        ? dotenv.get('TESTNET_RARIBLE_API_KEY')
+        : dotenv.get('MAINNET_RARIBLE_API_KEY');
     Response result = await dio.post(url, data: jsonEncode(order.toJson()));
     print(result);
     return result.data;

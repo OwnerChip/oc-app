@@ -3,9 +3,9 @@ import 'package:web3dart/web3dart.dart';
 /** RARIBLE */
 
 final Map<int, String> raribleUpsertOrderApiUrls = {
-  1: 'https://ethereum-api.rarible.org/v0.1/order/orders/',
-  137: 'https://polygon-api.rarible.org/v0.1/order/orders/',
-  11155111: 'https://sepolia-api.rarible.org/v0.1/order/orders/',
+  1: 'https://ethereum-api.rarible.org/v0.1/orders',
+  137: 'https://polygon-api.rarible.org/v0.1/orders',
+  11155111: 'https://testnet-api.rarible.org/v0.1/orders',
   // 80001: 'https://testnet-api.rarible.org/v0.1/order/orders/'
 };
 
