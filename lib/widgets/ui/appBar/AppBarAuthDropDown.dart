@@ -3,10 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
@@ -219,7 +217,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       await Web3AuthFlutter.logout().catchError((_) {});
 
       // clean up services
-      Backend.recreateServices(null);
+      await BackendAuth.initGuestSession(ref: ref);
 
       if (wc != null && wcSession != null) {
         await wc.disconnectSession(

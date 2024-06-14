@@ -72,10 +72,10 @@ abstract class BackendAuth extends Backend {
   }
 
   static Future<void> initGuestSession({
-    required WidgetRef ref,
+    WidgetRef? ref,
   }) async {
     try {
-      final session = ref.read(userSessionProvider);
+      final session = ref?.read(userSessionProvider);
 
       if (session == null) {
         final storage = await SharedPreferences.getInstance();
