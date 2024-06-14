@@ -305,8 +305,12 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         await getRaribleOrderTypedDataHash(config.chainId, raribleV2Order);
     final typedDataHash = typedDataHashAndEncodedData.typedDataHash;
 
-    final MsgSignature? chipSignature =
-        await getChipSignature(ref, context, typedDataHash, toggleLoading);
+    final MsgSignature? chipSignature = await getChipSignature(
+      ref,
+      context,
+      typedDataHash,
+      toggleLoading,
+    );
     final String hexSignature = msgSignatureToHex(chipSignature!);
 
     try {
@@ -339,7 +343,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
+            txnHash = await makeAndSendGaslessTx(
               ref,
               ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
               offerItemFunctionSignature,

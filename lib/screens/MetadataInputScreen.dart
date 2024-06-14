@@ -206,32 +206,9 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         'gasStation': canUseGasStation
       });
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
-            (voucherCollectionId != null)
-                ? mintVoucherFunctionSignature
-                : mintFunctionSignature,
-            chainId,
-            voucherCollectionId ?? collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            twinTokenMetadataCID: twinTokenMetadataCID,
-            voucherTokenMetadataCID: voucherTokenMetadataCID,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
             context,
             ref,
@@ -242,11 +219,46 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             voucherCollectionId ?? collectionId,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!,
             twinTokenMetadataCID: twinTokenMetadataCID,
             voucherTokenMetadataCID: voucherTokenMetadataCID);
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
+              (voucherCollectionId != null)
+                  ? mintVoucherFunctionSignature
+                  : mintFunctionSignature,
+              chainId,
+              voucherCollectionId ?? collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              twinTokenMetadataCID: twinTokenMetadataCID,
+              voucherTokenMetadataCID: voucherTokenMetadataCID,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch (e, st) {
+        talker.error('Error minting token: $e', st);
+        Sentry.captureException(e, stackTrace: st);
+        await normalTx();
       }
 
       //wait until TX is succeeded or failed
@@ -256,10 +268,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status == true) {
         mintProcess.finish();
-        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
-          'connectedWallet': connectedWallet.hex,
-          'gasStation': canUseGasStation
-        });
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'gasStation': canUseGasStation
+            });
 
         try {
           await Future.delayed(const Duration(seconds: 2));

@@ -149,7 +149,13 @@ Future<String> makeAndSendGaslessTx(
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-      await wcSwitchToChainConditionally(w3mService, chainId);
+      await wcSwitchToChainConditionally(w3mService, chainId)
+          .timeout(
+        const Duration(seconds: 10),
+      )
+          .catchError((e) {
+        talker.error('Failed to switch to chain: $e');
+      });
 
       w3mService!.launchConnectedWallet();
 
@@ -178,6 +184,10 @@ Future<String> makeAndSendGaslessTx(
         ),
       )
           .onError((error, stackTrace) {
+        talker.error(
+          'error signing gasless tx $error',
+          stackTrace,
+        );
         throw 'error signing gasless tx';
       });
       //turn on loading again, while waiting for gasless tx to be mined

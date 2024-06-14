@@ -115,40 +115,21 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
-        'connectedWallet': connectedWallet.hex,
-        'chipWallet':
-            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
-      });
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED",
+          tags: {
+            'connectedWallet': connectedWallet.hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId)
+          });
 
       final List response = await BackendMetaTx.checkMetaTx(
           config.collectionId, burnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
+      String txnHash = "";
 
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            burnFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      Future<void> normalNx() async {
         txnHash = await makeAndSendNormalTx(
             context,
             ref,
@@ -157,10 +138,43 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             config.collectionId,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!);
       }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
+              burnFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+          await normalNx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        await normalNx();
+      }
+
+      talker.info('txnHash: $txnHash');
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
@@ -176,11 +190,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
-        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
-          'connectedWallet': connectedWallet.hex,
-          'chipWallet': convertTokenIdToEthereumAddress(
-              ref.read(chipInfoProvider).tokenId)
-        });
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId)
+            });
 
         await Future.delayed(const Duration(seconds: 2));
 
@@ -227,11 +242,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         loadingText = context.loc.receivingToken;
       });
 
-      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
-        'connectedWallet': connectedWallet.hex,
-        'chipWallet':
-            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
-      });
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED",
+          tags: {
+            'connectedWallet': connectedWallet.hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId)
+          });
 
       final List response = await BackendMetaTx.checkMetaTx(
           config.collectionId, transferFromFunctionSignature);
@@ -290,11 +306,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         // send status to analytics
         claimProcess.finish();
-        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
-          'connectedWallet': connectedWallet.hex,
-          'chipWallet': convertTokenIdToEthereumAddress(
-              ref.read(chipInfoProvider).tokenId)
-        });
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId)
+            });
 
         //wait for 2 seconds, to make sure corrrect data is fetched by providers
 
@@ -520,7 +537,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       String txnHash = "";
 
-
       Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
             context,
@@ -540,7 +556,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         if (canUseGasStation) {
           txnHash = await makeAndSendGaslessTx(
               ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
               cancelMarketplaceOfferSignature,
               config.chainId,
               config.collectionId,
@@ -563,7 +580,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
           await normalTx();
         }
-      } catch(e) {
+      } catch (e) {
         await normalTx();
       }
 
