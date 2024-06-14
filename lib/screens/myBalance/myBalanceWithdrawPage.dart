@@ -494,6 +494,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       talker.error("Error sending transaction: $e", e, st);
     }
 
+    // update balance
+    ref.read(myBalanceNotifierProvider.notifier).updateBalance();
+
     if (mounted) {
       setState(() {});
     }
