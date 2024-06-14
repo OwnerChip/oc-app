@@ -96,7 +96,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     _setCurrencyDropDownValuesFuture = setCurrencyDropDownValues();
 
     UserSession? userSession = ref.read(userSessionProvider);
-    if (userSession != null) {
+    if (userSession != null && !userSession.isOwnerCard) {
       _sellerPayoutInputController.value = TextEditingValue(
           text: userSession.userWalletAddress.toString(),
           selection: TextSelection.fromPosition(TextPosition(
@@ -116,7 +116,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     setState(() {
       allDropdownValues = [
         currencySymbol,
-        ...tokens.map((token) => token.symbol),
+        // ...tokens.map((token) => token.symbol),
       ];
       currencyDropdownValue = currencySymbol;
     });
