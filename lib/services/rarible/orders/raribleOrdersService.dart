@@ -26,7 +26,7 @@ abstract class RaribleOrdersService {
     final client = Rarible.getRaribleClient(
       chainId: chainId,
     );
-    client.options.baseUrl = "${client.options.baseUrl}/orders";
+    client.options.baseUrl = "${client.options.baseUrl}";
     return _RaribleOrdersService(client);
   }
 
@@ -36,8 +36,14 @@ abstract class RaribleOrdersService {
   //   @Body() required RariblePrepareOrderTransactionPayload payload,
   // });
 
-  @POST("/")
+  @POST("/orders/")
   Future<HttpResponse> createOrder({
     @Body() required RaribleV2Order payload,
   });
+
+  @POST("/encode/order")
+  Future<HttpResponse> prepareOrderTx({
+    @Body() required RaribleV2Order payload,
+  });
+
 }
