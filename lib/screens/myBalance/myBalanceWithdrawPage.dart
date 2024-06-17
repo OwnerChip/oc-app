@@ -11,6 +11,8 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawConfirmationDialog.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
@@ -321,12 +323,17 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       child: CustomOutlinedButton(
                         onPressed: () async {
                           _maxAmount = true;
-                          _estimateGas(
-                            item,
-                            all: true,
-                          ).then((_) {
+                          if (item.token == null) {
+                            _estimateGas(
+                              item,
+                              all: true,
+                            ).then((_) {
+                              _setMaxAmount(item);
+                            });
+                          } else {
                             _setMaxAmount(item);
-                          });
+                          }
+
                           if (mounted) {
                             setState(() {});
                           }
@@ -487,6 +494,9 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       talker.error("Error sending transaction: $e", e, st);
     }
 
+    // update balance
+    ref.read(myBalanceNotifierProvider.notifier).updateBalance();
+
     if (mounted) {
       setState(() {});
     }
@@ -517,8 +527,10 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     required String description,
     required String type,
   }) {
-    sendAnalyticsTrace(ref.read(userSessionProvider)?.sessionId ?? "unknown",
-        description, type,
+    BackendApp.sendAnalyticsTrace(
+        ref.read(userSessionProvider)?.sessionId ?? "unknown",
+        description,
+        type,
         tags: {
           "from": ref.read(userSessionProvider)?.userWalletAddress.hex,
           "to": _getReceivingAddress()?.hex,
@@ -593,23 +605,36 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   }
 
   void _setMaxAmount(MyBalanceListItem item) {
-    BigInt gasCost = _gasPrice! * _gasAmount! +
-        EtherAmount.fromInt(EtherUnit.gwei, 10).getInWei;
-    talker.info("Gas cost: $gasCost");
-    final maxTransferAmount = item.balance - gasCost;
-    talker.info("Max transfer amount: $maxTransferAmount");
+    if (item.token == null) {
+      BigInt gasCost = _gasPrice! * _gasAmount! +
+          EtherAmount.fromInt(EtherUnit.gwei, 10).getInWei;
+      talker.info("Gas cost: $gasCost");
+      final maxTransferAmount = item.balance - gasCost;
+      talker.info("Max transfer amount: $maxTransferAmount");
 
-    if (_maxAmount) {
-      if (maxTransferAmount < BigInt.zero) {
-        _amountController.text = "0";
-      } else {
-        final adjustedAmount =
-            maxTransferAmount / BigInt.from(pow(10, item.decimals));
-        _amountController.text = adjustedAmount.toStringAsFixed(item.decimals);
+      if (_maxAmount) {
+        if (maxTransferAmount < BigInt.zero) {
+          _amountController.text = "0";
+        } else {
+          final adjustedAmount =
+              maxTransferAmount / BigInt.from(pow(10, item.decimals));
+          _amountController.text =
+              adjustedAmount.toStringAsFixed(item.decimals);
+        }
+        _updateAmount(
+          item,
+        );
       }
-      _updateAmount(
-        item,
-      );
+    } else {
+      if (_maxAmount) {
+        final adjustedAmount =
+            item.balance / BigInt.from(pow(10, item.decimals));
+        _amountController.text =
+            adjustedAmount.toStringAsPrecision(item.decimals);
+        _updateAmount(
+          item,
+        );
+      }
     }
   }
 
@@ -624,61 +649,27 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
   }) async {
     final blockchainToken = chainTokenConfigs[item.chain]![item.token!];
 
-    final metaTx = await checkMetaTx(
-      blockchainToken.contractAddress,
+    final txHash = await makeAndSendNormalTx(
+      context,
+      ref,
       erc20TransferFunctionSignature,
+      item.chain,
+      blockchainToken.contractAddress,
+      chipSignature,
+      userSession.userWalletAddress,
+      wc,
+      wcSession,
+      walletType,
+      // convert double to BigInt
+      amount: _amount,
+      toAccount: _getReceivingAddress()!,
+      gasPrice: _gasPrice,
+      gasAmount: _gasAmount,
     );
 
-    if (metaTx[0]) {
-      final metaTxAgreementId = metaTx[1];
+    talker.info("Transaction sent: $txHash");
 
-      final txHash = await makeAndSendGaslessTx(
-        ref,
-        context,
-        erc20TransferFromFunctionSignature,
-        item.chain,
-        blockchainToken.contractAddress,
-        chipSignature,
-        userSession.userWalletAddress,
-        wc,
-        wcSession,
-        metaTxAgreementId,
-        walletType,
-        toggleLoading: () {},
-        toAccount: _getReceivingAddress()!,
-        amount: _amount,
-        token: blockchainToken,
-        gasAmount: _gasAmount,
-      );
-
-      talker.info("Transaction sent: $txHash");
-
-      return txHash;
-    } else {
-      // gas station is not available
-
-      final txHash = await makeAndSendNormalTx(
-        context,
-        ref,
-        erc20TransferFunctionSignature,
-        item.chain,
-        blockchainToken.contractAddress,
-        chipSignature,
-        userSession.userWalletAddress,
-        wc,
-        wcSession,
-        walletType,
-        // convert double to BigInt
-        amount: _amount,
-        toAccount: _getReceivingAddress()!,
-        gasPrice: _gasPrice,
-        gasAmount: _gasAmount,
-      );
-
-      talker.info("Transaction sent: $txHash");
-
-      return txHash;
-    }
+    return txHash;
   }
 
   Future<String> _makeNormalNativeTransaction({

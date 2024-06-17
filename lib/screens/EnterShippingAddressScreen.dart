@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
@@ -86,7 +87,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
           await ref.read(unredeemedVoucherNftsProvider.future);
 
       if (unredeemedVoucherNfts.isNotEmpty) {
-        await postShippingInfoToBackend(unredeemedVoucherNfts[0], shippingInfo);
+        await BackendToken.postShippingInfoToBackend(unredeemedVoucherNfts[0], shippingInfo);
 
         Navigator.pop(context);
         Navigator.pop(context);

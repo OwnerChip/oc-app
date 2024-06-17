@@ -1,5 +1,4 @@
 import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:ownerchip_whitelabel/domain/alchemyTypes.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/services/providers/common/notifierPaginationData.dart';
 

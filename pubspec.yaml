@@ -42,6 +42,7 @@ dependencies:
   video_player: ^2.8.6
   json_annotation: ^4.9.0
   pull_to_refresh_flutter3: ^2.0.2
+  retrofit: ^4.1.0
 
   #  Logger
   ansicolor: ^2.0.2
@@ -58,6 +59,7 @@ dev_dependencies:
   test: ^1.21.4
   flutter_launcher_icons: ^0.13.1
   riverpod_generator: ^2.3.9
+  retrofit_generator: ^8.1.0
 
 
 flutter_icons:

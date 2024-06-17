@@ -30,10 +30,39 @@ final ethereumMainnet = BlockchainConfig(
     alchemyBaseUrl: "https://eth-mainnet.g.alchemy.com/",
     blockchainExplorerUrl: "https://etherscan.com/token");
 
-final Map<int, BlockchainConfig> chainConfig = {
+final sepoliaTestnet = BlockchainConfig(
+  networkName: "Sepolia Testnet",
+  nativeTokenSymbol: "ETH",
+  rpcUrl: "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_SEPOLIA']}",
+  registryContract: "0x8Dcc2016E0dEe536D238562dC2a46c8EEf2aac86",
+  controllerContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
+  forwarderContract: "0x4e63de97Cd856b9D835dB1656948E5227622F829",
+  openseaUrl: "https://opensea.io/assets",
+  raribleUrl: "https://testnet.rarible.com/token",
+  raribleEnum: "ETHEREUM",
+  alchemyBaseUrl: "https://eth-sepolia.g.alchemy.com/",
+  blockchainExplorerUrl: "https://sepolia.etherscan.io/token",
+  internal: true,
+);
+
+final Map<int, BlockchainConfig> _chainConfig = {
   1: ethereumMainnet,
   137: polygonMainnet,
+  11155111: sepoliaTestnet,
 };
+
+Map<int, BlockchainConfig> get chainConfig {
+  final Map<int, BlockchainConfig> configs = {};
+
+  for (final chain in _chainConfig.entries) {
+    if (chain.value.internal && dotenv.get("IS_INTERNAL") != "true") {
+      continue;
+    }
+    configs[chain.key] = chain.value;
+  }
+
+  return configs;
+}
 
 final Map<int, List<BlockchainToken>> chainTokenConfigs = {
   1: [
@@ -57,15 +86,15 @@ final Map<int, List<BlockchainToken>> chainTokenConfigs = {
     // ),
   ],
   137: [
-    // BlockchainToken(
-    //   symbol: "USDC",
-    //   abiAssetPath: "assets/contracts/erc20.abi.json",
-    //   contractAddress: EthereumAddress.fromHex(
-    //     "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
-    //   ),
-    //   iconPath: "assets/images/common/usdc_icon.png",
-    //   decimals: 6,
-    // ),
+    BlockchainToken(
+      symbol: "USDC",
+      abiAssetPath: "assets/contracts/erc20.abi.json",
+      contractAddress: EthereumAddress.fromHex(
+        "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+      ),
+      iconPath: "assets/images/common/usdc_icon.png",
+      decimals: 6,
+    ),
     // BlockchainToken(
     //   symbol: "AVAX",
     //   abiAssetPath: "assets/contracts/erc20.abi.json",
@@ -84,5 +113,16 @@ final Map<int, List<BlockchainToken>> chainTokenConfigs = {
     //   iconPath: "assets/images/common/usdt_icon.png",
     //   decimals: 6,
     // ),
+  ],
+  11155111: [
+    BlockchainToken(
+      symbol: "USDC",
+      abiAssetPath: "assets/contracts/erc20.abi.json",
+      contractAddress: EthereumAddress.fromHex(
+        "0x08D324a0f98D65A2bba83C9b62a2D12f59e59D91",
+      ),
+      iconPath: "assets/images/common/usdc_icon.png",
+      decimals: 18,
+    ),
   ],
 };

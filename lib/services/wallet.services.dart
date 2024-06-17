@@ -1,7 +1,8 @@
 //package imports
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+
+import 'package:convert/convert.dart';
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,22 +12,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+
+//misc imports
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+
+//service imports
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
+import 'package:web3modal_flutter/web3modal_flutter.dart';
 import 'package:convert/convert.dart';
 import 'package:web3dart/src/utils/rlp.dart' as rlp;
 
@@ -139,14 +149,20 @@ Future<String> makeAndSendGaslessTx(
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-      await wcSwitchToChainConditionally(w3mService, chainId);
+      await wcSwitchToChainConditionally(w3mService, chainId)
+          .timeout(
+        const Duration(seconds: 10),
+      )
+          .catchError((e) {
+        talker.error('Failed to switch to chain: $e');
+      });
 
       w3mService!.launchConnectedWallet();
 
       toggleLoading();
 
       // check if the user allowed the forwarder contract to spend their tokens
-      if (chainConfig[chainId]!.forwarderContract != null) {
+      if (chainConfig[chainId]!.forwarderContract != null && token != null) {
         await _wcCheckERC20Allowance(
           token,
           walletAddress,
@@ -168,6 +184,10 @@ Future<String> makeAndSendGaslessTx(
         ),
       )
           .onError((error, stackTrace) {
+        talker.error(
+          'error signing gasless tx $error',
+          stackTrace,
+        );
         throw 'error signing gasless tx';
       });
       //turn on loading again, while waiting for gasless tx to be mined
@@ -192,7 +212,7 @@ Future<String> makeAndSendGaslessTx(
       throw Exception('Failed to sign message');
     }
 
-    String txnHash = await sendGaslessRequest(
+    String txnHash = await BackendMetaTx.sendGaslessRequest(
         toAddress, signature, metaTxAgreementId, request);
     return txnHash;
   } catch (e) {
@@ -211,7 +231,6 @@ Future<void> _wcCheckERC20Allowance(
     W3MService w3mService) async {
   final contract = await token!.getDeployedContract();
   final function = contract.function('allowance');
-  ;
 
   final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
   final res = await client.call(
@@ -539,7 +558,16 @@ Future<String> makeAndSendNormalTx(
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-    await wcSwitchToChainConditionally(w3mService, chainId);
+    await wcSwitchToChainConditionally(w3mService, chainId).timeout(
+      const Duration(
+        seconds: 10,
+      ),
+      onTimeout: () {
+        talker.error('Failed to switch to chain');
+      },
+    ).catchError((e) {
+      talker.error('Failed to switch to chain: $e');
+    });
 
     w3mService!.launchConnectedWallet();
 
@@ -559,13 +587,32 @@ Future<String> makeAndSendNormalTx(
 Future<void> wcSwitchToChainConditionally(
     W3MService? w3mService, int chainId) async {
   final chain = w3mService?.selectedChain;
-  if (chain == null || chain.chainId != chainId.toString()) {
+  if (chain == null ||
+      chain.chainId.replaceAll("eip155:", "") != chainId.toString()) {
     final chain = chainConfig[chainId]!;
     w3mService!.launchConnectedWallet();
+
+    // get available chains, if no added chain, add the chain
+    // if added chain, switch to the chain
+    final chains = w3mService.getApprovedChains();
+    if (!(chains ?? [])
+        .map((e) => e.replaceAll("eip155:", ""))
+        .contains(chainId.toString())) {
+      await w3mService.requestAddChain(
+        W3MChainInfo(
+          chainName: chain.networkName,
+          chainId: "$chainId",
+          namespace: "",
+          tokenName: chain.nativeTokenSymbol,
+          rpcUrl: chain.rpcUrl,
+        ),
+      );
+    }
+
     await w3mService.requestSwitchToChain(
       W3MChainInfo(
         chainName: chain.networkName,
-        chainId: chainId.toString(),
+        chainId: "$chainId",
         namespace: "",
         tokenName: chain.nativeTokenSymbol,
         rpcUrl: chain.rpcUrl,
@@ -586,34 +633,28 @@ Future<String> sendPersonalSignRequest(
   String message,
   EthereumAddress walletAddress,
   W3MSession? wcSession,
-  Web3AuthNotifierData web3AuthData,
-  WalletType walletType,
-) async {
+  WalletType walletType, {
+  bool siweMessage = false,
+  int chainId = 1,
+}) async {
   List<int> utf8CodeUnits = utf8.encode(message);
   String hexUtf8EncodedMessage =
-      "0x" + utf8CodeUnits.map((e) => e.toRadixString(16)).join();
+      "0x${utf8CodeUnits.map((e) => e.toRadixString(16)).join()}";
 
-  final requestParams = [hexUtf8EncodedMessage, walletAddress.toString()];
+  final requestParams = [
+    siweMessage ? message : hexUtf8EncodedMessage,
+    walletAddress.toString()
+  ];
 
   if (walletType.type == EWalletType.web3auth) {
-    // final cfg = ChainConfig(
-    //   chainId: '11155111',
-    //   rpcTarget:
-    //       "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
-    // );
-    // TODO: Web3Auth doesn't open the correct network
-    // it always opens eth mainnet
-    final cfg = ChainConfig(
-      chainId: 'eip155:1',
-      rpcTarget: chainConfig[1]!.rpcUrl,
-    );
-
     Future<String> signWithPrivateKey() async {
       final priv = await Web3AuthFlutter.getPrivKey();
       final credentials = EthPrivateKey.fromHex(priv);
+
       final res = credentials.signPersonalMessageToUint8List(
-          Uint8List.fromList(utf8CodeUnits),
-          chainId: 1);
+        Uint8List.fromList(utf8CodeUnits),
+        chainId: chainId,
+      );
 
       return '0x${hex.encode(res)}';
     }
@@ -632,15 +673,14 @@ Future<String> sendPersonalSignRequest(
     try {
       await wcSwitchToChainConditionally(
         w3mService,
-        1,
-      );
+        chainId,
+      ).timeout(const Duration(seconds: 10)).catchError((e) {
+        talker.error('Failed to switch to chain: $e');
+      });
 
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
-        chainId: 'eip155:1',
-        // chainId: w3mService.selectedChain?.chainId == null
-        // ? 'eip155:1'
-        // : 'eip155:${w3mService.selectedChain?.chainId}',
+        chainId: 'eip155:$chainId',
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,
@@ -656,7 +696,8 @@ Future<String> sendPersonalSignRequest(
 }
 
 Future<String> getGaslessTxHash(request, collectionId) async {
-  String hash = await getEthSignTypedDataSignature(collectionId, request);
+  String hash =
+      await BackendMetaTx.getEthSignTypedDataSignature(collectionId, request);
 
   return hash;
 }

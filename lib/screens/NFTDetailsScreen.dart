@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -220,8 +221,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     throw Exception(
                                         'Could not launch ${link.url}');
                                   }
-                                  sendAnalyticsTrace(session?.sessionId ?? "",
-                                      "", "DESCRIPTION_VIEW",
+                                  BackendApp.sendAnalyticsTrace(
+                                      session?.sessionId ?? "",
+                                      "",
+                                      "DESCRIPTION_VIEW",
                                       tags: {
                                         'connectedWallet': connectedWallet.hex,
                                         'chipWallet':
@@ -306,7 +309,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
-                                          sendAnalyticsTrace(
+                                          BackendApp.sendAnalyticsTrace(
                                               session?.sessionId ?? "",
                                               e.backendUuid,
                                               "ATTACHMENT_VIEW",
@@ -350,7 +353,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
-                                          sendAnalyticsTrace(
+                                          BackendApp.sendAnalyticsTrace(
                                               session?.sessionId ?? "",
                                               e.backendUuid,
                                               "ATTACHMENT_VIEW",
@@ -445,8 +448,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                 "Blockchain",
                               ], values: [
                                 // first, try to find collection in collections list
-                                allCollections
-                                    .collections[tokenInfoData.chainId]!
+                                (allCollections.collections[
+                                            tokenInfoData.chainId] ??
+                                        [])
                                     .firstWhere((collection) {
                                   return collection.id ==
                                       tokenInfoData.collectionId;
