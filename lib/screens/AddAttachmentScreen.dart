@@ -17,7 +17,7 @@ import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAn
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 //import services
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -34,11 +34,11 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChooseFileButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry/sentry.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -220,7 +220,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
 
-      sendAnalyticsTrace(userSession.sessionId,
+      BackendApp.sendAnalyticsTrace(userSession.sessionId,
           attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -292,7 +292,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         loadingText = '';
       });
       if (file != null) {
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -356,7 +356,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
 
       if (status == 'OK') {
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -444,7 +444,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       file = null;
     });
 
-    sendAnalyticsTrace(
+    BackendApp.sendAnalyticsTrace(
         userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
         tags: {
           'connectedWallet': ref.read(userAddressProvider).hex,

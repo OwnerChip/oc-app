@@ -11,16 +11,20 @@ class BlockchainConfig {
   final String alchemyBaseUrl;
   final String? forwarderContract;
 
-  BlockchainConfig(
-      {required this.networkName,
-      required this.nativeTokenSymbol,
-      required this.rpcUrl,
-      required this.registryContract,
-      required this.controllerContract,
-      required this.openseaUrl,
-      required this.raribleUrl,
-      required this.raribleEnum,
-      required this.blockchainExplorerUrl,
-      required this.alchemyBaseUrl,
-      this.forwarderContract});
+  final bool internal;
+
+  BlockchainConfig({
+    required this.networkName,
+    required this.nativeTokenSymbol,
+    required this.rpcUrl,
+    required this.registryContract,
+    required this.controllerContract,
+    required this.openseaUrl,
+    required this.raribleUrl,
+    required this.raribleEnum,
+    required this.blockchainExplorerUrl,
+    required this.alchemyBaseUrl,
+    this.forwarderContract,
+    this.internal = false,
+  });
 }

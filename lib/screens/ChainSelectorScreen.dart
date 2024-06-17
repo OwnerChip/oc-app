@@ -17,8 +17,8 @@ import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChainDropdown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry/sentry.dart';
 import 'package:web3dart/web3dart.dart';
 

@@ -14,7 +14,7 @@ import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAn
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -31,14 +31,14 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/BigIconButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -222,8 +222,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                     throw Exception(
                                         'Could not launch ${link.url}');
                                   }
-                                  sendAnalyticsTrace(session?.sessionId ?? "",
-                                      "", "DESCRIPTION_VIEW",
+                                  BackendApp.sendAnalyticsTrace(
+                                      session?.sessionId ?? "",
+                                      "",
+                                      "DESCRIPTION_VIEW",
                                       tags: {
                                         'connectedWallet': connectedWallet.hex,
                                         'chipWallet':
@@ -308,7 +310,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
-                                          sendAnalyticsTrace(
+                                          BackendApp.sendAnalyticsTrace(
                                               session?.sessionId ?? "",
                                               e.backendUuid,
                                               "ATTACHMENT_VIEW",
@@ -352,7 +354,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                           launchUrl(Uri.parse(e.url),
                                               mode: LaunchMode
                                                   .externalApplication);
-                                          sendAnalyticsTrace(
+                                          BackendApp.sendAnalyticsTrace(
                                               session?.sessionId ?? "",
                                               e.backendUuid,
                                               "ATTACHMENT_VIEW",
@@ -447,8 +449,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen> {
                                 "Blockchain",
                               ], values: [
                                 // first, try to find collection in collections list
-                                allCollections
-                                    .collections[tokenInfoData.chainId]!
+                                (allCollections.collections[
+                                            tokenInfoData.chainId] ??
+                                        [])
                                     .firstWhere((collection) {
                                   return collection.id ==
                                       tokenInfoData.collectionId;

@@ -19,7 +19,10 @@ import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -36,13 +39,13 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CreatorDataBoxContent.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
@@ -50,6 +53,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry/sentry.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -108,55 +112,70 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED", tags: {
-        'connectedWallet': connectedWallet.hex,
-        'chipWallet':
-            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
-      });
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED",
+          tags: {
+            'connectedWallet': connectedWallet.hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId)
+          });
 
-      final List response =
-          await checkMetaTx(config.collectionId, burnFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, burnFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
+      String txnHash = "";
 
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            burnFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      Future<void> normalNx() async {
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             burnFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!);
       }
 
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
+              burnFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+          await normalNx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        await normalNx();
+      }
+
+      talker.info('txnHash: $txnHash');
+
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         //this means burn succeeded
         setState(() {
           isRotating = false;
@@ -168,11 +187,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS", tags: {
-          'connectedWallet': connectedWallet.hex,
-          'chipWallet': convertTokenIdToEthereumAddress(
-              ref.read(chipInfoProvider).tokenId)
-        });
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId)
+            });
 
         await Future.delayed(const Duration(seconds: 2));
 
@@ -188,7 +208,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       burnProcess.throwable = e;
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
-      sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
         'error': e,
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
@@ -219,56 +239,68 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         loadingText = context.loc.receivingToken;
       });
 
-      sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED", tags: {
-        'connectedWallet': connectedWallet.hex,
-        'chipWallet':
-            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
-      });
+      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "CLAIM_STARTED",
+          tags: {
+            'connectedWallet': connectedWallet.hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId)
+          });
 
-      final List response =
-          await checkMetaTx(config.collectionId, transferFromFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
+      String txnHash = "";
 
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            transferFromFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            tokenId: tokenId,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Cannot pay gas for normal transaction with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             transferFromFunctionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!);
       }
 
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
+              transferFromFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              tokenId: tokenId,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Cannot pay gas for normal transaction with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch (e) {
+        await normalTx();
+      }
+
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
@@ -281,11 +313,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
         // send status to analytics
         claimProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS", tags: {
-          'connectedWallet': connectedWallet.hex,
-          'chipWallet': convertTokenIdToEthereumAddress(
-              ref.read(chipInfoProvider).tokenId)
-        });
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "CLAIM_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId)
+            });
 
         //wait for 2 seconds, to make sure corrrect data is fetched by providers
 
@@ -317,7 +350,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       claimProcess.throwable = e;
       claimProcess.status = const SpanStatus.aborted();
       claimProcess.finish();
-      sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
@@ -327,7 +360,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.transferError, 'error'),
       );
-      print("Error: $e");
+      talker.error(e, s);
     }
   }
 
@@ -357,8 +390,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, recoverTokenFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, recoverTokenFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -389,6 +422,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           recoverTokenFunctionSignature,
           config.chainId,
@@ -403,11 +437,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_RECOVERY_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -450,7 +484,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_RECOVERY_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -490,7 +524,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response = await checkMetaTx(
+      final List response = await BackendMetaTx.checkMetaTx(
           config.collectionId, cancelMarketplaceOfferSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
@@ -508,51 +542,67 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       String cancelTxCalldata = await prepareRaribleOrderCancellation(
           config.chainId, offer.offchainOfferId);
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            cancelMarketplaceOfferSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            controllerContractId: controllerContractAddress,
-            encodedOfferData: cancelTxCalldata,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             cancelMarketplaceOfferSignature,
             config.chainId,
             controllerContractAddress,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!,
             encodedOfferData: cancelTxCalldata);
       }
 
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
+              cancelMarketplaceOfferSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              controllerContractId: controllerContractAddress,
+              encodedOfferData: cancelTxCalldata,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch (e) {
+        await normalTx();
+      }
+
+      talker.info('txnHash: $txnHash');
+
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
             .updateHasBeenUsedInSmartContract(true);
-        await cancelOfferBackendRequest(offer.offerHash);
-        sendAnalyticsTrace(
+        await BackendOffer.cancelOfferBackendRequest(
+          offer.offerHash,
+        );
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -595,7 +645,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      sendAnalyticsTrace(
+      talker.error(e, s);
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -625,8 +676,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
-      final List response =
-          await checkMetaTx(config.collectionId, redeemItemFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, redeemItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -661,6 +712,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             redeemItemFunctionSignature,
             config.chainId,
@@ -675,8 +727,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
-        sendAnalyticsTrace(
+      if (txnReceipt?.status == true) {
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -718,7 +770,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       setState(() {
         isLoading = false;
       });
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_REDEMPTION_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -1155,7 +1207,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                                       loading: () => Container());
                                                                                 } else {
                                                                                   return FutureBuilder<List>(
-                                                                                      future: getUnredeemedPurchases(chipInfo.tokenId),
+                                                                                      future: BackendToken.getUnredeemedPurchases(chipInfo.tokenId),
                                                                                       builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
                                                                                         if (snapshot.hasData) {
                                                                                           if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {

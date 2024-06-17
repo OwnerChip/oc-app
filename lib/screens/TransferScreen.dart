@@ -10,7 +10,8 @@ import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
 import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -28,9 +29,9 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry/sentry.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
@@ -81,7 +82,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         loadingText = context.loc.transferInProgress;
       });
 
-      sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
@@ -89,7 +90,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       });
 
       final List response =
-          await checkMetaTx(config.collectionId, transferFromFunctionSignature);
+          await BackendMetaTx.checkMetaTx(config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -98,7 +99,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
-            approveFunctionSignature, // APPROVE
+            approveFunctionSignature,
+            // APPROVE
             config.chainId,
             config.collectionId,
             signatureData,
@@ -119,6 +121,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           throw 'Please connect with MetaMask or similar wallet.';
         }
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             approveFunctionSignature,
             config.chainId,
@@ -134,7 +137,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         //this means transfer succeeded
         setState(() {
           isRotating = false;
@@ -161,7 +164,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
         // send status to analytics
         transferProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
           'connectedWallet': connectedWallet.hex,
           'chipWallet': convertTokenIdToEthereumAddress(
               ref.read(chipInfoProvider).tokenId),
@@ -178,7 +181,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       transferProcess.throwable = e;
       transferProcess.status = const SpanStatus.aborted();
       transferProcess.finish();
-      sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),

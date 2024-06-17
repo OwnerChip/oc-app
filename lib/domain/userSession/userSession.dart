@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:ownerchip_whitelabel/domain/converters/ethereumAddressJsonConverter.dart';
 import 'package:ownerchip_whitelabel/domain/converters/msgSignatureJsonConverter.dart';
+import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -21,8 +22,16 @@ class UserSession {
   @EthereumAddressJsonConverter()
   final EthereumAddress userWalletAddress;
   final bool isOwnerCard;
-  final int expiryDate;
 
-  UserSession(this.sessionId, this.signatureData, this.userWalletAddress,
-      this.isOwnerCard, this.expiryDate);
+  int get expiryDate => jwt.exp;
+
+  late final JwtToken jwt;
+
+  UserSession(
+    this.sessionId,
+    this.signatureData,
+    this.userWalletAddress,
+    this.isOwnerCard,
+    this.jwt,
+  );
 }

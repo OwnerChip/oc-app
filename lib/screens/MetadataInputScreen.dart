@@ -15,7 +15,8 @@ import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 //screen imports
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/images.services.dart';
 //service imports
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
@@ -31,6 +32,7 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -38,7 +40,6 @@ import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 //widget imports
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -46,6 +47,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry/sentry.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
@@ -144,7 +146,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
     try {
       final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
-      sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
+      BackendApp.sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet.hex});
 
       /////////// TWIN METADATA ///////////
@@ -173,7 +175,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       if (twinTokenMetadataCID != '' || voucherTokenMetadataCID != '') {
         ipfsProcess.finish();
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             sessionId, twinTokenMetadataCID, "IPFS_UPLOAD_FINISHED", tags: {
           'connectedWallet': connectedWallet.hex,
           'cid': twinTokenMetadataCID
@@ -182,7 +184,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       //check if user is allowed to use gas station
       final List response =
-          await checkMetaTx(collectionId, mintFunctionSignature);
+          await BackendMetaTx.checkMetaTx(collectionId, mintFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -193,38 +195,16 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         loadingText = context.loc.mintingToken;
       });
 
-      sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
+      BackendApp.sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
         'gasStation': canUseGasStation
       });
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
-            (voucherCollectionId != null)
-                ? mintVoucherFunctionSignature
-                : mintFunctionSignature,
-            chainId,
-            voucherCollectionId ?? collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            twinTokenMetadataCID: twinTokenMetadataCID,
-            voucherTokenMetadataCID: voucherTokenMetadataCID,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
+            context,
             ref,
             (voucherCollectionId != null)
                 ? mintVoucherFunctionSignature
@@ -233,11 +213,46 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
             voucherCollectionId ?? collectionId,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!,
             twinTokenMetadataCID: twinTokenMetadataCID,
             voucherTokenMetadataCID: voucherTokenMetadataCID);
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
+              (voucherCollectionId != null)
+                  ? mintVoucherFunctionSignature
+                  : mintFunctionSignature,
+              chainId,
+              voucherCollectionId ?? collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              twinTokenMetadataCID: twinTokenMetadataCID,
+              voucherTokenMetadataCID: voucherTokenMetadataCID,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch (e, st) {
+        talker.error('Error minting token: $e', st);
+        Sentry.captureException(e, stackTrace: st);
+        await normalTx();
       }
 
       //wait until TX is succeeded or failed
@@ -245,12 +260,13 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           await getTxnReceipt(getRPCUrlFromChainId(chainId), txnHash);
 
       //if transaction is mined, then navigate to NFTDetailsScreen
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         mintProcess.finish();
-        sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS", tags: {
-          'connectedWallet': connectedWallet.hex,
-          'gasStation': canUseGasStation
-        });
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'gasStation': canUseGasStation
+            });
 
         try {
           await Future.delayed(const Duration(seconds: 2));
@@ -280,7 +296,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       }
     } catch (e, s) {
       // Send message mint error to analytics/ownerchip & Sentry
-      sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
+      BackendApp.sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
           tags: {'connectedWallet': connectedWallet.hex});
       mintProcess.throwable = e;
       mintProcess.status = const SpanStatus.aborted();
@@ -289,6 +305,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
         e,
         stackTrace: s,
       );
+      talker.error('Error minting token: $e', s);
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),

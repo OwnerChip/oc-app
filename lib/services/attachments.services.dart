@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/crypto.dart';
@@ -23,7 +23,7 @@ Future<List> postAttachmentMetadataToBackend(
     String? fileHash,
     String? contentType,
     int? fileSize}) async {
-  final Dio dio = getBackendClient();
+  final Dio dio = Backend.getBackendClient();
 
   if (attachmentLink != null && !attachmentLink.startsWith('http')) {
     attachmentLink = 'https://$attachmentLink';
@@ -71,7 +71,7 @@ Future<String> putAttachmentMetadataToBackend(
     String title,
     bool isPrivate,
     {String? attachmentUrl}) async {
-  final Dio dio = getBackendClient();
+  final Dio dio =Backend.getBackendClient();
 
   const String url = '/attachments';
   final data = {
@@ -123,7 +123,7 @@ Future<dynamic> deleteAttachmentFromBackend(
   BigInt tokenId,
   String fileUuid,
 ) async {
-  final Dio dio = getBackendClient();
+  final Dio dio =Backend.getBackendClient();
   final url = '/attachments/$fileUuid';
 
   try {
@@ -171,7 +171,7 @@ Map<String, dynamic> makeAuthObject(
 Future<dynamic> getPublicAttachmentsFromBackend(
   BigInt tokenId,
 ) async {
-  final Dio dio = getBackendClient();
+  final Dio dio =Backend.getBackendClient();
   final url = '/attachments/${convertTokenIdToEthereumAddress(tokenId)}/public';
   try {
     final result = await dio.get(
@@ -191,7 +191,7 @@ Future<dynamic> getPublicAndPrivateAttachmentsFromBackend(
   EthereumAddress collectionId,
   BigInt tokenId,
 ) async {
-  final Dio dio = getBackendClient();
+  final Dio dio =Backend.getBackendClient();
   const url = '/attachments/owner/view-all';
 
   try {
@@ -220,7 +220,7 @@ Future<dynamic> deleteAllAttachments(
   BigInt tokenId,
   SignatureData tokenSignatureData,
 ) async {
-  final Dio dio = getBackendClient();
+  final Dio dio =Backend.getBackendClient();
   const url = '/attachments';
 
   try {

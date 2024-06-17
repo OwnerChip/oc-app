@@ -15,6 +15,8 @@ import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -24,15 +26,16 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry/sentry.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -87,24 +90,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       FlutterNativeSplash.remove();
     }
 
+    final storage = await SharedPreferences.getInstance();
+
     try {
       final wcService = ref.read(w3mServiceProvider);
-
-      final storage = await SharedPreferences.getInstance();
 
       final storedWcSession = storage.getString('session');
       final storedWalletType = storage.getString('walletType');
       final storedUserSession = storage.getString('userSession');
       //check if a session is stored
-      if (storedWcSession != null &&
-          storedWalletType != null &&
-          storedUserSession != null) {
+      if (storedWalletType != null &&
+          ((storedUserSession != null &&
+                  UserSession.fromJson(jsonDecode(storedUserSession))
+                      .isOwnerCard) ||
+              (storedWcSession != null && storedUserSession != null))) {
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
             UserSession.fromJson(jsonDecode(storedUserSession));
-
-        double nowPlusThreeDays =
-            DateTime.now().millisecondsSinceEpoch / 1000 + 3600 * 24 * 3;
 
         if (walletType.type == EWalletType.web3auth) {
           String? privKey;
@@ -116,34 +118,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             );
           }
 
-          // TODO: For some reason backend session expiry date is 0 when using web3auth
-          // if (privKey != null && backendSession.expiryDate > nowPlusThreeDays) {
-          if (privKey != null) {
+          if (privKey != null &&
+              backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
             ref.read(userAddressProvider.notifier).state =
                 EthPrivateKey.fromHex(privKey).address;
 
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
+            Backend.recreateServices(backendSession.jwt.raw);
           } else {
             if (privKey == null) {}
           }
-        } else {
-          final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession));
-
-          //check if the stored session expires in less than three days; if yes, remove it
-          //Note: WalletConnect session duration is 7 days
-
-          if ((wcSession.expiry ?? 0) > nowPlusThreeDays &&
-              backendSession.expiryDate > nowPlusThreeDays) {
-            ref.read(wcSessionProvider.notifier).state = wcSession;
+        } else if (walletType.type == EWalletType.ownerCard) {
+          if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
+            ref.read(userAddressProvider.notifier).state =
+                backendSession.userWalletAddress;
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
+            Backend.recreateServices(backendSession.jwt.raw);
           } else {
             //remove session and wallet type from storage
             storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
+            await BackendAuth.initGuestSession(ref: ref);
+          }
+        } else {
+          final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession!));
+
+          //check if the stored session expires in less than three days; if yes, remove it
+          //Note: WalletConnect session duration is 7 days
+
+          if ((wcSession.expiry ?? 0) > BackendAuth.nowPlusThreeHours() &&
+              backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
+            ref.read(wcSessionProvider.notifier).state = wcSession;
+            ref.read(walletTypeProvider.notifier).state = walletType;
+            ref.read(userSessionProvider.notifier).state = backendSession;
+            Backend.recreateServices(backendSession.jwt.raw);
+          } else {
+            //remove session and wallet type from storage
+            storage.remove('session');
+            storage.remove('walletType');
+            storage.remove('userSession');
+            wcService?.disconnect();
+            await BackendAuth.initGuestSession(ref: ref);
           }
         }
       } else {
@@ -152,6 +171,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('walletType');
         storage.remove('userSession');
         wcService?.disconnect();
+        await BackendAuth.initGuestSession(ref: ref);
       }
 
       if (!shippingPopupIsShown) {
@@ -165,6 +185,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         e,
         stackTrace: st,
       );
+      talker.error(
+          "Error initializing persisted state: $e \n proceeding with guest session.");
+      storage.remove('session');
+      storage.remove('walletType');
+      storage.remove('userSession');
+      await BackendAuth.initGuestSession(ref: ref);
     } finally {
       FlutterNativeSplash.remove();
     }
@@ -279,16 +305,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
 
-    ref.watch(onboardingProvider).maybeWhen(
-        data: (data) {
-          if (!data.showedTutorial && data.showTutorialNextTime) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref.read(onboardingProvider.notifier).showedTutorial();
-              Navigator.of(context).pushNamed(OnboardingScreen.routeName);
-            });
-          }
-        },
-        orElse: () {});
+    if (dotenv.get("APP_ID") == "ownerchip") {
+      ref.watch(onboardingProvider).maybeWhen(
+          data: (data) {
+            if (!data.showedTutorial && data.showTutorialNextTime) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(onboardingProvider.notifier).showedTutorial();
+                Navigator.of(context).pushNamed(OnboardingScreen.routeName);
+              });
+            }
+          },
+          orElse: () {});
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,

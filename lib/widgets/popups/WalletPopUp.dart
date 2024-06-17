@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -56,44 +57,34 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                 runSpacing: 24,
                 alignment: WrapAlignment.start,
                 children: [
+                  // Web3auth with Apple
+                  if (Platform.isIOS)
+                    WalletIcon(
+                      iconPath: "assets/images/common/apple.svg",
+                      walletName: 'Apple',
+                      onTap: () async {
+                        await _loginWithWeb3Auth(
+                          context,
+                          ref: ref,
+                          provider: web3auth.Provider.apple,
+                          w3mService: w3mService,
+                        );
+                      },
+                      backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                          .ownerCardWalletIconBackgroundColor,
+                    ),
+
                   // Web3auth with Google
                   WalletIcon(
                     iconPath: "assets/images/common/google.svg",
                     walletName: 'Google',
                     onTap: () async {
-                      Navigator.pop(context);
-                      await Web3AuthFlutter.login(
-                        LoginParams(loginProvider: web3auth.Provider.google),
-                      ).then((e) {
-                        final Web3AuthNotifier web3AuthNotifier =
-                        ref.read(web3AuthNotifierProvider.notifier);
-
-                        //set session and wallet type provider
-                        web3AuthNotifier.setWeb3AuthResponse(e);
-                        ref.read(walletTypeProvider.notifier).state =
-                        walletConfig[EWalletType.web3auth];
-
-                        //store session and wallet type
-                        final storage = SharedPreferences.getInstance();
-                        if (e.sessionId != null) {
-                          storage.then((value) =>
-                              value.setString('session', e.sessionId!));
-                        }
-                        storage.then((value) => value.setString(
-                            'walletType',
-                            jsonEncode(
-                                walletConfig[EWalletType.web3auth]!.toJson())));
-
-                        ref.read(userAddressProvider.notifier).state =
-                            EthPrivateKey.fromHex(e.privKey!).address;
-
-                        authPopupBuilder(
-                          navigatorKey.currentContext!,
-                          ref,
-                          w3mService!.web3App! as Web3App,
-                          walletConfig[EWalletType.web3auth]!.name,
-                        );
-                      });
+                      await _loginWithWeb3Auth(
+                        context,
+                        ref: ref,
+                        provider: web3auth.Provider.google,
+                        w3mService: w3mService,
+                      );
                     },
                     backgroundColor: CustomColors(dotenv.get('APP_ID'))
                         .ownerCardWalletIconBackgroundColor,
@@ -185,6 +176,44 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
           ));
     },
   );
+}
+
+Future<void> _loginWithWeb3Auth(
+  BuildContext context, {
+  required web3auth.Provider provider,
+  required WidgetRef ref,
+  W3MService? w3mService,
+}) async {
+  Navigator.pop(context);
+  await Web3AuthFlutter.login(
+    LoginParams(loginProvider: provider),
+  ).then((e) {
+    final Web3AuthNotifier web3AuthNotifier =
+        ref.read(web3AuthNotifierProvider.notifier);
+
+    //set session and wallet type provider
+    web3AuthNotifier.setWeb3AuthResponse(e);
+    ref.read(walletTypeProvider.notifier).state =
+        walletConfig[EWalletType.web3auth];
+
+    //store session and wallet type
+    final storage = SharedPreferences.getInstance();
+    if (e.sessionId != null) {
+      storage.then((value) => value.setString('session', e.sessionId!));
+    }
+    storage.then((value) => value.setString('walletType',
+        jsonEncode(walletConfig[EWalletType.web3auth]!.toJson())));
+
+    ref.read(userAddressProvider.notifier).state =
+        EthPrivateKey.fromHex(e.privKey!).address;
+
+    authPopupBuilder(
+      navigatorKey.currentContext!,
+      ref,
+      w3mService!.web3App! as Web3App,
+      walletConfig[EWalletType.web3auth]!.name,
+    );
+  });
 }
 
 Future<void> onAddCardPress(

@@ -10,9 +10,9 @@ import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:pinput/pinput.dart';
 import 'package:sentry/sentry.dart';
 
@@ -66,6 +66,7 @@ class _PinScreen extends ConsumerState<PinScreen> {
     try {
       var value = await navArgs.callback(pin);
       if (navArgs.activeFeature == PinScreenActiveFeature.verifyPinTx) {
+        FocusScope.of(context).unfocus();
         Navigator.pop(context, value);
       }
     } catch (e) {

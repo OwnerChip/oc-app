@@ -4,7 +4,7 @@ import 'package:ownerchip_whitelabel/domain/blockchainCollectionList/blockchainC
 import 'package:ownerchip_whitelabel/domain/chipInfoModel/chipInfoModel.dart';
 import 'package:ownerchip_whitelabel/domain/collection/collection.dart';
 import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
@@ -22,7 +22,7 @@ final appCollectionProvider =
 
   // first, try to get the collections from the backend
   try {
-    final data = await getAppCollections();
+    final data = await BackendApp.getAppCollections();
     final rawCollections = data['collections'];
     collections =
         BlockchainCollectionList(groupCollectionsByChainId(rawCollections));

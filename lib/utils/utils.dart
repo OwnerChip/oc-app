@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -78,7 +78,7 @@ Future<bool> checkInternetConnection() async {
 Future<bool> checkBackendAvailability() async {
   try {
     //get backend client
-    final client = getBackendClient();
+    final client = Backend.getBackendClient();
     await client.get('/auth');
     return true;
   } catch (e) {

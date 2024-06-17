@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/secora.commands.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -131,10 +131,10 @@ Future<List<dynamic>> createFirstKeypairOnChip(
       String url =
           '${getNdefUrl()}$chipEthereumAddressHex?appId=${dotenv.get('APP_ID')}';
       await initializeNdefTag(nfc, chipEthereumAddressHex, sessionId);
-      sendAnalyticsTrace(sessionId, url, "INITIALIZE_NDEF_SUCCESS",
+      BackendApp.sendAnalyticsTrace(sessionId, url, "INITIALIZE_NDEF_SUCCESS",
           tags: {"chipWallet": chipEthereumAddressHex.toString()});
     } catch (e) {
-      sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_ERROR",
+      BackendApp.sendAnalyticsTrace(sessionId, "", "INITIALIZE_NDEF_ERROR",
           tags: {"chipWallet": chipEthereumAddress.toString()});
       rethrow;
     }
@@ -152,7 +152,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
   if (!(selectAppletResCode1 == 144 && selectAppletResCode2 == 00)) {
     if (selectAppletResCode1 == 106 && selectAppletResCode2 == 130) {
       // do NOTHING, but report analytics
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           "$sessionId",
           "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
           "INITIALIZE_NDEF_NO_APPLET",
@@ -181,7 +181,7 @@ Future<void> initializeNdefTag(NFCPlatform nfc,
     if (!(writeNdefMessageResCode1 == 144 && writeNdefMessageResCode2 == 0)) {
       if (writeNdefMessageResCode1 == 105 && writeNdefMessageResCode2 == 133) {
         // do NOTHING, but report analytics
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             "$sessionId",
             "${selectAppletResCode1.toRadixString(16)} ${selectAppletResCode2.toRadixString(16)}",
             "INITIALIZE_NDEF_WRONG_STATE",
@@ -217,7 +217,7 @@ Future<void> nfcPlatformCheck(
       returnSnackBarWidget(
           context.loc.errorHeadingSnackBar, context.loc.noNfc, 'error'),
     );
-    sendAnalyticsTrace(sessionId, "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
+    BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_NFC_TYPE_NOT_SUPPORTED");
     //delay for 1 second
     await Future.delayed(const Duration(seconds: 1));
     Navigator.pop(context);

@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/inputFieldModel/inputFieldModel.dart';
 import 'package:ownerchip_whitelabel/domain/phygital/purchase/purchase.dart';
 import 'package:ownerchip_whitelabel/domain/phygital/shippingInfo/shippingInfo.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
@@ -17,8 +17,8 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 class EnterShippingAddressScreen extends ConsumerStatefulWidget {
@@ -85,7 +85,7 @@ class _OfferOnMPScreen extends ConsumerState<EnterShippingAddressScreen> {
           await ref.read(unredeemedVoucherNftsProvider.future);
 
       if (unredeemedVoucherNfts.isNotEmpty) {
-        await postShippingInfoToBackend(unredeemedVoucherNfts[0], shippingInfo);
+        await BackendToken.postShippingInfoToBackend(unredeemedVoucherNfts[0], shippingInfo);
 
         Navigator.pop(context);
         Navigator.pop(context);

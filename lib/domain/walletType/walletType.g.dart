@@ -9,18 +9,12 @@ part of 'walletType.dart';
 WalletType _$WalletTypeFromJson(Map<String, dynamic> json) => WalletType(
       json['name'] as String,
       json['iconUri'] as String,
-      $enumDecode(_$EWalletTypeEnumMap, json['type']),
+      const EWalletTypeJsonConverter().fromJson((json['type'] as num).toInt()),
     );
 
 Map<String, dynamic> _$WalletTypeToJson(WalletType instance) =>
     <String, dynamic>{
       'name': instance.name,
       'iconUri': instance.iconUri,
-      'type': _$EWalletTypeEnumMap[instance.type]!,
+      'type': const EWalletTypeJsonConverter().toJson(instance.type),
     };
-
-const _$EWalletTypeEnumMap = {
-  EWalletType.ownerCard: 'ownerCard',
-  EWalletType.walletConnect: 'walletConnect',
-  EWalletType.web3auth: 'web3auth',
-};

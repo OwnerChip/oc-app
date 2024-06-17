@@ -12,7 +12,7 @@ UserSession _$UserSessionFromJson(Map<String, dynamic> json) => UserSession(
       const EthereumAddressJsonConverter()
           .fromJson(json['userWalletAddress'] as String),
       json['isOwnerCard'] as bool,
-      (json['expiryDate'] as num).toInt(),
+      JwtToken.fromJson(json['jwt'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$UserSessionToJson(UserSession instance) =>
@@ -23,5 +23,5 @@ Map<String, dynamic> _$UserSessionToJson(UserSession instance) =>
       'userWalletAddress': const EthereumAddressJsonConverter()
           .toJson(instance.userWalletAddress),
       'isOwnerCard': instance.isOwnerCard,
-      'expiryDate': instance.expiryDate,
+      'jwt': instance.jwt.toJson(),
     };

@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/blockchainCollectionList/blockchainCollectionList.dart';
 import 'package:ownerchip_whitelabel/domain/chipInfoModel/chipInfoModel.dart';
 import 'package:ownerchip_whitelabel/domain/collection/collection.dart';
+import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
 import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
 //import screens
@@ -20,7 +21,11 @@ import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
+import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -31,6 +36,7 @@ import 'package:ownerchip_whitelabel/services/secora.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -58,7 +64,8 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
     BigInt chipTokenId = createFirstKeyChipResponse[1];
     bool ndefTagInitialized = createFirstKeyChipResponse[2];
     if (ndefTagInitialized) {
-      sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+      BackendApp.sendAnalyticsTrace(
+          sessionId, chipWalletAddress, "CHIP_INITIALIZED");
     }
 
     //set chip info data in provider
@@ -79,7 +86,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
 
     //TOKEN DOES NOT EXIST
     if (config.collectionId == zeroAddress) {
-      sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+      BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
           tags: {"chipWallet": chipWalletAddress});
 
       //decide if chain selector screen should be shown
@@ -149,7 +156,7 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
 
       //TOKEN DOES NOT EXIST
       if (config.collectionId == zeroAddress) {
-        sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+        BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
             tags: {"chipWallet": chipWalletAddress});
 
         Navigator.pushNamed(
@@ -216,7 +223,7 @@ Future<void> verifyAuthenticity(
         hashedMsg,
         signature);
 
-    sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_POSITIVE",
+    BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_POSITIVE",
         tags: {"chipWallet": chipWalletAddress});
   } catch (e) {
     //TOKEN IS NOT AUTHENTIC
@@ -249,7 +256,11 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
     bool pinVerified = await verifyPin(nfc, pin);
     EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
-        nfc, 0x01, cardWalletAddress, hexToBytes(msgHashToSign), false);
+        nfc,
+        0x01,
+        cardWalletAddress,
+        msgHashToSign is Uint8List ? msgHashToSign : hexToBytes(msgHashToSign),
+        false);
     return signature;
   }
 
@@ -261,14 +272,58 @@ Future<void> authenticateCard(
     WidgetRef ref, BuildContext context, String pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    String message =
+    final String message =
         "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
-    Uint8List msgHashToSign = keccakUtf8(message);
-    bool pinVerified = await verifyPin(nfc, pin);
-    EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
-    MsgSignature signature =
-        await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign, false);
-    await saveUserSession(sessionId, cardWalletAddress, signature, ref);
+
+    final siweMessage = BackendAuth.createSiweMessage(
+      address: createFirstKeyChipResponse[0],
+      statement: message,
+      nonce: sessionId,
+    );
+
+    final prefixedMessage =
+        "\x19Ethereum Signed Message:\n${siweMessage[1].length}${siweMessage[1]}";
+    Uint8List msgHashToSign = keccakUtf8(prefixedMessage);
+    final bool pinVerified = await verifyPin(nfc, pin);
+    final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
+    MsgSignature signature = await signHash(
+      nfc,
+      0x01,
+      cardWalletAddress,
+      msgHashToSign,
+      false,
+    );
+
+    final rHex = signature.r.toRadixString(16).padLeft(64, '0');
+    final sHex = signature.s.toRadixString(16).padLeft(64, '0');
+    final vHex = signature.v.toRadixString(16).padLeft(2, '0');
+
+    String? jwt = await BackendAuth.validateSiwe(
+      message: siweMessage[0],
+      signature: "0x$rHex$sHex$vHex",
+    );
+
+    try {
+      JwtToken.decode(jwt);
+    } catch (_) {
+      talker.info("Invalid JWT, using old method to create session");
+      // if the JWT is invalid, we use the old method to create session
+      String message =
+          "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+      Uint8List msgHashToSign = keccakUtf8(message);
+      signature =
+          await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign, false);
+      jwt = null;
+    }
+    await BackendAuth.saveUserSession(
+      sessionId,
+      cardWalletAddress,
+      signature,
+      ref,
+      jwt,
+    );
+
+    Backend.recreateServices(jwt);
   }
 
   return await scanClosure(
@@ -367,7 +422,8 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
     BigInt chipTokenId = createFirstKeyChipResponse[1];
     bool ndefTagInitialized = createFirstKeyChipResponse[2];
     if (ndefTagInitialized) {
-      sendAnalyticsTrace(sessionId, chipWalletAddress, "CHIP_INITIALIZED");
+      BackendApp.sendAnalyticsTrace(
+          sessionId, chipWalletAddress, "CHIP_INITIALIZED");
     }
 
     //set chip info data in provider
@@ -386,8 +442,14 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
     if (tokenInfo.collectionId != zeroAddress) {
-      return await sendCardLostToBackend(createFirstKeyChipResponse[0],
-          tokenInfo.collectionId, chipSignature, sessionId, email, name, telNr);
+      return await BackendCollection.sendCardLostToBackend(
+          createFirstKeyChipResponse[0],
+          tokenInfo.collectionId,
+          chipSignature,
+          sessionId,
+          email,
+          name,
+          telNr);
     } else {
       throw context.loc.tokenDoesNotExist;
     }
@@ -410,7 +472,8 @@ Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
       await writeKeyToSlotZero(nfc, seed);
       pubKeyZero = await getPubKeyN(nfc, 0x00);
     }
-    sendCardInitToBackend(customerId, createFirstKeyChipResponse[0]);
+    BackendCustomer.sendCardInitToBackend(
+        customerId, createFirstKeyChipResponse[0]);
 
     EthereumAddress cardWalletAddress = EthereumAddress.fromHex(
         "0x${bytesToHex(publicKeyToAddress(pubKeyZero))}");
@@ -440,7 +503,7 @@ Future<dynamic> scanClosure(
   //get saved session id if exists, else get new one from backend
   String sessionId = ref.read(userSessionProvider) != null
       ? ref.read(userSessionProvider)!.sessionId
-      : await getSessionId();
+      : await BackendAuth.getSessionId();
 
   //start NFC scan
   final scanProcess = Sentry.startTransaction('$analyticsType', 'task');
@@ -477,7 +540,7 @@ Future<dynamic> scanClosure(
           completer.complete(result);
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
-          sendAnalyticsTrace(sessionId, '', analyticsType,
+          BackendApp.sendAnalyticsTrace(sessionId, '', analyticsType,
               tags: {"chipWallet": createFirstKeyChipResponse[0].hex});
         } catch (e, stackTrace) {
           String errorMessage = e.toString();
@@ -504,7 +567,7 @@ Future<dynamic> scanClosure(
           }
           //LOG ERROR
           print(e);
-          sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
+          BackendApp.sendAnalyticsTrace(sessionId, "$e", "SCAN_ERROR");
           scanProcess.throwable = e;
           scanProcess.status = const SpanStatus.deadlineExceeded();
           scanProcess.finish();

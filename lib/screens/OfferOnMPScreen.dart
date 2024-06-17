@@ -1,6 +1,9 @@
 //import packages
 
+import 'dart:math';
+
 import 'package:async/async.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,14 +12,16 @@ import 'package:info_popup/info_popup.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/chipInfoModel/chipInfoModel.dart';
-import 'package:ownerchip_whitelabel/domain/offerItemInputData/offerItemInputData.dart';
 import 'package:ownerchip_whitelabel/domain/rarible/raribleConsts.dart';
 import 'package:ownerchip_whitelabel/domain/rarible/raribleV2Order/raribleV2Order.dart';
 import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
 import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/domain/walletType/walletType.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/payloads/offerItemPayload.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
@@ -26,6 +31,7 @@ import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
+import 'package:ownerchip_whitelabel/services/rarible/orders/raribleOrders.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -33,6 +39,7 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
@@ -41,9 +48,9 @@ import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CryptoCurrencyDropdown.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -74,10 +81,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   bool isRotating = true;
   String currencyDropdownValue = 'MATIC';
   bool raribleCheck = true;
-  List<String> allDropdownValues = [
-    'MATIC',
-    'EUR'
-  ]; //TODO: support other currencies //attention: order of items is important
+  List<String> allDropdownValues = [];
   Future<bool>?
       _setCurrencyDropDownValuesFuture; //future used for currency dropdown FutureBuilder
 
@@ -104,8 +108,12 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final TokenChainAndCollection config =
         await ref.read(findTokenProvider(chipInfo.tokenId).future);
     String currencySymbol = chainConfig[config.chainId]!.nativeTokenSymbol;
+    final tokens = chainTokenConfigs[config.chainId]!;
     setState(() {
-      allDropdownValues = [currencySymbol, 'EUR'];
+      allDropdownValues = [
+        currencySymbol,
+        // ...tokens.map((token) => token.symbol),
+      ];
       currencyDropdownValue = currencySymbol;
     });
     return true;
@@ -129,8 +137,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       UserSession userSession,
       WalletType? walletType) async {
     //check if user is allowed to use gas station
-    final List response =
-        await checkMetaTx(twinCollectionId, mintFunctionSignature);
+    final List response = await BackendMetaTx.checkMetaTx(
+        twinCollectionId, mintFunctionSignature);
     final bool canUseGasStation = response[0];
     final metaTxAgreementId = response[1];
 
@@ -154,43 +162,58 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       voucherTokenMetadataCID =
           await uploadFileToIPFS(jsonFileVoucher, 'application/json');
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-            mintVoucherFunctionSignature,
-            chainId,
-            voucherCollectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            twinTokenMetadataCID: twinTokenMetadataCID,
-            voucherTokenMetadataCID: voucherTokenMetadataCID,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           mintVoucherFunctionSignature,
           chainId,
           voucherCollectionId,
           signatureData,
           connectedWallet,
-          wc,
+          wc!,
           wcSession,
           walletType!,
           twinTokenMetadataCID: twinTokenMetadataCID,
           voucherTokenMetadataCID: voucherTokenMetadataCID,
         );
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
+              mintVoucherFunctionSignature,
+              chainId,
+              voucherCollectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              twinTokenMetadataCID: twinTokenMetadataCID,
+              voucherTokenMetadataCID: voucherTokenMetadataCID,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        talker.error(
+            'Minting voucher token failed with gassless tx, trying normal tx.');
+        await normalTx();
       }
     } catch (e) {
       rethrow;
@@ -210,14 +233,18 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
         chainConfig[config.chainId]!.controllerContract);
 
+    final token = chainTokenConfigs[config.chainId]!.firstWhereOrNull(
+      (element) => element.symbol == currencyDropdownValue,
+    );
+
     final double priceInPrimaryChainCurrency;
-    if (currencyDropdownValue == 'EUR') {
-      priceInPrimaryChainCurrency =
-          await convertEurToToCrypto(price, allDropdownValues[0]) *
-              1000000000000000000;
-    } else {
+
+    if (token == null) {
       priceInPrimaryChainCurrency = price * 1000000000000000000;
+    } else {
+      priceInPrimaryChainCurrency = price * (pow(10, token.decimals));
     }
+
     setState(() {
       isLoading = true;
       overlayContentType = context.loc.loading;
@@ -254,72 +281,53 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       loadingText = context.loc.offeringToken;
     });
 
-    final raribleV2Order = RaribleV2Order.makeRaribleV2Order(
-        controllerContractAddress,
-        controllerContractAddress,
-        config.tokenId,
-        controllerContractAddress,
-        10000,
-        //TODO: fix this
-        0,
-        //TODO: fix this
-        voucherContractAddress!,
-        config.tokenId,
-        BigInt.from(priceInPrimaryChainCurrency),
-        null);
+    RaribleV2Order raribleV2Order = RaribleV2Order.makeRaribleV2Order(
+      controllerContractAddress,
+      controllerContractAddress,
+      config.tokenId,
+      controllerContractAddress,
+      10000,
+      //TODO: fix this
+      0,
+      //TODO: fix this
+      voucherContractAddress!,
+      config.tokenId,
+      BigInt.from(priceInPrimaryChainCurrency),
+      null,
+      config.chainId,
+      token,
+    );
     final typedDataHashAndEncodedData =
         await getRaribleOrderTypedDataHash(config.chainId, raribleV2Order);
     final typedDataHash = typedDataHashAndEncodedData.typedDataHash;
 
-    final MsgSignature? chipSignature =
-        await getChipSignature(ref, context, typedDataHash, toggleLoading);
+    final MsgSignature? chipSignature = await getChipSignature(
+      ref,
+      context,
+      typedDataHash,
+      toggleLoading,
+    );
     final String hexSignature = msgSignatureToHex(chipSignature!);
 
     try {
       //check if user is allowed to use gas station
-      final List response =
-          await checkMetaTx(config.collectionId, offerItemFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, offerItemFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-            offerItemFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            typedDataHash: typedDataHash,
-            controllerContractId: controllerContractAddress,
-            tokenId: config.tokenId,
-            sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
-            salt: raribleV2Order.salt,
-            endTimestamp: raribleV2Order.end,
-            price: BigInt.from(priceInPrimaryChainCurrency),
-            encodedOfferData: typedDataHashAndEncodedData.encodedData,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
+          context,
           ref,
           offerItemFunctionSignature,
           config.chainId,
           controllerContractAddress,
           signatureData,
           connectedWallet,
-          wc,
+          wc!,
           wcSession,
           walletType!,
           sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
@@ -329,19 +337,61 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         );
       }
 
+      try {
+        if (canUseGasStation) {
+            txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
+              offerItemFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              typedDataHash: typedDataHash,
+              controllerContractId: controllerContractAddress,
+              tokenId: config.tokenId,
+              sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
+              salt: raribleV2Order.salt,
+              endTimestamp: raribleV2Order.end,
+              price: BigInt.from(priceInPrimaryChainCurrency),
+              encodedOfferData: typedDataHashAndEncodedData.encodedData,
+              toggleLoading: toggleLoading);
+        } else {
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+          await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        talker
+            .error('Offering token failed with gassless tx, trying normal tx.');
+        await normalTx();
+      }
+
+      talker.info("Transaction hash: $txnHash");
+
       //wait until TX is succeeded or failed
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
 
       //if transaction is mined, then navigate to NFTDetailsScreen
-      if (txnReceipt?.status) {
+      if (txnReceipt?.status == true) {
         RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
 
         await Future.delayed(const Duration(seconds: 2));
-        var response = await createRaribleOrder(config.chainId, order);
+        var response = await RaribleOrders.createRaribleOrder(
+          chainId: config.chainId,
+          order: order,
+        );
 
         //call backend with info about offering
-        OfferItemInputData offerItemInputData = OfferItemInputData(
+        final offerItemInputData = OfferItemPayload(
             tokenId: convertTokenIdToEthereumAddress(config.tokenId),
             offerPrice: priceInPrimaryChainCurrency.toString(),
             offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
@@ -357,9 +407,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
             offchainOfferId: response['id']);
 
-        await sendOfferItemInfoToBackend(offerItemInputData);
+        await BackendOffer.sendOfferItemInfoToBackend(offerItemInputData);
 
-        sendAnalyticsTrace(
+        BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_OFFER_SUCCESS",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
@@ -428,7 +478,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         isLoading = false;
       });
       await Sentry.captureException(e, stackTrace: s);
-      sendAnalyticsTrace(
+      BackendApp.sendAnalyticsTrace(
           userSession.sessionId, e.toString(), "TOKEN_OFFER_ERROR",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -440,13 +490,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             context.loc.errorOfferingToken, 'error'),
       );
     }
-  }
-
-  Future<double> convertEurToToCrypto(
-      double price, String cryptoCurrencySymbol) async {
-    Map conversionRates =
-        await ref.read(ethPriceProvider(allDropdownValues[0]).future);
-    return price / conversionRates['EUR'];
   }
 
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
@@ -465,7 +508,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   @override
   Widget build(BuildContext context) {
     AsyncValue<Map> ethPriceEur =
-        ref.watch(ethPriceProvider(allDropdownValues[0]));
+        ref.watch(ethPriceProvider(currencyDropdownValue));
     return CustomOverlay(
         show: isLoading,
         content: SpinningLoadingSvg(
@@ -518,6 +561,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                               .cardColor),
                                   keyboardType: TextInputType.emailAddress,
                                   obscureText: false,
+                                  initialValue: email,
                                   onChanged: (value) {
                                     setState(() {
                                       email = value;
@@ -649,6 +693,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                   keyboardType: TextInputType.numberWithOptions(
                                       decimal: true),
                                   obscureText: false,
+                                  initialValue: price.toString(),
                                   onChanged: (value) {
                                     setState(() {
                                       if (value.isEmpty) {
@@ -665,10 +710,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                 ),
                                 Text(
                                   '${currencyDropdownValue == 'EUR' ? allDropdownValues[0] : 'EUR'} ${ethPriceEur.when(data: (data) {
-                                        if (currencyDropdownValue == 'EUR')
-                                          return '${(price / data['EUR']).toStringAsFixed(6)}';
-                                        else
-                                          return '${(price * data['EUR']).toStringAsFixed(2)}';
+                                        if (currencyDropdownValue == 'EUR') {
+                                          return (price / data['EUR'])
+                                              .toStringAsFixed(6);
+                                        } else {
+                                          return (price * data['EUR'])
+                                              .toStringAsFixed(2);
+                                        }
                                       }, error: (e, s) => Container(), loading: () => 'Fetching price...')}',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 )

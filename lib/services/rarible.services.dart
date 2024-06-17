@@ -1,17 +1,33 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/domain/rarible/raribleConsts.dart';
 import 'package:ownerchip_whitelabel/domain/rarible/raribleV2Order/raribleV2Order.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/marketplace/types.dart';
 import 'package:sentry/sentry.dart';
 import 'package:web3dart/web3dart.dart';
 
 import '../domain/rartibleHashAndEncodedData/raribleHashAndEncededData.dart';
 
+Map<String, dynamic> getRaribleAssetType(
+  int chainId,
+  BlockchainToken? token,
+) {
+  if (token == null) {
+    return {
+      "@type": "ETH",
+      "blockchain": chainConfig[chainId]!.raribleEnum,
+    };
+  } else {
+    return {
+      "@type": "ERC20",
+      "contract":
+          "${chainConfig[chainId]!.raribleEnum}:${token!.contractAddress.hex}",
+    };
+  }
+}
 
 Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
   return {
@@ -34,26 +50,10 @@ Map<String, dynamic> getRaribleMakeOrderTypeData(int chainId) {
 Future<RaribleHashAndEncodedData> getRaribleOrderTypedDataHash(
     int chainId, RaribleV2Order order) async {
   //call backend to get hash of typed data & encoded data
-  return await getRaribleOfferTypedDataHashAndEncodedData(
-      getRaribleMakeOrderTypeData(chainId), order);
-}
-
-// create rarible order api call
-Future createRaribleOrder(int chainId, RaribleV2Order order) async {
-  final String url = raribleUpsertOrderApiUrls[chainId]!;
-  try {
-    final Dio dio = Dio();
-    dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
-    Response result = await dio.post(url, data: jsonEncode(order.toJson()));
-    print(result);
-    return result.data;
-  } catch (e, s) {
-    Sentry.captureException(
-      e,
-      stackTrace: s,
-    );
-    print(e);
-  }
+  return await BackendOffer.getRaribleOfferTypedDataHashAndEncodedData(
+    getRaribleMakeOrderTypeData(chainId),
+    order,
+  );
 }
 
 // create rarible order api call
@@ -63,7 +63,7 @@ Future<String> prepareRaribleOrderCancellation(
     final Dio dio = Dio();
     dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
     Response result = await dio.post(
-      '${raribleNewApiBaseUrl}orders/${chainConfig[chainId]!.raribleEnum}:$offchainOrderId/prepareCancelTx',
+      '${raribleNewApiBaseUrl}orders/$offchainOrderId/prepareCancelTx',
     );
     return result.data["data"];
   } catch (e, s) {

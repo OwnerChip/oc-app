@@ -36,7 +36,7 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
     },
     'domain': {
       'name': 'MinimalForwarder',
-      'version': '0.0.2',
+      'version': '0.0.3',
       'verifyingContract': verifyingContract,
     },
     'primaryType': 'ForwardRequest',
@@ -45,30 +45,40 @@ Map<String, dynamic> getMetaTxTypeData(int chainId) {
 
 // This function returns the request to be signed for a meta-transaction.
 Future<Map<String, dynamic>> buildTypedV4Request(
-    String functionSignatureHash,
-    String chainRpcUrl,
-    int chainId,
-    Uint8List randomValueHash,
-    MsgSignature signature,
-    EthereumAddress from,
-    EthereumAddress to,
-    EthereumAddress? toAccount,
-    String? tokenURI,
-    String? voucherTokenURI,
-    BigInt? tokenId,
-    bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress,
-    BigInt? salt,
-    int? endTimestamp,
-    BigInt? price,
-    String? encodedOfferData,
-    String? typedDataHash,
-    String? offerHash) async {
+  String functionSignatureHash,
+  String chainRpcUrl,
+  int chainId,
+  Uint8List randomValueHash,
+  MsgSignature signature,
+  EthereumAddress from,
+  EthereumAddress to,
+  EthereumAddress? toAccount,
+  String? tokenURI,
+  String? voucherTokenURI,
+  BigInt? tokenId,
+  bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
+  BigInt? salt,
+  int? endTimestamp,
+  BigInt? price,
+  String? encodedOfferData,
+  String? typedDataHash,
+  String? offerHash, {
+  BigInt? amount,
+  BigInt? gas,
+}) async {
   final String verifyingContract = chainConfig[chainId]!.forwarderContract!;
   final String data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == erc20TransferFromFunctionSignature) {
+    data = makeErc20TransferFromData(
+      functionSignatureHash,
+      from,
+      toAccount!,
+      amount!,
+    );
   } else if (functionSignatureHash == mintVoucherFunctionSignature) {
     data = makeMintData(functionSignatureHash, randomValueHash, signature,
         tokenURI!, voucherTokenURI!);
@@ -110,8 +120,8 @@ Future<Map<String, dynamic>> buildTypedV4Request(
     'from': from.hex,
     'to': to.hex,
     'value': 0,
-    'gas':
-        500000, //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
+    'gas': gas?.toInt() ?? 500000,
+    //gas actually used by mint or burn TX is approx. 200k; this can stay hard coded
     'nonce': nonce.toInt(),
     'data': data,
   };
@@ -129,46 +139,52 @@ Future<Map<String, dynamic>> buildTypedData(int chainId, request) async {
 // which is then signed by the user's wallet to create a signature.
 // This request is then passed to the smart contract as a gasless transaction.
 
-Future<List<Map<String, dynamic>>> makeGaslessParams(
-    {required String functionSignatureHash,
-    required String chainRpcUrl,
-    required int chainId,
-    required Uint8List randomValueHash,
-    required MsgSignature signature,
-    required EthereumAddress from,
-    required EthereumAddress to,
-    EthereumAddress? toAccount,
-    String? tokenURI,
-    String? voucherTokenURI,
-    BigInt? tokenId,
-    bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress,
-    BigInt? salt,
-    int? endTimestamp,
-    BigInt? price,
-    String? encodedOfferData,
-    String? typedDataHash,
-    String? offerHash}) async {
+Future<List<Map<String, dynamic>>> makeGaslessParams({
+  required String functionSignatureHash,
+  required String chainRpcUrl,
+  required int chainId,
+  required Uint8List randomValueHash,
+  required MsgSignature signature,
+  required EthereumAddress from,
+  required EthereumAddress to,
+  EthereumAddress? toAccount,
+  String? tokenURI,
+  String? voucherTokenURI,
+  BigInt? tokenId,
+  bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
+  BigInt? salt,
+  int? endTimestamp,
+  BigInt? price,
+  String? encodedOfferData,
+  String? typedDataHash,
+  String? offerHash,
+  BigInt? amount,
+  BigInt? gas,
+}) async {
   final request = await buildTypedV4Request(
-      functionSignatureHash,
-      chainRpcUrl,
-      chainId,
-      randomValueHash,
-      signature,
-      from,
-      to,
-      toAccount,
-      tokenURI,
-      voucherTokenURI,
-      tokenId,
-      enableRecovery,
-      sellerPayoutAddress,
-      salt,
-      endTimestamp,
-      price,
-      encodedOfferData,
-      typedDataHash,
-      offerHash);
+    functionSignatureHash,
+    chainRpcUrl,
+    chainId,
+    randomValueHash,
+    signature,
+    from,
+    to,
+    toAccount,
+    tokenURI,
+    voucherTokenURI,
+    tokenId,
+    enableRecovery,
+    sellerPayoutAddress,
+    salt,
+    endTimestamp,
+    price,
+    encodedOfferData,
+    typedDataHash,
+    offerHash,
+    amount: amount,
+    gas: gas,
+  );
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];
 }

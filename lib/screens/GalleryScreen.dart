@@ -16,10 +16,10 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/GalleryItem.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -90,13 +90,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   Widget build(BuildContext context) {
     final OCNFTsForOwnerData ocNFTsForOwnerData =
         ref.watch(ocNFTsForOwnerProvider);
-    final OCNFTsMintedByUserData ocNFTsMinterByUserNotifier =
+    final OCNFTsMintedByUserData ocNFTsMintedByUserNotifier =
         ref.watch(ocNFTsMintedByUserNotifierProvider);
 
     final UserSession? userSession = ref.watch(userSessionProvider);
-
-    final Set<String> unique =
-        ocNFTsMinterByUserNotifier.data.map((e) => e.tokenId).toSet();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -132,7 +129,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
               ),
               // Created by me
               _buildGalleryPage(
-                ocNFTsForOwnerData: ocNFTsMinterByUserNotifier,
+                ocNFTsForOwnerData: ocNFTsMintedByUserNotifier,
                 refreshController: _mintedNftsRefreshController,
                 userSession: userSession,
                 getNotifier: () =>

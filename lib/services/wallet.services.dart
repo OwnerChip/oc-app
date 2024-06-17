@@ -6,34 +6,36 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/domain/eip155/eip155.dart';
 import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
 import 'package:ownerchip_whitelabel/domain/walletType/eWalletType.dart';
 import 'package:ownerchip_whitelabel/domain/walletType/walletType.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/utils/web3authUtils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
+import 'package:web3dart/src/utils/rlp.dart' as rlp;
 import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 Uri convertToWcLink({
@@ -57,60 +59,67 @@ Uri convertToWcLink({
 // It then sends the gasless transaction request to the backend and returns the txnHash.
 
 Future<String> makeAndSendGaslessTx(
-    WidgetRef ref,
-    BuildContext context,
-    String functionSignatureHash,
-    int chainId,
-    EthereumAddress toAddress,
-    SignatureData signatureData,
-    EthereumAddress walletAddress,
-    Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
-    W3MSession? wcSession,
-    String metaTxAgreementId,
-    WalletType walletType,
-    {EthereumAddress? controllerContractId,
-    String? typedDataHash,
-    EthereumAddress? toAccount,
-    String? twinTokenMetadataCID,
-    String? voucherTokenMetadataCID,
-    BigInt? tokenId,
-    bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress,
-    BigInt? salt,
-    int? endTimestamp,
-    BigInt? price,
-    String? encodedOfferData,
-    required Function toggleLoading,
-    String? offerHash}) async {
+  WidgetRef ref,
+  BuildContext context,
+  String functionSignatureHash,
+  int chainId,
+  EthereumAddress toAddress,
+  SignatureData signatureData,
+  EthereumAddress walletAddress,
+  Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
+  W3MSession? wcSession,
+  String metaTxAgreementId,
+  WalletType walletType, {
+  EthereumAddress? controllerContractId,
+  String? typedDataHash,
+  EthereumAddress? toAccount,
+  String? twinTokenMetadataCID,
+  String? voucherTokenMetadataCID,
+  BigInt? tokenId,
+  bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
+  BigInt? salt,
+  int? endTimestamp,
+  BigInt? price,
+  String? encodedOfferData,
+  required Function toggleLoading,
+  String? offerHash,
+  BigInt? amount,
+  BlockchainToken? token,
+  BigInt? gasAmount,
+}) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
-      functionSignatureHash: functionSignatureHash,
-      chainRpcUrl: getRPCUrlFromChainId(chainId),
-      chainId: chainId,
-      randomValueHash: signatureData.hashedMsg,
-      signature: signatureData.signature,
-      from: walletAddress,
-      to: controllerContractId ?? toAddress,
-      //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
-      toAccount: toAccount,
-      tokenURI:
-          twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
-      voucherTokenURI: voucherTokenMetadataCID != null
-          ? "ipfs://$voucherTokenMetadataCID"
-          : null,
-      tokenId: tokenId,
-      enableRecovery: enableRecovery,
-      sellerPayoutAddress: sellerPayoutAddress,
-      salt: salt,
-      endTimestamp: endTimestamp,
-      price: price,
-      encodedOfferData: encodedOfferData,
-      typedDataHash: typedDataHash,
-      offerHash: offerHash);
+    functionSignatureHash: functionSignatureHash,
+    chainRpcUrl: getRPCUrlFromChainId(chainId),
+    chainId: chainId,
+    randomValueHash: signatureData.hashedMsg,
+    signature: signatureData.signature,
+    from: walletAddress,
+    to: controllerContractId ?? toAddress,
+    //if a controller contract addr is given, the receiver is the controller address, not to address. toAddress is only sent to backend for gas station purposes
+    toAccount: toAccount,
+    tokenURI:
+        twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
+    voucherTokenURI: voucherTokenMetadataCID != null
+        ? "ipfs://$voucherTokenMetadataCID"
+        : null,
+    tokenId: tokenId,
+    enableRecovery: enableRecovery,
+    sellerPayoutAddress: sellerPayoutAddress,
+    salt: salt,
+    endTimestamp: endTimestamp,
+    price: price,
+    encodedOfferData: encodedOfferData,
+    typedDataHash: typedDataHash,
+    offerHash: offerHash,
+    amount: amount,
+    gas: gasAmount,
+  );
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
 
   try {
-    String signature;
+    String signature = "";
     if (walletType.type == EWalletType.ownerCard) {
       String hash = await getGaslessTxHash(request, toAddress);
 
@@ -127,29 +136,55 @@ Future<String> makeAndSendGaslessTx(
       signature = msgSignatureToHex(cardSignature);
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
+
+      await wcSwitchToChainConditionally(w3mService, chainId)
+          .timeout(
+        const Duration(seconds: 10),
+      )
+          .catchError((e) {
+        talker.error('Failed to switch to chain: $e');
+      });
+
       w3mService!.launchConnectedWallet();
 
       toggleLoading();
 
+      // check if the user allowed the forwarder contract to spend their tokens
+      if (chainConfig[chainId]!.forwarderContract != null && token != null) {
+        await _wcCheckERC20Allowance(
+          token,
+          walletAddress,
+          chainId,
+          wc,
+          wcSession,
+          w3mService,
+        );
+      }
+
+      // requqest user to allow the forwarder contract to spend their tokens
       signature = await wc!
           .request(
         topic: wcSession!.topic!,
-        // chainId: 'eip155:$chainId',
-        chainId: 'eip155:1',
+        chainId: 'eip155:$chainId',
         request: SessionRequestParams(
           method: 'eth_signTypedData_v4',
           params: [walletAddress.toString(), json.encode(typedData)],
         ),
       )
           .onError((error, stackTrace) {
+        talker.error(
+          'error signing gasless tx $error',
+          stackTrace,
+        );
         throw 'error signing gasless tx';
       });
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     } else {
       try {
+        final priv = await Web3AuthFlutter.getPrivKey();
         signature = EthSigUtil.signTypedData(
-          privateKey: await Web3AuthFlutter.getPrivKey(),
+          privateKey: priv,
           jsonData: json.encode(typedData),
           version: TypedDataVersion.V4,
         );
@@ -161,21 +196,187 @@ Future<String> makeAndSendGaslessTx(
       }
     }
 
-    String txnHash = await sendGaslessRequest(
+    if (signature.isEmpty) {
+      throw Exception('Failed to sign message');
+    }
+
+    String txnHash = await BackendMetaTx.sendGaslessRequest(
         toAddress, signature, metaTxAgreementId, request);
     return txnHash;
-  } catch (e) {
-    print(e);
+  } catch (e, st) {
+    talker.error(e, st);
     rethrow;
   }
 }
 
+// TODO: should be a gasless transaction as well
+Future<void> _wcCheckERC20Allowance(
+    BlockchainToken? token,
+    EthereumAddress walletAddress,
+    int chainId,
+    Web3App? wc,
+    W3MSession? wcSession,
+    W3MService w3mService) async {
+  final contract = await token!.getDeployedContract();
+  final function = contract.function('allowance');
+
+  final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
+  final res = await client.call(
+    contract: contract,
+    function: function,
+    params: [
+      walletAddress,
+      EthereumAddress.fromHex(chainConfig[chainId]!.forwarderContract!),
+    ],
+  );
+
+  if (res.first == BigInt.zero) {
+    final function = contract.function('approve');
+    final data = function.encodeCall([
+      EthereumAddress.fromHex(chainConfig[chainId]!.forwarderContract!),
+      BigInt.parse(
+          '115792089237316195423570985008687907853269984665640564039457584007913129639935')
+    ]);
+
+    final res = await wc!.request(
+      topic: wcSession!.topic!,
+      chainId: 'eip155:$chainId',
+      request: SessionRequestParams(
+        method: 'eth_sendTransaction',
+        params: [
+          {
+            'from': walletAddress.toString(),
+            'to': token.contractAddress.toString(),
+            'data': "0x${hex.encode(data)}",
+          }
+        ],
+      ),
+    );
+    print('Transaction sent: $res');
+
+    w3mService.launchConnectedWallet();
+  }
+}
+
+Future<EtherAmount> _getMaxPriorityFeePerGas() {
+  // We may want to compute this more accurately in the future,
+  // using the formula "check if the base fee is correct".
+  // See: https://eips.ethereum.org/EIPS/eip-1559
+  return Future.value(EtherAmount.inWei(BigInt.from(1000000000)));
+}
+
+// Max Fee = (2 * Base Fee) + Max Priority Fee
+Future<EtherAmount> _getMaxFeePerGas(
+  Web3Client client,
+  BigInt maxPriorityFeePerGas,
+) async {
+  final blockInformation = await client.getBlockInformation();
+  final baseFeePerGas = blockInformation.baseFeePerGas;
+
+  if (baseFeePerGas == null) {
+    return EtherAmount.zero();
+  }
+
+  return EtherAmount.inWei(
+    baseFeePerGas.getInWei * BigInt.from(2) + maxPriorityFeePerGas,
+  );
+}
+
+Future<Transaction> _fillMissingData({
+  required Transaction transaction,
+  int? chainId,
+  bool loadChainIdFromNetwork = false,
+  Web3Client? client,
+}) async {
+  if (loadChainIdFromNetwork && chainId != null) {
+    throw ArgumentError(
+      "You can't specify loadChainIdFromNetwork and specify a custom chain id!",
+    );
+  }
+
+  final sender = transaction.from!;
+  var gasPrice = transaction.gasPrice;
+
+  if (client == null &&
+      (transaction.nonce == null ||
+          transaction.maxGas == null ||
+          loadChainIdFromNetwork ||
+          (!transaction.isEIP1559 && gasPrice == null))) {
+    throw ArgumentError('Client is required to perform network actions');
+  }
+
+  if (!transaction.isEIP1559 && gasPrice == null) {
+    gasPrice = await client!.getGasPrice();
+  }
+
+  var maxFeePerGas = transaction.maxFeePerGas;
+  var maxPriorityFeePerGas = transaction.maxPriorityFeePerGas;
+
+  if (transaction.isEIP1559) {
+    maxPriorityFeePerGas ??= await _getMaxPriorityFeePerGas();
+    maxFeePerGas ??= await _getMaxFeePerGas(
+      client!,
+      maxPriorityFeePerGas.getInWei,
+    );
+  }
+
+  return transaction.copyWith(
+    value: transaction.value ?? EtherAmount.zero(),
+    maxGas: transaction.maxGas ??
+        await client!
+            .estimateGas(
+              sender: sender,
+              to: transaction.to,
+              data: transaction.data,
+              value: transaction.value,
+              gasPrice: gasPrice,
+              maxPriorityFeePerGas: maxPriorityFeePerGas,
+              maxFeePerGas: maxFeePerGas,
+            )
+            .then((bigInt) => bigInt.toInt()),
+    from: sender,
+    data: transaction.data ?? Uint8List(0),
+    gasPrice: gasPrice,
+    nonce: transaction.nonce ??
+        await client!
+            .getTransactionCount(sender, atBlock: const BlockNum.pending()),
+    maxPriorityFeePerGas: maxPriorityFeePerGas,
+    maxFeePerGas: maxFeePerGas,
+  );
+}
+
+List<dynamic> _encodeToRlp(
+  Transaction transaction,
+  MsgSignature? signature, {
+  required int chainId,
+}) {
+  final list = [
+    transaction.nonce,
+    transaction.gasPrice?.getInWei,
+    transaction.maxGas,
+    transaction.to?.addressBytes ?? Uint8List(0),
+    // Ensure addressBytes is not null
+    transaction.value?.getInWei,
+    transaction.data ?? Uint8List(0),
+    // Ensure data is not null
+  ];
+
+  if (signature != null) {
+    list
+      ..add(signature.v)
+      ..add(signature.r)
+      ..add(signature.s);
+  }
+
+  return list;
+}
 // This code creates a normal transaction.
 //It calls the buildEthSendTransactionRequest function to get the transaction parameters,
 //and then sends a custom request to the WalletConnect client to send the transaction.
 //It then returns the txnHash.
 
 Future<String> makeAndSendNormalTx(
+  BuildContext context,
   WidgetRef ref,
   String functionSignatureHash,
   int chainId,
@@ -196,30 +397,37 @@ Future<String> makeAndSendNormalTx(
   BigInt? salt,
   int? endTimestamp,
   String? encodedOfferData,
+  BigInt? amount,
+  BigInt? gasAmount,
+  BigInt? gasPrice,
 }) async {
   var txParams = await buildEthSendTransactionRequest(
-      getRPCUrlFromChainId(chainId),
-      toAddress,
-      walletAddress,
-      functionSignatureHash,
-      signatureData.hashedMsg,
-      signatureData.signature,
-      toAccount: toAccount,
-      tokenId: tokenId,
-      tokenURI:
-          twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
-      voucherTokenURI: voucherTokenMetadataCID != null
-          ? "ipfs://$voucherTokenMetadataCID"
-          : null,
-      enableRecovery: false,
-      sellerPayoutAddress: sellerPayoutAddress,
-      typedDataHash: typedDataHash,
-      chainId: chainId,
-      offerHash: offerHash,
-      offerPrice: price,
-      salt: salt,
-      end: endTimestamp,
-      encodedOfferData: encodedOfferData);
+    getRPCUrlFromChainId(chainId),
+    toAddress,
+    walletAddress,
+    functionSignatureHash,
+    signatureData.hashedMsg,
+    signatureData.signature,
+    toAccount: toAccount,
+    tokenId: tokenId,
+    tokenURI:
+        twinTokenMetadataCID != null ? "ipfs://$twinTokenMetadataCID" : null,
+    voucherTokenURI: voucherTokenMetadataCID != null
+        ? "ipfs://$voucherTokenMetadataCID"
+        : null,
+    enableRecovery: false,
+    sellerPayoutAddress: sellerPayoutAddress,
+    typedDataHash: typedDataHash,
+    chainId: chainId,
+    offerHash: offerHash,
+    offerPrice: price,
+    salt: salt,
+    end: endTimestamp,
+    encodedOfferData: encodedOfferData,
+    amount: amount,
+    gasPrice: gasPrice,
+    gasAmount: gasAmount,
+  );
 
   late String txnHash;
 
@@ -228,11 +436,11 @@ Future<String> makeAndSendNormalTx(
     throw Exception('Wallet type not found');
   }
 
-  if (walletType.type == EWalletType.web3auth) {
+  if ([EWalletType.ownerCard, EWalletType.web3auth].contains(walletType.type)) {
     final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
-    final credentials =
-        EthPrivateKey.fromHex(await Web3AuthFlutter.getPrivKey());
     final params = txParams[0];
+
+    Uint8List signature = Uint8List(0);
 
     Uint8List hexToBytes(String hexString) {
       // Ensure the hex string does not contain the '0x' prefix
@@ -242,19 +450,113 @@ Future<String> makeAndSendNormalTx(
       return Uint8List.fromList(hex.decode(hexString));
     }
 
-    final transaction = Transaction(
-      from: walletAddress,
-      to: toAddress,
-      data: hexToBytes(params['data']),
-      gasPrice: EtherAmount.inWei(BigInt.parse(
-        params['gasPrice'].toString().substring(2),
-        radix: 16,
-      )),
-      maxGas: int.tryParse(params['gas']),
+    final transaction = await _fillMissingData(
+      transaction: Transaction(
+        from: walletAddress,
+        to: toAddress,
+        data:
+            params['data'] != null ? hexToBytes(params['data']) : Uint8List(0),
+        gasPrice: params['gasPrice'] != null
+            ? EtherAmount.inWei(BigInt.parse(
+                params['gasPrice'].toString().substring(2),
+                radix: 16,
+              ))
+            : null,
+        maxGas: params["gas"] != null
+            ? BigInt.parse(
+                params['gas'].toString().substring(
+                      2,
+                    ),
+                radix: 16,
+              ).toInt()
+            : null,
+        value: params['value'] != null
+            ? EtherAmount.inWei(
+                BigInt.parse(
+                  params['value'].toString().substring(2),
+                  radix: 16,
+                ),
+              )
+            : EtherAmount.zero(),
+        nonce: params['nonce'] != null
+            ? int.parse(params['nonce'].toString().substring(2), radix: 16)
+            : null,
+      ),
+      chainId: chainId,
+      client: client,
     );
-    txnHash = await client.sendTransaction(credentials, transaction);
+
+    final encoded = _encodeToRlp(
+      transaction,
+      MsgSignature(
+        BigInt.zero,
+        BigInt.zero,
+        chainId,
+      ),
+      chainId: chainId,
+    );
+
+    final rawTx = Uint8List.fromList(rlp.encode(encoded));
+    final hash = keccak256(rawTx);
+
+    final MsgSignature msgSignature;
+
+    if (walletType.type == EWalletType.ownerCard) {
+      final sig =
+          // ignore: use_build_context_synchronously
+          await Navigator.pushNamed(context, PinScreen.routeName,
+              arguments: PinScreenArguments(
+                  activeFeature: PinScreenActiveFeature.verifyPinTx,
+                  callback: (String pin) async {
+                    return await makeCardSignature(
+                      ref,
+                      context,
+                      hash,
+                      () {},
+                      pin,
+                    );
+                  })) as MsgSignature;
+
+      msgSignature =
+          MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
+    } else {
+      final priv = await Web3AuthFlutter.getPrivKey();
+
+      final Credentials creds = EthPrivateKey.fromHex(priv);
+
+      msgSignature = creds.signToEcSignature(
+        rawTx,
+        chainId: chainId,
+      );
+    }
+
+    final signedTx = rlp.encode(
+      _encodeToRlp(
+        transaction,
+        msgSignature,
+        chainId: chainId,
+      ),
+    );
+
+    txnHash = await client.sendRawTransaction(
+      uint8ListFromList(signedTx),
+    );
+
+    talker.log('Transaction sent: $txnHash');
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
+
+    await wcSwitchToChainConditionally(w3mService, chainId).timeout(
+      const Duration(
+        seconds: 10,
+      ),
+      onTimeout: () {
+        talker.error('Failed to switch to chain');
+      },
+    ).catchError((e) {
+      talker.error('Failed to switch to chain: $e');
+    });
+
     w3mService!.launchConnectedWallet();
 
     txnHash = await wc.request(
@@ -270,66 +572,83 @@ Future<String> makeAndSendNormalTx(
   return txnHash;
 }
 
+Future<void> wcSwitchToChainConditionally(
+    W3MService? w3mService, int chainId) async {
+  final chain = w3mService?.selectedChain;
+  if (chain == null ||
+      chain.chainId.replaceAll("eip155:", "") != chainId.toString()) {
+    final chain = chainConfig[chainId]!;
+    w3mService!.launchConnectedWallet();
+
+    // get available chains, if no added chain, add the chain
+    // if added chain, switch to the chain
+    final chains = w3mService.getApprovedChains();
+    if (!(chains ?? [])
+        .map((e) => e.replaceAll("eip155:", ""))
+        .contains(chainId.toString())) {
+      await w3mService.requestAddChain(
+        W3MChainInfo(
+          chainName: chain.networkName,
+          chainId: "$chainId",
+          namespace: "",
+          tokenName: chain.nativeTokenSymbol,
+          rpcUrl: chain.rpcUrl,
+        ),
+      );
+    }
+
+    await w3mService.requestSwitchToChain(
+      W3MChainInfo(
+        chainName: chain.networkName,
+        chainId: "$chainId",
+        namespace: "",
+        tokenName: chain.nativeTokenSymbol,
+        rpcUrl: chain.rpcUrl,
+      ),
+    );
+
+    // Wait for the network to change
+    // so that we can redirect the user to the wallet app again
+    // because <launchConnectedWallet> does not work after switching the chain
+    // (because the application is still in the background)
+    await Future.delayed(const Duration(seconds: 5));
+  }
+}
+
 //personal sign
 Future<String> sendPersonalSignRequest(
   WidgetRef ref,
   String message,
   EthereumAddress walletAddress,
   W3MSession? wcSession,
-  Web3AuthNotifierData web3AuthData,
-  WalletType walletType,
-) async {
+  WalletType walletType, {
+  bool siweMessage = false,
+  int chainId = 1,
+}) async {
   List<int> utf8CodeUnits = utf8.encode(message);
   String hexUtf8EncodedMessage =
-      "0x" + utf8CodeUnits.map((e) => e.toRadixString(16)).join();
+      "0x${utf8CodeUnits.map((e) => e.toRadixString(16)).join()}";
 
-  final requestParams = [hexUtf8EncodedMessage, walletAddress.toString()];
+  final requestParams = [
+    siweMessage ? message : hexUtf8EncodedMessage,
+    walletAddress.toString()
+  ];
 
   if (walletType.type == EWalletType.web3auth) {
-    // final cfg = ChainConfig(
-    //   chainId: '11155111',
-    //   rpcTarget:
-    //       "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_ETH']}",
-    // );
-    // TODO: Web3Auth doesn't open the correct network
-    // it always opens eth mainnet
-    final cfg = ChainConfig(
-      chainId: 'eip155:1',
-      rpcTarget: chainConfig[1]!.rpcUrl,
-    );
-
     Future<String> signWithPrivateKey() async {
       final priv = await Web3AuthFlutter.getPrivKey();
       final credentials = EthPrivateKey.fromHex(priv);
+
       final res = credentials.signPersonalMessageToUint8List(
-          Uint8List.fromList(utf8CodeUnits),
-          chainId: 1);
+        Uint8List.fromList(utf8CodeUnits),
+        chainId: chainId,
+      );
 
       return '0x${hex.encode(res)}';
     }
 
     try {
-      if (Platform.isAndroid) {
-        return signWithPrivateKey();
-      }
-
-      await Web3AuthFlutter.request(
-        cfg,
-        'personal_sign',
-        requestParams,
-      ).catchError((_) {});
-
-      final res = await Web3AuthUtils.getSignResult(
-          maxRetries: 3,
-          delay: const Duration(
-            seconds: 1,
-          ));
-
-      if (res == null) {
-        return signWithPrivateKey();
-      }
-
-      return res;
+      return await signWithPrivateKey();
     } catch (e, st) {
       Sentry.captureException(e, stackTrace: st);
 
@@ -340,12 +659,16 @@ Future<String> sendPersonalSignRequest(
     w3mService!.launchConnectedWallet();
 
     try {
+      await wcSwitchToChainConditionally(
+        w3mService,
+        chainId,
+      ).timeout(const Duration(seconds: 10)).catchError((e) {
+        talker.error('Failed to switch to chain: $e');
+      });
+
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
-        chainId: 'eip155:1',
-        // chainId: w3mService.selectedChain?.chainId == null
-        // ? 'eip155:1'
-        // : 'eip155:${w3mService.selectedChain?.chainId}',
+        chainId: 'eip155:$chainId',
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,
@@ -361,7 +684,8 @@ Future<String> sendPersonalSignRequest(
 }
 
 Future<String> getGaslessTxHash(request, collectionId) async {
-  String hash = await getEthSignTypedDataSignature(collectionId, request);
+  String hash =
+      await BackendMetaTx.getEthSignTypedDataSignature(collectionId, request);
 
   return hash;
 }

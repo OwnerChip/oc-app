@@ -11,7 +11,7 @@ import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
 import 'package:ownerchip_whitelabel/services/common/alchemy/alchemyPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -134,7 +134,7 @@ final creatorDataProvider =
   ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
   try {
     final CreatorData creatorData =
-        await getCreatorData(chipInfo.chipEthereumAddress);
+        await BackendCreator.getCreatorData(chipInfo.chipEthereumAddress);
     return creatorData;
   } catch (err) {
     rethrow;
@@ -160,7 +160,8 @@ final voucherTokenOwnerProvider =
   return voucherTokenOwner;
 });
 
-final getNftsForOwnerProvider = FutureProvider.autoDispose<Map?>((ref) async {
+final getNftsForOwnerProvider =
+    FutureProvider.autoDispose<Map<int, List<OcOwnedNft>>?>((ref) async {
   List chainIds = chainConfig.keys.toList();
   //remove polygon mumbai testnet from chainIds, so that we do not use alchemy APIs for this chain
   chainIds.remove(80001);
@@ -252,11 +253,11 @@ final ocNFTsMintedByUserNotifierProvider =
 
 final voucherNftsOwnedByUserProvider =
     FutureProvider.autoDispose<List<AlchemyNFTAsset>>((ref) async {
-  Map? nftsForOwnerByChainId = await ref.watch(getNftsForOwnerProvider.future);
+  Map<int, List<OcOwnedNft>>? nftsForOwnerByChainId =
+      await ref.watch(getNftsForOwnerProvider.future);
   if (nftsForOwnerByChainId == null) {
     return [];
   }
-  nftsForOwnerByChainId = nftsForOwnerByChainId as Map<int, List<OcOwnedNft>>;
 
   final BlockchainCollectionList collections =
       await ref.read(appCollectionProvider.future);
