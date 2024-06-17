@@ -53,6 +53,9 @@ abstract class Backend {
     if (jwt != null && jwt.isEmpty) {
       jwt = null;
     }
+    if(jwt == null) {
+      talker.debug("JWT is null", StackTrace.current);
+    }
 
     talker.info('Recreating backend services with new JWT.\n$jwt');
 
