@@ -321,6 +321,8 @@
   "createdByMe": "Created by me",
   "youHaveNotMintedAnyItems": "You have not minted any digital twins.",
   "youDoNotOwnAnyItems": "You do not own any digital twins.",
+  "legalHintTerrorismFinancing": "I have fulfilled all my due diligence obligations with regard to the prevention of money laundering and terrorist financing in accordance with the laws applicable to me.",
+  "shippingHint": "You are responsible for packaging and shipping the item to the buyer.",
   "@_APPBAR": {},
   "copiedAddressToClipboard": "Address copied to clipboard",
   "appbarMyBalanceButton": "My Balance",

@@ -38,6 +38,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCheckBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/LoadingIndicator.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
@@ -85,9 +86,19 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   bool isRotating = true;
   String currencyDropdownValue = 'MATIC';
   bool raribleCheck = true;
+  bool _legalHintCheck = false;
+
   List<String> allDropdownValues = [];
   Future<bool>?
       _setCurrencyDropDownValuesFuture; //future used for currency dropdown FutureBuilder
+
+  bool _canOffer() {
+    return email.isEmpty ||
+        sellerPayoutAddress.isEmpty ||
+        !_legalHintCheck ||
+        (price <= 0) ||
+        (raribleCheck) == false;
+  }
 
   @override
   void initState() {
@@ -343,7 +354,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       try {
         if (canUseGasStation) {
-            txnHash = await makeAndSendGaslessTx(
+          txnHash = await makeAndSendGaslessTx(
               ref,
               ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
               offerItemFunctionSignature,
@@ -758,45 +769,73 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           //     ),
                           //   ],
                           // ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          CustomRoundedButton(
-                            text: context.loc.offerNow,
-                            onPressed: email.isEmpty ||
-                                    sellerPayoutAddress.isEmpty ||
-                                    (price <= 0) ||
-                                    (raribleCheck) == false
-                                ? null
-                                : () async {
-                                    //unfocus keyboard
-                                    FocusScope.of(context).unfocus();
-                                    if (_formKey.currentState!.validate()) {
-                                      fromCancelable(offerToken());
-                                    }
-                                  },
-                          ),
-                          const SizedBox(height: 10),
-
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(
-                                width: 300,
+                              CustomCheckBox(
+                                value: _legalHintCheck,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _legalHintCheck = value;
+                                  });
+                                },
+                              ),
+                              Flexible(
                                 child: Text(
-                                  context.loc
-                                      .ownerChipWillNotifyYouOnceTheItemIsPurchased,
-                                  textAlign: TextAlign.center,
+                                  context.loc.legalHintTerrorismFinancing,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodySmall!
-                                      .copyWith(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
+                                      .bodySmall
+                                      ?.copyWith(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                 ),
                               ),
                             ],
-                          )
+                          ),
+                          const SizedBox(
+                            height: 32,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32.0,
+                                ),
+                                child: Text(
+                                  context.loc.shippingHint,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              CustomRoundedButton(
+                                text: context.loc.offerNow,
+                                onPressed: _canOffer()
+                                    ? null
+                                    : () async {
+                                        //unfocus keyboard
+                                        FocusScope.of(context).unfocus();
+                                        if (_formKey.currentState!.validate()) {
+                                          fromCancelable(offerToken());
+                                        }
+                                      },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
                         ],
                       )),
                 ],
