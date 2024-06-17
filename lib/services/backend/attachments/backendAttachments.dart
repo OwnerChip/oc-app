@@ -213,7 +213,6 @@ abstract class BackendAttachments extends Backend {
     try {
       final result = await BackendAttachmentsService.instance
           .getPublicAndPrivateAttachmentsFromBackend(
-        uuid: convertTokenIdToEthereumAddress(tokenId),
         auth: makeAuthObject(
           userSession.sessionId,
           userSession.signatureData,

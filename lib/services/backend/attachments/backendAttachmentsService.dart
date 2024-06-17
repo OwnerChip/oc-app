@@ -54,9 +54,8 @@ abstract class BackendAttachmentsService {
     @Path("uuid") required String uuid,
   });
 
-  @POST("/{uuid}/owner/view-all")
+  @POST("/owner/view-all")
   Future<HttpResponse> getPublicAndPrivateAttachmentsFromBackend({
-    @Path("uuid") required String uuid,
     @Body() required Map<String, dynamic> auth,
   });
 

@@ -138,10 +138,8 @@ class _BackendAttachmentsService implements BackendAttachmentsService {
   }
 
   @override
-  Future<HttpResponse<dynamic>> getPublicAndPrivateAttachmentsFromBackend({
-    required String uuid,
-    required Map<String, dynamic> auth,
-  }) async {
+  Future<HttpResponse<dynamic>> getPublicAndPrivateAttachmentsFromBackend(
+      {required Map<String, dynamic> auth}) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -155,7 +153,7 @@ class _BackendAttachmentsService implements BackendAttachmentsService {
     )
             .compose(
               _dio.options,
-              '/${uuid}/owner/view-all',
+              '/owner/view-all',
               queryParameters: queryParameters,
               data: _data,
             )
