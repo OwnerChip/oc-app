@@ -392,5 +392,11 @@
     "galleryNoMoreItems": "No more NFTs to load",
     "errorLoadingOwnedItems": "Error loading owned NFTs",
     "errorLoadingCreatedItems": "Error loading created NFTs",
-    "galleryErrorLoadingMore": "Error loading more NFTs"
+    "galleryErrorLoadingMore": "Error loading more NFTs",
+    "@_OFFER_FOR_SALE": {},
+    "offerForSaleCreatedTokenAppBarTitle": "Offer for sale",
+    "offerForSaleCreatedTokenTitle" : "Token created",
+    "offerForSaleCreatedTokenSubtitle" : "You have successfully created a digital twin for your physical object.",
+    "offerForSaleCreatedTokenButton" : "Offer for sale",
+    "offerForSaleCreatedTokenViewTokenButton" : "View token"
 }

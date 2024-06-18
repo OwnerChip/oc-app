@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
+import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
@@ -343,7 +344,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       try {
         if (canUseGasStation) {
-            txnHash = await makeAndSendGaslessTx(
+          txnHash = await makeAndSendGaslessTx(
               ref,
               ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
               offerItemFunctionSignature,
