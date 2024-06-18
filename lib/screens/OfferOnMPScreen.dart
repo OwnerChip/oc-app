@@ -71,14 +71,12 @@ class OfferOnMPScreen extends ConsumerStatefulWidget {
 
 class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _sellerPayoutInputController = TextEditingController();
 
   CancelableOperation? cancellableOperation;
   bool isLoading = false;
   String loadingText = '';
   String overlayContentType = 'loading';
   String email = '';
-  String sellerPayoutAddress = '';
   double price = 0.00;
   String loadingSvgPath =
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
@@ -94,17 +92,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     super.initState();
 
     _setCurrencyDropDownValuesFuture = setCurrencyDropDownValues();
-
-    UserSession? userSession = ref.read(userSessionProvider);
-    if (userSession != null && !userSession.isOwnerCard) {
-      _sellerPayoutInputController.value = TextEditingValue(
-          text: userSession.userWalletAddress.toString(),
-          selection: TextSelection.fromPosition(TextPosition(
-              offset: userSession.userWalletAddress.toString().length)));
-      setState(() {
-        sellerPayoutAddress = userSession.userWalletAddress.hex;
-      });
-    }
   }
 
   Future<bool> setCurrencyDropDownValues() async {
@@ -334,7 +321,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           wc!,
           wcSession,
           walletType!,
-          sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
+          sellerPayoutAddress: userSession.userWalletAddress,
           tokenId: config.tokenId,
           typedDataHash: typedDataHash,
           price: BigInt.from(priceInPrimaryChainCurrency),
@@ -343,7 +330,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       try {
         if (canUseGasStation) {
-            txnHash = await makeAndSendGaslessTx(
+          txnHash = await makeAndSendGaslessTx(
               ref,
               ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
               offerItemFunctionSignature,
@@ -358,7 +345,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
               typedDataHash: typedDataHash,
               controllerContractId: controllerContractAddress,
               tokenId: config.tokenId,
-              sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
+              sellerPayoutAddress: userSession.userWalletAddress,
               salt: raribleV2Order.salt,
               endTimestamp: raribleV2Order.end,
               price: BigInt.from(priceInPrimaryChainCurrency),
@@ -401,7 +388,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
             sellerWalletAddress:
                 ref.read(userSessionProvider)!.userWalletAddress.toString(),
-            sellerPayoutAddress: sellerPayoutAddress,
+            sellerPayoutAddress: userSession.userWalletAddress.hex,
             sellerEmail: email,
             validUntil: raribleV2Order.end,
             salt: raribleV2Order.salt.toString(),
@@ -445,30 +432,50 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
         // ignore: use_build_context_synchronously
         showCustomPopup(
-            context,
-            context.loc.itemOfferedOnMP,
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 10),
-                CustomRoundedButton(
-                    text: context.loc.viewOnMP,
-                    onPressed: () {
-                      launchUrl(Uri.parse(raribleTokenUrl),
-                          mode: LaunchMode.externalApplication);
-                    }),
-              ],
-            ),
-            icon: Icon(Icons.celebration,
-                size: 90,
-                color: CustomColors(dotenv.get('APP_ID')).accentColor),
-            titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                fontSize:
-                    CustomFonts(dotenv.get('APP_ID')).metadataNameFontSize,
-                color: CustomColors(dotenv.get('APP_ID')).primaryColor,
-                fontWeight:
-                    CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
-            titlePadding: const EdgeInsets.all(0));
+          context,
+          context.loc.offerOnMpPublishedDialogTitle,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                context.loc.offerOnMpPublishedDialogSubtitle,
+                style:
+                Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  color: CustomColors(dotenv.get('APP_ID'))
+                      .black
+                      .withOpacity(
+                    0.7,
+                  ),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              CustomRoundedButton(
+                text: context.loc.viewOnMP,
+                onPressed: () {
+                  launchUrl(Uri.parse(raribleTokenUrl),
+                      mode: LaunchMode.externalApplication);
+                },
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+            ],
+          ),
+          icon: Icon(Icons.celebration,
+              size: 90,
+              color: CustomColors(dotenv.get('APP_ID')).accentColor),
+          titleTextStyle: Theme.of(context)
+              .textTheme
+              .bodyLarge!
+              .copyWith(
+              fontSize:
+              CustomFonts(dotenv.get('APP_ID'))
+                  .metadataNameFontSize,
+              fontWeight: CustomFonts(dotenv.get('APP_ID'))
+                  .metadataNameFontWeight),
+          titlePadding: const EdgeInsets.all(0),
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
@@ -505,7 +512,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
   @override
   void dispose() {
-    _sellerPayoutInputController.dispose();
     super.dispose();
   }
 
@@ -546,10 +552,34 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(context.loc.emailAddress,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall!),
+                                Row(
+                                  children: [
+                                    Text(context.loc.emailAddress,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall!),
+                                    const SizedBox(
+                                      width: 5,
+                                    ),
+                                    InfoPopupWidget(
+                                      key: const Key('emailInfoPopup'),
+                                      arrowTheme: InfoPopupArrowTheme(
+                                        arrowDirection: ArrowDirection.down,
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                      ),
+                                      contentTitle:
+                                          context.loc.offerOnMpEmailHint,
+                                      child: Icon(
+                                          color:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                          Icons.info,
+                                          size: 18),
+                                    )
+                                  ],
+                                ),
                                 const SizedBox(
                                   height: 5,
                                 ),
@@ -590,48 +620,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(context.loc.payoutWalletAddress,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall!),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                TextFormField(
-                                  controller: _sellerPayoutInputController,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  cursorColor: CustomColors(
-                                          dotenv.get('APP_ID').toString())
-                                      .accentColor,
-                                  decoration: customInputDecoration(context,
-                                      context.loc.enterWalletAddressForPayout,
-                                      fillColor:
-                                          CustomColors(dotenv.get('APP_ID'))
-                                              .cardColor),
-                                  keyboardType: TextInputType.text,
-                                  obscureText: false,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      sellerPayoutAddress = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    try {
-                                      EthereumAddress.fromHex(value!);
-                                    } catch (e) {
-                                      return context
-                                          .loc.pleaseEnterValidWalletAddress;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ]),
-                          const SizedBox(
-                            height: 40,
-                          ),
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
                                 Row(
                                   children: [
                                     Text(context.loc.price,
@@ -647,7 +635,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                             CustomColors(dotenv.get('APP_ID'))
                                                 .primaryColor,
                                       ),
-                                      contentTitle: context.loc.feesInfo,
+                                      contentTitle:
+                                          context.loc.offerOnMpPriceHint,
                                       child: Icon(
                                           color:
                                               CustomColors(dotenv.get('APP_ID'))
@@ -710,20 +699,35 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                   },
                                 ),
                                 const SizedBox(
-                                  height: 3,
+                                  height: 8,
                                 ),
                                 Text(
-                                  '${currencyDropdownValue == 'EUR' ? allDropdownValues[0] : 'EUR'} ${ethPriceEur.when(data: (data) {
-                                        if (currencyDropdownValue == 'EUR') {
-                                          return (price / data['EUR'])
-                                              .toStringAsFixed(6);
-                                        } else {
-                                          return (price * data['EUR'])
-                                              .toStringAsFixed(2);
-                                        }
-                                      }, error: (e, s) => Container(), loading: () => 'Fetching price...')}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                )
+                                  context.loc.offerOnMpEstimatedPriceInEur(
+                                    ethPriceEur.when(
+                                        data: (data) {
+                                          if (currencyDropdownValue == 'EUR') {
+                                            return (price / data['EUR'])
+                                                .toStringAsFixed(6);
+                                          } else {
+                                            return (price * data['EUR'])
+                                                .toStringAsFixed(2);
+                                          }
+                                        },
+                                        error: (e, s) => context
+                                            .loc.offerOnMpErrorFetchingPrice,
+                                        loading: () =>
+                                            context.loc.offerOnMpFetchingPrice),
+                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .copyWith(
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .black
+                                                .withOpacity(.7),
+                                      ),
+                                ),
                               ]),
                           const SizedBox(
                             height: 40,
@@ -764,7 +768,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                           CustomRoundedButton(
                             text: context.loc.offerNow,
                             onPressed: email.isEmpty ||
-                                    sellerPayoutAddress.isEmpty ||
                                     (price <= 0) ||
                                     (raribleCheck) == false
                                 ? null
