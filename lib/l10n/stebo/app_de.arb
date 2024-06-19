@@ -393,5 +393,11 @@
     "galleryNoMoreItems": "Alle NFTs geladen",
     "errorLoadingOwnedItems": "Fehler beim Laden der NFTs",
     "errorLoadingCreatedItems": "Fehler beim Laden der NFTs",
-    "galleryErrorLoadingMore": "Fehler beim Laden der NFTs"
+    "galleryErrorLoadingMore": "Fehler beim Laden der NFTs",
+    "@_OFFER_FOR_SALE": {},
+    "offerForSaleCreatedTokenAppBarTitle": "Zum Verkauf anbieten",
+    "offerForSaleCreatedTokenTitle" : "Digital Twin erstellt",
+    "offerForSaleCreatedTokenSubtitle" : "Du hast erfolgreich einen Digital Twin für dein Objekt erstellt.",
+    "offerForSaleCreatedTokenButton" : "Jetzt anbieten",
+    "offerForSaleCreatedTokenViewTokenButton" : "Token ansehen"
 }
