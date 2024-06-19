@@ -397,9 +397,9 @@
     "@_OFFER_ON_MP": {},
     "offerOnMpEmailHint": "Deine Email Adresse wird verwendet, um dich über den Status des Angebots zu informieren.",
     "offerOnMpPriceHint": "5% Protokollgebühr + Marktplatzgebühr wird vom Verkaufspreis abgezogen. EUR Wert variiert mit Wechselkurs.",
-    "offerOnMpEstimatedPriceInEur": "Estimated EUR value as of today ~{price}",
-    "offerOnMpFetchingPrice": "Fetching current price...",
-    "offerOnMpErrorFetchingPrice": "Error fetching current price",
-    "offerOnMpPublishedDialogTitle": "Published on Marketplace",
-    "offerOnMpPublishedDialogSubtitle": "Your item is now available for sale!"
+    "offerOnMpEstimatedPriceInEur": "Geschätzter EUR Wert ~{price}",
+    "offerOnMpFetchingPrice": "Aktuelle Kurse werden geladen...",
+    "offerOnMpErrorFetchingPrice": "Fehler beim Laden aktueller Kurse",
+    "offerOnMpPublishedDialogTitle": "Auf Marktplatz veröffentlicht",
+    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!"
 }
