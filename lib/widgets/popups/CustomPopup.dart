@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/confetti/confettiWrapper.dart';
 
 Future<void> showCustomPopup(
   BuildContext context,
@@ -14,12 +15,14 @@ Future<void> showCustomPopup(
   EdgeInsets? titlePadding,
   VoidCallback? setShippingPopupIsShownState,
   bool showCloseButton = true,
+  bool showConfetti = false,
 }) async {
   setShippingPopupIsShownState?.call();
+
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
-      return AlertDialog(
+      final dialog = AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
         //border radius
         shape: const RoundedRectangleBorder(
@@ -77,6 +80,12 @@ Future<void> showCustomPopup(
           ],
         ),
       );
+
+      if (showConfetti) {
+        return ConfettiWrapper(child: dialog);
+      }
+
+      return dialog;
     },
   ).then((value) {
     setShippingPopupIsShownState?.call();

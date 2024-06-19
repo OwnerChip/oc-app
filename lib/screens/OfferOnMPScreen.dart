@@ -492,6 +492,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
               fontWeight:
                   CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
           titlePadding: const EdgeInsets.all(0),
+          showConfetti: true,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
