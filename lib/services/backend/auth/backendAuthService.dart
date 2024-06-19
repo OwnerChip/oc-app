@@ -27,16 +27,18 @@ abstract class BackendAuthService {
     return _BackendAuthService(dio, baseUrl: "${dio.options.baseUrl}/auth");
   }
 
-  @GET("/")
-  Future<String> getSessionId();
 
+  // @deprecated
   @POST("/{expiration}")
   Future<String> getSessionExpiration({
     @Path("expiration") required int expiration,
     @Body() required GetSessionExpirationPayload payload,
   });
 
-  @POST("/session/siwe")
+  @GET("/")
+  Future<String> getSessionId();
+
+  @POST("/")
   Future<String> validateSiwe({
     @Body() required ValidateSiwePayload body,
   });

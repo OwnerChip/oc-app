@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendAppService.dart';
+import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
+import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachmentsService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollectionService.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/backendCreatorService.dart';
@@ -51,6 +53,9 @@ abstract class Backend {
     if (jwt != null && jwt.isEmpty) {
       jwt = null;
     }
+    if(jwt == null) {
+      talker.debug("JWT is null", StackTrace.current);
+    }
 
     talker.info('Recreating backend services with new JWT.\n$jwt');
 
@@ -62,6 +67,7 @@ abstract class Backend {
     BackendCollectionService.recreate(jwt);
     BackendCustomerService.recreate(jwt);
     BackendCreatorService.recreate(jwt);
+    BackendAttachmentsService.recreate(jwt);
   }
 }
 
