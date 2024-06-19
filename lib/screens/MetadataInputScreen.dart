@@ -5,6 +5,7 @@ import 'package:mime/mime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -280,19 +281,27 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
           ChipInfoModel chipInfo = ref.read(chipInfoProvider);
           await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
-        } catch (e) {
-          print(e);
-          Sentry.captureException(e);
+        } catch (e, st) {
+          Sentry.captureException(
+            e,
+            stackTrace: st,
+          );
+          talker.error(
+            'Error refreshing providers: $e',
+            st,
+          );
         }
 
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          NFTDetailsScreen.routeName,
-          (Route route) => route.isFirst,
-        );
-        setState(() {
+        if (mounted) {
           isLoading = false;
-        });
+          setState(() {});
+        }
+
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          OfferForSaleCreatedTokenScreen.routeName,
+          (route) => route.isFirst,
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
               context.loc.mintSuccess, 'success'),

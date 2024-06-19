@@ -1,10 +1,9 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
-import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
+import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
