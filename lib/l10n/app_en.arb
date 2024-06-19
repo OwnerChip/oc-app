@@ -400,5 +400,14 @@
   "offerForSaleCreatedTokenTitle" : "Token created",
   "offerForSaleCreatedTokenSubtitle" : "You have successfully created a digital twin for your physical object.",
   "offerForSaleCreatedTokenButton" : "Offer for sale",
-  "offerForSaleCreatedTokenViewTokenButton" : "View token"
- }
+  "offerForSaleCreatedTokenViewTokenButton" : "View token",
+  "@_OFFER_ON_MP": {},
+  "offerOnMpEmailHint": "We will use this email address to notify you about the status of the offer.",
+  "offerOnMpPriceHint": "5% protocol fees + marketplace fees will be deducted from payout amount. Please check the support section for more details.",
+  "offerOnMpEstimatedPriceInEur": "Estimated EUR value as of today ~{price}",
+  "offerOnMpFetchingPrice": "Fetching current price...",
+  "offerOnMpErrorFetchingPrice": "Error fetching current price",
+  "offerOnMpPublishedDialogTitle": "Published on Marketplace",
+  "offerOnMpPublishedDialogSubtitle": "Your item is now available for sale!"
+
+}

@@ -19,32 +19,6 @@ class _BackendAuthService implements BackendAuthService {
   String? baseUrl;
 
   @override
-  Future<String> getSessionId() async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-          _dio.options,
-          '/',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        ))));
-    final value = _result.data!;
-    return value;
-  }
-
-  @override
   Future<String> getSessionExpiration({
     required int expiration,
     required GetSessionExpirationPayload payload,
@@ -75,6 +49,32 @@ class _BackendAuthService implements BackendAuthService {
   }
 
   @override
+  Future<String> getSessionId() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        ))));
+    final value = _result.data!;
+    return value;
+  }
+
+  @override
   Future<String> validateSiwe({required ValidateSiwePayload body}) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -88,7 +88,7 @@ class _BackendAuthService implements BackendAuthService {
     )
         .compose(
           _dio.options,
-          '/session/siwe',
+          '/',
           queryParameters: queryParameters,
           data: _data,
         )
