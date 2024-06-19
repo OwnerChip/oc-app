@@ -41,6 +41,7 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCheckBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/LoadingIndicator.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
@@ -88,9 +89,18 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   bool isRotating = true;
   String currencyDropdownValue = 'MATIC';
   bool raribleCheck = true;
+  bool _legalHintCheck = false;
+
   List<String> allDropdownValues = [];
   Future<bool>?
       _setCurrencyDropDownValuesFuture; //future used for currency dropdown FutureBuilder
+
+  bool _canOffer() {
+    return email.isEmpty ||
+        !_legalHintCheck ||
+        (price <= 0) ||
+        (raribleCheck) == false;
+  }
 
   @override
   void initState() {
@@ -554,305 +564,316 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
         ),
-        child: Stack(
-          children: [
-            Scaffold(
-              key: ScaffoldKey.getScaffoldKey('OfferOnMPScreen'),
-              appBar: CustomAppBar(
-                text: context.loc.offerItem,
-                showBackButton: true,
-              ),
-              body: GestureDetector(
-                  onTap: () => FocusScope.of(context).unfocus(),
-                  child: ScreenBodyLayout(
-                    withScrollView: true,
-                    children: [
-                      Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 40),
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(context.loc.emailAddress,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineSmall!),
-                                        const SizedBox(
-                                          width: 5,
-                                        ),
-                                        InfoPopupWidget(
-                                          key: const Key('emailInfoPopup'),
-                                          arrowTheme: InfoPopupArrowTheme(
-                                            arrowDirection: ArrowDirection.down,
-                                            color: CustomColors(
-                                                    dotenv.get('APP_ID'))
-                                                .primaryColor,
-                                          ),
-                                          contentTitle:
-                                              context.loc.offerOnMpEmailHint,
-                                          child: Icon(
-                                              color: CustomColors(
-                                                      dotenv.get('APP_ID'))
-                                                  .primaryColor,
-                                              Icons.info,
-                                              size: 18),
-                                        )
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      height: 5,
-                                    ),
-                                    TextFormField(
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                      cursorColor: CustomColors(
-                                              dotenv.get('APP_ID').toString())
-                                          .accentColor,
-                                      decoration: customInputDecoration(
-                                          context, 'john@example.com',
-                                          fillColor:
-                                              CustomColors(dotenv.get('APP_ID'))
-                                                  .cardColor),
-                                      keyboardType: TextInputType.emailAddress,
-                                      obscureText: false,
-                                      controller: _emailController,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          email = value;
-                                        });
-                                      },
-                                      validator: (value) {
-                                        bool isEmail = RegExp(
-                                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                            .hasMatch(value!);
-                                        if (isEmail) {
-                                          return null;
-                                        } else {
-                                          return context
-                                              .loc.pleaseEnterValidEmailAddress;
-                                        }
-                                      },
-                                    ),
-                                  ]),
-                              const SizedBox(
-                                height: 40,
-                              ),
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(context.loc.price,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineSmall!),
-                                        const SizedBox(width: 5),
-                                        InfoPopupWidget(
-                                          key: const Key('feeInfoPopup'),
-                                          arrowTheme: InfoPopupArrowTheme(
-                                            arrowDirection: ArrowDirection.down,
-                                            color: CustomColors(
-                                                    dotenv.get('APP_ID'))
-                                                .primaryColor,
-                                          ),
-                                          contentTitle:
-                                              context.loc.offerOnMpPriceHint,
-                                          child: Icon(
-                                              color: CustomColors(
-                                                      dotenv.get('APP_ID'))
-                                                  .primaryColor,
-                                              Icons.info,
-                                              size: 18),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      height: 5,
-                                    ),
-                                    TextFormField(
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                      cursorColor: CustomColors(
-                                              dotenv.get('APP_ID').toString())
-                                          .accentColor,
-                                      decoration: customInputDecoration(
-                                          suffix: FutureBuilder<bool>(
-                                            future:
-                                                _setCurrencyDropDownValuesFuture,
-                                            builder: (context, snapshot) {
-                                              if (snapshot.hasData) {
-                                                return CryptoCurrencyDropdown(
-                                                  allDropDownItems:
-                                                      allDropdownValues,
-                                                  setCurrency: (value) {
-                                                    setState(() {
-                                                      currencyDropdownValue =
-                                                          value;
-                                                    });
-                                                  },
-                                                  selectedCurrency:
-                                                      currencyDropdownValue,
-                                                );
-                                              } else if (snapshot.hasError) {
-                                                return Container();
-                                              } else {
-                                                return Container();
-                                              }
-                                            },
-                                          ),
-                                          context,
-                                          context.loc.enterSalePrice,
-                                          fillColor:
-                                              CustomColors(dotenv.get('APP_ID'))
-                                                  .cardColor),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
-                                              decimal: true),
-                                      obscureText: false,
-                                      initialValue: price.toString(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          if (value.isEmpty) {
-                                            price = 0.0;
-                                          } else {
-                                            value = value.replaceAll(',', '.');
-                                            price = double.parse(value);
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Text(
-                                      ethPriceEur.when(
-                                          data: (data) {
-                                            String priceInEur = '';
-                                            if (currencyDropdownValue ==
-                                                'EUR') {
-                                              priceInEur = (price / data['EUR'])
-                                                  .toStringAsFixed(6);
-                                            } else {
-                                              priceInEur = (price * data['EUR'])
-                                                  .toStringAsFixed(2);
-                                            }
-
-                                            return context.loc
-                                                .offerOnMpEstimatedPriceInEur(
-                                                    priceInEur);
-                                          },
-                                          error: (e, s) => context
-                                              .loc.offerOnMpErrorFetchingPrice,
-                                          loading: () => context
-                                              .loc.offerOnMpFetchingPrice),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium!
-                                          .copyWith(
-                                            color: CustomColors(
-                                                    dotenv.get('APP_ID'))
-                                                .black
-                                                .withOpacity(.7),
-                                          ),
-                                    ),
-                                  ]),
-                              const SizedBox(
-                                height: 40,
-                              ),
-                              //TODO: checkbox for selecting Marketplace temporarily disabled
-                              // Column(
-                              //   crossAxisAlignment: CrossAxisAlignment.start,
-                              //   children: [
-                              //     Text('Marketplace',
-                              //         style: Theme.of(context)
-                              //             .textTheme
-                              //             .headlineSmall!),
-                              //     Row(
-                              //       mainAxisAlignment: MainAxisAlignment.start,
-                              //       children: [
-                              //         Checkbox(
-                              //             activeColor: CustomColors(
-                              //                     dotenv.get('APP_ID').toString())
-                              //                 .accentColor,
-                              //             value: raribleCheck,
-                              //             onChanged: (value) {
-                              //               setState(() {
-                              //                 raribleCheck = value!;
-                              //               });
-                              //             }),
-                              //         Text(
-                              //           context.loc.listOnRarible,
-                              //           style:
-                              //               Theme.of(context).textTheme.bodyMedium,
-                              //         )
-                              //       ],
-                              //     ),
-                              //   ],
-                              // ),
-                              const SizedBox(
-                                height: 20,
-                              ),
-                              CustomRoundedButton(
-                                text: context.loc.offerNow,
-                                onPressed: email.isEmpty ||
-                                        (price <= 0) ||
-                                        (raribleCheck) == false
-                                    ? null
-                                    : () async {
-                                        //unfocus keyboard
-                                        FocusScope.of(context).unfocus();
-                                        if (_formKey.currentState!.validate()) {
-                                          fromCancelable(offerToken());
-                                        }
-                                      },
-                              ),
-                              const SizedBox(height: 10),
-
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 300,
-                                    child: Text(
-                                      context.loc
-                                          .ownerChipWillNotifyYouOnceTheItemIsPurchased,
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .copyWith(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          )),
-                    ],
-                  )),
+        child: Stack(children: [
+          Scaffold(
+            key: ScaffoldKey.getScaffoldKey('OfferOnMPScreen'),
+            appBar: CustomAppBar(
+              text: context.loc.offerItem,
+              showBackButton: true,
             ),
-            if (offerOnMpData.loading)
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(
-                    0.2,
-                  ),
-                ),
-                child: Center(
-                    child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    CustomColors(dotenv.get('APP_ID').toString()).accentColor,
-                  ),
+            body: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: ScreenBodyLayout(
+                  withScrollView: true,
+                  children: [
+                    Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 40),
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(context.loc.emailAddress,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall!),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                      InfoPopupWidget(
+                                        key: const Key('emailInfoPopup'),
+                                        arrowTheme: InfoPopupArrowTheme(
+                                          arrowDirection: ArrowDirection.down,
+                                          color:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                        ),
+                                        contentTitle:
+                                            context.loc.offerOnMpEmailHint,
+                                        child: Icon(
+                                            color: CustomColors(
+                                                    dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                            Icons.info,
+                                            size: 18),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  TextFormField(
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    cursorColor: CustomColors(
+                                            dotenv.get('APP_ID').toString())
+                                        .accentColor,
+                                    decoration: customInputDecoration(
+                                        context, 'john@example.com',
+                                        fillColor:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .cardColor),
+                                    keyboardType: TextInputType.emailAddress,
+                                    obscureText: false,
+                                    controller: _emailController,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        email = value;
+                                      });
+                                    },
+                                    validator: (value) {
+                                      bool isEmail = RegExp(
+                                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                          .hasMatch(value!);
+                                      if (isEmail) {
+                                        return null;
+                                      } else {
+                                        return context
+                                            .loc.pleaseEnterValidEmailAddress;
+                                      }
+                                    },
+                                  ),
+                                ]),
+                            const SizedBox(
+                              height: 40,
+                            ),
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(context.loc.price,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall!),
+                                      const SizedBox(width: 5),
+                                      InfoPopupWidget(
+                                        key: const Key('feeInfoPopup'),
+                                        arrowTheme: InfoPopupArrowTheme(
+                                          arrowDirection: ArrowDirection.down,
+                                          color:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                        ),
+                                        contentTitle:
+                                            context.loc.offerOnMpPriceHint,
+                                        child: Icon(
+                                            color: CustomColors(
+                                                    dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                            Icons.info,
+                                            size: 18),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  TextFormField(
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    cursorColor: CustomColors(
+                                            dotenv.get('APP_ID').toString())
+                                        .accentColor,
+                                    decoration: customInputDecoration(
+                                        suffix: FutureBuilder<bool>(
+                                          future:
+                                              _setCurrencyDropDownValuesFuture,
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData) {
+                                              return CryptoCurrencyDropdown(
+                                                allDropDownItems:
+                                                    allDropdownValues,
+                                                setCurrency: (value) {
+                                                  setState(() {
+                                                    currencyDropdownValue =
+                                                        value;
+                                                  });
+                                                },
+                                                selectedCurrency:
+                                                    currencyDropdownValue,
+                                              );
+                                            } else if (snapshot.hasError) {
+                                              return Container();
+                                            } else {
+                                              return Container();
+                                            }
+                                          },
+                                        ),
+                                        context,
+                                        context.loc.enterSalePrice,
+                                        fillColor:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .cardColor),
+                                    keyboardType:
+                                        TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    obscureText: false,
+                                    initialValue: price.toString(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        if (value.isEmpty) {
+                                          price = 0.0;
+                                        } else {
+                                          value = value.replaceAll(',', '.');
+                                          price = double.parse(value);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    height: 3,
+                                  ),
+                                  Text(
+                                    ethPriceEur.when(
+                                        data: (data) {
+                                          String priceInEur = '';
+                                          if (currencyDropdownValue == 'EUR') {
+                                            priceInEur = (price / data['EUR'])
+                                                .toStringAsFixed(6);
+                                          } else {
+                                            priceInEur = (price * data['EUR'])
+                                                .toStringAsFixed(2);
+                                          }
+
+                                          return context.loc
+                                              .offerOnMpEstimatedPriceInEur(
+                                                  priceInEur);
+                                        },
+                                        error: (e, s) => context
+                                            .loc.offerOnMpErrorFetchingPrice,
+                                        loading: () =>
+                                            context.loc.offerOnMpFetchingPrice),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium!
+                                        .copyWith(
+                                          color:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .black
+                                                  .withOpacity(.7),
+                                        ),
+                                  ),
+                                ]),
+                            const SizedBox(
+                              height: 40,
+                            ),
+                            //TODO: checkbox for selecting Marketplace temporarily disabled
+                            // Column(
+                            //   crossAxisAlignment: CrossAxisAlignment.start,
+                            //   children: [
+                            //     Text('Marketplace',
+                            //         style: Theme.of(context)
+                            //             .textTheme
+                            //             .headlineSmall!),
+                            //     Row(
+                            //       mainAxisAlignment: MainAxisAlignment.start,
+                            //       children: [
+                            //         Checkbox(
+                            //             activeColor: CustomColors(
+                            //                     dotenv.get('APP_ID').toString())
+                            //                 .accentColor,
+                            //             value: raribleCheck,
+                            //             onChanged: (value) {
+                            //               setState(() {
+                            //                 raribleCheck = value!;
+                            //               });
+                            //             }),
+                            //         Text(
+                            //           context.loc.listOnRarible,
+                            //           style:
+                            //               Theme.of(context).textTheme.bodyMedium,
+                            //         )
+                            //       ],
+                            //     ),
+                            //   ],
+                            // ),
+                            Row(
+                              children: [
+                                CustomCheckBox(
+                                  value: _legalHintCheck,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _legalHintCheck = value;
+                                    });
+                                  },
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    context.loc.legalHintTerrorismFinancing,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 32,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32.0,
+                                  ),
+                                  child: Text(
+                                    context.loc.shippingHint,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                CustomRoundedButton(
+                                  text: context.loc.offerNow,
+                                  onPressed: _canOffer()
+                                      ? null
+                                      : () async {
+                                          //unfocus keyboard
+                                          FocusScope.of(context).unfocus();
+                                          if (_formKey.currentState!
+                                              .validate()) {
+                                            fromCancelable(offerToken());
+                                          }
+                                        },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 12,
+                            ),
+                          ],
+                        )),
+                  ],
                 )),
-              )
-          ],
-        ));
+          )
+        ]));
   }
 }
