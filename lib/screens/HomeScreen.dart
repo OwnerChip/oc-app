@@ -119,7 +119,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           }
 
           if (privKey != null &&
-              backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
+              backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
+              backendSession.jwt.raw.isNotEmpty) {
             ref.read(userAddressProvider.notifier).state =
                 EthPrivateKey.fromHex(privKey).address;
 
@@ -130,7 +131,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             if (privKey == null) {}
           }
         } else if (walletType.type == EWalletType.ownerCard) {
-          if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
+          if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
+              backendSession.jwt.raw.isNotEmpty) {
             ref.read(userAddressProvider.notifier).state =
                 backendSession.userWalletAddress;
             ref.read(walletTypeProvider.notifier).state = walletType;
@@ -151,7 +153,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           //Note: WalletConnect session duration is 7 days
 
           if ((wcSession.expiry ?? 0) > BackendAuth.nowPlusThreeHours() &&
-              backendSession.expiryDate > BackendAuth.nowPlusThreeHours()) {
+              backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
+              backendSession.jwt.raw.isNotEmpty) {
             ref.read(wcSessionProvider.notifier).state = wcSession;
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;

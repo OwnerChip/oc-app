@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/domain/signatureData/signatureData.dart';
 import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
 import 'package:ownerchip_whitelabel/domain/userSession/userSession.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -62,7 +63,7 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     SignatureData tokenSignatureData = ref.read(chipSignatureDataProvider);
 
     UserSession? userSession = ref.read(userSessionProvider);
-    response = await getPublicAndPrivateAttachmentsFromBackend(
+    response = await BackendAttachments.getPublicAndPrivateAttachmentsFromBackend(
       userSession!,
       userWalletAddress,
       chainId,
@@ -71,7 +72,7 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     );
   } else {
     //get all public attachments
-    response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);
+    response = await BackendAttachments.getPublicAttachmentsFromBackend(chipInfo.tokenId);
     print(response);
   }
   //create list of attachments

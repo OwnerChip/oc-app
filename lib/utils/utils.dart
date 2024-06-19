@@ -35,6 +35,23 @@ String getNdefUrl() {
       : dotenv.get('NDEF_URL');
 }
 
+String getCustomerId() {
+  switch (dotenv.get("BITRISEIO_PACKAGE_NAME")) {
+    case 'com.ownerchip':
+    case 'com.ownerchip.user':
+    case 'com.ownerchip.internal':
+      return '100';
+    case 'com.steboart.user':
+      return '101';
+    case 'com.ownerchipinfineon.demo':
+      return '102';
+    case 'com.stilami.identity':
+      return '103';
+    default:
+      return '';
+  }
+}
+
 Future<void> vibrateNTimes(int times) async {
   for (int i = 0; i < times; i++) {
     HapticFeedback.vibrate();

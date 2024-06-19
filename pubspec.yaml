@@ -48,6 +48,8 @@ dependencies:
   ansicolor: ^2.0.2
   talker: ^4.2.0
   talker_dio_logger: ^4.2.0
+  confetti: ^0.7.0
+  path_drawing: ^1.0.1
 
 dev_dependencies:
   flutter_test:

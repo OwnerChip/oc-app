@@ -20,6 +20,7 @@ import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
@@ -183,7 +184,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText = context.loc.burnedSuccess;
         });
 
-        deleteAllAttachments(userSession, connectedWallet, config.chainId,
+        BackendAttachments.deleteAllAttachments(userSession, connectedWallet, config.chainId,
             config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();

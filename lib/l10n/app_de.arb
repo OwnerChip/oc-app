@@ -395,5 +395,15 @@
     "galleryNoMoreItems": "Alle NFTs geladen",
     "errorLoadingOwnedItems": "Fehler beim Laden der NFTs",
     "errorLoadingCreatedItems": "Fehler beim Laden der NFTs",
-    "galleryErrorLoadingMore": "Fehler beim Laden der NFTs"
+    "galleryErrorLoadingMore": "Fehler beim Laden der NFTs",
+    "@_OFFER_ON_MP": {},
+    "offerOnMpEmailHint": "Deine Email Adresse wird verwendet, um dich über den Status des Angebots zu informieren.",
+    "offerOnMpPriceHint": "5% Protokollgebühr + Marktplatzgebühr wird vom Verkaufspreis abgezogen. EUR Wert variiert mit Wechselkurs.",
+    "offerOnMpEstimatedPriceInEur": "Geschätzter EUR Wert ~{price}",
+    "offerOnMpFetchingPrice": "Aktuelle Kurse werden geladen...",
+    "offerOnMpErrorFetchingPrice": "Fehler beim Laden aktueller Kurse",
+    "offerOnMpPublishedDialogTitle": "Auf Marktplatz veröffentlicht",
+    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!"
+
+
 }

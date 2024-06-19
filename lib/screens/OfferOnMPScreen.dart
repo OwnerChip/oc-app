@@ -28,6 +28,7 @@ import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/offerOnMp/offerOnMpNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
@@ -67,14 +68,14 @@ class OfferOnMPScreen extends ConsumerStatefulWidget {
 
 class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _sellerPayoutInputController = TextEditingController();
+
+  final TextEditingController _emailController = TextEditingController();
 
   CancelableOperation? cancellableOperation;
   bool isLoading = false;
   String loadingText = '';
   String overlayContentType = 'loading';
   String email = '';
-  String sellerPayoutAddress = '';
   double price = 0.00;
   String loadingSvgPath =
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
@@ -88,19 +89,29 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   @override
   void initState() {
     super.initState();
-
     _setCurrencyDropDownValuesFuture = setCurrencyDropDownValues();
+    _initCreatorData();
+  }
 
-    UserSession? userSession = ref.read(userSessionProvider);
-    if (userSession != null && !userSession.isOwnerCard) {
-      _sellerPayoutInputController.value = TextEditingValue(
-          text: userSession.userWalletAddress.toString(),
-          selection: TextSelection.fromPosition(TextPosition(
-              offset: userSession.userWalletAddress.toString().length)));
-      setState(() {
-        sellerPayoutAddress = userSession.userWalletAddress.hex;
-      });
-    }
+  void _initCreatorData() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final current = ref.read(offerOnMpProvider);
+      String initialEmail = "";
+
+      if (current.creatorDto != null) {
+        initialEmail = current.creatorDto!.email;
+      } else {
+        await ref.read(offerOnMpProvider.notifier).init().then((_) {
+          initialEmail = ref.read(offerOnMpProvider).creatorDto?.email ?? '';
+        });
+      }
+
+      _emailController.text = initialEmail;
+      email = initialEmail;
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   Future<bool> setCurrencyDropDownValues() async {
@@ -330,7 +341,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           wc!,
           wcSession,
           walletType!,
-          sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
+          sellerPayoutAddress: userSession.userWalletAddress,
           tokenId: config.tokenId,
           typedDataHash: typedDataHash,
           price: BigInt.from(priceInPrimaryChainCurrency),
@@ -339,7 +350,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       try {
         if (canUseGasStation) {
-            txnHash = await makeAndSendGaslessTx(
+          txnHash = await makeAndSendGaslessTx(
               ref,
               ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
               offerItemFunctionSignature,
@@ -354,7 +365,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
               typedDataHash: typedDataHash,
               controllerContractId: controllerContractAddress,
               tokenId: config.tokenId,
-              sellerPayoutAddress: EthereumAddress.fromHex(sellerPayoutAddress),
+              sellerPayoutAddress: userSession.userWalletAddress,
               salt: raribleV2Order.salt,
               endTimestamp: raribleV2Order.end,
               price: BigInt.from(priceInPrimaryChainCurrency),
@@ -397,7 +408,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
             offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
             sellerWalletAddress:
                 ref.read(userSessionProvider)!.userWalletAddress.toString(),
-            sellerPayoutAddress: sellerPayoutAddress,
+            sellerPayoutAddress: userSession.userWalletAddress.hex,
             sellerEmail: email,
             validUntil: raribleV2Order.end,
             salt: raribleV2Order.salt.toString(),
@@ -441,30 +452,43 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
         // ignore: use_build_context_synchronously
         showCustomPopup(
-            context,
-            context.loc.itemOfferedOnMP,
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 10),
-                CustomRoundedButton(
-                    text: context.loc.viewOnMP,
-                    onPressed: () {
-                      launchUrl(Uri.parse(raribleTokenUrl),
-                          mode: LaunchMode.externalApplication);
-                    }),
-              ],
-            ),
-            icon: Icon(Icons.celebration,
-                size: 90,
-                color: CustomColors(dotenv.get('APP_ID')).accentColor),
-            titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                fontSize:
-                    CustomFonts(dotenv.get('APP_ID')).metadataNameFontSize,
-                color: CustomColors(dotenv.get('APP_ID')).primaryColor,
-                fontWeight:
-                    CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
-            titlePadding: const EdgeInsets.all(0));
+          context,
+          context.loc.offerOnMpPublishedDialogTitle,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                context.loc.offerOnMpPublishedDialogSubtitle,
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color:
+                          CustomColors(dotenv.get('APP_ID')).black.withOpacity(
+                                0.7,
+                              ),
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              CustomRoundedButton(
+                text: context.loc.viewOnMP,
+                onPressed: () {
+                  launchUrl(Uri.parse(raribleTokenUrl),
+                      mode: LaunchMode.externalApplication);
+                },
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+            ],
+          ),
+          icon: Icon(Icons.celebration,
+              size: 90, color: CustomColors(dotenv.get('APP_ID')).accentColor),
+          titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
+              fontSize: CustomFonts(dotenv.get('APP_ID')).metadataNameFontSize,
+              fontWeight:
+                  CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight),
+          titlePadding: const EdgeInsets.all(0),
+          showConfetti: true,
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           returnSnackBarWidget(context.loc.successHeadingSnackbar,
@@ -501,7 +525,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
   @override
   void dispose() {
-    _sellerPayoutInputController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -509,6 +533,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   Widget build(BuildContext context) {
     AsyncValue<Map> ethPriceEur =
         ref.watch(ethPriceProvider(currencyDropdownValue));
+    final offerOnMpData = ref.watch(offerOnMpProvider);
     return CustomOverlay(
         show: isLoading,
         content: SpinningLoadingSvg(
@@ -523,280 +548,305 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           rotateIcon: isRotating,
           svgPath: loadingSvgPath,
         ),
-        child: Scaffold(
-          key: ScaffoldKey.getScaffoldKey('OfferOnMPScreen'),
-          appBar: CustomAppBar(
-            text: context.loc.offerItem,
-            showBackButton: true,
-          ),
-          body: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: ScreenBodyLayout(
-                withScrollView: true,
-                children: [
-                  Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 40),
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(context.loc.emailAddress,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall!),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                TextFormField(
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  cursorColor: CustomColors(
-                                          dotenv.get('APP_ID').toString())
-                                      .accentColor,
-                                  decoration: customInputDecoration(
-                                      context, 'john@example.com',
-                                      fillColor:
-                                          CustomColors(dotenv.get('APP_ID'))
-                                              .cardColor),
-                                  keyboardType: TextInputType.emailAddress,
-                                  obscureText: false,
-                                  initialValue: email,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      email = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    bool isEmail = RegExp(
-                                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                        .hasMatch(value!);
-                                    if (isEmail) {
-                                      return null;
-                                    } else {
-                                      return context
-                                          .loc.pleaseEnterValidEmailAddress;
-                                    }
-                                  },
-                                ),
-                              ]),
-                          const SizedBox(
-                            height: 40,
-                          ),
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(context.loc.payoutWalletAddress,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall!),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                TextFormField(
-                                  controller: _sellerPayoutInputController,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  cursorColor: CustomColors(
-                                          dotenv.get('APP_ID').toString())
-                                      .accentColor,
-                                  decoration: customInputDecoration(context,
-                                      context.loc.enterWalletAddressForPayout,
-                                      fillColor:
-                                          CustomColors(dotenv.get('APP_ID'))
-                                              .cardColor),
-                                  keyboardType: TextInputType.text,
-                                  obscureText: false,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      sellerPayoutAddress = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    try {
-                                      EthereumAddress.fromHex(value!);
-                                    } catch (e) {
-                                      return context
-                                          .loc.pleaseEnterValidWalletAddress;
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ]),
-                          const SizedBox(
-                            height: 40,
-                          ),
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(context.loc.price,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall!),
-                                    const SizedBox(width: 5),
-                                    InfoPopupWidget(
-                                      key: const Key('feeInfoPopup'),
-                                      arrowTheme: InfoPopupArrowTheme(
-                                        arrowDirection: ArrowDirection.down,
-                                        color:
-                                            CustomColors(dotenv.get('APP_ID'))
-                                                .primaryColor,
-                                      ),
-                                      contentTitle: context.loc.feesInfo,
-                                      child: Icon(
-                                          color:
-                                              CustomColors(dotenv.get('APP_ID'))
-                                                  .primaryColor,
-                                          Icons.info,
-                                          size: 18),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                TextFormField(
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  cursorColor: CustomColors(
-                                          dotenv.get('APP_ID').toString())
-                                      .accentColor,
-                                  decoration: customInputDecoration(
-                                      suffix: FutureBuilder<bool>(
-                                        future:
-                                            _setCurrencyDropDownValuesFuture,
-                                        builder: (context, snapshot) {
-                                          if (snapshot.hasData) {
-                                            return CryptoCurrencyDropdown(
-                                              allDropDownItems:
-                                                  allDropdownValues,
-                                              setCurrency: (value) {
-                                                setState(() {
-                                                  currencyDropdownValue = value;
-                                                });
-                                              },
-                                              selectedCurrency:
-                                                  currencyDropdownValue,
-                                            );
-                                          } else if (snapshot.hasError) {
-                                            return Container();
-                                          } else {
-                                            return Container();
-                                          }
-                                        },
-                                      ),
-                                      context,
-                                      context.loc.enterSalePrice,
-                                      fillColor:
-                                          CustomColors(dotenv.get('APP_ID'))
-                                              .cardColor),
-                                  keyboardType: TextInputType.numberWithOptions(
-                                      decimal: true),
-                                  obscureText: false,
-                                  initialValue: price.toString(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      if (value.isEmpty) {
-                                        price = 0.0;
-                                      } else {
-                                        value = value.replaceAll(',', '.');
-                                        price = double.parse(value);
-                                      }
-                                    });
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 3,
-                                ),
-                                Text(
-                                  '${currencyDropdownValue == 'EUR' ? allDropdownValues[0] : 'EUR'} ${ethPriceEur.when(data: (data) {
-                                        if (currencyDropdownValue == 'EUR') {
-                                          return (price / data['EUR'])
-                                              .toStringAsFixed(6);
-                                        } else {
-                                          return (price * data['EUR'])
-                                              .toStringAsFixed(2);
-                                        }
-                                      }, error: (e, s) => Container(), loading: () => 'Fetching price...')}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                )
-                              ]),
-                          const SizedBox(
-                            height: 40,
-                          ),
-                          //TODO: checkbox for selecting Marketplace temporarily disabled
-                          // Column(
-                          //   crossAxisAlignment: CrossAxisAlignment.start,
-                          //   children: [
-                          //     Text('Marketplace',
-                          //         style: Theme.of(context)
-                          //             .textTheme
-                          //             .headlineSmall!),
-                          //     Row(
-                          //       mainAxisAlignment: MainAxisAlignment.start,
-                          //       children: [
-                          //         Checkbox(
-                          //             activeColor: CustomColors(
-                          //                     dotenv.get('APP_ID').toString())
-                          //                 .accentColor,
-                          //             value: raribleCheck,
-                          //             onChanged: (value) {
-                          //               setState(() {
-                          //                 raribleCheck = value!;
-                          //               });
-                          //             }),
-                          //         Text(
-                          //           context.loc.listOnRarible,
-                          //           style:
-                          //               Theme.of(context).textTheme.bodyMedium,
-                          //         )
-                          //       ],
-                          //     ),
-                          //   ],
-                          // ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          CustomRoundedButton(
-                            text: context.loc.offerNow,
-                            onPressed: email.isEmpty ||
-                                    sellerPayoutAddress.isEmpty ||
-                                    (price <= 0) ||
-                                    (raribleCheck) == false
-                                ? null
-                                : () async {
-                                    //unfocus keyboard
-                                    FocusScope.of(context).unfocus();
-                                    if (_formKey.currentState!.validate()) {
-                                      fromCancelable(offerToken());
-                                    }
-                                  },
-                          ),
-                          const SizedBox(height: 10),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          children: [
+            Scaffold(
+              key: ScaffoldKey.getScaffoldKey('OfferOnMPScreen'),
+              appBar: CustomAppBar(
+                text: context.loc.offerItem,
+                showBackButton: true,
+              ),
+              body: GestureDetector(
+                  onTap: () => FocusScope.of(context).unfocus(),
+                  child: ScreenBodyLayout(
+                    withScrollView: true,
+                    children: [
+                      Form(
+                          key: _formKey,
+                          child: Column(
                             children: [
-                              SizedBox(
-                                width: 300,
-                                child: Text(
-                                  context.loc
-                                      .ownerChipWillNotifyYouOnceTheItemIsPurchased,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall!
-                                      .copyWith(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
-                                ),
+                              const SizedBox(height: 40),
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(context.loc.emailAddress,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headlineSmall!),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        InfoPopupWidget(
+                                          key: const Key('emailInfoPopup'),
+                                          arrowTheme: InfoPopupArrowTheme(
+                                            arrowDirection: ArrowDirection.down,
+                                            color: CustomColors(
+                                                    dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                          ),
+                                          contentTitle:
+                                              context.loc.offerOnMpEmailHint,
+                                          child: Icon(
+                                              color: CustomColors(
+                                                      dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                              Icons.info,
+                                              size: 18),
+                                        )
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    TextFormField(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
+                                      cursorColor: CustomColors(
+                                              dotenv.get('APP_ID').toString())
+                                          .accentColor,
+                                      decoration: customInputDecoration(
+                                          context, 'john@example.com',
+                                          fillColor:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .cardColor),
+                                      keyboardType: TextInputType.emailAddress,
+                                      obscureText: false,
+                                      controller: _emailController,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          email = value;
+                                        });
+                                      },
+                                      validator: (value) {
+                                        bool isEmail = RegExp(
+                                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                            .hasMatch(value!);
+                                        if (isEmail) {
+                                          return null;
+                                        } else {
+                                          return context
+                                              .loc.pleaseEnterValidEmailAddress;
+                                        }
+                                      },
+                                    ),
+                                  ]),
+                              const SizedBox(
+                                height: 40,
                               ),
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(context.loc.price,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headlineSmall!),
+                                        const SizedBox(width: 5),
+                                        InfoPopupWidget(
+                                          key: const Key('feeInfoPopup'),
+                                          arrowTheme: InfoPopupArrowTheme(
+                                            arrowDirection: ArrowDirection.down,
+                                            color: CustomColors(
+                                                    dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                          ),
+                                          contentTitle:
+                                              context.loc.offerOnMpPriceHint,
+                                          child: Icon(
+                                              color: CustomColors(
+                                                      dotenv.get('APP_ID'))
+                                                  .primaryColor,
+                                              Icons.info,
+                                              size: 18),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    TextFormField(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
+                                      cursorColor: CustomColors(
+                                              dotenv.get('APP_ID').toString())
+                                          .accentColor,
+                                      decoration: customInputDecoration(
+                                          suffix: FutureBuilder<bool>(
+                                            future:
+                                                _setCurrencyDropDownValuesFuture,
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                return CryptoCurrencyDropdown(
+                                                  allDropDownItems:
+                                                      allDropdownValues,
+                                                  setCurrency: (value) {
+                                                    setState(() {
+                                                      currencyDropdownValue =
+                                                          value;
+                                                    });
+                                                  },
+                                                  selectedCurrency:
+                                                      currencyDropdownValue,
+                                                );
+                                              } else if (snapshot.hasError) {
+                                                return Container();
+                                              } else {
+                                                return Container();
+                                              }
+                                            },
+                                          ),
+                                          context,
+                                          context.loc.enterSalePrice,
+                                          fillColor:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .cardColor),
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      obscureText: false,
+                                      initialValue: price.toString(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          if (value.isEmpty) {
+                                            price = 0.0;
+                                          } else {
+                                            value = value.replaceAll(',', '.');
+                                            price = double.parse(value);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    Text(
+                                      ethPriceEur.when(
+                                          data: (data) {
+                                            String priceInEur = '';
+                                            if (currencyDropdownValue ==
+                                                'EUR') {
+                                              priceInEur = (price / data['EUR'])
+                                                  .toStringAsFixed(6);
+                                            } else {
+                                              priceInEur = (price * data['EUR'])
+                                                  .toStringAsFixed(2);
+                                            }
+
+                                            return context.loc
+                                                .offerOnMpEstimatedPriceInEur(
+                                                    priceInEur);
+                                          },
+                                          error: (e, s) => context
+                                              .loc.offerOnMpErrorFetchingPrice,
+                                          loading: () => context
+                                              .loc.offerOnMpFetchingPrice),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!
+                                          .copyWith(
+                                            color: CustomColors(
+                                                    dotenv.get('APP_ID'))
+                                                .black
+                                                .withOpacity(.7),
+                                          ),
+                                    ),
+                                  ]),
+                              const SizedBox(
+                                height: 40,
+                              ),
+                              //TODO: checkbox for selecting Marketplace temporarily disabled
+                              // Column(
+                              //   crossAxisAlignment: CrossAxisAlignment.start,
+                              //   children: [
+                              //     Text('Marketplace',
+                              //         style: Theme.of(context)
+                              //             .textTheme
+                              //             .headlineSmall!),
+                              //     Row(
+                              //       mainAxisAlignment: MainAxisAlignment.start,
+                              //       children: [
+                              //         Checkbox(
+                              //             activeColor: CustomColors(
+                              //                     dotenv.get('APP_ID').toString())
+                              //                 .accentColor,
+                              //             value: raribleCheck,
+                              //             onChanged: (value) {
+                              //               setState(() {
+                              //                 raribleCheck = value!;
+                              //               });
+                              //             }),
+                              //         Text(
+                              //           context.loc.listOnRarible,
+                              //           style:
+                              //               Theme.of(context).textTheme.bodyMedium,
+                              //         )
+                              //       ],
+                              //     ),
+                              //   ],
+                              // ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              CustomRoundedButton(
+                                text: context.loc.offerNow,
+                                onPressed: email.isEmpty ||
+                                        (price <= 0) ||
+                                        (raribleCheck) == false
+                                    ? null
+                                    : () async {
+                                        //unfocus keyboard
+                                        FocusScope.of(context).unfocus();
+                                        if (_formKey.currentState!.validate()) {
+                                          fromCancelable(offerToken());
+                                        }
+                                      },
+                              ),
+                              const SizedBox(height: 10),
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 300,
+                                    child: Text(
+                                      context.loc
+                                          .ownerChipWillNotifyYouOnceTheItemIsPurchased,
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .copyWith(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
+                              )
                             ],
-                          )
-                        ],
-                      )),
-                ],
-              )),
+                          )),
+                    ],
+                  )),
+            ),
+            if (offerOnMpData.loading)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(
+                    0.2,
+                  ),
+                ),
+                child: Center(
+                    child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    CustomColors(dotenv.get('APP_ID').toString()).accentColor,
+                  ),
+                )),
+              )
+          ],
         ));
   }
 }

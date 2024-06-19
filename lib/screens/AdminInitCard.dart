@@ -53,7 +53,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
       'ID: 100 \nSlot 0:${slot0Addresses['OwnerChip']!.hex.substring(0, 6)}...',
       'ID: 101 \nSlot 0: ${slot0Addresses['Stebo']!.hex.substring(0, 6)}...',
       'ID: 102 \nSlot 0: ${slot0Addresses['Infineon']!.hex.substring(0, 6)}...',
-      'ID:103 \nSlot 0: ${slot0Addresses['Stilami']!.hex.substring(0, 6)}...'
+      'ID: 103 \nSlot 0: ${slot0Addresses['Stilami']!.hex.substring(0, 6)}...'
     ];
     return Scaffold(
       appBar: const CustomAppBar(
