@@ -15,7 +15,8 @@ import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
+import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
+import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
@@ -164,6 +165,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         OnboardingScreenUserComplete.routeName: (context) =>
             const OnboardingScreenUserComplete(),
         MyBalancePage.routeName: (context) => const MyBalancePage(),
+        OfferForSaleCreatedTokenScreen.routeName: (context) =>
+            const OfferForSaleCreatedTokenScreen(),
       },
     );
   }

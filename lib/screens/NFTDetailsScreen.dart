@@ -12,7 +12,7 @@ import 'package:ownerchip_whitelabel/domain/chipInfoModel/chipInfoModel.dart';
 import 'package:ownerchip_whitelabel/domain/collection/collection.dart';
 import 'package:ownerchip_whitelabel/domain/tokenChainAndCollection/tokenChainAndCollection.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
-import 'package:ownerchip_whitelabel/screens/OfferOnMPScreen.dart';
+import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
