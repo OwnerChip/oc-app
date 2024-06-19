@@ -13,27 +13,32 @@ import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:sentry/sentry.dart';
+
+//import services
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 //import services
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
-import 'package:sentry/sentry.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class TransferScreen extends ConsumerStatefulWidget {
   const TransferScreen({Key? key}) : super(key: key);
@@ -89,37 +94,13 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         'to': to.toString(),
       });
 
-      final List response =
-          await BackendMetaTx.checkMetaTx(config.collectionId, transferFromFunctionSignature);
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, transferFromFunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
-            approveFunctionSignature,
-            // APPROVE
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            ref.read(walletTypeProvider)!,
-            toAccount: to,
-            tokenId: tokenId,
-            enableRecovery: isOwnerCard,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
             context,
             ref,
@@ -128,12 +109,51 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             config.collectionId,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             ref.read(walletTypeProvider)!,
             tokenId: tokenId,
             toAccount: to);
       }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
+              approveFunctionSignature,
+              // APPROVE
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              ref.read(walletTypeProvider)!,
+              toAccount: to,
+              tokenId: tokenId,
+              enableRecovery: isOwnerCard,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error('Error sending gasless transaction', e, st);
+
+        talker.info('Falling back to normal transaction');
+        await normalTx();
+      }
+
+      talker.info('Transaction hash: $txnHash');
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
@@ -164,12 +184,13 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
         // send status to analytics
         transferProcess.finish();
-        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS", tags: {
-          'connectedWallet': connectedWallet.hex,
-          'chipWallet': convertTokenIdToEthereumAddress(
-              ref.read(chipInfoProvider).tokenId),
-          'to': to.toString(),
-        });
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+              'to': to.toString(),
+            });
       } else {
         throw Exception(context.loc.transferError);
       }
@@ -181,12 +202,13 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       transferProcess.throwable = e;
       transferProcess.status = const SpanStatus.aborted();
       transferProcess.finish();
-      BackendApp.sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR", tags: {
-        'connectedWallet': connectedWallet.hex,
-        'chipWallet':
-            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
-        'to': to.toString(),
-      });
+      BackendApp.sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR",
+          tags: {
+            'connectedWallet': connectedWallet.hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+            'to': to.toString(),
+          });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,

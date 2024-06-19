@@ -21,6 +21,7 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
@@ -575,6 +576,13 @@ Future<String> makeAndSendNormalTx(
 Future<void> wcSwitchToChainConditionally(
     W3MService? w3mService, int chainId) async {
   final chain = w3mService?.selectedChain;
+  final wallet = w3mService?.selectedWallet;
+
+  if (wallet == null ||
+      !wallet.listing.name.toLowerCase().contains("metamask")) {
+    return;
+  }
+
   if (chain == null ||
       chain.chainId.replaceAll("eip155:", "") != chainId.toString()) {
     final chain = chainConfig[chainId]!;
@@ -586,15 +594,15 @@ Future<void> wcSwitchToChainConditionally(
     if (!(chains ?? [])
         .map((e) => e.replaceAll("eip155:", ""))
         .contains(chainId.toString())) {
-      await w3mService.requestAddChain(
-        W3MChainInfo(
-          chainName: chain.networkName,
-          chainId: "$chainId",
-          namespace: "",
-          tokenName: chain.nativeTokenSymbol,
-          rpcUrl: chain.rpcUrl,
-        ),
-      );
+      // await w3mService.requestAddChain(
+      //   W3MChainInfo(
+      //     chainName: chain.networkName,
+      //     chainId: "$chainId",
+      //     namespace: "",
+      //     tokenName: chain.nativeTokenSymbol,
+      //     rpcUrl: chain.rpcUrl,
+      //   ),
+      // );
     }
 
     await w3mService.requestSwitchToChain(
