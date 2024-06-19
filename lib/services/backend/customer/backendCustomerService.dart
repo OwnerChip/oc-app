@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart' hide Headers;
+import 'package:ownerchip_whitelabel/domain/oc/creatorDto.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/payload/cardInitPayload.dart';
 import 'package:retrofit/retrofit.dart';
@@ -38,5 +39,13 @@ abstract class BackendCustomerService {
     @Path("customerId") required String customerId,
     @Header("app_id") required String appId,
     @Body() required CardInitPayload payload,
+  });
+
+  @GET(
+    "/{customerId}/creator/{walletAddress}",
+  )
+  Future<CreatorDto> getCreator({
+    @Path("customerId") required String customerId,
+    @Path("walletAddress") required String walletAddress,
   });
 }
