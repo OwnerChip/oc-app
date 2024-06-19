@@ -11,6 +11,7 @@ import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -201,7 +202,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         isLoading = true;
         loadingText = context.loc.uploadingAttachment;
       });
-      await putAttachmentMetadataToBackend(
+      await BackendAttachments.putAttachmentMetadataToBackend(
           userSession!,
           ref.read(userAddressProvider),
           chainId,
@@ -267,7 +268,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       int chainId = chainAndCollectionId[0];
       EthereumAddress collectionId = chainAndCollectionId[1];
 
-      List response = await postAttachmentMetadataToBackend(
+      List response = await BackendAttachments.postAttachmentMetadataToBackend(
           userSession!,
           ref.read(userAddressProvider),
           chainId,
@@ -285,7 +286,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
       //upload file to aws presigned url
       var awsResponse =
-          await uploadFileToAWS(File(file!.path!), awsUrl, contentType);
+          await BackendAttachments.uploadFileToAWS(File(file!.path!), awsUrl, contentType);
 
       var _ = await ref.refresh(fetchAttachmentsProvider.future);
 
@@ -336,7 +337,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     UserSession? userSession = ref.read(userSessionProvider);
 
     try {
-      List result = await postAttachmentMetadataToBackend(
+      List result = await BackendAttachments.postAttachmentMetadataToBackend(
           userSession!,
           ref.read(userAddressProvider),
           chainId,
@@ -407,7 +408,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         isLoading = true;
         loadingText = context.loc.deletingAttachment;
       });
-      var result = await deleteAttachmentFromBackend(
+      var result = await BackendAttachments.deleteAttachmentFromBackend(
           userSession!,
           ref.read(userAddressProvider),
           chainId,
