@@ -13,7 +13,7 @@ abstract class BackendCustomer extends Backend {
     String customerId,
     EthereumAddress chipAddress,
   ) async {
-    final service = BackendCustomerService.instance;
+    final service = BackendCustomerService.instanceProd;
 
     try {
       await service.sendCardInitToBackend(
