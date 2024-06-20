@@ -23,18 +23,22 @@ class OfferItemPayload {
   final String marketplaceContract;
   final String offchainOfferId;
 
-  const OfferItemPayload(
-      {required this.tokenId,
-      required this.offerPrice,
-      required this.offerCurrency,
-      required this.sellerWalletAddress,
-      required this.sellerPayoutAddress,
-      required this.sellerEmail,
-      required this.validUntil,
-      required this.salt,
-      required this.encodedData,
-      required this.typedDataHash,
-      required this.chipSignature,
-      required this.marketplaceContract,
-      required this.offchainOfferId});
+  final String offerPaymentToken;
+
+  const OfferItemPayload({
+    required this.tokenId,
+    required this.offerPrice,
+    required this.offerCurrency,
+    required this.sellerWalletAddress,
+    required this.sellerPayoutAddress,
+    required this.sellerEmail,
+    required this.validUntil,
+    required this.salt,
+    required this.encodedData,
+    required this.typedDataHash,
+    required this.chipSignature,
+    required this.marketplaceContract,
+    required this.offchainOfferId,
+    required this.offerPaymentToken,
+  });
 }

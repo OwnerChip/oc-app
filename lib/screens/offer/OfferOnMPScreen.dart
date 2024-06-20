@@ -139,7 +139,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     setState(() {
       allDropdownValues = [
         currencySymbol,
-        // ...tokens.map((token) => token.symbol),
+        ...tokens.map((token) => token.symbol),
       ];
       currencyDropdownValue = currencySymbol;
     });
@@ -333,7 +333,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       order: raribleV2Order,
     );
 
-
     final MsgSignature? chipSignature = await getChipSignature(
       ref,
       context,
@@ -345,7 +344,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     try {
       //check if user is allowed to use gas station
       final List response = await BackendMetaTx.checkMetaTx(
-          config.collectionId, offerItemFunctionSignature);
+          config.collectionId, offerItemErc20FunctionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -355,7 +354,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         txnHash = await makeAndSendNormalTx(
           context,
           ref,
-          offerItemFunctionSignature,
+          offerItemErc20FunctionSignature,
           config.chainId,
           controllerContractAddress,
           signatureData,
@@ -367,32 +366,35 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           tokenId: config.tokenId,
           typedDataHash: typedDataHash,
           price: BigInt.from(priceInPrimaryChainCurrency),
+          token: token,
         );
       }
 
       try {
-        if (canUseGasStation) {
+        if (canUseGasStation && false) {
           txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-              offerItemFunctionSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              typedDataHash: typedDataHash,
-              controllerContractId: controllerContractAddress,
-              tokenId: config.tokenId,
-              sellerPayoutAddress: userSession.userWalletAddress,
-              salt: raribleV2Order.salt,
-              endTimestamp: raribleV2Order.end,
-              price: BigInt.from(priceInPrimaryChainCurrency),
-              encodedOfferData: typedDataHashAndEncodedData.encodedData,
-              toggleLoading: toggleLoading);
+            ref,
+            ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
+            offerItemErc20FunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc,
+            wcSession,
+            metaTxAgreementId,
+            walletType!,
+            typedDataHash: typedDataHash,
+            controllerContractId: controllerContractAddress,
+            tokenId: config.tokenId,
+            sellerPayoutAddress: userSession.userWalletAddress,
+            salt: raribleV2Order.salt,
+            endTimestamp: raribleV2Order.end,
+            price: BigInt.from(priceInPrimaryChainCurrency),
+            encodedOfferData: typedDataHashAndEncodedData.encodedData,
+            toggleLoading: toggleLoading,
+            token: token,
+          );
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
@@ -425,20 +427,22 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
         //call backend with info about offering
         final offerItemInputData = OfferItemPayload(
-            tokenId: convertTokenIdToEthereumAddress(config.tokenId),
-            offerPrice: priceInPrimaryChainCurrency.toString(),
-            offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
-            sellerWalletAddress:
-                ref.read(userSessionProvider)!.userWalletAddress.toString(),
-            sellerPayoutAddress: userSession.userWalletAddress.hex,
-            sellerEmail: email,
-            validUntil: raribleV2Order.end,
-            salt: raribleV2Order.salt.toString(),
-            encodedData: typedDataHashAndEncodedData.encodedData,
-            typedDataHash: typedDataHash,
-            chipSignature: hexSignature,
-            marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
-            offchainOfferId: response['id']);
+          tokenId: convertTokenIdToEthereumAddress(config.tokenId),
+          offerPrice: priceInPrimaryChainCurrency.toString(),
+          offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
+          sellerWalletAddress:
+              ref.read(userSessionProvider)!.userWalletAddress.toString(),
+          sellerPayoutAddress: userSession.userWalletAddress.hex,
+          sellerEmail: email,
+          validUntil: raribleV2Order.end,
+          salt: raribleV2Order.salt.toString(),
+          encodedData: typedDataHashAndEncodedData.encodedData,
+          typedDataHash: typedDataHash,
+          chipSignature: hexSignature,
+          marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
+          offchainOfferId: response['id'],
+          offerPaymentToken: token?.contractAddress.hex ?? zeroAddress.hex,
+        );
 
         await BackendOffer.sendOfferItemInfoToBackend(offerItemInputData);
 

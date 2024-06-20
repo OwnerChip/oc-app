@@ -392,42 +392,56 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
           chainConfig[config.chainId]!.controllerContract);
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
+      String txnHash = "";
+
+      Future<void> normalTx() async {
+        txnHash = await makeAndSendNormalTx(
+            context,
             ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
             recoverTokenFunctionSignature,
             config.chainId,
-            config.collectionId,
+            controllerContractAddress,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
-            metaTxAgreementId,
-            walletType!,
-            controllerContractId: controllerContractAddress,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
-        txnHash = await makeAndSendNormalTx(
-          context,
-          ref,
-          recoverTokenFunctionSignature,
-          config.chainId,
-          controllerContractAddress,
-          signatureData,
-          connectedWallet,
-          wc,
-          wcSession,
-          walletType!,
-        );
+            walletType!);
       }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+              recoverTokenFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              controllerContractId: controllerContractAddress,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+          await normalTx();
+        }
+
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        talker.info('gasless tx failed. Trying normal tx.');
+        await normalTx();
+      }
+
+      talker.info('txnHash: $txnHash');
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);

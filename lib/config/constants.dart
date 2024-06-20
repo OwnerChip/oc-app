@@ -19,6 +19,9 @@ const String approveFunctionSignature = '0x095ea7b3';
 //offerItem
 const String offerItemFunctionSignature = '0xc8f1044d';
 
+// offerItem erc20 token
+const String offerItemErc20FunctionSignature = '0x17a4332b';
+
 //cancelOffer
 const String cancelMarketplaceOfferSignature = '0x7a616970';
 
