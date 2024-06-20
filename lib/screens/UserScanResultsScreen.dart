@@ -406,7 +406,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           chainConfig[config.chainId]!.controllerContract);
 
       String txnHash;
-      if (canUseGasStation && false) {
+      if (canUseGasStation) {
         txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,

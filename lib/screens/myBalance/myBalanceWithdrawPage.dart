@@ -140,46 +140,43 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                     Expanded(
                       child: Stack(
                         children: [
-                          SizedBox(
-                            height: 48,
-                            child: TextFormField(
-                              controller: _addressController,
-                              focusNode: _addressFocusNode,
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              autofocus: false,
-                              validator: (value) {
-                                if (_addressFocusNode.hasFocus) {
-                                  return null;
-                                }
-
-                                if (value == null || value.isEmpty) {
-                                  return context
-                                      .loc.myBalanceWithdrawWrongAddress;
-                                }
-                                try {
-                                  EthereumAddress.fromHex(value);
-                                } catch (e) {
-                                  return context
-                                      .loc.myBalanceWithdrawWrongAddress;
-                                }
+                          TextFormField(
+                            controller: _addressController,
+                            focusNode: _addressFocusNode,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            autofocus: false,
+                            validator: (value) {
+                              if (_addressFocusNode.hasFocus) {
                                 return null;
-                              },
-                              decoration: customInputDecoration(
-                                context,
-                                context.loc.myBalanceReceivingWalletAddress,
-                              ).copyWith(
-                                contentPadding: const EdgeInsets.only(
-                                  right: 64,
-                                  left: 12,
-                                ),
+                              }
+
+                              if (value == null || value.isEmpty) {
+                                return context
+                                    .loc.myBalanceWithdrawWrongAddress;
+                              }
+                              try {
+                                EthereumAddress.fromHex(value);
+                              } catch (e) {
+                                return context
+                                    .loc.myBalanceWithdrawWrongAddress;
+                              }
+                              return null;
+                            },
+                            decoration: customInputDecoration(
+                              context,
+                              context.loc.myBalanceReceivingWalletAddress,
+                            ).copyWith(
+                              contentPadding: const EdgeInsets.only(
+                                right: 64,
+                                left: 12,
                               ),
-                              onChanged: (value) {
-                                if (mounted) {
-                                  setState(() {});
-                                }
-                              },
                             ),
+                            onChanged: (value) {
+                              if (mounted) {
+                                setState(() {});
+                              }
+                            },
                           ),
                           Positioned(
                             right: 12,
@@ -208,7 +205,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                 const Spacer(),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
                       context.loc.myBalanceWithdrawMaxAmount(
@@ -219,69 +216,75 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                       height: 12,
                     ),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Flexible(
-                          child: SizedBox(
-                            height: 48,
-                            child: TextFormField(
-                              controller: _amountController,
-                              decoration: customInputDecoration(
-                                context,
-                                context.loc.myBalanceCryptoAmount,
+                          child: TextFormField(
+                            controller: _amountController,
+                            decoration: customInputDecoration(
+                              context,
+                              context.loc.myBalanceCryptoAmount,
+                            ).copyWith(
+                              contentPadding: const EdgeInsets.only(
+                                right: 64,
+                                left: 12,
                               ),
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              focusNode: _amountFocusNode,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*([,.]?\d{0,18})?'),
-                                ),
-                              ],
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              autofocus: false,
-                              validator: (value) {
-                                try {
-                                  if (value != null &&
-                                      double.parse(value.replaceAll(
-                                            ",",
-                                            ".",
-                                          )) >
-                                          item.balanceInEther) {
-                                    return context
-                                        .loc.myBalanceWithdrawSufficientFunds;
-                                  }
-                                } catch (e) {
-                                  return null;
-                                }
-                                return null;
-                              },
-                              onChanged: (value) {
-                                _updateAmount(
-                                  item,
-                                );
-                                _maxAmount = false;
-
-                                if (mounted) {
-                                  setState(() {});
-                                }
-                              },
                             ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            focusNode: _amountFocusNode,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*([,.]?\d{0,18})?'),
+                              ),
+                            ],
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            autofocus: false,
+                            validator: (value) {
+                              try {
+                                if (value != null &&
+                                    double.parse(value.replaceAll(
+                                          ",",
+                                          ".",
+                                        )) >
+                                        item.balanceInEther) {
+                                  return context
+                                      .loc.myBalanceWithdrawSufficientFunds;
+                                }
+                              } catch (e) {
+                                return null;
+                              }
+                              return null;
+                            },
+                            onChanged: (value) {
+                              _updateAmount(
+                                item,
+                              );
+                              _maxAmount = false;
+
+                              if (mounted) {
+                                setState(() {});
+                              }
+                            },
                           ),
                         ),
                         const SizedBox(
                           width: 8,
                         ),
-                        Text(
-                          item.name,
-                          style: Theme.of(context)
-                              .textTheme
-                              .displaySmall!
-                              .copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12.0),
+                          child: Text(
+                            item.name,
+                            style: Theme.of(context)
+                                .textTheme
+                                .displaySmall!
+                                .copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
                         ),
                       ],
                     ),
