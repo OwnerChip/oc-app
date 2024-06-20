@@ -213,6 +213,25 @@ Future<String> makeAndSendGaslessTx(
       throw Exception('Failed to sign message');
     }
 
+    bool verified = false;
+
+    try {
+      verified = await verifyGaslessTransaction(
+        request,
+        chainId: chainId,
+        signature: signature,
+      );
+
+    } catch (e) {
+      talker.error('Failed to verify gasless transaction: $e proceeding anyway');
+      verified = true;
+    }
+
+    if (!verified) {
+      throw Exception('Failed to verify gasless transaction');
+    }
+
+
     String txnHash = await BackendMetaTx.sendGaslessRequest(
         toAddress, signature, metaTxAgreementId, request);
     return txnHash;
@@ -455,13 +474,6 @@ Future<String> makeAndSendNormalTx(
 
     Uint8List signature = Uint8List(0);
 
-    Uint8List hexToBytes(String hexString) {
-      // Ensure the hex string does not contain the '0x' prefix
-      if (hexString.startsWith('0x')) {
-        hexString = hexString.substring(2);
-      }
-      return Uint8List.fromList(hex.decode(hexString));
-    }
 
     final transaction = await _fillMissingData(
       transaction: Transaction(

@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ownerchip_whitelabel/config/chains.dart';
@@ -133,6 +135,36 @@ Future<Map<String, dynamic>> buildTypedV4Request(
 Future<Map<String, dynamic>> buildTypedData(int chainId, request) async {
   final typeData = getMetaTxTypeData(chainId);
   return {...typeData, 'message': request};
+}
+
+Future<bool> verifyGaslessTransaction(
+    Map<String, dynamic> req, {
+      required int chainId,
+      required String signature,
+    }) async {
+  final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
+
+  final contract = await getForwarderContract(
+      chainConfig[chainId]!.forwarderContract.toString());
+
+  // Convert the req map to a list of its components
+  final reqParams = [
+    req['info'],
+    EthereumAddress.fromHex(req['from']),
+    EthereumAddress.fromHex(req['to']),
+    BigInt.from(req['value']),
+    BigInt.from(req['gas']),
+    BigInt.from(req['nonce']),
+    hexToBytes(req['data']),
+  ];
+
+  final res = await client
+      .call(contract: contract, function: contract.function('verify'), params: [
+    reqParams,
+    hexToBytes(signature), // Convert hex signature to bytes
+  ]);
+
+  return res[0] as bool;
 }
 
 // Builds a typed V4 request, which is used to build a typed data object
