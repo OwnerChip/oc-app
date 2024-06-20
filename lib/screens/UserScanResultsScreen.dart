@@ -187,8 +187,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText = context.loc.burnedSuccess;
         });
 
-        BackendAttachments.deleteAllAttachments(userSession, connectedWallet, config.chainId,
-            config.collectionId, tokenId, signatureData);
+        BackendAttachments.deleteAllAttachments(userSession, connectedWallet,
+            config.chainId, config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
         BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS",
@@ -271,12 +271,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             walletType!);
       }
 
-
       try {
         if (canUseGasStation) {
           txnHash = await makeAndSendGaslessTx(
               ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
               transferFromFunctionSignature,
               config.chainId,
               config.collectionId,
@@ -297,7 +297,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           }
           await normalTx();
         }
-
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         talker.error(e, st);
@@ -405,41 +404,56 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
           chainConfig[config.chainId]!.controllerContract);
 
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
+      String txnHash = "";
+
+      Future<void> normalTx() async {
+        txnHash = await makeAndSendNormalTx(
+            context,
             ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
             recoverTokenFunctionSignature,
             config.chainId,
-            config.collectionId,
+            controllerContractAddress,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
-            metaTxAgreementId,
-            walletType!,
-            controllerContractId: controllerContractAddress,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
+            walletType!);
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
+              recoverTokenFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              controllerContractId: controllerContractAddress,
+              toggleLoading: toggleLoading);
+        } else {
+          if (userSession.isOwnerCard) {
+            throw 'Gas station needed for TX with OwnerCard.';
+          }
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          await normalTx();
         }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        if (canUseGasStation) {
+          talker.info("error sending gasless tx, trying normal tx");
+          await normalTx();
         }
-        txnHash = await makeAndSendNormalTx(
-          context,
-          ref,
-          recoverTokenFunctionSignature,
-          config.chainId,
-          controllerContractAddress,
-          signatureData,
-          connectedWallet,
-          wc,
-          wcSession,
-          walletType!,
-        );
       }
 
       var txnReceipt =
