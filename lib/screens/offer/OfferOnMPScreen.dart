@@ -725,7 +725,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                         TextInputType.numberWithOptions(
                                             decimal: true),
                                     obscureText: false,
-                                    initialValue: price.toString(),
                                     onChanged: (value) {
                                       setState(() {
                                         if (value.isEmpty) {
