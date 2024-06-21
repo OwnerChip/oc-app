@@ -630,16 +630,9 @@ Future<String> sendPersonalSignRequest(
     w3mService!.launchConnectedWallet();
 
     try {
-      await wcSwitchToChainConditionally(
-        w3mService,
-        chainId,
-      ).timeout(const Duration(seconds: 10)).catchError((e) {
-        talker.error('Failed to switch to chain: $e');
-      });
-
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
-        chainId: 'eip155:$chainId',
+        chainId:  'eip155:${w3mService.selectedChain?.chainId ?? chainId}',
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,
