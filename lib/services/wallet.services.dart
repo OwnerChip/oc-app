@@ -162,19 +162,6 @@ Future<String> makeAndSendGaslessTx(
 
       toggleLoading();
 
-      // check if the user allowed the forwarder contract to spend their tokens
-      if (chainConfig[chainId]!.forwarderContract != null && token != null) {
-        await _wcCheckERC20Allowance(
-          token,
-          walletAddress,
-          chainId,
-          wc,
-          wcSession,
-          w3mService,
-        );
-      }
-
-      // requqest user to allow the forwarder contract to spend their tokens
       signature = await wc!
           .request(
         topic: wcSession!.topic!,
@@ -241,54 +228,6 @@ Future<String> makeAndSendGaslessTx(
   }
 }
 
-// TODO: should be a gasless transaction as well
-Future<void> _wcCheckERC20Allowance(
-    BlockchainToken? token,
-    EthereumAddress walletAddress,
-    int chainId,
-    Web3App? wc,
-    W3MSession? wcSession,
-    W3MService w3mService) async {
-  final contract = await token!.getDeployedContract();
-  final function = contract.function('allowance');
-
-  final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
-  final res = await client.call(
-    contract: contract,
-    function: function,
-    params: [
-      walletAddress,
-      EthereumAddress.fromHex(chainConfig[chainId]!.forwarderContract!),
-    ],
-  );
-
-  if (res.first == BigInt.zero) {
-    final function = contract.function('approve');
-    final data = function.encodeCall([
-      EthereumAddress.fromHex(chainConfig[chainId]!.forwarderContract!),
-      BigInt.parse(
-          '115792089237316195423570985008687907853269984665640564039457584007913129639935')
-    ]);
-
-    final res = await wc!.request(
-      topic: wcSession!.topic!,
-      chainId: 'eip155:$chainId',
-      request: SessionRequestParams(
-        method: 'eth_sendTransaction',
-        params: [
-          {
-            'from': walletAddress.toString(),
-            'to': token.contractAddress.toString(),
-            'data': "0x${hex.encode(data)}",
-          }
-        ],
-      ),
-    );
-    print('Transaction sent: $res');
-
-    w3mService.launchConnectedWallet();
-  }
-}
 
 Future<EtherAmount> _getMaxPriorityFeePerGas() {
   // We may want to compute this more accurately in the future,
