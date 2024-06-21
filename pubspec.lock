@@ -1718,10 +1718,10 @@ packages:
     dependency: "direct main"
     description:
       name: web3modal_flutter
-      sha256: "3a4b742a55087dfd3ea71462509235af18855cb9d74f17f77870955ec6d9bec2"
+      sha256: ddfb21de4ee450ad3b269008f695884ab1b2da6810c855b71aeee5d55363f7cd
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.0"
+    version: "3.2.2"
   web_socket_channel:
     dependency: transitive
     description:
