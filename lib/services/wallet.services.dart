@@ -208,16 +208,15 @@ Future<String> makeAndSendGaslessTx(
         chainId: chainId,
         signature: signature,
       );
-
     } catch (e) {
-      talker.error('Failed to verify gasless transaction: $e proceeding anyway');
+      talker
+          .error('Failed to verify gasless transaction: $e proceeding anyway');
       verified = true;
     }
 
     if (!verified) {
       throw Exception('Failed to verify gasless transaction');
     }
-
 
     String txnHash = await BackendMetaTx.sendGaslessRequest(
         toAddress, signature, metaTxAgreementId, request);
@@ -227,7 +226,6 @@ Future<String> makeAndSendGaslessTx(
     rethrow;
   }
 }
-
 
 Future<EtherAmount> _getMaxPriorityFeePerGas() {
   // We may want to compute this more accurately in the future,
@@ -415,7 +413,6 @@ Future<String> makeAndSendNormalTx(
 
     Uint8List signature = Uint8List(0);
 
-
     final transaction = await _fillMissingData(
       transaction: Transaction(
         from: walletAddress,
@@ -544,7 +541,8 @@ Future<void> wcSwitchToChainConditionally(
   final wallet = w3mService?.selectedWallet;
 
   if (wallet == null ||
-      !wallet.listing.name.toLowerCase().contains("metamask")) {
+      (!wallet.listing.name.toLowerCase().contains("metamask") &&
+          !wallet.listing.name.toLowerCase().contains("safepal"))) {
     return;
   }
 
@@ -634,7 +632,7 @@ Future<String> sendPersonalSignRequest(
     try {
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
-        chainId:  'eip155:${w3mService.selectedChain?.chainId ?? chainId}',
+        chainId: 'eip155:${w3mService.selectedChain?.chainId ?? chainId}',
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,

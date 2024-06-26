@@ -310,7 +310,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
       EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
       sellerPayoutAddress!,
       offerPrice!,
-      token!.contractAddress.hex,
+      token?.contractAddress,
       typedDataHash!,
     );
   } else if (functionSignatureHash == redeemItemFunctionSignature) {
@@ -501,14 +501,14 @@ String makeOfferItemErc20Data(
     EthereumAddress marketplaceContract,
     EthereumAddress sellerPayoutAddress,
     BigInt offerPrice,
-    String tokenAddress,
+    EthereumAddress? tokenAddress,
     String typedDataHash) {
   String data = functionSignatureHash +
       tokenId.toRadixString(16).padLeft(64, '0') +
       marketplaceContract.toString().substring(2).padLeft(64, '0') +
       sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
       offerPrice.toRadixString(16).padLeft(64, '0') +
-      tokenAddress.substring(2).padLeft(64, '0') +
+      (tokenAddress ?? zeroAddress).toString().substring(2).padLeft(64, '0') +
       typedDataHash.substring(2).padLeft(64, '0');
   return data;
 }

@@ -13,6 +13,8 @@ abstract class BackendMetaTx extends Backend {
     EthereumAddress collectionId,
     String functionSignatureHash,
   ) async {
+    // return [false, ""];
+
     return await BackendMetaTxService.instance
         .checkMetaTx(
             collectionId: collectionId.hex,

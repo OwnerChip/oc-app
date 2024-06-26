@@ -124,5 +124,14 @@ final Map<int, List<BlockchainToken>> chainTokenConfigs = {
       iconPath: "assets/images/common/usdc_icon.png",
       decimals: 18,
     ),
+    BlockchainToken(
+      symbol: "WETH",
+      abiAssetPath: "assets/contracts/erc20.abi.json",
+      contractAddress: EthereumAddress.fromHex(
+        "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
+      ),
+      iconPath: "assets/images/common/eth_icon.png",
+      decimals: 18,
+    ),
   ],
 };

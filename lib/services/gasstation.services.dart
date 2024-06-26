@@ -108,7 +108,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
         sellerPayoutAddress!,
         price!,
-        token!.contractAddress.hex,
+        token?.contractAddress,
         encodedOfferData!);
   } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
     data = makeCancelOfferData(

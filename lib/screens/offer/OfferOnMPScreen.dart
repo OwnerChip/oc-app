@@ -371,7 +371,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       }
 
       try {
-        if (canUseGasStation && false) {
+        if (canUseGasStation) {
           txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
