@@ -161,9 +161,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               walletType!,
               toggleLoading: toggleLoading);
         } else {
-          if (userSession.isOwnerCard) {
-            throw 'Gas station needed for TX with OwnerCard.';
-          }
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
@@ -187,8 +184,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           loadingText = context.loc.burnedSuccess;
         });
 
-        BackendAttachments.deleteAllAttachments(userSession, connectedWallet, config.chainId,
-            config.collectionId, tokenId, signatureData);
+        BackendAttachments.deleteAllAttachments(userSession, connectedWallet,
+            config.chainId, config.collectionId, tokenId, signatureData);
         // send status to analytics
         burnProcess.finish();
         BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS",
@@ -255,30 +252,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
-      String txnHash;
+      String txnHash = "";
 
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            transferFromFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            tokenId: tokenId,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Cannot pay gas for normal transaction with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'Please connect with MetaMask or similar wallet.';
-        }
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
             context,
             ref,
@@ -287,9 +263,39 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             config.collectionId,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!);
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
+              transferFromFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              tokenId: tokenId,
+              toggleLoading: toggleLoading);
+        } else {
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+          await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        talker.info("error sending gasless tx, trying normal tx");
+        await normalTx();
       }
 
       var txnReceipt =
@@ -412,7 +418,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         if (canUseGasStation) {
           txnHash = await makeAndSendGaslessTx(
               ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
               recoverTokenFunctionSignature,
               config.chainId,
               config.collectionId,
@@ -425,20 +432,19 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               controllerContractId: controllerContractAddress,
               toggleLoading: toggleLoading);
         } else {
-          if (userSession.isOwnerCard) {
-            throw 'Gas station needed for TX with OwnerCard.';
-          }
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
+
           await normalTx();
         }
-
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         talker.error(e, st);
-        talker.info('gasless tx failed. Trying normal tx.');
-        await normalTx();
+        if (canUseGasStation) {
+          talker.info("error sending gasless tx, trying normal tx");
+          await normalTx();
+        }
       }
 
       talker.info('txnHash: $txnHash');
@@ -586,9 +592,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
               encodedOfferData: cancelTxCalldata,
               toggleLoading: toggleLoading);
         } else {
-          if (userSession.isOwnerCard) {
-            throw 'Gas station needed for TX with OwnerCard.';
-          }
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
@@ -695,30 +698,9 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
       final List<Purchase> unredeemedVoucherNfts =
           await ref.watch(unredeemedVoucherNftsProvider.future);
       final String offerHash = unredeemedVoucherNfts.first.offer.offerHash;
-      String txnHash;
-      if (canUseGasStation) {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('UserScanResultsScreen').currentContext!,
-            redeemItemFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            controllerContractId: controllerContractAddress,
-            offerHash: offerHash,
-            toggleLoading: toggleLoading);
-      } else {
-        if (userSession.isOwnerCard) {
-          throw 'Gas station needed for TX with OwnerCard.';
-        }
-        if (wc == null) {
-          throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
-        }
+      String txnHash = "";
+
+      Future<void> normalTx() async {
         txnHash = await makeAndSendNormalTx(
             context,
             ref,
@@ -727,10 +709,43 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
             controllerContractAddress,
             signatureData,
             connectedWallet,
-            wc,
+            wc!,
             wcSession,
             walletType!,
             offerHash: offerHash);
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                  .currentContext!,
+              redeemItemFunctionSignature,
+              config.chainId,
+              config.collectionId,
+              signatureData,
+              connectedWallet,
+              wc,
+              wcSession,
+              metaTxAgreementId,
+              walletType!,
+              controllerContractId: controllerContractAddress,
+              offerHash: offerHash,
+              toggleLoading: toggleLoading);
+        } else {
+          if (wc == null) {
+            throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
+          }
+          await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+        if (canUseGasStation) {
+          talker.info("error sending gasless tx, trying normal tx");
+          await normalTx();
+        }
       }
 
       var txnReceipt =

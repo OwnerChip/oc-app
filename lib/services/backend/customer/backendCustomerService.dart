@@ -8,22 +8,31 @@ part 'backendCustomerService.g.dart';
 
 @RestApi()
 abstract class BackendCustomerService {
+  static BackendCustomerService _instanceProd = BackendCustomerService();
+  static BackendCustomerService get instanceProd => _instanceProd;
+
   static BackendCustomerService _instance = BackendCustomerService();
 
   static BackendCustomerService get instance => _instance;
 
   static void recreate(String? jwt) {
+    _instanceProd = BackendCustomerService(
+      jwt: jwt,
+      forceProduction: true,
+    );
     _instance = BackendCustomerService(
       jwt: jwt,
+      forceProduction: false,
     );
   }
 
   factory BackendCustomerService({
     String? jwt,
+    bool forceProduction = false,
   }) {
     final dio = Backend.getBackendClient(
       jwt: jwt,
-      forceProduction: true,
+      forceProduction: forceProduction
     );
     return _BackendCustomerService(dio,
         baseUrl: "${dio.options.baseUrl}/customer");

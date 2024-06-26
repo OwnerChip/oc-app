@@ -91,6 +91,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   bool raribleCheck = true;
   bool _legalHintCheck = false;
 
+  bool _shippingCheck = false;
+
   List<String> allDropdownValues = [];
   Future<bool>?
       _setCurrencyDropDownValuesFuture; //future used for currency dropdown FutureBuilder
@@ -98,6 +100,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   bool _canOffer() {
     return email.isEmpty ||
         !_legalHintCheck ||
+        !_shippingCheck ||
         (price <= 0) ||
         (raribleCheck) == false;
   }
@@ -226,9 +229,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
               voucherTokenMetadataCID: voucherTokenMetadataCID,
               toggleLoading: toggleLoading);
         } else {
-          if (userSession.isOwnerCard) {
-            throw 'Gas station needed for TX with OwnerCard.';
-          }
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
@@ -732,7 +732,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                         TextInputType.numberWithOptions(
                                             decimal: true),
                                     obscureText: false,
-                                    initialValue: price.toString(),
                                     onChanged: (value) {
                                       setState(() {
                                         if (value.isEmpty) {
@@ -836,16 +835,18 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                               ],
                             ),
                             const SizedBox(
-                              height: 32,
+                              height: 12,
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32.0,
-                                  ),
+                                CustomCheckBox(
+                                    value: _shippingCheck,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _shippingCheck = value;
+                                      });
+                                    }),
+                                Flexible(
                                   child: Text(
                                     context.loc.shippingHint,
                                     style: Theme.of(context)
@@ -855,26 +856,24 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                           fontSize: 10,
                                           fontWeight: FontWeight.w500,
                                         ),
-                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 16,
-                                ),
-                                CustomRoundedButton(
-                                  text: context.loc.offerNow,
-                                  onPressed: _canOffer()
-                                      ? null
-                                      : () async {
-                                          //unfocus keyboard
-                                          FocusScope.of(context).unfocus();
-                                          if (_formKey.currentState!
-                                              .validate()) {
-                                            fromCancelable(offerToken());
-                                          }
-                                        },
-                                ),
                               ],
+                            ),
+                            const SizedBox(
+                              height: 32,
+                            ),
+                            CustomRoundedButton(
+                              text: context.loc.offerNow,
+                              onPressed: _canOffer()
+                                  ? null
+                                  : () async {
+                                      //unfocus keyboard
+                                      FocusScope.of(context).unfocus();
+                                      if (_formKey.currentState!.validate()) {
+                                        fromCancelable(offerToken());
+                                      }
+                                    },
                             ),
                             const SizedBox(
                               height: 12,

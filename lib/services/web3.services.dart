@@ -632,6 +632,7 @@ Future<TransactionReceipt?> getTxnReceipt(
   try {
     var txnReceipt = await web3Client.getTransactionReceipt(txnHash);
     while (txnReceipt == null) {
+      await Future.delayed(const Duration(seconds: 2));
       txnReceipt = await web3Client.getTransactionReceipt(txnHash);
     }
     return txnReceipt;

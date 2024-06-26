@@ -247,9 +247,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
               voucherTokenMetadataCID: voucherTokenMetadataCID,
               toggleLoading: toggleLoading);
         } else {
-          if (userSession.isOwnerCard) {
-            throw 'Gas station needed for TX with OwnerCard.';
-          }
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }

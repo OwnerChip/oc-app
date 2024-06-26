@@ -135,9 +135,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
               enableRecovery: isOwnerCard,
               toggleLoading: toggleLoading);
         } else {
-          if (userSession.isOwnerCard) {
-            throw 'Gas station needed for TX with OwnerCard.';
-          }
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
