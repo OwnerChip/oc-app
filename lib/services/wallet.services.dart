@@ -34,6 +34,7 @@ import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:walletconnect_flutter_v2/apis/sign_api/utils/sign_api_validator_utils.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
@@ -150,14 +151,6 @@ Future<String> makeAndSendGaslessTx(
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-      await wcSwitchToChainConditionally(w3mService, chainId)
-          .timeout(
-        const Duration(seconds: 10),
-      )
-          .catchError((e) {
-        talker.error('Failed to switch to chain: $e');
-      });
-
       w3mService!.launchConnectedWallet();
 
       toggleLoading();
@@ -165,7 +158,7 @@ Future<String> makeAndSendGaslessTx(
       signature = await wc!
           .request(
         topic: wcSession!.topic!,
-        chainId: 'eip155:$chainId',
+        chainId: 'eip155:${w3mService?.selectedChain?.chainId ?? chainId}',
         request: SessionRequestParams(
           method: 'eth_signTypedData_v4',
           params: [walletAddress.toString(), json.encode(typedData)],
@@ -509,20 +502,12 @@ Future<String> makeAndSendNormalTx(
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-    await wcSwitchToChainConditionally(w3mService, chainId).timeout(
-      const Duration(
-        seconds: 10,
-      ),
-      onTimeout: () {
-        talker.error('Failed to switch to chain');
-      },
-    ).catchError((e) {
+    await wcSwitchToChainConditionally(w3mService, chainId).catchError((e) {
       talker.error('Failed to switch to chain: $e');
     });
+    await Future.delayed(const Duration(seconds: 3));
 
-    w3mService!.launchConnectedWallet();
-
-    txnHash = await wc.request(
+    final txnFuture = wc.request(
       topic: wcSession!.topic!,
       chainId: 'eip155:$chainId',
       request: SessionRequestParams(
@@ -530,6 +515,10 @@ Future<String> makeAndSendNormalTx(
         params: txParams,
       ),
     );
+
+    w3mService!.launchConnectedWallet();
+
+    txnHash = await txnFuture;
   }
 
   return txnHash;
@@ -537,42 +526,30 @@ Future<String> makeAndSendNormalTx(
 
 Future<void> wcSwitchToChainConditionally(
     W3MService? w3mService, int chainId) async {
-  final chain = w3mService?.selectedChain;
   final wallet = w3mService?.selectedWallet;
 
-  if (wallet == null ||
-      (!wallet.listing.name.toLowerCase().contains("metamask") &&
-          !wallet.listing.name.toLowerCase().contains("safepal"))) {
+  if (wallet != null &&
+      !wallet.listing.name.toLowerCase().contains("metamask")) {
     return;
   }
 
-  if (chain == null ||
-      chain.chainId.replaceAll("eip155:", "") != chainId.toString()) {
-    final chain = chainConfig[chainId]!;
-    w3mService!.launchConnectedWallet();
+  final selectedChain = w3mService?.selectedChain;
 
-    // get available chains, if no added chain, add the chain
-    // if added chain, switch to the chain
-    final chains = w3mService.getApprovedChains();
-    if (!(chains ?? [])
-        .map((e) => e.replaceAll("eip155:", ""))
-        .contains(chainId.toString())) {
-      // await w3mService.requestAddChain(
-      //   W3MChainInfo(
-      //     chainName: chain.networkName,
-      //     chainId: "$chainId",
-      //     namespace: "",
-      //     tokenName: chain.nativeTokenSymbol,
-      //     rpcUrl: chain.rpcUrl,
-      //   ),
-      // );
-    }
+  if (selectedChain?.chainId.replaceAll("eip155:", "") == chainId.toString()) {
+    // Chain is already selected
+    return;
+  }
+
+  await (() async {
+    final chain = chainConfig[chainId]!;
+
+    w3mService!.launchConnectedWallet();
 
     await w3mService.requestSwitchToChain(
       W3MChainInfo(
         chainName: chain.networkName,
         chainId: "$chainId",
-        namespace: "",
+        namespace: "eip155",
         tokenName: chain.nativeTokenSymbol,
         rpcUrl: chain.rpcUrl,
       ),
@@ -582,8 +559,25 @@ Future<void> wcSwitchToChainConditionally(
     // so that we can redirect the user to the wallet app again
     // because <launchConnectedWallet> does not work after switching the chain
     // (because the application is still in the background)
-    await Future.delayed(const Duration(seconds: 5));
-  }
+
+    int tries = 0;
+
+    await Future.delayed(const Duration(seconds: 3));
+    while (!SignApiValidatorUtils.isValidNamespacesChainId(
+      chainId: "eip155:$chainId",
+      namespaces: w3mService.web3App?.signEngine.sessions
+              .get(w3mService.session!.topic!)
+              ?.namespaces ??
+          {},
+    )) {
+      await Future.delayed(const Duration(seconds: 5));
+      if (tries++ > 10) {
+        break;
+      }
+    }
+  })();
+
+  await Future.delayed(const Duration(seconds: 5));
 }
 
 //personal sign
@@ -632,16 +626,16 @@ Future<String> sendPersonalSignRequest(
     try {
       String signature = await w3mService.request(
         topic: wcSession!.topic!,
-        chainId: 'eip155:${w3mService.selectedChain?.chainId ?? chainId}',
+        chainId: "eip155:${w3mService.selectedChain?.chainId ?? chainId}",
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,
         ),
       );
       return signature;
-    } catch (e) {
-      Sentry.captureException(e);
-      print(e);
+    } catch (e, st) {
+      Sentry.captureException(e, stackTrace: st);
+      talker.error('Failed to sign message with WalletConnect $e', st);
       rethrow;
     }
   }
@@ -732,7 +726,9 @@ void Function(SessionExpire?) wrapOnSessionExpire(WidgetRef ref) {
 }
 
 void Function(SessionEvent?) wrapOnSessionEvent(WidgetRef ref) {
-  return (SessionEvent? args) {};
+  return (SessionEvent? args) {
+    talker.log('Session event: ${args?.chainId}');
+  };
 }
 
 void onSessionDisconnect(ModalDisconnect? args, WidgetRef ref) {
