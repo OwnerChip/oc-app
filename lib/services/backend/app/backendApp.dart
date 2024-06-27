@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ownerchip_whitelabel/domain/app/appDto.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendAppService.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/payloads/sendAnalyticsPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
@@ -28,6 +29,30 @@ abstract class BackendApp extends Backend {
       );
       talker.error(e);
     });
+  }
+
+  static Future<AppDto> getApp() async {
+    try {
+      final response = await BackendAppService.instance
+          .getAppCollections(
+        packageName: dotenv.get('BITRISEIO_PACKAGE_NAME'),
+      )
+          .catchError((e) {
+        Sentry.captureException(
+          e,
+        );
+        talker.error(e);
+        throw e;
+      });
+
+      return AppDto.fromJson(response.data);
+    } catch (e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(e);
+      rethrow;
+    }
   }
 
   // get a list of all collections associated with a specific app

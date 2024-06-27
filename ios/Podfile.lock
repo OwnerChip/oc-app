@@ -51,6 +51,8 @@ PODS:
   - image_picker_ios (0.0.1):
     - Flutter
   - KeychainSwift (20.0.0)
+  - native_ios_dialog (0.0.1):
+    - Flutter
   - nfc_manager (0.0.1):
     - Flutter
   - package_info_plus (0.4.5):
@@ -104,6 +106,7 @@ DEPENDENCIES:
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - flutter_timezone (from `.symlinks/plugins/flutter_timezone/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - native_ios_dialog (from `.symlinks/plugins/native_ios_dialog/ios`)
   - nfc_manager (from `.symlinks/plugins/nfc_manager/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -146,6 +149,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_timezone/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  native_ios_dialog:
+    :path: ".symlinks/plugins/native_ios_dialog/ios"
   nfc_manager:
     :path: ".symlinks/plugins/nfc_manager/ios"
   package_info_plus:
@@ -183,6 +188,7 @@ SPEC CHECKSUMS:
   flutter_timezone: ffb07bdad3c6276af8dada0f11978d8a1f8a20bb
   image_picker_ios: b545a5f16c0fa88e3ecbbce3ed4de45567a8ec18
   KeychainSwift: 0ce6a4d13f7228054d1a71bb1b500448fb2ab837
+  native_ios_dialog: a698a22b58c5b79f42b4fd2e22262797ce5a441f
   nfc_manager: d7da7cb781f7744b94df5fe9dbca904ac4a0939e
   package_info_plus: 58f0028419748fad15bf008b270aaa8e54380b1c
   path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c

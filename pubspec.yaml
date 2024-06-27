@@ -14,6 +14,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.19.0
+  package_info_plus: ^7.0.0
   nfc_manager: ^3.2.0
   web3dart: ^2.4.1
   eth_sig_util: ^0.0.9
@@ -43,6 +44,7 @@ dependencies:
   json_annotation: ^4.9.0
   pull_to_refresh_flutter3: ^2.0.2
   retrofit: ^4.1.0
+  native_ios_dialog: ^0.2.1
 
   #  Logger
   ansicolor: ^2.0.2

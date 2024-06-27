@@ -16,9 +16,11 @@ import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
@@ -216,6 +218,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(appNotifierProvider).appDto == null) {
+        ref.read(appNotifierProvider.notifier).init();
+      }
+    });
+
     super.initState();
   }
 
@@ -309,6 +317,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final app = ref.watch(appNotifierProvider);
+
     final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
@@ -326,91 +336,119 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           orElse: () {});
     }
 
+    if (!app.upgradeShown && app.upgradeRequired) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(appNotifierProvider.notifier).showUpgrade(context);
+      });
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
         showBackButton: false,
       ),
-      body: ScreenBodyLayout(
-        withScrollView: false,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        flexSides: 0,
-        padding: const EdgeInsets.only(top: 0, bottom: 15),
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
-              ? const Text(
-                  'INTERNAL',
-                  style: TextStyle(color: Colors.red, fontSize: 20),
+          _buildBody(context, relevantCollections),
+          app.isLoading
+              ? Center(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.2),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: CustomColors(dotenv.get('APP_ID')).primaryColor,
+                      ),
+                    ),
+                  ),
                 )
               : Container(),
-
-          // MIDDLE CONTENT
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CustomHomeScreenButton(
-                  text: context.loc.scanning,
-                  svgPath:
-                      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
-                  onTap: () => onButtonPress(false)),
-              const SizedBox(height: 40),
-              CustomRoundedButton(
-                width: 250,
-                text: context.loc.scanNow,
-                onPressed: () => onButtonPress(false),
-              ),
-              const SizedBox(height: 20),
-              ref.read(userSessionProvider) == null
-                  ? Container()
-                  : relevantCollections.when(
-                      data: (data) => data.hasAnyMinterRole! &&
-                              ref.read(userSessionProvider) != null
-                          ? Padding(
-                              padding: EdgeInsets.only(bottom: 20),
-                              child: CustomRoundedButton(
-                                width: 250,
-                                text: context.loc.initializeChip,
-                                onPressed: () => onButtonPress(true),
-                              ))
-                          : Container(),
-                      loading: () => SizedBox(
-                          height: 40, child: Text(context.loc.loading)),
-                      error: (err, stack) => Container()),
-            ],
-          ),
-
-          //FOOTER CONTENT
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CustomOutlinedButton(
-                width: 250,
-                buttonText: context.loc.myCollection,
-                onPressed: () =>
-                    Navigator.pushNamed(context, GalleryScreen.routeName),
-              ),
-              const SizedBox(height: 20),
-              //if stebo app show additional button
-              dotenv.get('APP_ID') == 'stebo'
-                  ? Column(children: [
-                      CustomOutlinedButton(
-                          buttonText: 'SteboArt',
-                          onPressed: () => launchUrl(
-                              Uri.parse('https://www.steboart.com'),
-                              mode: LaunchMode.externalApplication)),
-                      const SizedBox(height: 20),
-                    ])
-                  : Container(),
-              CustomOutlinedButton(
-                buttonText: context.loc.more,
-                onPressed: () =>
-                    Navigator.pushNamed(context, MoreInfoScreen.routeName),
-              ),
-            ],
-          )
         ],
       ),
+    );
+  }
+
+  ScreenBodyLayout _buildBody(BuildContext context,
+      AsyncValue<BlockchainCollectionList> relevantCollections) {
+    return ScreenBodyLayout(
+      withScrollView: false,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      flexSides: 0,
+      padding: const EdgeInsets.only(top: 0, bottom: 15),
+      children: [
+        dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
+            ? const Text(
+                'INTERNAL',
+                style: TextStyle(color: Colors.red, fontSize: 20),
+              )
+            : Container(),
+
+        // MIDDLE CONTENT
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CustomHomeScreenButton(
+                text: context.loc.scanning,
+                svgPath:
+                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/homescreen_button_scan.svg',
+                onTap: () => onButtonPress(false)),
+            const SizedBox(height: 40),
+            CustomRoundedButton(
+              width: 250,
+              text: context.loc.scanNow,
+              onPressed: () => onButtonPress(false),
+            ),
+            const SizedBox(height: 20),
+            ref.read(userSessionProvider) == null
+                ? Container()
+                : relevantCollections.when(
+                    data: (data) => data.hasAnyMinterRole! &&
+                            ref.read(userSessionProvider) != null
+                        ? Padding(
+                            padding: EdgeInsets.only(bottom: 20),
+                            child: CustomRoundedButton(
+                              width: 250,
+                              text: context.loc.initializeChip,
+                              onPressed: () => onButtonPress(true),
+                            ))
+                        : Container(),
+                    loading: () =>
+                        SizedBox(height: 40, child: Text(context.loc.loading)),
+                    error: (err, stack) => Container()),
+          ],
+        ),
+
+        //FOOTER CONTENT
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomOutlinedButton(
+              width: 250,
+              buttonText: context.loc.myCollection,
+              onPressed: () =>
+                  Navigator.pushNamed(context, GalleryScreen.routeName),
+            ),
+            const SizedBox(height: 20),
+            //if stebo app show additional button
+            dotenv.get('APP_ID') == 'stebo'
+                ? Column(children: [
+                    CustomOutlinedButton(
+                        buttonText: 'SteboArt',
+                        onPressed: () => launchUrl(
+                            Uri.parse('https://www.steboart.com'),
+                            mode: LaunchMode.externalApplication)),
+                    const SizedBox(height: 20),
+                  ])
+                : Container(),
+            CustomOutlinedButton(
+              buttonText: context.loc.more,
+              onPressed: () =>
+                  Navigator.pushNamed(context, MoreInfoScreen.routeName),
+            ),
+          ],
+        )
+      ],
     );
   }
 }
