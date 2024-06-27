@@ -307,7 +307,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   } else if (functionSignatureHash == recoverTokenFunctionSignature) {
     data =
         makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
-  } else if(functionSignatureHash == cancelMarketplaceOfferSignature) {
+  } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
     data = makeCancelOfferData(
         functionSignatureHash,
         EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
@@ -595,7 +595,8 @@ Future<EthereumAddress> getCollectionId(
   }
 }
 
-Future<TransactionReceipt?> getTxnReceipt(String chainRpcUrl, String txnHash) async {
+Future<TransactionReceipt?> getTxnReceipt(
+    String chainRpcUrl, String txnHash) async {
   final web3Client = getWeb3Client(chainRpcUrl);
 
   try {
@@ -621,55 +622,55 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
 
   final List<Purchase> unredeemedPurchases =
       await ref.read(unredeemedVoucherNftsProvider.future);
-  if (unredeemedPurchases.isNotEmpty &&
-      !unredeemedPurchases.first.manualHandover &&
-      unredeemedPurchases.first.shippingInfo == null) {
-    // ignore: use_build_context_synchronously
-    await showCustomPopup(
-        context,
-        icon: Icon(Icons.local_shipping_outlined,
-            size: 90, color: CustomColors(dotenv.get('APP_ID')).accentColor),
-        context.loc.claimPhysicalItem,
-        Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(
-            context.loc.requestShipment,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          CustomRoundedButton(
-            text: context.loc.enterShippingAddress,
-            onPressed: () {
-              Navigator.pushNamed(
-                  context, EnterShippingAddressScreen.routeName);
-            },
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          CustomOutlinedButton(
-            width: double.infinity,
-            buttonText: context.loc.manualHandover,
-            onPressed: () async {
-              try {
-                await BackendToken.postManualHandoverToBackend(unredeemedPurchases.first);
-                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-                    context.loc.successHeadingSnackbar,
-                    context.loc.successManualHandover,
-                    'success'));
-                Navigator.pop(context);
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                      context.loc.pleaseTryAgainLater, 'error'),
-                );
-              }
-            },
-          ),
-        ]),
-        setShippingPopupIsShownState: setShippingPopupIsShownState);
+
+  for (final purchase in unredeemedPurchases) {
+    if (!purchase.manualHandover && purchase.shippingInfo == null) {
+      await showCustomPopup(
+          context,
+          icon: Icon(Icons.local_shipping_outlined,
+              size: 90, color: CustomColors(dotenv.get('APP_ID')).accentColor),
+          context.loc.claimPhysicalItem,
+          Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(
+              context.loc.requestShipment,
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            CustomRoundedButton(
+              text: context.loc.enterShippingAddress,
+              onPressed: () {
+                Navigator.pushNamed(
+                    context, EnterShippingAddressScreen.routeName);
+              },
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            CustomOutlinedButton(
+              width: double.infinity,
+              buttonText: context.loc.manualHandover,
+              onPressed: () async {
+                try {
+                  await BackendToken.postManualHandoverToBackend(
+                      purchase);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      returnSnackBarWidget(context.loc.successHeadingSnackbar,
+                          context.loc.successManualHandover, 'success'));
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+                        context.loc.pleaseTryAgainLater, 'error'),
+                  );
+                }
+              },
+            ),
+          ]),
+          setShippingPopupIsShownState: setShippingPopupIsShownState);
+    }
   }
 }
 
