@@ -13,7 +13,7 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -58,7 +58,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
       'ID: 100 \nSlot 0:${slot0Addresses['OwnerChip']!.hex.substring(0, 6)}...',
       'ID: 101 \nSlot 0: ${slot0Addresses['Stebo']!.hex.substring(0, 6)}...',
       'ID: 102 \nSlot 0: ${slot0Addresses['Infineon']!.hex.substring(0, 6)}...',
-      'ID:103 \nSlot 0: ${slot0Addresses['Stilami']!.hex.substring(0, 6)}...'
+      'ID: 103 \nSlot 0: ${slot0Addresses['Stilami']!.hex.substring(0, 6)}...'
     ];
     return Scaffold(
       appBar: const CustomAppBar(

@@ -36,17 +36,20 @@ dependencies:
   pinput: ^3.0.0
   control_style: ^0.1.0
   country_picker: ^2.0.23
-  web3modal_flutter: 3.2.0
+  web3modal_flutter: 3.2.2
   web3auth_flutter: ^4.0.0
   info_popup: ^4.3.1
   video_player: ^2.8.6
   json_annotation: ^4.9.0
   pull_to_refresh_flutter3: ^2.0.2
+  retrofit: ^4.1.0
 
   #  Logger
   ansicolor: ^2.0.2
   talker: ^4.2.0
   talker_dio_logger: ^4.2.0
+  confetti: ^0.7.0
+  path_drawing: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +61,7 @@ dev_dependencies:
   test: ^1.21.4
   flutter_launcher_icons: ^0.13.1
   riverpod_generator: ^2.3.9
+  retrofit_generator: ^8.1.0
 
 
 flutter_icons:
@@ -86,6 +90,7 @@ flutter:
     - assets/contracts/forwarder.abi.json
     - assets/contracts/voucher.abi.json
     - assets/contracts/controller.abi.json
+    - assets/contracts/erc20.abi.json
     - .env
   generate: true
   uses-material-design: true

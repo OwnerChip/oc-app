@@ -12,7 +12,7 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChainDropdown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CollectionDropDown.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 
 //import services

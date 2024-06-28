@@ -6,7 +6,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/crypto.dart';
@@ -32,6 +32,23 @@ String getNdefUrl() {
   return dotenv.get('IS_INTERNAL') == 'true'
       ? dotenv.get('NDEF_URL_TEST')
       : dotenv.get('NDEF_URL');
+}
+
+String getCustomerId() {
+  switch (dotenv.get("BITRISEIO_PACKAGE_NAME")) {
+    case 'com.ownerchip':
+    case 'com.ownerchip.user':
+    case 'com.ownerchip.internal':
+      return '100';
+    case 'com.steboart.user':
+      return '101';
+    case 'com.ownerchipinfineon.demo':
+      return '102';
+    case 'com.stilami.identity':
+      return '103';
+    default:
+      return '';
+  }
 }
 
 Future<void> vibrateNTimes(int times) async {
@@ -77,7 +94,7 @@ Future<bool> checkInternetConnection() async {
 Future<bool> checkBackendAvailability() async {
   try {
     //get backend client
-    final client = getBackendClient();
+    final client =Backend.getBackendClient();
     await client.get('/auth');
     return true;
   } catch (e) {

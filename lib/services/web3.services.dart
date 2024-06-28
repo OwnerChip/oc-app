@@ -1,26 +1,29 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
+import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
+import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/json_rpc.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 
 Web3Client getWeb3Client(String chainRpcUrl) {
   var client = Web3Client(chainRpcUrl, Client());
@@ -153,11 +156,22 @@ Future<List<dynamic>> queryControllerContract(
   return result;
 }
 
-Future<BigInt> estimateGas(String chainRpcUrl, EthereumAddress contractAddress,
-    Uint8List txData, EthereumAddress fromAddress) async {
+Future<BigInt> estimateGas(
+  String chainRpcUrl,
+  EthereumAddress contractAddress,
+  Uint8List? txData,
+  EthereumAddress fromAddress, {
+  EtherAmount? value,
+  EtherAmount? gasPrice,
+}) async {
   final web3Client = getWeb3Client(chainRpcUrl);
   BigInt result = await web3Client.estimateGas(
-      sender: fromAddress, to: contractAddress, data: txData);
+    sender: fromAddress,
+    to: contractAddress,
+    data: txData,
+    value: value,
+    gasPrice: gasPrice,
+  );
   return result;
 }
 
@@ -234,30 +248,41 @@ String makeMintData(String functionSignatureHash, Uint8List hash,
 }
 
 Future<List<dynamic>> buildEthSendTransactionRequest(
-    String chainRpcUrl,
-    EthereumAddress collectionId,
-    EthereumAddress? from,
-    String functionSignatureHash,
-    Uint8List randomValueHash,
-    MsgSignature signature,
-    {EthereumAddress? toAccount,
-    String? tokenURI,
-    String? voucherTokenURI,
-    String? gasPrice,
-    BigInt? tokenId,
-    bool? enableRecovery,
-    EthereumAddress? sellerPayoutAddress,
-    BigInt? offerPrice,
-    String? typedDataHash,
-    BigInt? salt,
-    int? end,
-    String? encodedOfferData,
-    int? chainId,
-    String? offerHash}) async {
-  String data;
+  String chainRpcUrl,
+  EthereumAddress collectionId,
+  EthereumAddress? from,
+  String functionSignatureHash,
+  Uint8List randomValueHash,
+  MsgSignature signature, {
+  EthereumAddress? toAccount,
+  String? tokenURI,
+  String? voucherTokenURI,
+  BigInt? tokenId,
+  bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
+  BigInt? offerPrice,
+  String? typedDataHash,
+  BigInt? salt,
+  int? end,
+  String? encodedOfferData,
+  int? chainId,
+  BigInt? amount,
+  String? offerHash,
+  BigInt? gasAmount,
+  BigInt? gasPrice,
+}) async {
+  String? data;
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == erc20TransferFunctionSignature) {
+    data = makeErc20TransferData(
+      functionSignatureHash,
+      toAccount!,
+      amount!,
+    );
+  } else if (amount != null) {
+    data = null;
   } else if (functionSignatureHash == mintVoucherFunctionSignature) {
     data = makeMintData(functionSignatureHash, randomValueHash, signature,
         tokenURI!, voucherTokenURI!);
@@ -282,40 +307,71 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   } else if (functionSignatureHash == recoverTokenFunctionSignature) {
     data =
         makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
+  } else if(functionSignatureHash == cancelMarketplaceOfferSignature) {
+    data = makeCancelOfferData(
+        functionSignatureHash,
+        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
+        randomValueHash,
+        signature,
+        encodedOfferData!);
   } else {
     throw Exception('Invalid function signature hash');
   }
 
-  String gasAmount = "0x55730"; // fallback: 300000 gas
+  String gasAmountStr =
+      "0x${gasAmount != null ? gasAmount.toRadixString(16) : "55730"}"; // fallback: 300000 gas
   try {
-    BigInt gasAmountEst =
-        await estimateGas(chainRpcUrl, collectionId, hexToBytes(data), from!);
-    gasAmount = "0x${gasAmountEst.toRadixString(16)}";
+    if (gasAmount == null) {
+      BigInt gasAmountEst = await estimateGas(
+        chainRpcUrl,
+        collectionId,
+        data != null ? hexToBytes(data) : null,
+        from!,
+      );
+      gasAmountStr = "0x${gasAmountEst.toRadixString(16)}";
+    }
+    ;
     print("ESTIMATED GAS AMOUNT: $gasAmount");
   } catch (e) {
     print("ERROR estimating gas amount: $e");
   }
 
+  String gasPriceStr;
+
   if (gasPrice == null) {
     try {
-      BigInt estimatedGasPrice = await estimateGasPrice(chainRpcUrl);
-      gasPrice = "0x${estimatedGasPrice.toRadixString(16)}";
+      gasPrice = await estimateGasPrice(chainRpcUrl);
       print("ESTIMATED GAS PRICE: $gasPrice");
+      gasPriceStr = "0x${gasPrice.toRadixString(16)}";
     } catch (e) {
       print("ERROR estimating gas price: $e");
-      gasPrice = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
+      gasPriceStr = dotenv.get('DEFAULT_GAS_PRICE'); // fallback
     }
+  } else {
+    gasPriceStr = "0x${gasPrice.toRadixString(16)}";
   }
-  gasAmount = "0x55730"; // fallback: 350000 gas
+
   final params = [
     {
       "from": from.toString(),
       "to": collectionId.toString(),
-      "data": data,
-      "gasPrice": gasPrice,
-      "gas": gasAmount
+      "gasPrice": gasPriceStr,
+      "gas": gasAmountStr,
     },
   ];
+
+  // print("GasPrice: ${BigInt.parse(gasPriceStr.substring(2), radix: 16)}");
+  // print("GasAmount: ${BigInt.parse(gasAmountStr.substring(2), radix: 16)}");
+
+  if (data != null) {
+    params[0]["data"] = data;
+  }
+
+  // native transfer
+  if (functionSignatureHash.isEmpty && amount != null) {
+    params[0]["value"] = "0x${amount.toRadixString(16)}";
+  }
+
   return params;
 }
 
@@ -367,6 +423,27 @@ String makeRecoverTokenData(
       signature.r.toRadixString(16).padLeft(64, '0') +
       signature.s.toRadixString(16).padLeft(64, '0') +
       signature.v.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+String makeErc20TransferData(
+    String functionSignatureHash, EthereumAddress to, BigInt value) {
+  String data = functionSignatureHash +
+      to.toString().substring(2).padLeft(64, '0') +
+      value.toRadixString(16).padLeft(64, '0');
+  return data;
+}
+
+String makeErc20TransferFromData(
+  String functionSignatureHash,
+  EthereumAddress from,
+  EthereumAddress to,
+  BigInt value,
+) {
+  String data = functionSignatureHash +
+      from.toString().substring(2).padLeft(64, '0') +
+      to.toString().substring(2).padLeft(64, '0') +
+      value.toRadixString(16).padLeft(64, '0');
   return data;
 }
 
@@ -518,18 +595,19 @@ Future<EthereumAddress> getCollectionId(
   }
 }
 
-Future<dynamic> getTxnReceipt(String chainRpcUrl, String txnHash) async {
+Future<TransactionReceipt?> getTxnReceipt(String chainRpcUrl, String txnHash) async {
   final web3Client = getWeb3Client(chainRpcUrl);
 
   try {
     var txnReceipt = await web3Client.getTransactionReceipt(txnHash);
     while (txnReceipt == null) {
+      await Future.delayed(const Duration(seconds: 2));
       txnReceipt = await web3Client.getTransactionReceipt(txnHash);
     }
     return txnReceipt;
   } catch (e) {
     print('Error while fetching txn receipt: $e');
-    return e;
+    return null;
   }
 }
 
@@ -576,7 +654,7 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
             buttonText: context.loc.manualHandover,
             onPressed: () async {
               try {
-                await postManualHandoverToBackend(unredeemedPurchases.first);
+                await BackendToken.postManualHandoverToBackend(unredeemedPurchases.first);
                 ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
                     context.loc.successHeadingSnackbar,
                     context.loc.successManualHandover,

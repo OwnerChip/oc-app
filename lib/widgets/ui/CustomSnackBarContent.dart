@@ -19,7 +19,6 @@ class CustomSnackBarContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         padding: const EdgeInsets.all(16.0),
-        height: 75,
         decoration: BoxDecoration(
             color: alertType == 'success'
                 ? CustomColors(dotenv.get('APP_ID')).successColor
@@ -35,7 +34,7 @@ class CustomSnackBarContent extends StatelessWidget {
                     alertType == 'success' ? Icons.check_circle : Icons.error,
                     size: 36,
                     color: Theme.of(context).cardColor)),
-            Expanded(
+            Flexible(
               child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,12 +42,14 @@ class CustomSnackBarContent extends StatelessWidget {
                     Text(heading,
                         style: TextStyle(
                             fontSize: 18, color: Theme.of(context).cardColor)),
-                    Text(
-                      text,
-                      style: TextStyle(
-                          color: Theme.of(context).cardColor, fontSize: 12),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    Flexible(
+                      child: Text(
+                        text,
+                        style: TextStyle(
+                            color: Theme.of(context).cardColor, fontSize: 12),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     )
                   ]),
             )

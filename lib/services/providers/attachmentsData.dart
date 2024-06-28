@@ -2,12 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:web3dart/web3dart.dart';
 
 //this provider fetches all attachments from backend, and saves them to localAttachmentsProvider!
 //This is necessary to edit attachments locally!
@@ -56,7 +57,7 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     SignatureData tokenSignatureData = ref.read(chipSignatureDataProvider);
 
     UserSession? userSession = ref.read(userSessionProvider);
-    response = await getPublicAndPrivateAttachmentsFromBackend(
+    response = await BackendAttachments.getPublicAndPrivateAttachmentsFromBackend(
       userSession!,
       userWalletAddress,
       chainId,
@@ -65,7 +66,7 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     );
   } else {
     //get all public attachments
-    response = await getPublicAttachmentsFromBackend(chipInfo.tokenId);
+    response = await BackendAttachments.getPublicAttachmentsFromBackend(chipInfo.tokenId);
     print(response);
   }
   //create list of attachments
