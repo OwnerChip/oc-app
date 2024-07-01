@@ -410,6 +410,10 @@
     "offerOnMpFetchingPrice": "Fetching current price...",
     "offerOnMpErrorFetchingPrice": "Error fetching current price",
     "offerOnMpPublishedDialogTitle": "Published on Marketplace",
-    "offerOnMpPublishedDialogSubtitle": "Your item is now available for sale!"
+    "offerOnMpPublishedDialogSubtitle": "Your item is now available for sale!",
+    "@_NEW_VERSION": {},
+    "newVersionTitle": "Update App",
+    "newVersionAvailable": "A new version of the app is available! Please update to the latest version.",
+    "newVersionUpdateButton": "Update"
 
 }

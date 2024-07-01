@@ -405,7 +405,10 @@
     "offerOnMpFetchingPrice": "Aktuelle Kurse werden geladen...",
     "offerOnMpErrorFetchingPrice": "Fehler beim Laden aktueller Kurse",
     "offerOnMpPublishedDialogTitle": "Auf Marktplatz veröffentlicht",
-    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!"
-
+    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!",
+    "@_NEW_VERSION": {},
+    "newVersionTitle": "App aktualisieren",
+    "newVersionAvailable": "Eine neue Version der App ist verfügbar! Bitte aktualisiere auf die neueste Version.",
+    "newVersionUpdateButton": "Aktualisieren"
 
 }
