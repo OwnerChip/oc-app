@@ -885,6 +885,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  native_ios_dialog:
+    dependency: "direct main"
+    description:
+      name: native_ios_dialog
+      sha256: "52d4fc40af7b0e832b23d5d061ad7e8e31b5a992a1125616e63960404be12e1c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   nfc_manager:
     dependency: "direct main"
     description:
@@ -918,7 +926,7 @@ packages:
     source: hosted
     version: "2.1.0"
   package_info_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: package_info_plus
       sha256: "2c582551839386fa7ddbc7770658be7c0f87f388a4bff72066478f597c34d17f"
