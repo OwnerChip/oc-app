@@ -362,6 +362,7 @@ Future<String> makeAndSendNormalTx(
   BigInt? amount,
   BigInt? gasAmount,
   BigInt? gasPrice,
+  BlockchainToken? token,
 }) async {
   var txParams = await buildEthSendTransactionRequest(
     getRPCUrlFromChainId(chainId),
@@ -389,6 +390,7 @@ Future<String> makeAndSendNormalTx(
     amount: amount,
     gasPrice: gasPrice,
     gasAmount: gasAmount,
+    token: token,
   );
 
   late String txnHash;

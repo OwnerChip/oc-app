@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
@@ -270,6 +271,7 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   String? offerHash,
   BigInt? gasAmount,
   BigInt? gasPrice,
+  BlockchainToken? token,
 }) async {
   String? data;
   if (functionSignatureHash == mintFunctionSignature) {
@@ -301,13 +303,23 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         sellerPayoutAddress!,
         offerPrice!,
         typedDataHash!);
+  } else if (functionSignatureHash == offerItemErc20FunctionSignature) {
+    data = makeOfferItemErc20Data(
+      functionSignatureHash,
+      tokenId!,
+      EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
+      sellerPayoutAddress!,
+      offerPrice!,
+      token?.contractAddress,
+      typedDataHash!,
+    );
   } else if (functionSignatureHash == redeemItemFunctionSignature) {
     data = makeRedeemTwinTokenData(
         functionSignatureHash, randomValueHash, signature, offerHash!);
   } else if (functionSignatureHash == recoverTokenFunctionSignature) {
     data =
         makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
-  } else if(functionSignatureHash == cancelMarketplaceOfferSignature) {
+  } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
     data = makeCancelOfferData(
         functionSignatureHash,
         EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
@@ -483,6 +495,24 @@ String makeOfferItemData(
   return data;
 }
 
+String makeOfferItemErc20Data(
+    String functionSignatureHash,
+    BigInt tokenId,
+    EthereumAddress marketplaceContract,
+    EthereumAddress sellerPayoutAddress,
+    BigInt offerPrice,
+    EthereumAddress? tokenAddress,
+    String typedDataHash) {
+  String data = functionSignatureHash +
+      tokenId.toRadixString(16).padLeft(64, '0') +
+      marketplaceContract.toString().substring(2).padLeft(64, '0') +
+      sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
+      offerPrice.toRadixString(16).padLeft(64, '0') +
+      (tokenAddress ?? zeroAddress).toString().substring(2).padLeft(64, '0') +
+      typedDataHash.substring(2).padLeft(64, '0');
+  return data;
+}
+
 Future<dynamic> getTwinOwner(
     String chainRpcUrl, EthereumAddress collectionId, BigInt tokenId) async {
   try {
@@ -595,7 +625,8 @@ Future<EthereumAddress> getCollectionId(
   }
 }
 
-Future<TransactionReceipt?> getTxnReceipt(String chainRpcUrl, String txnHash) async {
+Future<TransactionReceipt?> getTxnReceipt(
+    String chainRpcUrl, String txnHash) async {
   final web3Client = getWeb3Client(chainRpcUrl);
 
   try {
@@ -654,7 +685,8 @@ Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
             buttonText: context.loc.manualHandover,
             onPressed: () async {
               try {
-                await BackendToken.postManualHandoverToBackend(unredeemedPurchases.first);
+                await BackendToken.postManualHandoverToBackend(
+                    unredeemedPurchases.first);
                 ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
                     context.loc.successHeadingSnackbar,
                     context.loc.successManualHandover,

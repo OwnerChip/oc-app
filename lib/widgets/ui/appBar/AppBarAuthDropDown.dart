@@ -10,6 +10,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -199,8 +200,6 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       final wc = ref.read(wcProvider);
       W3MSession? wcSession = ref.watch(wcSessionProvider);
 
-      //navigate back until homescreen
-      Navigator.of(context).popUntil((route) => route.isFirst);
       //reset providers
       ref.read(userAddressProvider.notifier).state = zeroAddress;
       ref.read(walletTypeProvider.notifier).state = null;
@@ -214,10 +213,19 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       storage.remove('userSession');
 
       ref.refresh(web3AuthNotifierProvider);
-      await Web3AuthFlutter.logout().catchError((_) {});
 
-      // clean up services
-      await BackendAuth.initGuestSession(ref: ref);
+      try {
+        await Web3AuthFlutter.logout().catchError((_) {});
+      } catch (e) {
+        talker.error('Error logging out of web3auth', e);
+      }
+
+      try {
+        // clean up services
+        await BackendAuth.initGuestSession(ref: ref);
+      } catch (e) {
+        talker.error('Error cleaning up services', e);
+      }
 
       if (wc != null && wcSession != null) {
         await wc.disconnectSession(
@@ -227,6 +235,9 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                 message:
                     'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
       }
+
+      //navigate back until homescreen
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 }

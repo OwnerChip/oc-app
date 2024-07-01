@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:web3dart/crypto.dart';
@@ -66,6 +67,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
   String? encodedOfferData,
   String? typedDataHash,
   String? offerHash, {
+  BlockchainToken? token,
   BigInt? amount,
   BigInt? gas,
 }) async {
@@ -99,6 +101,15 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         sellerPayoutAddress!,
         price!,
         typedDataHash!);
+  } else if (functionSignatureHash == offerItemErc20FunctionSignature) {
+    data = makeOfferItemErc20Data(
+        functionSignatureHash,
+        tokenId!,
+        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
+        sellerPayoutAddress!,
+        price!,
+        token?.contractAddress,
+        encodedOfferData!);
   } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
     data = makeCancelOfferData(
         functionSignatureHash,
@@ -193,6 +204,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams({
   String? offerHash,
   BigInt? amount,
   BigInt? gas,
+  BlockchainToken? token,
 }) async {
   final request = await buildTypedV4Request(
     functionSignatureHash,
@@ -216,6 +228,7 @@ Future<List<Map<String, dynamic>>> makeGaslessParams({
     offerHash,
     amount: amount,
     gas: gas,
+    token: token,
   );
   final typedData = await buildTypedData(chainId, request);
   return [typedData, request];

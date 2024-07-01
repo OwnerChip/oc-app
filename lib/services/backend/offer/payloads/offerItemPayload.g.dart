@@ -21,6 +21,7 @@ OfferItemPayload _$OfferItemPayloadFromJson(Map<String, dynamic> json) =>
       chipSignature: json['chipSignature'] as String,
       marketplaceContract: json['marketplaceContract'] as String,
       offchainOfferId: json['offchainOfferId'] as String,
+      offerPaymentToken: json['offerPaymentToken'] as String,
     );
 
 Map<String, dynamic> _$OfferItemPayloadToJson(OfferItemPayload instance) =>
@@ -38,4 +39,5 @@ Map<String, dynamic> _$OfferItemPayloadToJson(OfferItemPayload instance) =>
       'chipSignature': instance.chipSignature,
       'marketplaceContract': instance.marketplaceContract,
       'offchainOfferId': instance.offchainOfferId,
+      'offerPaymentToken': instance.offerPaymentToken,
     };

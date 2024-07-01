@@ -447,6 +447,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
         }
       }
 
+      talker.info('txnHash: $txnHash');
+
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
