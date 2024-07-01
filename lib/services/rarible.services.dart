@@ -115,6 +115,11 @@ Future<RaribleHashAndEncodedData> getRaribleOrderTypedDataHash(
 Future<String> prepareRaribleOrderCancellation(
     int chainId, String offchainOrderId) async {
   try {
+
+    if(offchainOrderId.split(":").length < 2) {
+      offchainOrderId = "${chainConfig[chainId]!.raribleEnum}:$offchainOrderId";
+    }
+
     final Dio dio = Dio();
     dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
     Response result = await dio.post(
