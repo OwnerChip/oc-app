@@ -342,9 +342,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final String hexSignature = msgSignatureToHex(chipSignature!);
 
     try {
+      final functionSignature = token == null
+          ? offerItemFunctionSignature
+          : offerItemErc20FunctionSignature;
+
       //check if user is allowed to use gas station
       final List response = await BackendMetaTx.checkMetaTx(
-          config.collectionId, offerItemErc20FunctionSignature);
+          config.collectionId, functionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -354,7 +358,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         txnHash = await makeAndSendNormalTx(
           context,
           ref,
-          offerItemErc20FunctionSignature,
+          functionSignature,
           config.chainId,
           controllerContractAddress,
           signatureData,
@@ -375,7 +379,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           txnHash = await makeAndSendGaslessTx(
             ref,
             ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-            offerItemErc20FunctionSignature,
+            functionSignature,
             config.chainId,
             config.collectionId,
             signatureData,
