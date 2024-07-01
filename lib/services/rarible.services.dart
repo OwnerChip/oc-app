@@ -116,6 +116,11 @@ Future<RaribleHashAndEncodedData> getRaribleOrderTypedDataHash(
 Future<String> prepareRaribleOrderCancellation(
     int chainId, String offchainOrderId) async {
   try {
+
+    if(offchainOrderId.split(":").length < 2) {
+      offchainOrderId = "${chainConfig[chainId]!.raribleEnum}:$offchainOrderId";
+    }
+
     final Dio dio = Rarible.getRaribleClient(chainId: chainId);
     Response result = await dio.post(
       '${Rarible.raribleApiUrls[chainId]}/orders/$offchainOrderId/prepareCancelTx',
