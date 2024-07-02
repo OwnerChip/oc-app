@@ -89,141 +89,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     });
   }
 
-  Future<void> burnToken(Web3App? wc, BigInt tokenId,
-      SignatureData signatureData, EthereumAddress connectedWallet) async {
-    final UserSession userSession = ref.read(userSessionProvider)!;
-    final wcSession = ref.read(wcSessionProvider);
-    final walletType = ref.read(walletTypeProvider);
-    final String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenChainAndCollection config =
-        await ref.watch(findTokenProvider(tokenId).future);
-    final burnProcess = Sentry.startTransaction('initBurn()', 'task');
-
-    if (signatureData.hasBeenUsedInSmartContract) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.attention,
-            context.loc.pleaseScanChipAgainToBurn, 'warning'),
-      );
-      return;
-    }
-
-    try {
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.burning;
-        isRotating = true;
-        loadingSvgPath =
-            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
-      });
-
-      BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED",
-          tags: {
-            'connectedWallet': connectedWallet.hex,
-            'chipWallet': convertTokenIdToEthereumAddress(
-                ref.read(chipInfoProvider).tokenId)
-          });
-
-      final List response = await BackendMetaTx.checkMetaTx(
-          config.collectionId, burnFunctionSignature);
-      final bool canUseGasStation = response[0];
-      final metaTxAgreementId = response[1];
-
-      String txnHash = "";
-
-      Future<void> normalNx() async {
-        txnHash = await makeAndSendNormalTx(
-            context,
-            ref,
-            burnFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            walletType!);
-      }
-
-      try {
-        if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                  .currentContext!,
-              burnFunctionSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              toggleLoading: toggleLoading);
-        } else {
-          if (wc == null) {
-            throw 'Please connect with MetaMask or similar wallet.';
-          }
-          await normalNx();
-        }
-      } catch (e, st) {
-        Sentry.captureException(e, stackTrace: st);
-        talker.error(e, st);
-        await normalNx();
-      }
-
-      talker.info('txnHash: $txnHash');
-
-      var txnReceipt =
-          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status == true) {
-        //this means burn succeeded
-        setState(() {
-          isRotating = false;
-          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/burn.svg";
-          loadingText = context.loc.burnedSuccess;
-        });
-
-        BackendAttachments.deleteAllAttachments(userSession, connectedWallet,
-            config.chainId, config.collectionId, tokenId, signatureData);
-        // send status to analytics
-        burnProcess.finish();
-        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "BURN_SUCCESS",
-            tags: {
-              'connectedWallet': connectedWallet.hex,
-              'chipWallet': convertTokenIdToEthereumAddress(
-                  ref.read(chipInfoProvider).tokenId)
-            });
-
-        await Future.delayed(const Duration(seconds: 2));
-
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      } else {
-        throw Exception(context.loc.burnedError);
-      }
-    } catch (e, s) {
-      setState(() {
-        isLoading = false;
-      });
-      // send Error to analytics
-      burnProcess.throwable = e;
-      burnProcess.status = const SpanStatus.aborted();
-      burnProcess.finish();
-      BackendApp.sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
-        'error': e,
-        'connectedWallet': connectedWallet.hex,
-        'chipWallet':
-            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
-      });
-      await Sentry.captureException(e, stackTrace: s);
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.burnedError, 'error'),
-      );
-      print("Error: $e");
-    }
-  }
-
   Future<void> claimToken(Web3App? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
@@ -512,164 +377,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
     }
   }
 
-  Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
-      SignatureData signatureData, EthereumAddress connectedWallet) async {
-    final UserSession userSession = ref.read(userSessionProvider)!;
-    final wcSession = ref.read(wcSessionProvider);
-    final walletType = ref.read(walletTypeProvider);
-    String sessionId = ref.read(userSessionProvider)!.sessionId;
-    final TokenChainAndCollection config =
-        await ref.watch(findTokenProvider(tokenId).future);
-
-    if (signatureData.hasBeenUsedInSmartContract) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.attention,
-            context.loc.pleaseScanChipAgainToCancel, 'warning'),
-      );
-      return;
-    }
-
-    try {
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.cancelOffer;
-        isRotating = true;
-        loadingSvgPath =
-            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
-      });
-
-      final List response = await BackendMetaTx.checkMetaTx(
-          config.collectionId, cancelMarketplaceOfferSignature);
-      final bool canUseGasStation = response[0];
-      final metaTxAgreementId = response[1];
-
-      final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(
-          chainConfig[config.chainId]!.controllerContract);
-
-      //fetch order data from backend
-      CreatorData creatorData = await ref.read(creatorDataProvider.future);
-      final allOffers =
-          creatorData.tokenForWhichCreatorDataWasRequested.activeOffers;
-      final offer = allOffers.firstWhere((o) => o.isCancelled == false);
-
-      //get calldata from rarible API (prepareCancelTx)
-      String cancelTxCalldata = await prepareRaribleOrderCancellation(
-          config.chainId, offer.offchainOfferId);
-
-      String txnHash = "";
-
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
-            context,
-            ref,
-            cancelMarketplaceOfferSignature,
-            config.chainId,
-            controllerContractAddress,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            walletType!,
-            encodedOfferData: cancelTxCalldata);
-      }
-
-      try {
-        if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                  .currentContext!,
-              cancelMarketplaceOfferSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              controllerContractId: controllerContractAddress,
-              encodedOfferData: cancelTxCalldata,
-              toggleLoading: toggleLoading);
-        } else {
-          if (wc == null) {
-            throw 'Please connect with MetaMask or similar wallet.';
-          }
-
-          await normalTx();
-        }
-      } catch (e) {
-        await normalTx();
-      }
-
-      talker.info('txnHash: $txnHash');
-
-      var txnReceipt =
-          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status == true) {
-        ref
-            .read(chipSignatureDataProvider.notifier)
-            .updateHasBeenUsedInSmartContract(true);
-        await BackendOffer.cancelOfferBackendRequest(
-          offer.offerHash,
-        );
-        BackendApp.sendAnalyticsTrace(
-            userSession.sessionId, txnHash, "TOKEN_OFFER_CANCEL_SUCCESS",
-            tags: {
-              'connectedWallet': ref.read(userAddressProvider).hex,
-              'chipWallet': convertTokenIdToEthereumAddress(
-                  ref.read(chipInfoProvider).tokenId),
-            });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-              context.loc.successHeadingSnackbar, 'Offer cancelled', 'success'),
-        );
-
-        try {
-          await Future.delayed(const Duration(seconds: 2));
-
-          //refresh providers for ownerchip check on ResultScreen
-          await ref.refresh(nftOwnerProvider.future);
-          await ref.refresh(creatorDataProvider.future);
-          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
-          await ref.refresh(activeOffersProvider.future);
-        } catch (e) {
-          print(e);
-          Sentry.captureException(e);
-        }
-
-        setState(() {
-          isRotating = false;
-          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
-          loadingText = context.loc.offerCanceled;
-        });
-
-        setState(() {
-          isLoading = false;
-        });
-      } else {
-        throw Exception('Error cancelling sale of token.');
-      }
-    } catch (e, s) {
-      Sentry.captureException(e);
-      setState(() {
-        isLoading = false;
-      });
-      talker.error(e, s);
-      BackendApp.sendAnalyticsTrace(
-          userSession.sessionId, e.toString(), "TOKEN_OFFER_CANCEL_ERROR",
-          tags: {
-            'connectedWallet': ref.read(userAddressProvider).hex,
-            'chipWallet': convertTokenIdToEthereumAddress(
-                ref.read(chipInfoProvider).tokenId),
-          });
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorCancellingSale, 'error'),
-      );
-    }
-  }
 
   Future<void> redeemTwinToken(Web3App? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
@@ -747,6 +454,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
           await normalTx();
         }
       }
+
+      talker.info('txnHash: $txnHash');
 
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
@@ -1106,18 +815,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                       return Column(
                                                                         children: [
                                                                           Align(
-                                                                              alignment: Alignment.centerLeft,
-                                                                              child: Text(context.loc.youAreNFTOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)),
-                                                                          const SizedBox(
-                                                                              height: 10),
-                                                                          CustomOutlinedButton(
-                                                                              width: double
-                                                                                  .infinity,
-                                                                              buttonText: context
-                                                                                  .loc.burnToken,
-                                                                              onPressed: (() => {
-                                                                                    fromCancelable(burnToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                                  }))
+                                                                            alignment:
+                                                                                Alignment.centerLeft,
+                                                                            child:
+                                                                                Text(
+                                                                              context.loc.youAreNFTOwner,
+                                                                              textAlign: TextAlign.left,
+                                                                              style: Theme.of(context).textTheme.bodyMedium,
+                                                                            ),
+                                                                          ),
                                                                         ],
                                                                       );
                                                                     } else {
@@ -1125,8 +831,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                                       return Column(
                                                                         children: [
                                                                           Align(
-                                                                              alignment: Alignment.centerLeft,
-                                                                              child: Text(context.loc.youAreNFTOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium)),
+                                                                            alignment:
+                                                                                Alignment.centerLeft,
+                                                                            child:
+                                                                                Text(
+                                                                              context.loc.youAreNFTOwner,
+                                                                              textAlign: TextAlign.left,
+                                                                              style: Theme.of(context).textTheme.bodyMedium,
+                                                                            ),
+                                                                          ),
                                                                         ],
                                                                       );
                                                                     }
@@ -1365,26 +1078,13 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                           //USER IS SELLER
                                           return Column(
                                             children: [
-                                              Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Text(
-                                                      context.loc
-                                                          .tokenCurrentlyOfferedForSale,
-                                                      textAlign: TextAlign.left,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyMedium)),
-                                              const SizedBox(height: 10),
-                                              CustomRoundedButton(
-                                                  text: context.loc.cancelOffer,
-                                                  onPressed: () {
-                                                    fromCancelable(cancelOffer(
-                                                        wc,
-                                                        chipInfo.tokenId,
-                                                        signatureData,
-                                                        connectedWallet));
-                                                  })
+                                              Text(
+                                                  context.loc
+                                                      .tokenCurrentlyOfferedForSale,
+                                                  textAlign: TextAlign.left,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium),
                                             ],
                                           );
                                         } else {
@@ -1401,16 +1101,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .bodyMedium)),
-                                              const SizedBox(height: 10),
-                                              CustomRoundedButton(
-                                                text: context.loc.buyOnRarible,
-                                                onPressed: () => {
-                                                  launchUrl(
-                                                      raribleUrl.asData!.value,
-                                                      mode: LaunchMode
-                                                          .externalApplication)
-                                                },
-                                              )
                                             ],
                                           );
                                         }
