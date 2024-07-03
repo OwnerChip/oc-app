@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
@@ -9,6 +10,7 @@ import 'package:ownerchip_whitelabel/services/providers/nft/nftForOwner/nftForOw
 import 'package:ownerchip_whitelabel/services/providers/nft/paginationNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -32,8 +34,10 @@ class OCNTFsForOwnerNotifier extends Notifier<OCNFTsForOwnerData>
     final UserSession? userSession = ref.read(userSessionProvider);
     final EthereumAddress? walletAddress = userSession?.userWalletAddress;
 
-    final BlockchainCollectionList ocCollections =
-        await ref.read(appCollectionProvider.future);
+    final BlockchainCollectionList ocCollections = await ref.read(
+        isOwnerChipApp()
+            ? allCollectionsProvider.future
+            : appCollectionProvider.future);
 
     //call fetchNFTsForOwner for each chainId; use Future.wait to wait for all futures to complete
     final List<OcOwnedNft> nftList = [];

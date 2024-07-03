@@ -8,8 +8,30 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 
 abstract class BackendCollection extends Backend {
-  static Future<bool> sendCardLostToBackend(
-      EthereumAddress chipAddress,
+
+  static Future<List<Map>> getAllCollections() async {
+    try {
+      final response = await BackendCollectionService.instance
+          .getAllCollections()
+          .catchError((e) {
+        Sentry.captureException(
+          e,
+        );
+        talker.error(e);
+        throw e;
+      });
+
+      return (response.data as List<dynamic>).map((e) => e as Map).toList();
+    } catch (e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(e);
+      rethrow;
+    }
+  }
+
+  static Future<bool> sendCardLostToBackend(EthereumAddress chipAddress,
       EthereumAddress collectionAddress,
       SignatureData chipSignature,
       String sessionId,

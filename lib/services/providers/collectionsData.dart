@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
@@ -11,6 +12,25 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/web3dart.dart';
 
 // **** COLLECTIONS ****
+
+/// get all collection (OwnerChip app should show all collections)
+final allCollectionsProvider =
+    FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
+  BlockchainCollectionList collections;
+
+  // first, try to get the collections from the backend
+  try {
+    final data = await BackendCollection.getAllCollections();
+    final rawCollections = data;
+    collections =
+        BlockchainCollectionList(groupCollectionsByChainId(rawCollections));
+  } catch (e) {
+    print("Error getting collections from backend: $e");
+    // if the backend is not available, return no collections
+    collections = BlockchainCollectionList({});
+  }
+  return collections;
+});
 
 /// get all collections associated with the app (basis for filtering for MINTER_ROLE)
 final appCollectionProvider =
