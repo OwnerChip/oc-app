@@ -22,6 +22,7 @@ import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenUserComplete.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
+import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -169,6 +170,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         MyBalancePage.routeName: (context) => const MyBalancePage(),
         OfferForSaleCreatedTokenScreen.routeName: (context) =>
             const OfferForSaleCreatedTokenScreen(),
+        QRCodeScannerScreen.routeName: (context) => const QRCodeScannerScreen(),
       },
     );
   }
