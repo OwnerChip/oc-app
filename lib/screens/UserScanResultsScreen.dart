@@ -695,7 +695,11 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen> {
 
       final List<Purchase> unredeemedVoucherNfts =
           await ref.watch(unredeemedVoucherNftsProvider.future);
-      final String offerHash = unredeemedVoucherNfts.first.offer.offerHash;
+      final String offerHash = unredeemedVoucherNfts
+          .firstWhere((e) => e.token.id == tokenId)
+          .offer
+          .offerHash;
+
       String txnHash = "";
 
       Future<void> normalTx() async {
