@@ -34,6 +34,9 @@ String getNdefUrl() {
       : dotenv.get('NDEF_URL');
 }
 
+bool isOwnerChipApp() {
+  return dotenv.get('BITRISEIO_PACKAGE_NAME').contains("com.ownerchip");
+}
 String getCustomerId() {
   switch (dotenv.get("BITRISEIO_PACKAGE_NAME")) {
     case 'com.ownerchip':
