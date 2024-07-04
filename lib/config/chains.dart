@@ -9,7 +9,7 @@ final polygonMainnet = BlockchainConfig(
     rpcUrl:
         "https://polygon-mainnet.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_POLYGON']}",
     registryContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
-    controllerContract: "0x7F15F01af90Fd8c1AA32264f44DB02E6bEd259aF",
+    controllerContract: "0x37068431C47950c4e857A850DBb8641E966Ca3D9",
     openseaUrl: "https://opensea.io/assets/matic",
     raribleUrl: "https://rarible.com/token/polygon",
     raribleEnum: "POLYGON",
@@ -33,7 +33,8 @@ final ethereumMainnet = BlockchainConfig(
 final sepoliaTestnet = BlockchainConfig(
   networkName: "Sepolia Testnet",
   nativeTokenSymbol: "ETH",
-  rpcUrl: "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_SEPOLIA']}",
+  rpcUrl:
+      "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_SEPOLIA']}",
   registryContract: "0x8Dcc2016E0dEe536D238562dC2a46c8EEf2aac86",
   controllerContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
   forwarderContract: "0x4e63de97Cd856b9D835dB1656948E5227622F829",

@@ -109,7 +109,7 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         sellerPayoutAddress!,
         price!,
         token?.contractAddress,
-        encodedOfferData!);
+        typedDataHash!);
   } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
     data = makeCancelOfferData(
         functionSignatureHash,
