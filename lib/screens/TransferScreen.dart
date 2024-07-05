@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AddressInputField.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:async/async.dart';
@@ -51,6 +52,7 @@ class TransferScreen extends ConsumerStatefulWidget {
 class _TransferScreenState extends ConsumerState<TransferScreen> {
   final _formKey = GlobalKey<FormState>();
   final _inputController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   bool isLoading = false;
   bool isRotating = true;
@@ -222,8 +224,20 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    _inputController.addListener(() {
+      setState(() {
+        textInput = _inputController.text;
+      });
+    });
+
+  }
+  @override
   void dispose() {
     _inputController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -308,32 +322,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 30),
-                      TextFormField(
+                      AddressInputField(
                         controller: _inputController,
-                        onChanged: (text) => setState(() {
-                          textInput = text;
-                        }),
-                        validator: (value) {
-                          if (value == null || !validateEthAddress(value)) {
-                            return context.loc.pleaseEnterValidWalletAddress;
-                          } else {
-                            return null;
-                          }
-                        },
-                        cursorColor: Theme.of(context).primaryColorDark,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        decoration: InputDecoration(
-                          focusColor: Theme.of(context).primaryColorDark,
-                          hintText: context.loc.enterWalletAddress,
-                          hintStyle: Theme.of(context).textTheme.bodyMedium,
-                          filled: true,
-                          fillColor:
-                              CustomColors(dotenv.get('APP_ID')).cardColor,
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                        ),
+                        focusNode: _focusNode,
+                        errorText: context.loc.pleaseEnterValidWalletAddress,
                       ),
                       const SizedBox(height: 20),
                       CustomRoundedButton(

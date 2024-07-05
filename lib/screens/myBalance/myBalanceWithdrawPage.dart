@@ -18,6 +18,7 @@ import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/qrCode.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -26,6 +27,7 @@ import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AddressInputField.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
@@ -135,72 +137,10 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
                 const SizedBox(
                   height: 32,
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          TextFormField(
-                            controller: _addressController,
-                            focusNode: _addressFocusNode,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            autofocus: false,
-                            validator: (value) {
-                              if (_addressFocusNode.hasFocus) {
-                                return null;
-                              }
-
-                              if (value == null || value.isEmpty) {
-                                return context
-                                    .loc.myBalanceWithdrawWrongAddress;
-                              }
-                              try {
-                                EthereumAddress.fromHex(value);
-                              } catch (e) {
-                                return context
-                                    .loc.myBalanceWithdrawWrongAddress;
-                              }
-                              return null;
-                            },
-                            decoration: customInputDecoration(
-                              context,
-                              context.loc.myBalanceReceivingWalletAddress,
-                            ).copyWith(
-                              contentPadding: const EdgeInsets.only(
-                                right: 64,
-                                left: 12,
-                              ),
-                            ),
-                            onChanged: (value) {
-                              if (mounted) {
-                                setState(() {});
-                              }
-                            },
-                          ),
-                          Positioned(
-                            right: 12,
-                            top: 12,
-                            bottom: 0,
-                            child: InkWell(
-                              onTap: () {
-                                Clipboard.getData('text/plain').then((value) {
-                                  if (value != null) {
-                                    _addressController.text = value.text ?? '';
-                                    if (mounted) {
-                                      setState(() {});
-                                    }
-                                  }
-                                });
-                              },
-                              child: Text(context
-                                  .loc.myBalanceWithdrawPasteAddressButton),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                AddressInputField(
+                  controller: _addressController,
+                  focusNode: _addressFocusNode,
+                  errorText: context.loc.myBalanceWithdrawWrongAddress,
                 ),
                 const Spacer(),
                 Column(
