@@ -624,6 +624,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .bodyMedium),
+                                              const SizedBox(height: 10),
+                                              CustomRoundedButton(
+                                                text: context.loc.buyOnRarible,
+                                                onPressed: () => {
+                                                  launchUrl(
+                                                      raribleUrl.asData!.value,
+                                                      mode: LaunchMode
+                                                          .externalApplication)
+                                                },
+                                              ),
                                             ],
                                           );
                                         } else {
