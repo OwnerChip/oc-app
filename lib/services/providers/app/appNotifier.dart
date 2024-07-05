@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:native_ios_dialog/native_ios_dialog.dart';
 import 'package:ownerchip_whitelabel/domain/appVersion/appVersion.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appData.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -51,13 +53,23 @@ class AppNotifier extends Notifier<AppData> {
         barrierDismissible: false,
         builder: (context) {
           return AlertDialog(
-            title: Text(context.loc.newVersionTitle),
-            content: Text(context.loc.newVersionAvailable),
+            backgroundColor: Theme.of(context).cardColor,
+            title: Text(
+              context.loc.newVersionTitle,
+
+            ),
+            content: Text(
+              context.loc.newVersionAvailable,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             actions: [
               TextButton(
                 onPressed: onClick,
                 child: Text(
                   context.loc.newVersionUpdateButton,
+                  style: Theme.of(context).textTheme.displaySmall!.copyWith(
+                    color: CustomColors(dotenv.get("APP_ID")).accentColor,
+                  ),
                 ),
               ),
             ],
