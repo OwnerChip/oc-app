@@ -591,7 +591,13 @@ Future<EthereumAddress> getVoucherContractFromTwin(
   try {
     var result = await queryCollectionContract(
         chainRpcUrl, collectionId, "voucherNFTCollectionAddress", []);
-    return result[0];
+    final address =  result[0];
+
+    if(address == zeroAddress) {
+      throw Exception('Voucher contract address is zero address');
+    }
+
+    return address;
   } catch (e) {
     print(
         'Error while fetching voucher contract address of collection $collectionId: $e');
