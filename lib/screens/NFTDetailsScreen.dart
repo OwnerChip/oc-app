@@ -253,86 +253,90 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                 if (approvalData ==
                                                     zeroAddress) {
                                                   //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED BY NEW OWNER
-                                                  return relevantCollections.when(
-                                                      data: (relevantCollectionsData) {
-                                                        late Collection
-                                                            collection;
-                                                        if (relevantCollectionsData
-                                                                    .collections[
-                                                                tokenInfo.value!
-                                                                    .chainId] !=
-                                                            null) {
-                                                          // USER HAS MINTERROLE FOR SOME COLLECTION
-                                                          collection = relevantCollectionsData
-                                                              .collections[
-                                                                  tokenInfo
-                                                                      .value!
-                                                                      .chainId]!
-                                                              .firstWhere(
-                                                                  (element) =>
-                                                                      element
-                                                                          .id ==
+                                                  return relevantCollections
+                                                      .when(
+                                                          data:
+                                                              (relevantCollectionsData) {
+                                                            late Collection
+                                                                collection;
+                                                            if (relevantCollectionsData
+                                                                        .collections[
+                                                                    tokenInfo
+                                                                        .value!
+                                                                        .chainId] !=
+                                                                null) {
+                                                              // USER HAS MINTERROLE FOR SOME COLLECTION
+                                                              collection = relevantCollectionsData
+                                                                  .collections[
                                                                       tokenInfo
                                                                           .value!
-                                                                          .collectionId,
-                                                                  orElse: () => Collection(
-                                                                      zeroAddress,
-                                                                      '',
-                                                                      hasMinterRole:
-                                                                          false));
-                                                        } else {
-                                                          //USER DOES NOT HAVE MINTERROLE ANYWHERE
-                                                          collection =
-                                                              Collection(
+                                                                          .chainId]!
+                                                                  .firstWhere(
+                                                                      (element) =>
+                                                                          element
+                                                                              .id ==
+                                                                          tokenInfo
+                                                                              .value!
+                                                                              .collectionId,
+                                                                      orElse: () => Collection(
+                                                                          zeroAddress,
+                                                                          '',
+                                                                          hasMinterRole:
+                                                                              false));
+                                                            } else {
+                                                              //USER DOES NOT HAVE MINTERROLE ANYWHERE
+                                                              collection = Collection(
                                                                   zeroAddress,
                                                                   '',
                                                                   hasMinterRole:
                                                                       false);
-                                                        }
-                                                        if (collection
-                                                                .hasMinterRole! &&
-                                                            collection.id ==
-                                                                tokenInfo.value!
-                                                                    .collectionId) {
-                                                          // USER HAS MINTER ROLE FOR THIS TOKENS COLLECTION
-                                                          return [
-                                                            BigIconButton(
-                                                              text: context.loc
-                                                                  .burnToken,
-                                                              onPressed: () async {
-                                                                await scanItem(
-                                                                  ref,
-                                                                  context,
-                                                                  navigateToResultPage:
-                                                                      false,
-                                                                );
-                                                                fromCancelable(burnToken(
-                                                                    wc,
-                                                                    chipInfo
-                                                                        .tokenId,
-                                                                    ref.read(
-                                                                        chipSignatureDataProvider),
-                                                                    connectedWallet));
-                                                              },
-                                                              icon: Icon(
-                                                                Icons
-                                                                    .delete_outline,
-                                                                size: 35,
-                                                                color: CustomColors(
-                                                                        dotenv.get(
-                                                                            'APP_ID'))
-                                                                    .primaryColor,
-                                                              ),
-                                                              height: 85,
-                                                            )
-                                                          ];
-                                                        } else {
-                                                          // USER DOES NOT HAVE MINTER ROLE FOR THIS TOKENS COLLECTION
-                                                          return [];
-                                                        }
-                                                      },
-                                                      error: (e, s) => [],
-                                                      loading: () => []);
+                                                            }
+                                                            if (collection
+                                                                    .hasMinterRole! &&
+                                                                collection.id ==
+                                                                    tokenInfo
+                                                                        .value!
+                                                                        .collectionId) {
+                                                              // USER HAS MINTER ROLE FOR THIS TOKENS COLLECTION
+                                                              return [
+                                                                BigIconButton(
+                                                                  text: context
+                                                                      .loc
+                                                                      .burnToken,
+                                                                  onPressed:
+                                                                      () async {
+                                                                    await scanItem(
+                                                                      ref,
+                                                                      context,
+                                                                      navigateToResultPage:
+                                                                          false,
+                                                                    );
+                                                                    fromCancelable(burnToken(
+                                                                        wc,
+                                                                        chipInfo
+                                                                            .tokenId,
+                                                                        ref.read(
+                                                                            chipSignatureDataProvider),
+                                                                        connectedWallet));
+                                                                  },
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .delete_outline,
+                                                                    size: 35,
+                                                                    color: CustomColors(
+                                                                            dotenv.get('APP_ID'))
+                                                                        .primaryColor,
+                                                                  ),
+                                                                  height: 85,
+                                                                )
+                                                              ];
+                                                            } else {
+                                                              // USER DOES NOT HAVE MINTER ROLE FOR THIS TOKENS COLLECTION
+                                                              return [];
+                                                            }
+                                                          },
+                                                          error: (e, s) => [],
+                                                          loading: () => []);
                                                 } else {
                                                   //TOKEN IS APPROVED / IS READY TO BE CLAIMED BY NEW OWNER
                                                   return [];
@@ -426,38 +430,14 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                                               []);
                                                                 }
                                                               },
-                                                              error: (e, s) => [
-                                                                    Text(
-                                                                        context
-                                                                            .loc
-                                                                            .youAreNotNftOwner,
-                                                                        textAlign:
-                                                                            TextAlign
-                                                                                .left,
-                                                                        style: Theme.of(context)
-                                                                            .textTheme
-                                                                            .bodyMedium)
-                                                                  ],
+                                                              error: (e, s) =>
+                                                                  [],
                                                               loading: () =>
                                                                   []);
                                                     },
                                                     loading: () => [],
                                                     error: (e, s) {
-                                                      return [
-                                                        Align(
-                                                            alignment: Alignment
-                                                                .centerLeft,
-                                                            child: Text(
-                                                                context.loc
-                                                                    .youAreNotNftOwner,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .bodyMedium)),
-                                                      ];
+                                                      return [];
                                                     },
                                                   );
                                                 } else {
@@ -470,18 +450,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                           return [];
                                                         } else {
                                                           //USER IS NOT APPROVED TO CLAIM
-                                                          return [
-                                                            Text(
-                                                                context.loc
-                                                                    .youAreNotNftOwner,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .left,
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .bodyMedium)
-                                                          ];
+                                                          return [];
                                                         }
                                                       },
                                                       loading: () => [],
@@ -495,11 +464,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                     },
                                     loading: () => [],
                                     error: (e, s) => [
-                                          Text(context.loc.youAreNotNftOwner,
-                                              textAlign: TextAlign.left,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium)
                                         ]);
                               } else {
                                 //TOKEN IS FOR SALE
