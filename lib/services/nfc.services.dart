@@ -515,7 +515,10 @@ Future<dynamic> scanClosure(
   final scanProcess = Sentry.startTransaction('$analyticsType', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, alertMessage);
+    nfcOverlay.showNfcOverlay(context, alertMessage, () {
+      NfcManager.instance.stopSession();
+      completer.complete();
+    });
   }
 
   NfcManager.instance.startSession(
@@ -581,6 +584,7 @@ Future<dynamic> scanClosure(
             e,
             stackTrace: stackTrace,
           );
+          completer.complete();
           rethrow;
         }
       });
