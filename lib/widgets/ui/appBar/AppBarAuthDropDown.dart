@@ -86,11 +86,11 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        '${userSession.userWalletAddress.hex.substring(0, 7)}...${userSession.userWalletAddress.hex.substring(userSession.userWalletAddress.hex.length - 4)}',
+                                        context.loc.appBarWalletIdTitle,
                                         style: Theme.of(context)
                                             .textTheme
                                             .headlineSmall!
-                                            .copyWith(fontSize: 12),
+                                            .copyWith(fontSize: 14),
                                       ),
                                       const SizedBox(
                                         width: 12,

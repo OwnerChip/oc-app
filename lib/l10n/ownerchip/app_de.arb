@@ -322,6 +322,8 @@
     "legalHintTerrorismFinancing": "Ich habe all meine Sorgfaltspflichten in Hinblick auf die Verhinderung von Geldwäsche und Terrorismusfinanzierung nach den für mich anwendbaren Rechtsvorschriften erfüllt.",
     "shippingHint": "Ich bin verantwortlich für die Bearbeitung, Verpackung und Versandkosten im Zusammenhang mit dem Angebot.",
     "@_APPBAR": {},
+    "appBarProfileTitle": "Profil",
+    "appBarWalletIdTitle": "Brieftasche ID",
     "copiedAddressToClipboard": "Adresse kopiert.",
     "appbarMyBalanceButton": "Mein Guthaben",
     "@_MYBALANCE": {},

@@ -322,6 +322,8 @@
   "legalHintTerrorismFinancing": "I have fulfilled all my due diligence obligations with regard to the prevention of money laundering and terrorist financing in accordance with the laws applicable to me.",
   "shippingHint": "I am responsible for handling, packaging and shipping costs associated with the offer.",
   "@_APPBAR": {},
+  "appBarProfileTitle": "Profile",
+  "appBarWalletIdTitle": "Wallet ID",
   "copiedAddressToClipboard": "Address copied to clipboard",
   "appbarMyBalanceButton": "My Balance",
   "@_MYBALANCE": {},
