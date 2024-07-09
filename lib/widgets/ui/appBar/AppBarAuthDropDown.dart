@@ -94,7 +94,12 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                                       const SizedBox(
                                         width: 12,
                                       ),
-                                      const Icon(Icons.copy),
+                                      Icon(
+                                        Icons.copy,
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                      ),
                                     ],
                                   )),
                           _buildDivider(),
