@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "768172302210",
+    "project_id": "test-oc-app-1f1c0",
+    "storage_bucket": "test-oc-app-1f1c0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768172302210:android:e8170e1309a8f5989d799b",
+        "android_client_info": {
+          "package_name": "com.ownerchip.demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY6wp2Hr2qzaQbfcBeTwDuV-rg4SgEWTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

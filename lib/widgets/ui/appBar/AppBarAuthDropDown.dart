@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
@@ -200,6 +202,9 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       final wc = ref.read(wcProvider);
       W3MSession? wcSession = ref.watch(wcSessionProvider);
 
+      final session = ref.read(userSessionProvider);
+      final FCMToken? fcmToken = session?.fcmToken;
+
       //reset providers
       ref.read(userAddressProvider.notifier).state = zeroAddress;
       ref.read(walletTypeProvider.notifier).state = null;
@@ -220,13 +225,6 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
         talker.error('Error logging out of web3auth', e);
       }
 
-      try {
-        // clean up services
-        await BackendAuth.initGuestSession(ref: ref);
-      } catch (e) {
-        talker.error('Error cleaning up services', e);
-      }
-
       if (wc != null && wcSession != null) {
         await wc.disconnectSession(
             topic: wcSession.topic!,
@@ -234,6 +232,20 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                 code: 6000,
                 message:
                     'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+      }
+
+      final terminated = await BackendAuth.terminateSession();
+
+      // fallback to delete fcm token if session termination failed
+      if (!terminated && fcmToken != null) {
+        await BackendFCM.deleteFCMToken(fcmToken);
+      }
+
+      try {
+        // clean up services
+        await BackendAuth.initGuestSession();
+      } catch (e) {
+        talker.error('Error cleaning up services', e);
       }
 
       //navigate back until homescreen

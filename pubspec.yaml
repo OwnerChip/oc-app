@@ -54,6 +54,10 @@ dependencies:
   confetti: ^0.7.0
   path_drawing: ^1.0.1
 
+  # firebase
+  firebase_core: ^3.2.0
+  firebase_messaging: ^15.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,15 +1,18 @@
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/walletSignature/walletSignature.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -71,33 +74,27 @@ abstract class BackendAuth extends Backend {
     ];
   }
 
-  static Future<void> initGuestSession({
-    WidgetRef? ref,
-  }) async {
+  static Future<void> initGuestSession() async {
     try {
-      final session = ref?.read(userSessionProvider);
+      final storage = await SharedPreferences.getInstance();
 
-      if (session == null) {
-        final storage = await SharedPreferences.getInstance();
+      final cached = storage.getString("guestSession");
 
-        final cached = storage.getString("guestSession");
-
-        // create a guest session
-        if (cached != null &&
-            JwtToken.decode(cached).exp > BackendAuth.nowPlusThreeHours()) {
-          talker
-              .info("recreating services with cached guest session \n $cached");
-          final jwt = JwtToken.decode(cached);
-          Backend.recreateServices(jwt.raw);
-        } else {
-          talker.info("creating new guest session");
-          final newJwt =
-              JwtToken.decode(await BackendAuth.createGuestSession());
-          storage.setString("guestSession", newJwt.raw);
-          print(newJwt.exp);
-          Backend.recreateServices(newJwt.raw);
-          talker.info("new guest session created \n $newJwt");
-        }
+      // create a guest session
+      if (cached != null &&
+          JwtToken.decode(cached).exp > BackendAuth.nowPlusThreeHours()) {
+        talker
+            .info("recreating services with cached guest session \n $cached");
+        final jwt = JwtToken.decode(cached);
+        Backend.recreateServices(jwt.raw);
+      } else {
+        talker.info("creating new guest session");
+        final newJwt =
+        JwtToken.decode(await BackendAuth.createGuestSession());
+        storage.setString("guestSession", newJwt.raw);
+        print(newJwt.exp);
+        Backend.recreateServices(newJwt.raw);
+        talker.info("new guest session created \n $newJwt");
       }
     } catch (e) {
       Sentry.captureException(
@@ -212,12 +209,16 @@ abstract class BackendAuth extends Backend {
     ref.read(walletTypeProvider.notifier).state =
         walletConfig[EWalletType.ownerCard];
     const isOwnerCard = true;
+
+    Backend.recreateServices(jwtToken.raw);
+
     UserSession userSession = UserSession(
       sessionId,
       signature,
       ref.read(userAddressProvider),
       isOwnerCard,
       jwtToken,
+      await BackendFCM.getAndSaveFCMToken(sessionId)
     );
 
     ref.read(userSessionProvider.notifier).state = userSession;
@@ -234,6 +235,21 @@ abstract class BackendAuth extends Backend {
       'walletType',
       jsonEncode(walletConfig[EWalletType.ownerCard]!.toJson()),
     );
+  }
+
+  static Future<bool> terminateSession() async {
+    bool success = true;
+    await BackendAuthService.instance.terminateSession().catchError((e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+      success = false;
+    });
+
+    return success;
   }
 
   // This function requests a Session Id from the backend

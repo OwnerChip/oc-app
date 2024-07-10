@@ -45,4 +45,8 @@ abstract class BackendAuthService {
 
   @POST("/session/guest")
   Future<String> createGuestSession();
+
+  @GET("/session/terminate")
+  Future<void> terminateSession();
+
 }

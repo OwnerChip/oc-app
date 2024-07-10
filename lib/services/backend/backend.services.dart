@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.da
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollectionService.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/backendCreatorService.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomerService.dart';
+import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcmService.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOfferService.dart';
 import 'package:ownerchip_whitelabel/services/backend/token/backendTokenService.dart';
@@ -23,10 +24,10 @@ abstract class Backend {
   }) {
     final client = Dio(
       BaseOptions(
-        baseUrl: dotenv.get('IS_INTERNAL') == 'true' && !forceProduction
-            ? dotenv.get('OC_BACKEND_URL_TEST')
-            : dotenv.get('OC_BACKEND_URL'),
-        // baseUrl: 'http://192.168.31.214:3000',
+        // baseUrl: dotenv.get('IS_INTERNAL') == 'true' && !forceProduction
+        //     ? dotenv.get('OC_BACKEND_URL_TEST')
+        //     : dotenv.get('OC_BACKEND_URL'),
+        baseUrl: 'http://192.168.31.214:3000',
         headers: {
           "app_id": dotenv.get('BITRISEIO_PACKAGE_NAME'),
           "lang": "en",
@@ -68,6 +69,7 @@ abstract class Backend {
     BackendCustomerService.recreate(jwt);
     BackendCreatorService.recreate(jwt);
     BackendAttachmentsService.recreate(jwt);
+    BackendFcmService.recreate(jwt);
   }
 }
 

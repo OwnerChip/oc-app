@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
@@ -190,14 +193,16 @@ Future<void> onTapAuth(
     );
   }
 
+  Backend.recreateServices(token.raw);
+
   UserSession userSession = UserSession(
     sessionId,
     signature,
     ref.read(userAddressProvider),
     isOwnerCard,
     token,
+    await BackendFCM.getAndSaveFCMToken(sessionId),
   );
-  Backend.recreateServices(token.raw);
 
   ref.read(userSessionProvider.notifier).state = userSession;
 

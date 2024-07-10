@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
@@ -165,12 +166,15 @@ class UserSession {
   int get expiryDate => jwt.exp;
 
   late final JwtToken jwt;
+  final FCMToken? fcmToken;
 
   UserSession(
     this.sessionId,
     this.signatureData,
     this.userWalletAddress,
-    this.isOwnerCard, this.jwt,
+    this.isOwnerCard,
+    this.jwt,
+    this.fcmToken,
   );
 
   Map<String, dynamic> toJson() => {
@@ -180,6 +184,7 @@ class UserSession {
         'isOwnerCard': isOwnerCard,
         'expiryDate': expiryDate.toString(),
         'jwt': jwt.toJson(),
+        'fcmToken': fcmToken?.toJson() ?? null,
       };
 
   UserSession.fromJson(Map<String, dynamic> json)
@@ -187,7 +192,10 @@ class UserSession {
         signatureData = msgSignatureFromJson(json['signatureData']),
         userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
         isOwnerCard = json['isOwnerCard'],
-        jwt = JwtToken.fromJson(json['jwt']);
+        jwt = JwtToken.fromJson(json['jwt']),
+        fcmToken = json['fcmToken'] != null
+            ? FCMToken.fromJson(json['fcmToken'])
+            : null;
 }
 
 class CreatorData {

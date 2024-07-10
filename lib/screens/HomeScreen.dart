@@ -1,6 +1,8 @@
 //import packages
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -65,6 +67,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   bool shippingPopupIsShown = false;
 
   bool _isScanning = false;
+
+  StreamSubscription? _msgSubscription;
 
   Future<void>
       _checkAndRemovePersistedStorageDependingOnPreviousAppVersion() async {
@@ -153,7 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession(ref: ref);
+            await BackendAuth.initGuestSession();
           }
         } else {
           final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession!));
@@ -174,7 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession(ref: ref);
+            await BackendAuth.initGuestSession();
           }
         }
       } else {
@@ -183,7 +187,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('walletType');
         storage.remove('userSession');
         wcService?.disconnect();
-        await BackendAuth.initGuestSession(ref: ref);
+        await BackendAuth.initGuestSession();
       }
 
       if (!shippingPopupIsShown) {
@@ -202,7 +206,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       storage.remove('session');
       storage.remove('walletType');
       storage.remove('userSession');
-      await BackendAuth.initGuestSession(ref: ref);
+      await BackendAuth.initGuestSession();
     } finally {
       FlutterNativeSplash.remove();
     }
@@ -211,6 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+    super.initState();
 
     //check if persisted session is from previous app version; has to be called before _setProviderStatesFromPersistedState()
     _checkAndRemovePersistedStorageDependingOnPreviousAppVersion();
@@ -220,13 +225,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
 
+    initMessaging();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (ref.read(appNotifierProvider).appDto == null) {
         ref.read(appNotifierProvider.notifier).init();
       }
     });
+  }
 
-    super.initState();
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _msgSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> initMessaging() async {
+    FirebaseMessaging.instance.requestPermission(
+      provisional: true,
+    );
+
+    _msgSubscription = FirebaseMessaging.onMessage.listen(_onMessageReceived);
+    talker.log('Firebase messaging initialized');
+  }
+
+  Future<void> _onMessageReceived(RemoteMessage message) async {
+    talker.log('Message received: ${message.toMap()}');
   }
 
   Future<void> makeAlchemyRefreshMetadata() async {
@@ -239,7 +264,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  //do stuff on app resume
+//do stuff on app resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
@@ -254,9 +279,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> onButtonPress(bool isInitialize) async {
     try {
-
       // check if already scanning
-      if(_isScanning) {
+      if (_isScanning) {
         return;
       }
 

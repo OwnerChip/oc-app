@@ -329,7 +329,6 @@ Future<void> authenticateCard(
       jwt,
     );
 
-    Backend.recreateServices(jwt);
   }
 
   return await scanClosure(
