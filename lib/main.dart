@@ -18,6 +18,7 @@ import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
+import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
@@ -178,6 +179,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         OfferForSaleCreatedTokenScreen.routeName: (context) =>
             const OfferForSaleCreatedTokenScreen(),
         QRCodeScannerScreen.routeName: (context) => const QRCodeScannerScreen(),
+        CreationsPage.routeName: (context) => const CreationsPage(),
       },
     );
   }

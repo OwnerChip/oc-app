@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
@@ -14,13 +15,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -407,9 +412,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               children: [
                 ElevatedButton(
                     onPressed: () {
-                      BackendCreation.getMyDigitalTwins(1).then((res) {
-                        talker.log('Digital twins: ${res.toJson((e) => e.toJson())}');
-                      });
+                      Navigator.of(context).pushNamed(
+                        CreationsPage.routeName,
+                      );
                     },
                     child: Text("Test"))
               ],

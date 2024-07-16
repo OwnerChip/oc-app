@@ -10,6 +10,8 @@ DigitalTwinMetadata _$DigitalTwinMetadataFromJson(Map<String, dynamic> json) =>
     DigitalTwinMetadata(
       id: (json['id'] as num).toInt(),
       collectionId: json['collectionId'] as String,
+      collection:
+          OCCollection.fromJson(json['collection'] as Map<String, dynamic>),
       creatorId: json['creatorId'] as String,
       twinTokenMetadataCID: json['twinTokenMetadataCID'] as String,
       voucherTokenMetadataCID: json['voucherTokenMetadataCID'] as String,
@@ -27,6 +29,7 @@ Map<String, dynamic> _$DigitalTwinMetadataToJson(
     <String, dynamic>{
       'id': instance.id,
       'collectionId': instance.collectionId,
+      'collection': instance.collection.toJson(),
       'creatorId': instance.creatorId,
       'twinTokenMetadataCID': instance.twinTokenMetadataCID,
       'voucherTokenMetadataCID': instance.voucherTokenMetadataCID,

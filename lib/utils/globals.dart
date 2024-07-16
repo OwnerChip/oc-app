@@ -19,6 +19,9 @@ class ScaffoldKey {
   static final GlobalKey<ScaffoldState> _scaffoldKeySeventhScreen =
       GlobalKey<ScaffoldState>();
 
+  static final GlobalKey<ScaffoldState> _scaffoldKeyEighthScreen =
+      GlobalKey<ScaffoldState>();
+
   static GlobalKey<ScaffoldState> getScaffoldKey(String screenName) {
     switch (screenName) {
       case 'MetadataInputScreen':
@@ -35,6 +38,8 @@ class ScaffoldKey {
         return _scaffoldKeySixthScreen;
       case 'NFTDetailsScreen':
         return _scaffoldKeySeventhScreen;
+      case 'CreationsPage':
+        return _scaffoldKeyEighthScreen;
       default:
         return GlobalKey<ScaffoldState>();
     }
