@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachm
 import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachmentsService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollectionService.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/backendCreationService.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/backendCreatorService.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomerService.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcmService.dart';
@@ -70,6 +71,7 @@ abstract class Backend {
     BackendCreatorService.recreate(jwt);
     BackendAttachmentsService.recreate(jwt);
     BackendFcmService.recreate(jwt);
+    BackendCreationService.recreate(jwt);
   }
 }
 

@@ -11,12 +11,14 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
@@ -398,6 +400,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                 )
               : Container(),
+          Positioned(
+            top: 128,
+            left: 32,
+            child: Row(
+              children: [
+                ElevatedButton(
+                    onPressed: () {
+                      BackendCreation.getMyDigitalTwins(1).then((res) {
+                        talker.log('Digital twins: ${res.toJson((e) => e.toJson())}');
+                      });
+                    },
+                    child: Text("Test"))
+              ],
+            ),
+          )
         ],
       ),
     );
