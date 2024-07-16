@@ -433,7 +433,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         final offerItemInputData = OfferItemPayload(
           tokenId: convertTokenIdToEthereumAddress(config.tokenId),
           offerPrice: priceInPrimaryChainCurrency.toString(),
-          offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
+          offerCurrency: token != null
+              ? token.symbol
+              : chainConfig[config.chainId]!.nativeTokenSymbol,
           sellerWalletAddress:
               ref.read(userSessionProvider)!.userWalletAddress.toString(),
           sellerPayoutAddress: userSession.userWalletAddress.hex,
