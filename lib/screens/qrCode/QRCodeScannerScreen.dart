@@ -26,7 +26,6 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen>
     _controller = MobileScannerController(autoStart: true);
 
     _subscription = _controller.barcodes.listen(_handleBarcode);
-
   }
 
   @override
@@ -62,6 +61,22 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen>
             },
             controller: _controller,
           ),
+          Positioned(
+            left: 32,
+            top: 64,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          )
         ],
       ),
     );
@@ -99,7 +114,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen>
 
   void _handleBarcode(BarcodeCapture event) {
     final address = event.barcodes.first.rawValue;
-    if(address == null) return;
+    if (address == null) return;
 
     _subscription?.cancel();
     _controller.stop();
