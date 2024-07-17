@@ -342,9 +342,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final String hexSignature = msgSignatureToHex(chipSignature!);
 
     try {
-      final functionSignature = token == null
-          ? offerItemFunctionSignature
-          : offerItemErc20FunctionSignature;
+      const functionSignature = offerItemErc20FunctionSignature;
 
       //check if user is allowed to use gas station
       final List response = await BackendMetaTx.checkMetaTx(

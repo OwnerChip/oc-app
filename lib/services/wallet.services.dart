@@ -128,6 +128,7 @@ Future<String> makeAndSendGaslessTx(
     offerHash: offerHash,
     amount: amount,
     gas: gasAmount,
+    token: token,
   );
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
