@@ -414,5 +414,9 @@
   "@_NEW_VERSION": {},
   "newVersionTitle": "Update App",
   "newVersionAvailable": "A new version of the app is available! Please update to the latest version.",
-  "newVersionUpdateButton": "Update"
+  "newVersionUpdateButton": "Update",
+  "@_SCAN_RESULT_PAGE": {},
+  "scanResultPageShowCertificateButton": "Authenticity Certificate",
+  "@_NFT_DETAILS_PAGE": {},
+  "nftDetailsPageShowCertificateButton": "Authenticity Certificate"
 }

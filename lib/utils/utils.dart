@@ -37,6 +37,10 @@ String getNdefUrl() {
 bool isOwnerChipApp() {
   return dotenv.get('BITRISEIO_PACKAGE_NAME').contains("com.ownerchip");
 }
+
+String getCertificateUrl(String chipAddress) {
+  return "https://certificate.ownerchip.com/$chipAddress";
+}
 String getCustomerId() {
   switch (dotenv.get("BITRISEIO_PACKAGE_NAME")) {
     case 'com.ownerchip':

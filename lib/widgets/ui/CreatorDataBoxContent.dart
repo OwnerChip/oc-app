@@ -9,13 +9,16 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CreatorDataBoxContent extends StatelessWidget {
   const CreatorDataBoxContent({
     super.key,
     required this.creatorData,
+    required this.chipAddress,
   });
 
+  final String chipAddress;
   final CreatorData creatorData;
 
   // void function
@@ -87,9 +90,9 @@ class CreatorDataBoxContent extends StatelessWidget {
         CustomOutlinedButton(
             width: double.infinity,
             height: 28,
-            buttonText: context.loc.showCreatorData,
+            buttonText: context.loc.scanResultPageShowCertificateButton,
             onPressed: () {
-              triggerPopup(context);
+              launchUrl(Uri.parse(getCertificateUrl(chipAddress)));
             })
       ],
     );

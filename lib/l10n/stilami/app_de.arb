@@ -418,6 +418,10 @@
     "@_NEW_VERSION": {},
     "newVersionTitle": "App aktualisieren",
     "newVersionAvailable": "Eine neue Version der App ist verfügbar! Bitte aktualisiere auf die neueste Version.",
-    "newVersionUpdateButton": "Aktualisieren"
+    "newVersionUpdateButton": "Aktualisieren",
+    "@_SCAN_RESULT_PAGE": {},
+    "scanResultPageShowCertificateButton": "Echtheitszertifikat",
+    "@_NFT_DETAILS_PAGE": {},
+    "nftDetailsPageShowCertificateButton": "Echtheitszertifikat"
 
 }

@@ -190,33 +190,35 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: tokenInfo.when(
-                                      data: (tokenInfoData) =>
-                                          tokenInfoData.collectionId ==
-                                                  zeroAddress
-                                              // NFT DOES NOT EXIST
-                                              ? Text(
-                                                  context.loc
-                                                      .authenticityNftNotFound,
+                                      data: (tokenInfoData) => tokenInfoData
+                                                  .collectionId ==
+                                              zeroAddress
+                                          // NFT DOES NOT EXIST
+                                          ? Text(
+                                              context
+                                                  .loc.authenticityNftNotFound,
+                                              textAlign: TextAlign.left,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium)
+                                          // NFT EXISTS
+                                          : creatorData.when(
+                                              data: (creatorDataData) =>
+                                                  CreatorDataBoxContent(
+                                                creatorData: creatorDataData,
+                                                chipAddress: chipInfo
+                                                    .chipEthereumAddress.hex,
+                                              ),
+                                              loading: () =>
+                                                  const CircularProgressIndicator(),
+                                              error: (e, s) => Text(
+                                                  context
+                                                      .loc.authenticityNftFound,
                                                   textAlign: TextAlign.left,
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyMedium)
-                                              // NFT EXISTS
-                                              : creatorData.when(
-                                                  data: (creatorDataData) =>
-                                                      CreatorDataBoxContent(
-                                                          creatorData:
-                                                              creatorDataData),
-                                                  loading: () =>
-                                                      const CircularProgressIndicator(),
-                                                  error: (e, s) => Text(
-                                                      context.loc
-                                                          .authenticityNftFound,
-                                                      textAlign: TextAlign.left,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyMedium),
-                                                ),
+                                                      .bodyMedium),
+                                            ),
                                       error: (e, s) => Text(
                                           context.loc.authenticityNftNotFound,
                                           textAlign: TextAlign.left,

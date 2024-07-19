@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -463,8 +464,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                       }
                                     },
                                     loading: () => [],
-                                    error: (e, s) => [
-                                        ]);
+                                    error: (e, s) => []);
                               } else {
                                 //TOKEN IS FOR SALE
                                 return [
@@ -796,7 +796,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                       .substring(2),
                                   radix: 16),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(
+                              height: 20,
+                            ),
                             CustomRoundedButton(
                               text: context.loc.showOnExplorer,
                               onPressed: () => {
@@ -804,6 +806,22 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                     mode: LaunchMode.externalApplication)
                               },
                             ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            SizedBox(
+                              width: double.infinity,
+                              child: CustomOutlinedButton(
+                                onPressed: () {
+                                  launchUrl(
+                                    Uri.parse(getCertificateUrl(
+                                        chipInfo.chipEthereumAddress.hex)),
+                                  );
+                                },
+                                buttonText: context
+                                    .loc.nftDetailsPageShowCertificateButton,
+                              ),
+                            )
                           ],
                         ));
                   },
