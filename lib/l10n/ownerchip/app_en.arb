@@ -120,7 +120,7 @@
   "scanNow": "Tap Now",
   "pleaseSelect": "- please select -",
   "pleaseSelectChainAndCollection": "Please select a Blockchain & Collection",
-  "digitalTwin": "Digital Twin",
+  "digitalTwin": "Digital Twin / Certificate",
   "authenticity": "Authenticity",
   "ownership": "Ownership",
   "unconfirmed": "Not confirmed",
@@ -416,7 +416,12 @@
   "newVersionAvailable": "A new version of the app is available! Please update to the latest version.",
   "newVersionUpdateButton": "Update",
   "@_SCAN_RESULT_PAGE": {},
-  "scanResultPageShowCertificateButton": "Authenticity Certificate",
+  "scanResultPageShowCertificateButton": "Show Certificate Details",
   "@_NFT_DETAILS_PAGE": {},
-  "nftDetailsPageShowCertificateButton": "Authenticity Certificate"
+  "nftDetailsPageShowCertificateButton": "Show Certificate Details",
+  "nftDetailsPageAuthenticityCertified": "Certified",
+  "nftDetailsPageAuthenticityNotCertified": "Not certified",
+  "nftDetailsPageCertifier": "Certifier",
+  "nftDetailsPageCreationDate": "Creation date",
+  "nftDetailsPageCollection": "Collection"
 }

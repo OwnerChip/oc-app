@@ -120,7 +120,7 @@
     "scanNow": "Jetzt scannen",
     "pleaseSelect": "- bitte auswählen -",
     "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen",
-    "digitalTwin": "Digital Twin",
+    "digitalTwin": "Digital Twin / Echtheitszertifikat",
     "authenticity": "Echtheit",
     "ownership": "Eigentum",
     "unconfirmed": "Nicht bestätigt",
@@ -416,8 +416,13 @@
     "newVersionAvailable": "Eine neue Version der App ist verfügbar! Bitte aktualisiere auf die neueste Version.",
     "newVersionUpdateButton": "Aktualisieren",
     "@_SCAN_RESULT_PAGE": {},
-    "scanResultPageShowCertificateButton": "Echtheitszertifikat",
+    "scanResultPageShowCertificateButton": "Zertifikatsdetails anzeigen",
     "@_NFT_DETAILS_PAGE": {},
-    "nftDetailsPageShowCertificateButton": "Echtheitszertifikat"
+    "nftDetailsPageShowCertificateButton": "Zertifikatsdetails anzeigen",
+    "nftDetailsPageAuthenticityCertified": "Zertifiziert",
+    "nftDetailsPageAuthenticityNotCertified": "Nicht zertifiziert",
+    "nftDetailsPageCertifier": "Zertifizierer",
+    "nftDetailsPageCreationDate": "Datum der Erstellung",
+    "nftDetailsPageCollection": "Sammlung"
 
 }
