@@ -64,8 +64,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Web3App? wcClient;
   bool shippingPopupIsShown = false;
 
-  bool _isScanning = false;
-
   Future<void>
       _checkAndRemovePersistedStorageDependingOnPreviousAppVersion() async {
     final storage = await SharedPreferences.getInstance();
@@ -254,10 +252,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> onButtonPress(bool isInitialize) async {
     try {
-      // check if already scanning
-      if (_isScanning) {
-        return;
-      }
 
       //check if there is internet connections
       if (!await checkInternetConnection()) {
@@ -307,15 +301,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     try {
       if (mounted) {
-        _isScanning = true;
         if (isInitialize) {
-          await initializeItem(ref, context).catchError((e) {
-            _isScanning = false;
-          });
+          await initializeItem(ref, context);
         } else {
-          await scanItem(ref, context).catchError((e) {
-            _isScanning = false;
-          });
+          await scanItem(ref, context);
         }
       }
     } catch (e) {
@@ -324,8 +313,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, 'Error reading chip.', 'error'),
       );
-    } finally {
-      _isScanning = false;
     }
   }
 

@@ -20,6 +20,12 @@ class NFCOverlay {
       builder: (context) {
         // Use a TweenAnimationBuilder as the content parameter
         return Stack(children: [
+          Positioned.fill(
+              child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.black54,
+            ),
+          )),
           Positioned(
               bottom: 10,
               left: 5,
