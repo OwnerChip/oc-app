@@ -526,7 +526,7 @@ Future<dynamic> scanClosure(
         //check if future is already completed
         if (error.message.contains('Session invalidated by user')) {
           //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
-          return;
+          completer.complete(null);
         } else {
           completer.completeError(error);
         }
