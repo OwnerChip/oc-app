@@ -41,6 +41,7 @@ bool isOwnerChipApp() {
 String getCertificateUrl(String chipAddress) {
   return "https://certificate.ownerchip.com/$chipAddress";
 }
+
 String getCustomerId() {
   switch (dotenv.get("BITRISEIO_PACKAGE_NAME")) {
     case 'com.ownerchip':
@@ -101,7 +102,7 @@ Future<bool> checkInternetConnection() async {
 Future<bool> checkBackendAvailability() async {
   try {
     //get backend client
-    final client =Backend.getBackendClient();
+    final client = Backend.getBackendClient();
     await client.get('/auth');
     return true;
   } catch (e) {
@@ -223,13 +224,16 @@ Future<String> getSha256HashOfFile(File file) async {
 }
 
 Future<XFile> generateVoucherMetadataFile(
-    Map<String, dynamic> twinMetadata, BuildContext context) async {
+  Map<String, dynamic> twinMetadata,
+  BigInt tokenId,
+  BuildContext context,
+) async {
   Map<String, dynamic> voucherMetadata = twinMetadata;
   if (voucherMetadata['description'] == null) {
     voucherMetadata['description'] = '';
   }
   voucherMetadata['description'] +=
-      "\n \n${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+      "\n \n${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific(getCertificateUrl(tokenId.toString()))}";
   XFile jsonFileVoucher = await saveMetadataAsJSONFile(voucherMetadata);
   return jsonFileVoucher;
 }

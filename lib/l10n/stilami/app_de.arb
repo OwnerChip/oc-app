@@ -311,7 +311,7 @@
     "itemAvailableForSale": "Dieser Gegenstand steht zum Verkauf.",
     "buyOnRarible": "Auf Rarible kaufen",
     "voucherNftDescriptionGeneral": "This NFT includes the ownership of a physical jewel. This can be redeemed after the purchase of the NFT",
-    "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore.\nFor more information visit www.stilami.com",
+    "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore. Du kannst das digitale Zertifikat unter diesem Link einsehen: {CERTIFICATE_LINK}\nFor more information visit www.stilami.com",
     "transferred": "Transferiert",
     "errorWhenOffering": "Beim anbieten des Tokens ist ein Fehler passiert. Bitte drücke Token wiederherstellen oder kontaktiere den Support.",
     "recoverToken": "Token wiederherstellen",

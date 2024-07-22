@@ -175,8 +175,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
       /////////// VOUCHER METADATA ///////////
 
       Map<String, dynamic> voucherMetadata = {...metadata};
-      XFile jsonFileVoucher =
-          await generateVoucherMetadataFile(voucherMetadata, context);
+
+      ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+      XFile jsonFileVoucher = await generateVoucherMetadataFile(
+          voucherMetadata, chipInfo.tokenId, context);
       String voucherTokenMetadataCID =
           await uploadFileToIPFS(jsonFileVoucher, 'application/json');
 

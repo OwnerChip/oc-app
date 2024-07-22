@@ -308,7 +308,7 @@
     "itemAvailableForSale": "Dieser Gegenstand steht zum Verkauf.",
     "buyOnRarible": "Auf Rarible kaufen",
     "voucherNftDescriptionGeneral": "Dieser Digital Twin beinhaltet das Eigentum eines physischen Kunstwerks, das nach dem Kauf des Digital Twins eingelöst werden kann.",
-    "voucherNftDescriptionAppSpecific": "über die Ownerchip-App, herunterladbar im Google Playstore und Apple AppStore. \n Für weitere Informationen besuche https://ownerchip.com/redeem",
+    "voucherNftDescriptionAppSpecific": "über die Ownerchip-App, herunterladbar im Google Playstore und Apple AppStore. Du kannst das digitale Zertifikat unter diesem Link einsehen: {CERTIFICATE_LINK}\nFür weitere Informationen besuche https://ownerchip.com/redeem",
     "transferred": "Transferiert",
     "errorWhenOffering": "Beim Anbieten des Digital Twins ist ein Fehler passiert. Bitte drücke 'Digital Twin wiederherstellen' oder kontaktiere den Support.",
     "recoverToken": "Digital Twin wiederherstellen",

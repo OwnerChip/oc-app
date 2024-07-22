@@ -186,7 +186,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       String voucherTokenMetadataCID = '';
       Map<String, dynamic> voucherTokenMetadata = twinTokenMetadata;
       voucherTokenMetadata['description'] +=
-          "\n\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+          "\n\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific(getCertificateUrl(config.tokenId.toString()))}";
       XFile jsonFileVoucher =
           await saveMetadataAsJSONFile(voucherTokenMetadata);
       voucherTokenMetadataCID =
