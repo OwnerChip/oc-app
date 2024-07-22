@@ -254,9 +254,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> onButtonPress(bool isInitialize) async {
     try {
-
       // check if already scanning
-      if(_isScanning) {
+      if (_isScanning) {
         return;
       }
 
@@ -310,9 +309,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (mounted) {
         _isScanning = true;
         if (isInitialize) {
-          await initializeItem(ref, context);
+          await initializeItem(ref, context).catchError((e) {
+            _isScanning = false;
+          });
         } else {
-          await scanItem(ref, context);
+          await scanItem(ref, context).catchError((e) {
+            _isScanning = false;
+          });
         }
       }
     } catch (e) {
