@@ -169,7 +169,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 5 / 3,
+                      childAspectRatio: 7 / 5,
                       crossAxisSpacing: 16,
                     ),
                     children: [
