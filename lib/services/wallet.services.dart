@@ -170,7 +170,7 @@ Future<String> makeAndSendGaslessTx(
           'error signing gasless tx $error',
           stackTrace,
         );
-        throw 'error signing gasless tx';
+        throw error!;
       });
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
@@ -186,7 +186,7 @@ Future<String> makeAndSendGaslessTx(
         Sentry.captureException(e, stackTrace: st);
         debugPrint(e.toString());
         debugPrintStack(stackTrace: st);
-        throw Exception('Failed to sign message with Web3Auth');
+        rethrow;
       }
     }
 

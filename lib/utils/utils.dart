@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -261,4 +262,26 @@ String formatDate(String date) {
     // Return an error message if the input is not valid
     return "Invalid date format";
   }
+}
+
+T callFunctionWithFallback<T>({
+  required T Function() function,
+  required T Function() fallback,
+  bool Function(Object e)? predicate,
+}) {
+  try {
+    return function();
+  } catch (e) {
+    if (predicate != null && predicate(e)) {
+      return fallback();
+    }
+    return fallback();
+  }
+}
+
+bool gaslessTransactionFallbackPredicate(Object e) {
+  if (e is JsonRpcError) {
+    return e.code != 4001;
+  }
+  return true;
 }
