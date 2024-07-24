@@ -323,6 +323,8 @@
     "legalHintTerrorismFinancing": "Ich habe all meine Sorgfaltspflichten in Hinblick auf die Verhinderung von Geldwäsche und Terrorismusfinanzierung nach den für mich anwendbaren Rechtsvorschriften erfüllt.",
     "shippingHint": "Ich bin verantwortlich für die Bearbeitung, Verpackung und Versandkosten im Zusammenhang mit dem Angebot.",
     "@_APPBAR": {},
+    "appBarProfileTitle": "Profil",
+    "appBarWalletIdTitle": "Wallet ID",
     "copiedAddressToClipboard": "Adresse kopiert.",
     "appbarMyBalanceButton": "Mein Guthaben",
     "@_MYBALANCE": {},
@@ -409,5 +411,10 @@
     "offerOnMpFetchingPrice": "Aktuelle Kurse werden geladen...",
     "offerOnMpErrorFetchingPrice": "Fehler beim Laden aktueller Kurse",
     "offerOnMpPublishedDialogTitle": "Auf Marktplatz veröffentlicht",
-    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!"
+    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!",
+    "@_NEW_VERSION": {},
+    "newVersionTitle": "App aktualisieren",
+    "newVersionAvailable": "Eine neue Version der App ist verfügbar! Bitte aktualisiere auf die neueste Version.",
+    "newVersionUpdateButton": "Aktualisieren"
+
 }

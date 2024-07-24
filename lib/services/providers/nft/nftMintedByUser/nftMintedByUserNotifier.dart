@@ -10,6 +10,7 @@ import 'package:ownerchip_whitelabel/services/providers/nft/nftMintedByUser/nftM
 import 'package:ownerchip_whitelabel/services/providers/nft/paginationNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -29,8 +30,10 @@ class OCNFTsMintedByUserNotifier extends Notifier<OCNFTsMintedByUserData>
     final UserSession? userSession = ref.read(userSessionProvider);
     final EthereumAddress? walletAddress = userSession?.userWalletAddress;
 
-    final BlockchainCollectionList ocCollections =
-        await ref.read(appCollectionProvider.future);
+    final BlockchainCollectionList ocCollections = await ref.read(
+        isOwnerChipApp()
+            ? allCollectionsProvider.future
+            : appCollectionProvider.future);
 
     final List nftInfoList = [];
     try {

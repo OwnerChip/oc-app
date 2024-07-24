@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/marketplace/types.dart';
+import 'package:ownerchip_whitelabel/services/rarible/rarible.dart';
 import 'package:sentry/sentry.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -120,10 +121,9 @@ Future<String> prepareRaribleOrderCancellation(
       offchainOrderId = "${chainConfig[chainId]!.raribleEnum}:$offchainOrderId";
     }
 
-    final Dio dio = Dio();
-    dio.options.headers['X-API-KEY'] = dotenv.get('MAINNET_RARIBLE_API_KEY');
+    final Dio dio = Rarible.getRaribleClient(chainId: chainId);
     Response result = await dio.post(
-      '${raribleNewApiBaseUrl}orders/$offchainOrderId/prepareCancelTx',
+      '${Rarible.raribleApiUrls[chainId]}/orders/$offchainOrderId/prepareCancelTx',
     );
     return result.data["data"];
   } catch (e, s) {
@@ -147,5 +147,6 @@ String makeRaribleTokenPageUrl(
 const raribleTokenPageUrls = {
   1: 'https://rarible.com/token/',
   137: 'https://rarible.com/token/polygon/',
+  11155111: 'https://testnet.rarible.com/token/',
   // 80001: 'https://testnet.rarible.com/token/polygon/',
 };

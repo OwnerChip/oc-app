@@ -131,7 +131,11 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       context.loc.holdPhoneToNfcChip);
 }
 
-Future<void> scanItem(WidgetRef ref, BuildContext context) async {
+Future<void> scanItem(
+  WidgetRef ref,
+  BuildContext context, {
+  bool navigateToResultPage = true,
+}) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     EthereumAddress chipEthereumAddress = createFirstKeyChipResponse[0];
@@ -153,29 +157,32 @@ Future<void> scanItem(WidgetRef ref, BuildContext context) async {
       ref.read(chipSignatureDataProvider.notifier).setSignatureData(
           SignatureData(hashedMsg: hashedMsg, signature: signature));
 
-      //TOKEN DOES NOT EXIST
-      if (config.collectionId == zeroAddress) {
-        BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
-            tags: {"chipWallet": chipWalletAddress});
+      if (navigateToResultPage) {
+        //TOKEN DOES NOT EXIST
+        if (config.collectionId == zeroAddress) {
+          BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+              tags: {"chipWallet": chipWalletAddress});
 
-        Navigator.pushNamed(
-          context,
-          UserScanResultsScreen.routeName,
-        );
-      } else {
-        //TOKEN EXISTS
-        await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
-            signature, sessionId, chipWalletAddress, context);
+          Navigator.pushNamed(
+            context,
+            UserScanResultsScreen.routeName,
+          );
+        } else {
+          //TOKEN EXISTS
+          await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+              signature, sessionId, chipWalletAddress, context);
 
-        Navigator.pushNamed(
-          context,
-          UserScanResultsScreen.routeName,
-        );
+          Navigator.pushNamed(
+            context,
+            UserScanResultsScreen.routeName,
+          );
+        }
       }
     } catch (e) {
       // check if wallet is connected
 
-      if (ref.read(wcSessionProvider) == null &&
+      if (navigateToResultPage &&
+          ref.read(wcSessionProvider) == null &&
           e == "Error: Chip is PIN code locked.") {
         await NfcManager.instance.stopSession();
         //navigate to PinScreen
@@ -508,7 +515,10 @@ Future<dynamic> scanClosure(
   final scanProcess = Sentry.startTransaction('$analyticsType', 'task');
   NFCOverlay nfcOverlay = NFCOverlay();
   if (Platform.isAndroid) {
-    nfcOverlay.showNfcOverlay(context, alertMessage);
+    nfcOverlay.showNfcOverlay(context, alertMessage, () {
+      NfcManager.instance.stopSession();
+      completer.complete();
+    });
   }
 
   NfcManager.instance.startSession(
@@ -516,7 +526,7 @@ Future<dynamic> scanClosure(
         //check if future is already completed
         if (error.message.contains('Session invalidated by user')) {
           //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
-          return;
+          completer.complete(null);
         } else {
           completer.completeError(error);
         }
@@ -574,6 +584,7 @@ Future<dynamic> scanClosure(
             e,
             stackTrace: stackTrace,
           );
+          completer.complete();
           rethrow;
         }
       });

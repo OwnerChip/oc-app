@@ -9,7 +9,7 @@ const String raribleNewApiBaseUrl = 'https://api.rarible.org/v0.1/';
 final Map<int, String> raribleExchangeV2Contracts = {
   1: '0x9757F2d2b135150BBeb65308D4a91804107cd8D6',
   137: '0x12b3897a36fDB436ddE2788C06Eff0ffD997066e',
-  11155111: "0x0fE65B68Eb627c21EAF3cfe8183C4F946F3d48BD",
+  11155111: "0x3e52D660b69d1bDacb6C513cE085D924F5Cb9c77",
   //42161: '0x07b637739CAd9A5f0c487219B283a52717E69978', arbitrum (maybe later)
   // 80001: '0x2Fc743F5419637B93dDAC159715B902186300041'
 };
@@ -17,7 +17,7 @@ final Map<int, String> raribleExchangeV2Contracts = {
 final Map<int, String> raribleTransferProxies = {
   1: '0x4fee7b061c97c9c496b01dbce9cdb10c02f0a0be',
   137: '0xd47e14DD9b98411754f722B4c4074e14752Ada7C',
-  11155111: '0x4f4cC63D7f2bC894078d41f284453062842Afa46',
+  11155111: '0xA094E566b61b3c2D88ACf7Cc15e3Dd0FA83F32af',
   //42161: '0x49b4e47079d9b733B2227fa15f0762dBF707B263', arbitrum (maybe later)
   // 80001: '0x02e21199D043dab90248f79d6A8d0c36832734B0'
 };

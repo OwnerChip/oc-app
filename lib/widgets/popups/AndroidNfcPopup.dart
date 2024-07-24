@@ -8,13 +8,24 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 
 class NFCOverlay {
   OverlayEntry? overlayEntry;
+
 // A function to show the snackbar as an overlay entry
-  void showNfcOverlay(BuildContext context, String message) {
+  void showNfcOverlay(
+    BuildContext context,
+    String message,
+    VoidCallback? onExit,
+  ) {
     // Create an overlay entry widget with a custom content and animation
     overlayEntry = OverlayEntry(
       builder: (context) {
         // Use a TweenAnimationBuilder as the content parameter
         return Stack(children: [
+          Positioned.fill(
+              child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.black54,
+            ),
+          )),
           Positioned(
               bottom: 10,
               left: 5,
@@ -68,6 +79,7 @@ class NFCOverlay {
                                 // Dismiss the snackbar when the user taps the button
                                 removeNfcOverlay();
                                 NfcManager.instance.stopSession();
+                                onExit?.call();
                               }))
                     ],
                   ),

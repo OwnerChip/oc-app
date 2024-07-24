@@ -75,7 +75,7 @@ class _AppBarAuthState extends ConsumerState<AppBarAuth> {
           alignment: const Alignment(0.0, 0.95),
           child: Text(
             userSession != null
-                ? '${userSession.userWalletAddress.hex.substring(0, 7)}...'
+                ? context.loc.appBarProfileTitle
                 : context.loc.connect,
             style:
                 Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 12),

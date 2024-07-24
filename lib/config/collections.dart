@@ -65,11 +65,12 @@ Map<int, List<Collection>> groupCollectionsByChainId(
   Map<int, List<Collection>> result = {};
 
   for (dynamic collection in collections) {
+    final String vouchedAddressRaw =
+        collection['voucher_address'] ?? collection['voucherAddress'] ?? "";
     //check if voucherAddress exists, if yes convert it to EthereumAddress
-    final EthereumAddress? voucherAddress =
-        collection['voucher_address'].isNotEmpty
-            ? EthereumAddress.fromHex(collection['voucher_address'])
-            : null;
+    final EthereumAddress? voucherAddress = vouchedAddressRaw.isNotEmpty
+        ? EthereumAddress.fromHex(vouchedAddressRaw)
+        : null;
     var col = Collection(
         EthereumAddress.fromHex(collection["address"]), collection["name"],
         voucherAddress: voucherAddress);

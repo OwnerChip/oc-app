@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AddressInputField.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:async/async.dart';
@@ -51,6 +52,7 @@ class TransferScreen extends ConsumerStatefulWidget {
 class _TransferScreenState extends ConsumerState<TransferScreen> {
   final _formKey = GlobalKey<FormState>();
   final _inputController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   bool isLoading = false;
   bool isRotating = true;
@@ -99,8 +101,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       final metaTxAgreementId = response[1];
 
       String txnHash = "";
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             approveFunctionSignature,
@@ -117,36 +119,39 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
-              approveFunctionSignature,
-              // APPROVE
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              ref.read(walletTypeProvider)!,
-              toAccount: to,
-              tokenId: tokenId,
-              enableRecovery: isOwnerCard,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+              function: () {
+                return makeAndSendGaslessTx(
+                  ref,
+                  ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
+                  approveFunctionSignature,
+                  // APPROVE
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  wcSession,
+                  metaTxAgreementId,
+                  ref.read(walletTypeProvider)!,
+                  toAccount: to,
+                  tokenId: tokenId,
+                  enableRecovery: isOwnerCard,
+                  toggleLoading: toggleLoading,
+                );
+              },
+              fallback: normalTx,
+              predicate: gaslessTransactionFallbackPredicate);
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
 
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
-        talker.error('Error sending gasless transaction', e, st);
-
-        talker.info('Falling back to normal transaction');
-        await normalTx();
+        talker.error(e, st);
       }
 
       talker.info('Transaction hash: $txnHash');
@@ -222,8 +227,20 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    _inputController.addListener(() {
+      setState(() {
+        textInput = _inputController.text;
+      });
+    });
+  }
+
+  @override
   void dispose() {
     _inputController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -308,32 +325,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 30),
-                      TextFormField(
+                      AddressInputField(
                         controller: _inputController,
-                        onChanged: (text) => setState(() {
-                          textInput = text;
-                        }),
-                        validator: (value) {
-                          if (value == null || !validateEthAddress(value)) {
-                            return context.loc.pleaseEnterValidWalletAddress;
-                          } else {
-                            return null;
-                          }
-                        },
-                        cursorColor: Theme.of(context).primaryColorDark,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        decoration: InputDecoration(
-                          focusColor: Theme.of(context).primaryColorDark,
-                          hintText: context.loc.enterWalletAddress,
-                          hintStyle: Theme.of(context).textTheme.bodyMedium,
-                          filled: true,
-                          fillColor:
-                              CustomColors(dotenv.get('APP_ID')).cardColor,
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                        ),
+                        focusNode: _focusNode,
+                        errorText: context.loc.pleaseEnterValidWalletAddress,
                       ),
                       const SizedBox(height: 20),
                       CustomRoundedButton(

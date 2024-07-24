@@ -209,8 +209,8 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       String txnHash = "";
 
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             (voucherCollectionId != null)
@@ -229,34 +229,39 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('MetadataInputScreen').currentContext!,
-              (voucherCollectionId != null)
-                  ? mintVoucherFunctionSignature
-                  : mintFunctionSignature,
-              chainId,
-              voucherCollectionId ?? collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              twinTokenMetadataCID: twinTokenMetadataCID,
-              voucherTokenMetadataCID: voucherTokenMetadataCID,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+              function: () {
+                return makeAndSendGaslessTx(
+                    ref,
+                    ScaffoldKey.getScaffoldKey('MetadataInputScreen')
+                        .currentContext!,
+                    (voucherCollectionId != null)
+                        ? mintVoucherFunctionSignature
+                        : mintFunctionSignature,
+                    chainId,
+                    voucherCollectionId ?? collectionId,
+                    signatureData,
+                    connectedWallet,
+                    wc,
+                    wcSession,
+                    metaTxAgreementId,
+                    walletType!,
+                    twinTokenMetadataCID: twinTokenMetadataCID,
+                    voucherTokenMetadataCID: voucherTokenMetadataCID,
+                    toggleLoading: toggleLoading);
+              },
+              fallback: normalTx,
+              predicate: gaslessTransactionFallbackPredicate);
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
 
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         talker.error('Error minting token: $e', st);
         Sentry.captureException(e, stackTrace: st);
-        await normalTx();
       }
 
       //wait until TX is succeeded or failed

@@ -28,6 +28,9 @@ abstract class BackendCollectionService {
         baseUrl: "${dio.options.baseUrl}/collection");
   }
 
+  @GET("")
+  Future<HttpResponse> getAllCollections();
+
   @POST("{hex}/recovery")
   Future<void> recoverCollection({
     @Path("hex") required String hex,

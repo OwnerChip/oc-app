@@ -1,7 +1,7 @@
 {
     "termsAndConditionsUrl": "https://www.stilami.com/en/terms-and-conditions",
-    "stilamiIdentityUrl": "https://www.stilami.com/en/identity/about",
-    "collectionsUrl": "https://www.stilami.com/en/jewellery-collection/show-all",
+    "stilamiIdentityUrl": "https://www.stilami.com/stilami-identity/",
+    "collectionsUrl": "https://www.stilami.com/kollektionen/",
     "supportUrl": "https://www.stilami.com/en/identity/app/support",
     "legalUrl": "https://www.stilami.com/en/terms-and-conditions",
     "privacyUrl": "https://www.stilami.com/datenschutzerklarung.html",
@@ -324,6 +324,8 @@
     "legalHintTerrorismFinancing": "I have fulfilled all my due diligence obligations with regard to the prevention of money laundering and terrorist financing in accordance with the laws applicable to me.",
     "shippingHint": "I am responsible for handling, packaging and shipping costs associated with the offer.",
     "@_APPBAR": {},
+    "appBarProfileTitle": "Profile",
+    "appBarWalletIdTitle": "Wallet ID",
     "copiedAddressToClipboard": "Address copied to clipboard",
     "appbarMyBalanceButton": "My Balance",
     "@_MYBALANCE": {},
@@ -410,6 +412,9 @@
     "offerOnMpFetchingPrice": "Fetching current price...",
     "offerOnMpErrorFetchingPrice": "Error fetching current price",
     "offerOnMpPublishedDialogTitle": "Published on Marketplace",
-    "offerOnMpPublishedDialogSubtitle": "Your item is now available for sale!"
-
+    "offerOnMpPublishedDialogSubtitle": "Your item is now available for sale!",
+    "@_NEW_VERSION": {},
+    "newVersionTitle": "Update App",
+    "newVersionAvailable": "A new version of the app is available! Please update to the latest version.",
+    "newVersionUpdateButton": "Update"
 }

@@ -128,6 +128,7 @@ Future<String> makeAndSendGaslessTx(
     offerHash: offerHash,
     amount: amount,
     gas: gasAmount,
+    token: token,
   );
   final Map<String, dynamic> typedData = gaslessTxParams[0];
   final Map<String, dynamic> request = gaslessTxParams[1];
@@ -169,7 +170,7 @@ Future<String> makeAndSendGaslessTx(
           'error signing gasless tx $error',
           stackTrace,
         );
-        throw 'error signing gasless tx';
+        throw error!;
       });
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
@@ -185,7 +186,7 @@ Future<String> makeAndSendGaslessTx(
         Sentry.captureException(e, stackTrace: st);
         debugPrint(e.toString());
         debugPrintStack(stackTrace: st);
-        throw Exception('Failed to sign message with Web3Auth');
+        rethrow;
       }
     }
 
@@ -362,6 +363,7 @@ Future<String> makeAndSendNormalTx(
   BigInt? amount,
   BigInt? gasAmount,
   BigInt? gasPrice,
+  BlockchainToken? token,
 }) async {
   var txParams = await buildEthSendTransactionRequest(
     getRPCUrlFromChainId(chainId),
@@ -389,6 +391,7 @@ Future<String> makeAndSendNormalTx(
     amount: amount,
     gasPrice: gasPrice,
     gasAmount: gasAmount,
+    token: token,
   );
 
   late String txnHash;

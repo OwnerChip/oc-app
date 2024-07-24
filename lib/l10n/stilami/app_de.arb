@@ -1,12 +1,12 @@
 {
     "termsAndConditionsUrl": "https://www.stilami.com/de/AGB",
-    "stilamiIdentityUrl": "https://www.stilami.com/de/identity/about",
-    "collectionsUrl": "https://www.stilami.com/de/jewellery-collection/show-all",
+    "stilamiIdentityUrl": "https://www.stilami.com/stilami-identity/",
+    "collectionsUrl": "https://www.stilami.com/kollektionen//show-all",
     "supportUrl": "https://www.stilami.com/de/identity/app/support",
     "legalUrl": "https://www.stilami.com/de/AGB",
     "privacyUrl": "https://www.stilami.com/datenschutzerklarung.html",
     "orderChipsUrl": "http://www.ownerchip.com/orderchips",
-    "collectionsButtonText": "Kollektionen",
+    "collectionsButtonTex“t": "Kollektionen",
     "stilamiIdentityButtonText": "Stilami Identity",
     "initializeChip": "NFT erstellen",
     "youAreOwner": "Sie sind der Eigentümer",
@@ -326,6 +326,8 @@
     "legalHintTerrorismFinancing": "Ich habe all meine Sorgfaltspflichten in Hinblick auf die Verhinderung von Geldwäsche und Terrorismusfinanzierung nach den für mich anwendbaren Rechtsvorschriften erfüllt.",
     "shippingHint": "Ich bin verantwortlich für die Bearbeitung, Verpackung und Versandkosten im Zusammenhang mit dem Angebot.",
     "@_APPBAR": {},
+    "appBarProfileTitle": "Profil",
+    "appBarWalletIdTitle": "Wallet ID",
     "copiedAddressToClipboard": "Adresse kopiert.",
     "appbarMyBalanceButton": "Mein Guthaben",
     "@_MYBALANCE": {},
@@ -412,5 +414,10 @@
     "offerOnMpFetchingPrice": "Aktuelle Kurse werden geladen...",
     "offerOnMpErrorFetchingPrice": "Fehler beim Laden aktueller Kurse",
     "offerOnMpPublishedDialogTitle": "Auf Marktplatz veröffentlicht",
-    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!"
+    "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!",
+    "@_NEW_VERSION": {},
+    "newVersionTitle": "App aktualisieren",
+    "newVersionAvailable": "Eine neue Version der App ist verfügbar! Bitte aktualisiere auf die neueste Version.",
+    "newVersionUpdateButton": "Aktualisieren"
+
 }

@@ -41,6 +41,8 @@ class BigIconButton extends StatelessWidget {
                 bottom: 5.0,
               ),
               padding: const EdgeInsets.all(7),
+              mainAxisAlignment: mainAxisAlignment,
+              crossAxisAlignment: crossAxisAlignment,
               children: [
                 icon,
                 Text(text,
