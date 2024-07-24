@@ -30,13 +30,14 @@ abstract class BackendCreationService {
   }
 
   @GET("/")
-  Future<BackendPaginationResponse<DigitalTwinMetadata>> getMyDigitalTwins(
+  Future<BackendPaginationResponse<DigitalTwinMetadata>?> getMyDigitalTwins(
     @Query("page") int page,
+    @Query("status") List<String> status,
   );
 
-  @POST("/{id}")
-  Future<void> updateStatus(
+  @POST("/{id}/minted")
+  Future<void> mintDigitalTwin(
     @Path('id') String id,
-    @Body() UpdateDigitalTwinCreationMetadataStatusPayload body,
+    @Query("chipId") String chipId,
   );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
 
@@ -13,7 +14,12 @@ class CreationsNotifier extends Notifier<CreationsData> {
 
     try {
       // Fetch data from backend
-      final data = await BackendCreation.getMyDigitalTwins(1);
+      final data = await BackendCreation.getMyDigitalTwins(
+        1,
+        status: [
+          DigitalTwinCreationMetadataStatus.pending,
+        ],
+      );
 
       state = state.copyWith(data: data, loading: false, initialized: true);
     } catch (e) {

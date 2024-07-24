@@ -20,6 +20,18 @@ class BackendPaginationResponse<T> {
   final int total;
   final int totalPages;
 
+  bool get hasNextPage => page < totalPages;
+
+  bool get isEnd => page == totalPages;
+
+  bool get isStart => page == 1;
+
+  bool get hasPreviousPage => page > 1;
+
+  bool get isEmpty => data.isEmpty;
+
+  bool get isNotEmpty => data.isNotEmpty;
+
   const BackendPaginationResponse({
     required this.data,
     required this.page,

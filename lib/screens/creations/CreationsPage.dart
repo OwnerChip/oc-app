@@ -7,10 +7,12 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
@@ -185,6 +187,9 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
           setState(() {});
         }
 
+        final chipInfo = ref.read(chipInfoProvider);
+        BackendCreation.markDigitalTwinAsMinted(id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex);
+
         Navigator.of(context).pushNamedAndRemoveUntil(
           OfferForSaleCreatedTokenScreen.routeName,
           (route) => route.isFirst,
@@ -222,13 +227,6 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
   @override
   Widget build(BuildContext context) {
     final creations = ref.watch(creationsNotifierProvider);
-
-    if (!creations.initialized && !creations.loading && !creations.error) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(creationsNotifierProvider.notifier).init();
-      });
-    }
-
     return CustomOverlay(
       show: isLoading,
       content: SpinningLoadingSvg(
@@ -242,7 +240,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
         svgPath: loadingSvgPath,
       ),
       child: Scaffold(
-        key: ScaffoldKey.getScaffoldKey('CreationsPage'),
+          key: ScaffoldKey.getScaffoldKey('CreationsPage'),
           appBar: CustomAppBar(),
           body: SmartRefresher(
             enablePullDown: true,
@@ -255,32 +253,99 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
             child: ListView.builder(
               itemCount: creations.data?.data.length ?? 0,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(creations.data!.data[index].title),
-                  subtitle:
-                      Text(creations.data!.data[index].createdAt.toString()),
-                  onTap: () async {
-                    await scanItem(
-                      ref,
+                final metadata = creations.data!.data[index];
+                return InkWell(
+                  onTap: () {
+                    _mintItem(
                       context,
-                      navigateToResultPage: false,
-                    );
-
-                    final userSession = ref.read(userSessionProvider)!;
-                    final wc = ref.read(wcProvider);
-                    final metadata = creations.data!.data[index];
-
-                    createToken(
-                      userSession.sessionId,
-                      wc!,
-                      ref.read(chipSignatureDataProvider),
+                      creations,
                       metadata,
                     );
                   },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Flexible(
+                      child: Row(
+                        children: [
+                          const SizedBox(
+                            width: 16,
+                          ),
+                          if (metadata.imageLink != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                8.0,
+                              ),
+                              child: SizedBox(
+                                width: 96,
+                                height: 96,
+                                child: Image.network(
+                                  metadata.imageLink!,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              width: 96,
+                              height: 96,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          const SizedBox(
+                            width: 32,
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  metadata.title,
+                                  style: Theme.of(context).textTheme.headlineMedium,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  metadata.description,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
           )),
+    );
+  }
+
+  Future<void> _mintItem(
+    BuildContext context,
+    CreationsData creations,
+    DigitalTwinMetadata metadata,
+  ) async {
+    await scanItem(
+      ref,
+      context,
+      navigateToResultPage: false,
+    );
+
+    final userSession = ref.read(userSessionProvider)!;
+    final wc = ref.read(wcProvider);
+
+    createToken(
+      userSession.sessionId,
+      wc!,
+      ref.read(chipSignatureDataProvider),
+      metadata,
     );
   }
 }

@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyAuW8rS0-Pc-5DVyKAFREF29A7pD2habfA</string>
+	<string>AIzaSyAEVprxfs0HfmArxF3EI-zHFqnG4gMAMa8</string>
 	<key>GCM_SENDER_ID</key>
-	<string>768172302210</string>
+	<string>345142381734</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.ownerchip.user</string>
 	<key>PROJECT_ID</key>
-	<string>test-oc-app-1f1c0</string>
+	<string>ownerchip-staging</string>
 	<key>STORAGE_BUCKET</key>
-	<string>test-oc-app-1f1c0.appspot.com</string>
+	<string>ownerchip-staging.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:768172302210:ios:a002fea6e852df769d799b</string>
+	<string>1:345142381734:ios:6745bca1f226191d333867</string>
 </dict>
 </plist>

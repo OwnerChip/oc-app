@@ -19,13 +19,18 @@ class _BackendCreationService implements BackendCreationService {
   String? baseUrl;
 
   @override
-  Future<BackendPaginationResponse<DigitalTwinMetadata>> getMyDigitalTwins(
-      int page) async {
+  Future<BackendPaginationResponse<DigitalTwinMetadata>?> getMyDigitalTwins(
+    int page,
+    List<String> status,
+  ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'page': page};
+    final queryParameters = <String, dynamic>{
+      r'page': page,
+      r'status': status,
+    };
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _result = await _dio.fetch<Map<String, dynamic>?>(
         _setStreamType<BackendPaginationResponse<DigitalTwinMetadata>>(Options(
       method: 'GET',
       headers: _headers,
@@ -42,23 +47,25 @@ class _BackendCreationService implements BackendCreationService {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = BackendPaginationResponse<DigitalTwinMetadata>.fromJson(
-      _result.data!,
-      (json) => DigitalTwinMetadata.fromJson(json as Map<String, dynamic>),
-    );
+    final value = _result.data == null
+        ? null
+        : BackendPaginationResponse<DigitalTwinMetadata>.fromJson(
+            _result.data!,
+            (json) =>
+                DigitalTwinMetadata.fromJson(json as Map<String, dynamic>),
+          );
     return value;
   }
 
   @override
-  Future<void> updateStatus(
+  Future<void> mintDigitalTwin(
     String id,
-    UpdateDigitalTwinCreationMetadataStatusPayload body,
+    String chipId,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'chipId': chipId};
     final _headers = <String, dynamic>{};
-    final _data = <String, dynamic>{};
-    _data.addAll(body.toJson());
+    const Map<String, dynamic>? _data = null;
     await _dio.fetch<void>(_setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
@@ -66,7 +73,7 @@ class _BackendCreationService implements BackendCreationService {
     )
         .compose(
           _dio.options,
-          '/${id}',
+          '/${id}/minted',
           queryParameters: queryParameters,
           data: _data,
         )

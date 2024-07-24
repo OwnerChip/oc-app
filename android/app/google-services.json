@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "768172302210",
-    "project_id": "test-oc-app-1f1c0",
-    "storage_bucket": "test-oc-app-1f1c0.appspot.com"
+    "project_number": "345142381734",
+    "project_id": "ownerchip-staging",
+    "storage_bucket": "ownerchip-staging.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:768172302210:android:e8170e1309a8f5989d799b",
+        "mobilesdk_app_id": "1:345142381734:android:7c8033f5a26de8f8333867",
         "android_client_info": {
           "package_name": "com.ownerchip.demo"
         }
@@ -15,7 +15,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCY6wp2Hr2qzaQbfcBeTwDuV-rg4SgEWTE"
+          "current_key": "AIzaSyBwDIYxctT2ZjYHkcja7mve8nz9AYh73tA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:345142381734:android:ecfe4440c993da32333867",
+        "android_client_info": {
+          "package_name": "com.ownerchip.user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwDIYxctT2ZjYHkcja7mve8nz9AYh73tA"
         }
       ],
       "services": {

@@ -50,19 +50,19 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCY6wp2Hr2qzaQbfcBeTwDuV-rg4SgEWTE',
-    appId: '1:768172302210:android:e8170e1309a8f5989d799b',
-    messagingSenderId: '768172302210',
-    projectId: 'test-oc-app-1f1c0',
-    storageBucket: 'test-oc-app-1f1c0.appspot.com',
+    apiKey: 'AIzaSyBwDIYxctT2ZjYHkcja7mve8nz9AYh73tA',
+    appId: '1:345142381734:android:7c8033f5a26de8f8333867',
+    messagingSenderId: '345142381734',
+    projectId: 'ownerchip-staging',
+    storageBucket: 'ownerchip-staging.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAuW8rS0-Pc-5DVyKAFREF29A7pD2habfA',
-    appId: '1:768172302210:ios:a002fea6e852df769d799b',
-    messagingSenderId: '768172302210',
-    projectId: 'test-oc-app-1f1c0',
-    storageBucket: 'test-oc-app-1f1c0.appspot.com',
+    apiKey: 'AIzaSyAEVprxfs0HfmArxF3EI-zHFqnG4gMAMa8',
+    appId: '1:345142381734:ios:6745bca1f226191d333867',
+    messagingSenderId: '345142381734',
+    projectId: 'ownerchip-staging',
+    storageBucket: 'ownerchip-staging.appspot.com',
     iosBundleId: 'com.ownerchip.user',
   );
 

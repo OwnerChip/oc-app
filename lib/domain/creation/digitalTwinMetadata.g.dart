@@ -8,14 +8,18 @@ part of 'digitalTwinMetadata.dart';
 
 DigitalTwinMetadata _$DigitalTwinMetadataFromJson(Map<String, dynamic> json) =>
     DigitalTwinMetadata(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       collectionId: json['collectionId'] as String,
       collection:
           OCCollection.fromJson(json['collection'] as Map<String, dynamic>),
       creatorId: json['creatorId'] as String,
-      twinTokenMetadataCID: json['twinTokenMetadataCID'] as String,
-      voucherTokenMetadataCID: json['voucherTokenMetadataCID'] as String,
-      traits: Map<String, String>.from(json['traits'] as Map),
+      twinTokenMetadataCID: json['twinTokenMetadataCID'] as String?,
+      voucherTokenMetadataCID: json['voucherTokenMetadataCID'] as String?,
+      imageCID: json['imageCID'] as String?,
+      imageLink: json['imageLink'] as String?,
+      traits: (json['traits'] as List<dynamic>)
+          .map((e) => DigitalTwinTrait.fromJson(e as Map<String, dynamic>))
+          .toList(),
       title: json['title'] as String,
       description: json['description'] as String,
       status: $enumDecode(
@@ -31,11 +35,13 @@ Map<String, dynamic> _$DigitalTwinMetadataToJson(
       'collectionId': instance.collectionId,
       'collection': instance.collection.toJson(),
       'creatorId': instance.creatorId,
+      'imageCID': instance.imageCID,
       'twinTokenMetadataCID': instance.twinTokenMetadataCID,
       'voucherTokenMetadataCID': instance.voucherTokenMetadataCID,
-      'traits': instance.traits,
+      'traits': instance.traits.map((e) => e.toJson()).toList(),
       'title': instance.title,
       'description': instance.description,
+      'imageLink': instance.imageLink,
       'status': _$DigitalTwinCreationMetadataStatusEnumMap[instance.status]!,
       'createdAt': const DateTimeJsonConverter().toJson(instance.createdAt),
     };
@@ -43,5 +49,6 @@ Map<String, dynamic> _$DigitalTwinMetadataToJson(
 const _$DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.pending: 'PENDING',
   DigitalTwinCreationMetadataStatus.rejected: 'REJECTED',
+  DigitalTwinCreationMetadataStatus.draft: 'DRAFT',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
 };

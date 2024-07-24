@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/domain/common/fcmNotificationData.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
@@ -25,6 +26,8 @@ import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.d
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -225,16 +228,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //check if persisted session is from previous app version; has to be called before _setProviderStatesFromPersistedState()
     _checkAndRemovePersistedStorageDependingOnPreviousAppVersion();
     //read persisted session
-    _setProviderStatesFromPersistedState();
+    _setProviderStatesFromPersistedState().then((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+         FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          provisional: false,
+          sound: true,
+        );
+
+        if (ref.read(appNotifierProvider).appDto == null) {
+          ref.read(appNotifierProvider.notifier).init();
+        }
+        _checkCreations();
+      });
+    });
 
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
 
     initMessaging();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ref.read(appNotifierProvider).appDto == null) {
-        ref.read(appNotifierProvider.notifier).init();
+  void _checkCreations() {
+    CreationsData creations = ref.read(creationsNotifierProvider);
+    ref.read(creationsNotifierProvider.notifier).init().then((_) {
+      creations = ref.read(creationsNotifierProvider);
+      if (creations.data != null && creations.data!.isNotEmpty) {
+        Navigator.of(context).pushNamed(CreationsPage.routeName);
       }
     });
   }
@@ -252,11 +273,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
 
     _msgSubscription = FirebaseMessaging.onMessage.listen(_onMessageReceived);
+    FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
+      if (initialMessage != null) {
+        _onMessageReceived(initialMessage);
+      }
+    });
     talker.log('Firebase messaging initialized');
   }
 
   Future<void> _onMessageReceived(RemoteMessage message) async {
     talker.log('Message received: ${message.toMap()}');
+
+    final data = FCMNotificationData.fromJson(message.data);
+
+    if (data.isDigitalTwinCreation) {
+      _checkCreations();
+    }
   }
 
   Future<void> makeAlchemyRefreshMetadata() async {
@@ -284,7 +316,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> onButtonPress(bool isInitialize) async {
     try {
-
       //check if there is internet connections
       if (!await checkInternetConnection()) {
         throw Exception("No internet connection");
@@ -396,21 +427,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                 )
               : Container(),
-          Positioned(
-            top: 128,
-            left: 32,
-            child: Row(
-              children: [
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(
-                        CreationsPage.routeName,
-                      );
-                    },
-                    child: Text("Test"))
-              ],
-            ),
-          )
         ],
       ),
     );
