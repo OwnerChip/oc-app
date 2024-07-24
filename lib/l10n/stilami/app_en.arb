@@ -1,7 +1,7 @@
 {
     "termsAndConditionsUrl": "https://www.stilami.com/en/terms-and-conditions",
-    "stilamiIdentityUrl": "https://www.stilami.com/en/identity/about",
-    "collectionsUrl": "https://www.stilami.com/en/jewellery-collection/show-all",
+    "stilamiIdentityUrl": "https://www.stilami.com/stilami-identity/",
+    "collectionsUrl": "https://www.stilami.com/kollektionen/",
     "supportUrl": "https://www.stilami.com/en/identity/app/support",
     "legalUrl": "https://www.stilami.com/en/terms-and-conditions",
     "privacyUrl": "https://www.stilami.com/datenschutzerklarung.html",
@@ -122,7 +122,7 @@
     "scanNow": "Scan now",
     "pleaseSelect": "- please select -",
     "pleaseSelectChainAndCollection": "Please select a Blockchain & Collection",
-    "digitalTwin": "Digital Twin",
+    "digitalTwin": "Digital Twin / Certificate",
     "authenticity": "Authenticity",
     "ownership": "Ownership",
     "unconfirmed": "Not confirmed",
@@ -310,7 +310,7 @@
     "itemAvailableForSale": "This item is available for sale.",
     "buyOnRarible": "Buy on Rarible",
     "voucherNftDescriptionGeneral": "This NFT includes the ownership of a physical jewel. This can be redeemed after the purchase of the NFT",
-    "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore.\nFor more information visit www.stilami.com",
+    "voucherNftDescriptionAppSpecific": "via the Smartphone App \"Stilami Identity\", downloadable in the Google Playstore and Apple AppStore. You can view the digital certificate at this link: {CERTIFICATE_LINK}\nFor more information visit www.stilami.com",
     "transferred": "Transferred",
     "errorWhenOffering": "Something went wrong when offering your token. Please recover token or contact support.",
     "recoverToken": "Recover token",
@@ -416,5 +416,14 @@
     "@_NEW_VERSION": {},
     "newVersionTitle": "Update App",
     "newVersionAvailable": "A new version of the app is available! Please update to the latest version.",
-    "newVersionUpdateButton": "Update"
+    "newVersionUpdateButton": "Update",
+    "@_SCAN_RESULT_PAGE": {},
+    "scanResultPageShowCertificateButton": "Show Certificate Details",
+    "@_NFT_DETAILS_PAGE": {},
+    "nftDetailsPageShowCertificateButton": "Show Certificate Details",
+    "nftDetailsPageAuthenticityCertified": "Certified",
+    "nftDetailsPageAuthenticityNotCertified": "Not certified",
+    "nftDetailsPageCertifier": "Certifier",
+    "nftDetailsPageCreationDate": "Creation date",
+    "nftDetailsPageCollection": "Collection"
 }

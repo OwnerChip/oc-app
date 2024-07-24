@@ -186,7 +186,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       String voucherTokenMetadataCID = '';
       Map<String, dynamic> voucherTokenMetadata = twinTokenMetadata;
       voucherTokenMetadata['description'] +=
-          "\n\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+          "\n\n ${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific(getCertificateUrl(config.tokenId.toString()))}";
       XFile jsonFileVoucher =
           await saveMetadataAsJSONFile(voucherTokenMetadata);
       voucherTokenMetadataCID =
@@ -194,8 +194,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       String txnHash = "";
 
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
           context,
           ref,
           mintVoucherFunctionSignature,
@@ -213,34 +213,37 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-              mintVoucherFunctionSignature,
-              chainId,
-              voucherCollectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              twinTokenMetadataCID: twinTokenMetadataCID,
-              voucherTokenMetadataCID: voucherTokenMetadataCID,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+              function: () {
+                return makeAndSendGaslessTx(
+                    ref,
+                    ScaffoldKey.getScaffoldKey('OfferOnMPScreen')
+                        .currentContext!,
+                    mintVoucherFunctionSignature,
+                    chainId,
+                    voucherCollectionId,
+                    signatureData,
+                    connectedWallet,
+                    wc,
+                    wcSession,
+                    metaTxAgreementId,
+                    walletType!,
+                    twinTokenMetadataCID: twinTokenMetadataCID,
+                    voucherTokenMetadataCID: voucherTokenMetadataCID,
+                    toggleLoading: toggleLoading);
+              },
+              fallback: normalTx,
+              predicate: gaslessTransactionFallbackPredicate);
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
 
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         talker.error(e, st);
-        talker.error(
-            'Minting voucher token failed with gassless tx, trying normal tx.');
-        await normalTx();
       }
     } catch (e) {
       rethrow;
@@ -342,9 +345,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     final String hexSignature = msgSignatureToHex(chipSignature!);
 
     try {
-      final functionSignature = token == null
-          ? offerItemFunctionSignature
-          : offerItemErc20FunctionSignature;
+      const functionSignature = offerItemErc20FunctionSignature;
 
       //check if user is allowed to use gas station
       final List response = await BackendMetaTx.checkMetaTx(
@@ -354,8 +355,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       String txnHash = "";
 
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
           context,
           ref,
           functionSignature,
@@ -376,41 +377,43 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-            ref,
-            ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
-            functionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc,
-            wcSession,
-            metaTxAgreementId,
-            walletType!,
-            typedDataHash: typedDataHash,
-            controllerContractId: controllerContractAddress,
-            tokenId: config.tokenId,
-            sellerPayoutAddress: userSession.userWalletAddress,
-            salt: raribleV2Order.salt,
-            endTimestamp: raribleV2Order.end,
-            price: BigInt.from(priceInPrimaryChainCurrency),
-            encodedOfferData: typedDataHashAndEncodedData.encodedData,
-            toggleLoading: toggleLoading,
-            token: token,
-          );
+          txnHash = await callFunctionWithFallback<Future<String>>(
+              function: () {
+                return makeAndSendGaslessTx(
+                  ref,
+                  ScaffoldKey.getScaffoldKey('OfferOnMPScreen').currentContext!,
+                  functionSignature,
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  wcSession,
+                  metaTxAgreementId,
+                  walletType!,
+                  typedDataHash: typedDataHash,
+                  controllerContractId: controllerContractAddress,
+                  tokenId: config.tokenId,
+                  sellerPayoutAddress: userSession.userWalletAddress,
+                  salt: raribleV2Order.salt,
+                  endTimestamp: raribleV2Order.end,
+                  price: BigInt.from(priceInPrimaryChainCurrency),
+                  encodedOfferData: typedDataHashAndEncodedData.encodedData,
+                  toggleLoading: toggleLoading,
+                  token: token,
+                );
+              },
+              fallback: normalTx,
+              predicate: gaslessTransactionFallbackPredicate);
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         talker.error(e, st);
-        talker
-            .error('Offering token failed with gassless tx, trying normal tx.');
-        await normalTx();
       }
 
       talker.info("Transaction hash: $txnHash");
@@ -433,7 +436,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         final offerItemInputData = OfferItemPayload(
           tokenId: convertTokenIdToEthereumAddress(config.tokenId),
           offerPrice: priceInPrimaryChainCurrency.toString(),
-          offerCurrency: chainConfig[config.chainId]!.nativeTokenSymbol,
+          offerCurrency: token != null
+              ? token.symbol
+              : chainConfig[config.chainId]!.nativeTokenSymbol,
           sellerWalletAddress:
               ref.read(userSessionProvider)!.userWalletAddress.toString(),
           sellerPayoutAddress: userSession.userWalletAddress.hex,

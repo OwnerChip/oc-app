@@ -33,7 +33,8 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 
-mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements ConsumerState<T> {
+mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
+    implements ConsumerState<T> {
   CancelableOperation? cancellableOperation;
 
   bool isLoading = false;
@@ -62,7 +63,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
     final walletType = ref.read(walletTypeProvider);
     String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenChainAndCollection config =
-    await ref.watch(findTokenProvider(tokenId).future);
+        await ref.watch(findTokenProvider(tokenId).future);
 
     if (signatureData.hasBeenUsedInSmartContract) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,7 +79,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
         loadingText = 'Recover token';
         isRotating = true;
         loadingSvgPath =
-        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
       final List response = await BackendMetaTx.checkMetaTx(
@@ -91,8 +92,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       String txnHash = "";
 
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             recoverTokenFunctionSignature,
@@ -107,41 +108,41 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                  .currentContext!,
-              recoverTokenFunctionSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              controllerContractId: controllerContractAddress,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+              function: () {
+                return makeAndSendGaslessTx(
+                    ref,
+                    ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                        .currentContext!,
+                    recoverTokenFunctionSignature,
+                    config.chainId,
+                    config.collectionId,
+                    signatureData,
+                    connectedWallet,
+                    wc,
+                    wcSession,
+                    metaTxAgreementId,
+                    walletType!,
+                    controllerContractId: controllerContractAddress,
+                    toggleLoading: toggleLoading);
+              },
+              fallback: normalTx,
+              predicate: gaslessTransactionFallbackPredicate);
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
-
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         talker.error(e, st);
-        if (canUseGasStation) {
-          talker.info("error sending gasless tx, trying normal tx");
-          await normalTx();
-        }
       }
 
       talker.info('txnHash: $txnHash');
 
       var txnReceipt =
-      await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
@@ -203,7 +204,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
     }
   }
 
-
   Future<void> burnToken(Web3App? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
@@ -211,7 +211,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
     final walletType = ref.read(walletTypeProvider);
     final String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenChainAndCollection config =
-    await ref.watch(findTokenProvider(tokenId).future);
+        await ref.watch(findTokenProvider(tokenId).future);
     final burnProcess = Sentry.startTransaction('initBurn()', 'task');
 
     if (signatureData.hasBeenUsedInSmartContract) {
@@ -228,7 +228,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
         loadingText = context.loc.burning;
         isRotating = true;
         loadingSvgPath =
-        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
       BackendApp.sendAnalyticsTrace(sessionId.toString(), "", "BURN_STARTED",
@@ -289,7 +289,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
       talker.info('txnHash: $txnHash');
 
       var txnReceipt =
-      await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         //this means burn succeeded
         setState(() {
@@ -327,7 +327,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
         'error': e,
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
-        convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -345,7 +345,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
     final walletType = ref.read(walletTypeProvider);
     String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenChainAndCollection config =
-    await ref.watch(findTokenProvider(tokenId).future);
+        await ref.watch(findTokenProvider(tokenId).future);
 
     if (signatureData.hasBeenUsedInSmartContract) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -361,7 +361,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
         loadingText = context.loc.cancelOffer;
         isRotating = true;
         loadingSvgPath =
-        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
       final List response = await BackendMetaTx.checkMetaTx(
@@ -384,8 +384,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       String txnHash = "";
 
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             cancelMarketplaceOfferSignature,
@@ -401,37 +401,44 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                  .currentContext!,
-              cancelMarketplaceOfferSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              controllerContractId: controllerContractAddress,
-              encodedOfferData: cancelTxCalldata,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+            function: () {
+              return makeAndSendGaslessTx(
+                  ref,
+                  ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                      .currentContext!,
+                  cancelMarketplaceOfferSignature,
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  wcSession,
+                  metaTxAgreementId,
+                  walletType!,
+                  controllerContractId: controllerContractAddress,
+                  encodedOfferData: cancelTxCalldata,
+                  toggleLoading: toggleLoading);
+            },
+            fallback: normalTx,
+            predicate: gaslessTransactionFallbackPredicate,
+          );
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
 
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e) {
-        await normalTx();
+        Sentry.captureException(e);
+        talker.error(e);
       }
 
       talker.info('txnHash: $txnHash');
 
       var txnReceipt =
-      await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
@@ -504,7 +511,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
     UserSession userSession = ref.read(userSessionProvider)!;
     String sessionId = ref.read(userSessionProvider)!.sessionId;
     final TokenChainAndCollection config =
-    await ref.watch(findTokenProvider(tokenId).future);
+        await ref.watch(findTokenProvider(tokenId).future);
     final claimProcess = Sentry.startTransaction('initClaim()', 'task');
 
     try {
@@ -527,8 +534,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       String txnHash = "";
 
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             transferFromFunctionSignature,
@@ -543,36 +550,39 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                  .currentContext!,
-              transferFromFunctionSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              tokenId: tokenId,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+              function: () {
+                return makeAndSendGaslessTx(
+                    ref,
+                    ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                        .currentContext!,
+                    transferFromFunctionSignature,
+                    config.chainId,
+                    config.collectionId,
+                    signatureData,
+                    connectedWallet,
+                    wc,
+                    wcSession,
+                    metaTxAgreementId,
+                    walletType!,
+                    tokenId: tokenId,
+                    toggleLoading: toggleLoading);
+              },
+              fallback: normalTx);
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         talker.error(e, st);
         talker.info("error sending gasless tx, trying normal tx");
-        await normalTx();
       }
 
       var txnReceipt =
-      await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         ref
             .read(chipSignatureDataProvider.notifier)
@@ -626,7 +636,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
       BackendApp.sendAnalyticsTrace(sessionId, "", "CLAIM_ERROR", tags: {
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
-        convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
       });
       await Sentry.captureException(e, stackTrace: s);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -643,14 +653,14 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
     final TokenChainAndCollection config =
-    await ref.watch(findTokenProvider(tokenId).future);
+        await ref.watch(findTokenProvider(tokenId).future);
     try {
       setState(() {
         isLoading = true;
         loadingText = context.loc.redeemingtoken;
         isRotating = true;
         loadingSvgPath =
-        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
+            '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
       });
 
       final List response = await BackendMetaTx.checkMetaTx(
@@ -662,7 +672,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
           chainConfig[config.chainId]!.controllerContract);
 
       final List<Purchase> unredeemedVoucherNfts =
-      await ref.watch(unredeemedVoucherNftsProvider.future);
+          await ref.watch(unredeemedVoucherNftsProvider.future);
       final String offerHash = unredeemedVoucherNfts
           .firstWhere((e) => e.token.id == tokenId)
           .offer
@@ -670,8 +680,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       String txnHash = "";
 
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             redeemItemFunctionSignature,
@@ -687,39 +697,41 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                  .currentContext!,
-              redeemItemFunctionSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              controllerContractId: controllerContractAddress,
-              offerHash: offerHash,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+            function: () {
+              return makeAndSendGaslessTx(
+                  ref,
+                  ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
+                      .currentContext!,
+                  redeemItemFunctionSignature,
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  wcSession,
+                  metaTxAgreementId,
+                  walletType!,
+                  controllerContractId: controllerContractAddress,
+                  offerHash: offerHash,
+                  toggleLoading: toggleLoading);
+            },
+            fallback: normalTx,
+            predicate: gaslessTransactionFallbackPredicate,
+          );
         } else {
           if (wc == null) {
             throw 'No wallet connected. Please connect with MetaMask or similar wallet.';
           }
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         talker.error(e, st);
-        if (canUseGasStation) {
-          talker.info("error sending gasless tx, trying normal tx");
-          await normalTx();
-        }
       }
 
       var txnReceipt =
-      await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
         BackendApp.sendAnalyticsTrace(
             userSession.sessionId, txnHash, "TOKEN_REDEMPTION_SUCCESS",
@@ -776,6 +788,4 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget> implements Consumer
       );
     }
   }
-
-
 }

@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -37,6 +38,11 @@ String getNdefUrl() {
 bool isOwnerChipApp() {
   return dotenv.get('BITRISEIO_PACKAGE_NAME').contains("com.ownerchip");
 }
+
+String getCertificateUrl(String chipAddress) {
+  return "https://certificate.ownerchip.com/$chipAddress";
+}
+
 String getCustomerId() {
   switch (dotenv.get("BITRISEIO_PACKAGE_NAME")) {
     case 'com.ownerchip':
@@ -97,7 +103,7 @@ Future<bool> checkInternetConnection() async {
 Future<bool> checkBackendAvailability() async {
   try {
     //get backend client
-    final client =Backend.getBackendClient();
+    final client = Backend.getBackendClient();
     await client.get('/auth');
     return true;
   } catch (e) {
@@ -219,13 +225,16 @@ Future<String> getSha256HashOfFile(File file) async {
 }
 
 Future<XFile> generateVoucherMetadataFile(
-    Map<String, dynamic> twinMetadata, BuildContext context) async {
+  Map<String, dynamic> twinMetadata,
+  BigInt tokenId,
+  BuildContext context,
+) async {
   Map<String, dynamic> voucherMetadata = twinMetadata;
   if (voucherMetadata['description'] == null) {
     voucherMetadata['description'] = '';
   }
   voucherMetadata['description'] +=
-      "\n \n${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific}";
+      "\n \n${context.loc.voucherNftDescriptionGeneral}, ${context.loc.voucherNftDescriptionAppSpecific(getCertificateUrl(tokenId.toString()))}";
   XFile jsonFileVoucher = await saveMetadataAsJSONFile(voucherMetadata);
   return jsonFileVoucher;
 }
@@ -253,4 +262,26 @@ String formatDate(String date) {
     // Return an error message if the input is not valid
     return "Invalid date format";
   }
+}
+
+T callFunctionWithFallback<T>({
+  required T Function() function,
+  required T Function() fallback,
+  bool Function(Object e)? predicate,
+}) {
+  try {
+    return function();
+  } catch (e) {
+    if (predicate != null && predicate(e)) {
+      return fallback();
+    }
+    return fallback();
+  }
+}
+
+bool gaslessTransactionFallbackPredicate(Object e) {
+  if (e is JsonRpcError) {
+    return e.code != 4001;
+  }
+  return true;
 }

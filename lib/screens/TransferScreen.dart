@@ -101,8 +101,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       final metaTxAgreementId = response[1];
 
       String txnHash = "";
-      Future<void> normalTx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             approveFunctionSignature,
@@ -119,36 +119,39 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
-              approveFunctionSignature,
-              // APPROVE
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              ref.read(walletTypeProvider)!,
-              toAccount: to,
-              tokenId: tokenId,
-              enableRecovery: isOwnerCard,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+              function: () {
+                return makeAndSendGaslessTx(
+                  ref,
+                  ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
+                  approveFunctionSignature,
+                  // APPROVE
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  wcSession,
+                  metaTxAgreementId,
+                  ref.read(walletTypeProvider)!,
+                  toAccount: to,
+                  tokenId: tokenId,
+                  enableRecovery: isOwnerCard,
+                  toggleLoading: toggleLoading,
+                );
+              },
+              fallback: normalTx,
+              predicate: gaslessTransactionFallbackPredicate);
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
           }
 
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
-        talker.error('Error sending gasless transaction', e, st);
-
-        talker.info('Falling back to normal transaction');
-        await normalTx();
+        talker.error(e, st);
       }
 
       talker.info('Transaction hash: $txnHash');
@@ -232,8 +235,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         textInput = _inputController.text;
       });
     });
-
   }
+
   @override
   void dispose() {
     _inputController.dispose();

@@ -120,7 +120,7 @@
   "scanNow": "Tap Now",
   "pleaseSelect": "- please select -",
   "pleaseSelectChainAndCollection": "Please select a Blockchain & Collection",
-  "digitalTwin": "Digital Twin",
+  "digitalTwin": "Digital Twin / Certificate",
   "authenticity": "Authenticity",
   "ownership": "Ownership",
   "unconfirmed": "Not confirmed",
@@ -308,7 +308,7 @@
   "itemAvailableForSale": "This item is available for sale.",
   "buyOnRarible": "Buy on Rarible",
   "voucherNftDescriptionGeneral": "This Digital Twin includes the ownership of a physical artwork which can be redeemed after the purchase",
-  "voucherNftDescriptionAppSpecific": "via the OwnerChip-App, downloadable in the Google Playstore and Apple AppStore. \n For more information visit https://ownerchip.com/redeem",
+  "voucherNftDescriptionAppSpecific": "via the OwnerChip-App, downloadable in the Google Playstore and Apple AppStore. You can view the digital certificate at this link: {CERTIFICATE_LINK}\nFor more information visit https://ownerchip.com/redeem",
   "transferred": "Transferred",
   "errorWhenOffering": "Something went wrong when offering your Digital Twin. Please recover Digital Twin or contact support.",
   "recoverToken": "Recover Digital Twin",
@@ -414,5 +414,14 @@
   "@_NEW_VERSION": {},
   "newVersionTitle": "Update App",
   "newVersionAvailable": "A new version of the app is available! Please update to the latest version.",
-  "newVersionUpdateButton": "Update"
+  "newVersionUpdateButton": "Update",
+  "@_SCAN_RESULT_PAGE": {},
+  "scanResultPageShowCertificateButton": "Show Certificate Details",
+  "@_NFT_DETAILS_PAGE": {},
+  "nftDetailsPageShowCertificateButton": "Show Certificate Details",
+  "nftDetailsPageAuthenticityCertified": "Certified",
+  "nftDetailsPageAuthenticityNotCertified": "Not certified",
+  "nftDetailsPageCertifier": "Certifier",
+  "nftDetailsPageCreationDate": "Creation date",
+  "nftDetailsPageCollection": "Collection"
 }

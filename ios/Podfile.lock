@@ -187,14 +187,14 @@ PODS:
   - video_player_avfoundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - Web3Auth (9.0.0):
+  - Web3Auth (8.3.0):
     - BigInt (~> 5.2.0)
     - curvelib.swift (~> 1.0.1)
     - KeychainSwift (~> 20.0.0)
     - TorusSessionManager (~> 4.0.2)
   - web3auth_flutter (2.0.1):
     - Flutter
-    - Web3Auth (~> 9.0.0)
+    - Web3Auth (~> 8.3.0)
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
 
@@ -349,8 +349,8 @@ SPEC CHECKSUMS:
   TorusSessionManager: 05a1a8f3265d0949a1a342c4ba2c52882445b614
   url_launcher_ios: 6116280ddcfe98ab8820085d8d76ae7449447586
   video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
-  Web3Auth: 086b5152a43df347ceff196c0ce67f6330838884
-  web3auth_flutter: bc5ffefe573c72f7fb1814573269952b045b7b22
+  Web3Auth: 98ec9787e52e813c7ee83f73fa10ba5f52187907
+  web3auth_flutter: 96419124086e0083994e390b0c7cc86e441c3006
   webview_flutter_wkwebview: be0f0d33777f1bfd0c9fdcb594786704dbf65f36
 
 PODFILE CHECKSUM: 775997f741c536251164e3eacf6e34abf2eb7a17

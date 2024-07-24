@@ -73,8 +73,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Web3App? wcClient;
   bool shippingPopupIsShown = false;
 
-  bool _isScanning = false;
-
   StreamSubscription? _msgSubscription;
 
   Future<void>
@@ -286,10 +284,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> onButtonPress(bool isInitialize) async {
     try {
-      // check if already scanning
-      if (_isScanning) {
-        return;
-      }
 
       //check if there is internet connections
       if (!await checkInternetConnection()) {
@@ -339,7 +333,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     try {
       if (mounted) {
-        _isScanning = true;
         if (isInitialize) {
           await initializeItem(ref, context);
         } else {
@@ -352,8 +345,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, 'Error reading chip.', 'error'),
       );
-    } finally {
-      _isScanning = false;
     }
   }
 

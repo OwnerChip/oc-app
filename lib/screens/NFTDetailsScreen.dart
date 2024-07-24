@@ -1,5 +1,6 @@
 //import packages
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
@@ -14,6 +15,7 @@ import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -27,6 +29,7 @@ import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:collection/collection.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
@@ -58,6 +61,9 @@ class NFTDetailsScreen extends ConsumerStatefulWidget {
 
 class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     with NftActionScreenMixin<NFTDetailsScreen> {
+  // 12 july 2024 13:15:01 CET
+  final DateFormat formatter = DateFormat('dd MMMM yyyy HH:mm:ss z');
+
   @override
   Widget build(BuildContext context) {
     final userSession = ref.watch(userSessionProvider);
@@ -84,6 +90,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     List<Attachment> attachments = ref.watch(localAttachmentsProvider);
     List<Attachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
     List<Attachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
+    // creator data
+    final creatorData = ref.watch(creatorDataProvider);
     final AsyncValue<List?> voucherContractAndTwinNftOwner =
         ref.watch(voucherContractAndTwinNftOwnerProvider);
     final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
@@ -169,7 +177,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 5 / 3,
+                      childAspectRatio: 7 / 5,
                       crossAxisSpacing: 16,
                     ),
                     children: [
@@ -463,8 +471,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                       }
                                     },
                                     loading: () => [],
-                                    error: (e, s) => [
-                                        ]);
+                                    error: (e, s) => []);
                               } else {
                                 //TOKEN IS FOR SALE
                                 return [
@@ -726,42 +733,44 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                           children: [
                             InfoKeyValues(keys: [
                               context.loc.authenticity,
-                              context.loc.ownership,
+                              context.loc.nftDetailsPageCertifier,
+                              context.loc.nftDetailsPageCreationDate,
                             ], values: [
                               // authenticity
                               tokenInfo.when(
-                                data: ((data) =>
-                                    data.collectionId == zeroAddress
-                                        ? context.loc.unconfirmed
-                                        : context.loc.confirmed),
-                                error: (e, s) => context.loc.confirmed,
+                                data: ((data) => data.collectionId ==
+                                        zeroAddress
+                                    ? context.loc
+                                        .nftDetailsPageAuthenticityNotCertified
+                                    : context.loc
+                                        .nftDetailsPageAuthenticityCertified),
+                                error: (e, s) => context
+                                    .loc.nftDetailsPageAuthenticityCertified,
                                 loading: () => context.loc.loading,
                               ),
                               // ownership
-                              nftOwner.when(
+                              creatorData.when(
                                 data: (nftOwnerData) {
-                                  if (ref.read(userAddressProvider) ==
-                                      zeroAddress) {
-                                    return context.loc.unconfirmed;
-                                  } else if (approval.value != zeroAddress &&
-                                      approval.value != null) {
-                                    return context.loc.transferred;
-                                  } else if (connectedWallet == nftOwnerData) {
-                                    return context.loc.confirmed;
-                                  } else {
-                                    return context.loc.unconfirmed;
-                                  }
+                                  return nftOwnerData.name;
+                                },
+                                error: (e, s) => context.loc.ownerError,
+                                loading: () => context.loc.loading,
+                              ),
+                              // creation date
+                              creatorData.when(
+                                data: (nftOwnerData) {
+                                  return formatter
+                                      .format(nftOwnerData.createdAt);
                                 },
                                 error: (e, s) => context.loc.ownerError,
                                 loading: () => context.loc.loading,
                               ),
                             ]),
-                            const SizedBox(height: 20),
                             //if tokenInfo could not be loaded and hence chainId is zero, display empty container
                             tokenInfoData.chainId == 0
                                 ? Container()
-                                : InfoKeyValues(keys: const [
-                                    "Collection",
+                                : InfoKeyValues(keys: [
+                                    context.loc.nftDetailsPageCollection,
                                     "Blockchain",
                                   ], values: [
                                     // first, try to find collection in collections list
@@ -788,7 +797,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                         .networkName,
                                   ]),
                             //spacing
-                            const SizedBox(height: 13),
                             ChipInfo(
                               tokenId: BigInt.parse(
                                   chipInfo.chipEthereumAddress
@@ -796,14 +804,45 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                       .substring(2),
                                   radix: 16),
                             ),
-                            const SizedBox(height: 20),
-                            CustomRoundedButton(
-                              text: context.loc.showOnExplorer,
-                              onPressed: () => {
-                                launchUrl(blockchainExplorerUrl.asData!.value,
-                                    mode: LaunchMode.externalApplication)
-                              },
+                            tokenInfoData.chainId == 0
+                                ? Container()
+                                : InfoKeyValues(keys: [
+                              context.loc.ownership,
+                            ], values: [
+                              nftOwner.when(
+                                data: (nftOwnerData) {
+                                  if (ref.read(userAddressProvider) ==
+                                      zeroAddress) {
+                                    return context.loc.unconfirmed;
+                                  } else if (approval.value != zeroAddress &&
+                                      approval.value != null) {
+                                    return context.loc.transferred;
+                                  } else if (connectedWallet == nftOwnerData) {
+                                    return context.loc.confirmed;
+                                  } else {
+                                    return context.loc.unconfirmed;
+                                  }
+                                },
+                                error: (e, s) => context.loc.ownerError,
+                                loading: () => context.loc.loading,
+                              ),
+                            ]),
+                            const SizedBox(
+                              height: 20,
                             ),
+                            SizedBox(
+                              width: double.infinity,
+                              child: CustomRoundedButton(
+                                onPressed: () {
+                                  launchUrl(
+                                    Uri.parse(getCertificateUrl(
+                                        chipInfo.chipEthereumAddress.hex)),
+                                  );
+                                },
+                                text: context
+                                    .loc.nftDetailsPageShowCertificateButton,
+                              ),
+                            )
                           ],
                         ));
                   },
