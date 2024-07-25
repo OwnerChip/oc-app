@@ -1,9 +1,27 @@
 
-# get GoogleService-Info.plist from environment variable decoded from base64
-echo $GOOGLESERVICE_INFO_PLIST | base64 --decode > ios/Runner/GoogleService-Info.plist
+# check if environment variables are set
+if [ -z "$1" ]; then
+  echo "GoogleService-Info.plist is not set"
+  exit 1
+fi
+
+if [ -z "$2" ]; then
+  echo "google-services.json is not set"
+  exit 1
+fi
+
+
+googleServiceInfoPlistVariableName=$1
+googleServiceInfoPlist=${!googleServiceInfoPlistVariableName}
+
+googleServicesJsonVariableName=$2
+googleServicesJson=${!googleServicesJsonVariableName}
+
+# get googleServiceInfoPlistVariableName-Info.plist from environment variable decoded from base64
+echo "$googleServiceInfoPlist" | base64 --decode > ios/Runner/GoogleService-Info.plist
 
 # get google-services.json from environment variable decoded from base64
-echo $GOOGLE_SERVICES_JSON | base64 --decode > android/app/google-services.json
+echo "$googleServicesJson" | base64 --decode > android/app/google-services.json
 
 # get appIdAndroid from environment variable and replace ${$FIREBASE_APP_ID_ANDROID} in lib/firebase_options.dart with it
 sed -i '' "s/\${APP_ID_ANDROID}/$FIREBASE_APP_ID_ANDROID/g" lib/firebase_options.dart
