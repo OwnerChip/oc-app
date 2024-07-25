@@ -17,22 +17,19 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions are not supported for web.',
+      );
     }
+
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
       case TargetPlatform.windows:
-        return windows;
       case TargetPlatform.linux:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -40,47 +37,39 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBfIDs5SgUhrFI36LKPDznJHXMattiPdCg',
-    appId: '1:768172302210:web:e74f000c2def1f3a9d799b',
-    messagingSenderId: '768172302210',
-    projectId: 'test-oc-app-1f1c0',
-    authDomain: 'test-oc-app-1f1c0.firebaseapp.com',
-    storageBucket: 'test-oc-app-1f1c0.appspot.com',
-  );
-
+  /// USE THIS FOR PRODUCTION BUILDS
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBwDIYxctT2ZjYHkcja7mve8nz9AYh73tA',
-    appId: '1:345142381734:android:7c8033f5a26de8f8333867',
+    apiKey: '${API_KEY_ANDROID}',
+    appId: '${APP_ID_ANDROID}',
     messagingSenderId: '345142381734',
     projectId: 'ownerchip-staging',
     storageBucket: 'ownerchip-staging.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAEVprxfs0HfmArxF3EI-zHFqnG4gMAMa8',
-    appId: '1:345142381734:ios:6745bca1f226191d333867',
+    apiKey: '${API_KEY_IOS}',
+    appId: '${APP_ID_IOS}',
     messagingSenderId: '345142381734',
     projectId: 'ownerchip-staging',
     storageBucket: 'ownerchip-staging.appspot.com',
     iosBundleId: 'com.ownerchip.user',
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAuW8rS0-Pc-5DVyKAFREF29A7pD2habfA',
-    appId: '1:768172302210:ios:21f5d46f64074eae9d799b',
-    messagingSenderId: '768172302210',
-    projectId: 'test-oc-app-1f1c0',
-    storageBucket: 'test-oc-app-1f1c0.appspot.com',
-    iosBundleId: 'com.ownerchip.demo',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBfIDs5SgUhrFI36LKPDznJHXMattiPdCg',
-    appId: '1:768172302210:web:960db0dc49e89d059d799b',
-    messagingSenderId: '768172302210',
-    projectId: 'test-oc-app-1f1c0',
-    authDomain: 'test-oc-app-1f1c0.firebaseapp.com',
-    storageBucket: 'test-oc-app-1f1c0.appspot.com',
-  );
+  /// USE THIS FOR LOCAL DEVELOPMENT
+  // static const FirebaseOptions android = FirebaseOptions(
+  //   apiKey: 'AIzaSyBwDIYxctT2ZjYHkcja7mve8nz9AYh73tA',
+  //   appId: '1:345142381734:android:7c8033f5a26de8f8333867',
+  //   messagingSenderId: '345142381734',
+  //   projectId: 'ownerchip-staging',
+  //   storageBucket: 'ownerchip-staging.appspot.com',
+  // );
+  //
+  // static const FirebaseOptions ios = FirebaseOptions(
+  //   apiKey: 'AIzaSyAEVprxfs0HfmArxF3EI-zHFqnG4gMAMa8',
+  //   appId: '1:345142381734:ios:6745bca1f226191d333867',
+  //   messagingSenderId: '345142381734',
+  //   projectId: 'ownerchip-staging',
+  //   storageBucket: 'ownerchip-staging.appspot.com',
+  //   iosBundleId: 'com.ownerchip.user',
+  // );
 }
