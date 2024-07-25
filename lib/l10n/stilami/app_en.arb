@@ -425,5 +425,10 @@
     "nftDetailsPageAuthenticityNotCertified": "Not certified",
     "nftDetailsPageCertifier": "Certifier",
     "nftDetailsPageCreationDate": "Creation date",
-    "nftDetailsPageCollection": "Collection"
+    "nftDetailsPageCollection": "Collection",
+    "@_NFT_CREATIONS_PAGE": {},
+    "nftCreationsPageTitle": "Digital Twins",
+    "nftCreationsPagePullToRefresh": "Pull to refresh",
+    "nftCreationsPageRefreshing": "Refreshing...",
+    "nftCreationsHomeScreenButtonTitle": "Mint new Digital Twin ({number})"
 }
