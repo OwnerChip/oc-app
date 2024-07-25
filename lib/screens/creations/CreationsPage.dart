@@ -19,6 +19,7 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -188,7 +189,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
         }
 
         final chipInfo = ref.read(chipInfoProvider);
-        BackendCreation.markDigitalTwinAsMinted(id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex);
+        BackendCreation.markDigitalTwinAsMinted(
+            id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex);
+
+        ref.read(creationsNotifierProvider.notifier).init();
 
         Navigator.of(context).pushNamedAndRemoveUntil(
           OfferForSaleCreatedTokenScreen.routeName,
@@ -241,7 +245,9 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
       ),
       child: Scaffold(
           key: ScaffoldKey.getScaffoldKey('CreationsPage'),
-          appBar: CustomAppBar(),
+          appBar: CustomAppBar(
+            text: context.loc.nftCreationsPageTitle,
+          ),
           body: SmartRefresher(
             enablePullDown: true,
             enablePullUp: false,
@@ -250,6 +256,9 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
               await ref.read(creationsNotifierProvider.notifier).init();
               _refreshController.refreshCompleted();
             },
+            header: CustomHeader(
+              builder: (context, mode) => _buildHeader(context, mode: mode),
+            ),
             child: ListView.builder(
               itemCount: creations.data?.data.length ?? 0,
               itemBuilder: (context, index) {
@@ -264,66 +273,106 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Flexible(
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 16,
-                          ),
-                          if (metadata.imageLink != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                8.0,
-                              ),
-                              child: SizedBox(
-                                width: 96,
-                                height: 96,
-                                child: Image.network(
-                                  metadata.imageLink!,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            )
-                          else
-                            Container(
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        if (metadata.imageLink != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              8.0,
+                            ),
+                            child: SizedBox(
                               width: 96,
                               height: 96,
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                metadata.imageLink!,
+                                fit: BoxFit.cover,
                               ),
                             ),
-                          const SizedBox(
-                            width: 32,
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  metadata.title,
-                                  style: Theme.of(context).textTheme.headlineMedium,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  metadata.description,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                          )
+                        else
+                          Container(
+                            width: 96,
+                            height: 96,
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                        ],
-                      ),
+                        const SizedBox(
+                          width: 32,
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                metadata.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                metadata.description,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
             ),
           )),
+    );
+  }
+
+  Widget _buildHeader(
+    BuildContext context, {
+    RefreshStatus? mode,
+    bool error = false,
+  }) {
+    return SizedBox(
+      height: 55.0,
+      child: Center(
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (mode == RefreshStatus.refreshing)
+                  CircularProgressIndicator(
+                    color: CustomColors(dotenv.get("APP_ID")).primaryColor,
+                  )
+                else
+                  Icon(
+                    Icons.arrow_downward,
+                    color: CustomColors(dotenv.get("APP_ID")).primaryColor,
+                  ),
+                const SizedBox(
+                  width: 16,
+                ),
+                Text(
+                  mode == RefreshStatus.refreshing
+                      ? context.loc.nftCreationsPageRefreshing
+                      : context.loc.nftCreationsPagePullToRefresh,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

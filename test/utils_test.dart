@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/utils/secora.commands.dart';
 import 'package:test/test.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/services/secora.services.dart';
 
 void main() {
   dotenv.load(fileName: ".env");

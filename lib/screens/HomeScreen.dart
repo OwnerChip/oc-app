@@ -230,7 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //read persisted session
     _setProviderStatesFromPersistedState().then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-         FirebaseMessaging.instance.requestPermission(
+        FirebaseMessaging.instance.requestPermission(
           alert: true,
           badge: true,
           provisional: false,
@@ -382,6 +382,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final app = ref.watch(appNotifierProvider);
+    final creations = ref.watch(creationsNotifierProvider);
 
     final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
@@ -414,7 +415,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _buildBody(context, relevantCollections),
+          _buildBody(
+            context,
+            relevantCollections,
+            creations,
+          ),
           app.isLoading
               ? Center(
                   child: Container(
@@ -432,8 +437,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  ScreenBodyLayout _buildBody(BuildContext context,
-      AsyncValue<BlockchainCollectionList> relevantCollections) {
+  ScreenBodyLayout _buildBody(
+    BuildContext context,
+    AsyncValue<BlockchainCollectionList> relevantCollections,
+    CreationsData creations,
+  ) {
     return ScreenBodyLayout(
       withScrollView: false,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -480,6 +488,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     loading: () =>
                         SizedBox(height: 40, child: Text(context.loc.loading)),
                     error: (err, stack) => Container()),
+            if (creations.initialized &&
+                (creations.data?.isNotEmpty ?? false)) ...[
+              const SizedBox(height: 20),
+              CustomRoundedButton(
+                width: 250,
+                text: context.loc.nftCreationsHomeScreenButtonTitle(
+                  creations.data!.total,
+                ),
+                onPressed: () =>
+                    Navigator.pushNamed(context, CreationsPage.routeName),
+              ),
+            ]
           ],
         ),
 
