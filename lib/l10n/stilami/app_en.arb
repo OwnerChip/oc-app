@@ -430,5 +430,7 @@
     "nftCreationsPageTitle": "Digital Twins",
     "nftCreationsPagePullToRefresh": "Pull to refresh",
     "nftCreationsPageRefreshing": "Refreshing...",
-    "nftCreationsHomeScreenButtonTitle": "Mint new Digital Twin ({number})"
+    "nftCreationsHomeScreenButtonTitle": "Mint new Digital Twin ({number})",
+    "nftCreationsPageToBeBurned": "To be burned",
+    "nftCreationsPagePending": "To be minted"
 }
