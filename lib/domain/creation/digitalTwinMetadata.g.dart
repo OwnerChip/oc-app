@@ -26,6 +26,7 @@ DigitalTwinMetadata _$DigitalTwinMetadataFromJson(Map<String, dynamic> json) =>
           _$DigitalTwinCreationMetadataStatusEnumMap, json['status']),
       createdAt:
           const DateTimeJsonConverter().fromJson(json['createdAt'] as String),
+      tokenId: json['tokenId'] as String?,
     );
 
 Map<String, dynamic> _$DigitalTwinMetadataToJson(
@@ -44,11 +45,13 @@ Map<String, dynamic> _$DigitalTwinMetadataToJson(
       'imageLink': instance.imageLink,
       'status': _$DigitalTwinCreationMetadataStatusEnumMap[instance.status]!,
       'createdAt': const DateTimeJsonConverter().toJson(instance.createdAt),
+      'tokenId': instance.tokenId,
     };
 
 const _$DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.pending: 'PENDING',
-  DigitalTwinCreationMetadataStatus.rejected: 'REJECTED',
   DigitalTwinCreationMetadataStatus.draft: 'DRAFT',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
+  DigitalTwinCreationMetadataStatus.toBeBurned: 'TO_BE_BURNED',
+  DigitalTwinCreationMetadataStatus.burned: 'BURNED',
 };

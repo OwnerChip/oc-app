@@ -40,4 +40,10 @@ abstract class BackendCreationService {
     @Path('id') String id,
     @Query("chipId") String chipId,
   );
+
+  @POST("/{id}/burned")
+  Future<void> burnDigitalTwin(
+    @Path('id') String id,
+    @Query("chipId") String chipId,
+  );
 }

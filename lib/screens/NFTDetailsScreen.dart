@@ -65,6 +65,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
   final DateFormat formatter = DateFormat('dd MMMM yyyy HH:mm:ss z');
 
   @override
+  void initState() {
+    super.initState();
+    pageKey = 'NFTDetailsScreen';
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userSession = ref.watch(userSessionProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
@@ -807,26 +813,28 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                             tokenInfoData.chainId == 0
                                 ? Container()
                                 : InfoKeyValues(keys: [
-                              context.loc.ownership,
-                            ], values: [
-                              nftOwner.when(
-                                data: (nftOwnerData) {
-                                  if (ref.read(userAddressProvider) ==
-                                      zeroAddress) {
-                                    return context.loc.unconfirmed;
-                                  } else if (approval.value != zeroAddress &&
-                                      approval.value != null) {
-                                    return context.loc.transferred;
-                                  } else if (connectedWallet == nftOwnerData) {
-                                    return context.loc.confirmed;
-                                  } else {
-                                    return context.loc.unconfirmed;
-                                  }
-                                },
-                                error: (e, s) => context.loc.ownerError,
-                                loading: () => context.loc.loading,
-                              ),
-                            ]),
+                                    context.loc.ownership,
+                                  ], values: [
+                                    nftOwner.when(
+                                      data: (nftOwnerData) {
+                                        if (ref.read(userAddressProvider) ==
+                                            zeroAddress) {
+                                          return context.loc.unconfirmed;
+                                        } else if (approval.value !=
+                                                zeroAddress &&
+                                            approval.value != null) {
+                                          return context.loc.transferred;
+                                        } else if (connectedWallet ==
+                                            nftOwnerData) {
+                                          return context.loc.confirmed;
+                                        } else {
+                                          return context.loc.unconfirmed;
+                                        }
+                                      },
+                                      error: (e, s) => context.loc.ownerError,
+                                      loading: () => context.loc.loading,
+                                    ),
+                                  ]),
                             const SizedBox(
                               height: 20,
                             ),

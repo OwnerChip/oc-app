@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
+import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
@@ -41,19 +42,14 @@ class CreationsPage extends ConsumerStatefulWidget {
   ConsumerState<CreationsPage> createState() => _CreationsPageState();
 }
 
-class _CreationsPageState extends ConsumerState<CreationsPage> {
-  bool isLoading = false;
-  String overlayContentType = 'loading'; //can be "traits" or "loading"
-  String loadingText = '';
-  String loadingSvgPath =
-      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
-
+class _CreationsPageState extends ConsumerState<CreationsPage>
+    with NftActionScreenMixin<CreationsPage> {
   final RefreshController _refreshController = RefreshController();
 
-  Future<void> toggleLoading() async {
-    setState(() {
-      isLoading = !isLoading;
-    });
+  @override
+  void initState() {
+    super.initState();
+    pageKey = 'CreationsPage';
   }
 
   @override
@@ -70,7 +66,6 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
   ) async {
     setState(() {
       isLoading = true;
-      overlayContentType = 'loading';
       loadingText = context.loc.uploadingMetadata;
     });
 
@@ -94,7 +89,6 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
       // switch to minting loading overlay
       setState(() {
         isLoading = true;
-        overlayContentType = 'loading';
         loadingText = context.loc.mintingToken;
       });
 
@@ -260,16 +254,31 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
               builder: (context, mode) => _buildHeader(context, mode: mode),
             ),
             child: ListView.builder(
-              itemCount: creations.data?.data.length ?? 0,
+              itemCount: (creations.toBeMintedData?.data.length ?? 0) +
+                  (creations.toBeBurnedData?.data.length ?? 0),
               itemBuilder: (context, index) {
-                final metadata = creations.data!.data[index];
+                final metadata = index <
+                        (creations.toBeMintedData?.data.length ?? 0)
+                    ? creations.toBeMintedData!.data[index]
+                    : creations.toBeBurnedData!.data[
+                        index - (creations.toBeMintedData?.data.length ?? 0)];
+
                 return InkWell(
                   onTap: () {
-                    _mintItem(
-                      context,
-                      creations,
-                      metadata,
-                    );
+                    if (metadata.status ==
+                        DigitalTwinCreationMetadataStatus.toBeBurned) {
+                      _burnItem(
+                        context,
+                        creations,
+                        metadata,
+                      );
+                    } else {
+                      _mintItem(
+                        context,
+                        creations,
+                        metadata,
+                      );
+                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -311,9 +320,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
                             children: [
                               Text(
                                 metadata.title,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium,
+                                style:
+                                    Theme.of(context).textTheme.headlineMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -323,6 +331,26 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Container(
+                                child: metadata.status ==
+                                        DigitalTwinCreationMetadataStatus
+                                            .toBeBurned
+                                    ? Text(
+                                        context.loc.nftCreationsPageToBeBurned,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      )
+                                    : Text(
+                                        context.loc.nftCreationsPagePending,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                              )
                             ],
                           ),
                         ),
@@ -374,6 +402,38 @@ class _CreationsPageState extends ConsumerState<CreationsPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _burnItem(
+    BuildContext context,
+    CreationsData creations,
+    DigitalTwinMetadata metadata,
+  ) async {
+    await scanItem(
+      ref,
+      context,
+      navigateToResultPage: false,
+    );
+
+    final userSession = ref.read(userSessionProvider)!;
+    final wc = ref.read(wcProvider);
+
+    final tokenId = BigInt.parse(metadata.tokenId!);
+
+    await burnToken(
+      wc,
+      tokenId,
+      ref.read(chipSignatureDataProvider),
+      userSession.userWalletAddress,
+      onSuccess: () async {
+        final id = metadata.id;
+        final chipId = ref.read(chipInfoProvider).chipEthereumAddress.hex;
+
+        await BackendCreation.markDigitalTwinAsBurned(id: id, chipId: chipId);
+      }
+    );
+
+
   }
 
   Future<void> _mintItem(

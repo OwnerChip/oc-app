@@ -67,6 +67,12 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
   }
 
   @override
+  void initState() {
+    super.initState();
+    pageKey = 'UserScanResultsScreen';
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);

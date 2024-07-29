@@ -72,7 +72,7 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   //create list of attachments
   List<Attachment> attachments = [];
   //create list of attachments
-  for (var attachment in response.data) {
+  for (var attachment in response.toBeMintedData) {
     attachments.add(Attachment(
       attachment['title'],
       attachment['name'],

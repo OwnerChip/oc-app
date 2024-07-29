@@ -254,7 +254,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     CreationsData creations = ref.read(creationsNotifierProvider);
     ref.read(creationsNotifierProvider.notifier).init().then((_) {
       creations = ref.read(creationsNotifierProvider);
-      if (creations.data != null && creations.data!.isNotEmpty) {
+      if ((creations.toBeMintedData != null &&
+              creations.toBeMintedData!.isNotEmpty) ||
+          (creations.toBeBurnedData != null &&
+              creations.toBeBurnedData!.isNotEmpty)) {
         Navigator.of(context).pushNamed(CreationsPage.routeName);
       }
     });
@@ -286,7 +289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     final data = FCMNotificationData.fromJson(message.data);
 
-    if (data.isDigitalTwinCreation) {
+    if (data.isDigitalTwinCreation || data.isDigitalTwinBurn) {
       _checkCreations();
     }
   }
@@ -489,12 +492,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         SizedBox(height: 40, child: Text(context.loc.loading)),
                     error: (err, stack) => Container()),
             if (creations.initialized &&
-                (creations.data?.isNotEmpty ?? false)) ...[
+                ((creations.toBeMintedData?.isNotEmpty ?? false) ||
+                    (creations.toBeBurnedData?.isNotEmpty ?? false))) ...[
               const SizedBox(height: 20),
               CustomRoundedButton(
                 width: 250,
                 text: context.loc.nftCreationsHomeScreenButtonTitle(
-                  creations.data!.total,
+                  creations.toBeMintedData!.total,
                 ),
                 onPressed: () =>
                     Navigator.pushNamed(context, CreationsPage.routeName),

@@ -22,7 +22,8 @@ Map<String, dynamic> _$UpdateDigitalTwinCreationMetadataStatusPayloadToJson(
 
 const _$DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.pending: 'PENDING',
-  DigitalTwinCreationMetadataStatus.rejected: 'REJECTED',
   DigitalTwinCreationMetadataStatus.draft: 'DRAFT',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
+  DigitalTwinCreationMetadataStatus.toBeBurned: 'TO_BE_BURNED',
+  DigitalTwinCreationMetadataStatus.burned: 'BURNED',
 };

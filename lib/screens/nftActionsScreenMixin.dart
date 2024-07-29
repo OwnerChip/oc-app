@@ -43,6 +43,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
 
+  String pageKey = 'NftActionsScreen';
+
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
     cancellableOperation?.cancel();
     cancellableOperation =
@@ -112,8 +114,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () {
                 return makeAndSendGaslessTx(
                     ref,
-                    ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                        .currentContext!,
+                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
                     recoverTokenFunctionSignature,
                     config.chainId,
                     config.collectionId,
@@ -204,8 +205,13 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> burnToken(Web3App? wc, BigInt tokenId,
-      SignatureData signatureData, EthereumAddress connectedWallet) async {
+  Future<void> burnToken(
+    Web3App? wc,
+    BigInt tokenId,
+    SignatureData signatureData,
+    EthereumAddress connectedWallet, {
+    VoidCallback? onSuccess,
+  }) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
@@ -263,7 +269,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
         if (canUseGasStation) {
           txnHash = await makeAndSendGaslessTx(
               ref,
-              ScaffoldKey.getScaffoldKey('NFTDetailsScreen').currentContext!,
+              ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
               burnFunctionSignature,
               config.chainId,
               config.collectionId,
@@ -310,6 +316,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             });
 
         await Future.delayed(const Duration(seconds: 2));
+
+        onSuccess?.call();
 
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else {
@@ -405,8 +413,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             function: () {
               return makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                      .currentContext!,
+                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
                   cancelMarketplaceOfferSignature,
                   config.chainId,
                   config.collectionId,
@@ -554,8 +561,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () {
                 return makeAndSendGaslessTx(
                     ref,
-                    ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                        .currentContext!,
+                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
                     transferFromFunctionSignature,
                     config.chainId,
                     config.collectionId,
@@ -701,8 +707,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             function: () {
               return makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                      .currentContext!,
+                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
                   redeemItemFunctionSignature,
                   config.chainId,
                   config.collectionId,

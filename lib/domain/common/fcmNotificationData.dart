@@ -18,6 +18,7 @@ class FCMNotificationData {
   final String json;
 
   bool get isDigitalTwinCreation => type == "DIGITAL_TWIN_CREATION";
+  bool get isDigitalTwinBurn => type == "DIGITAL_TWIN_BURN";
 
   decodeAsDigitalTwinCreation() {
     return FcmNotificationDigitalTwinCreationData.fromJson(jsonDecode(json));
