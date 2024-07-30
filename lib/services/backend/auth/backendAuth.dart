@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionEx
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -221,9 +222,11 @@ abstract class BackendAuth extends Backend {
       await BackendFCM.getAndSaveFCMToken(sessionId)
     );
 
+
     ref.read(userSessionProvider.notifier).state = userSession;
     ref.read(walletTypeProvider.notifier).state =
         walletConfig[EWalletType.ownerCard];
+    ref.read(creationsNotifierProvider.notifier).init();
 
     //persist session date
     final SharedPreferences storage = await SharedPreferences.getInstance();

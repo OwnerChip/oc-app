@@ -7,6 +7,7 @@ import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
@@ -139,7 +140,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                           ),
                         ]
                       : [
-                          CircularProgressIndicator(),
+                          const CircularProgressIndicator(),
                         ],
                 ),
               ),
@@ -168,8 +169,8 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     );
   }
 
-  void _onLogoutClicked(BuildContext context) {
-    _disconnect(context);
+  void _onLogoutClicked(BuildContext context) async {
+    await _disconnect(context);
     Navigator.of(context).popUntil((route) => route.isFirst);
     widget.closeOverlay();
   }
@@ -203,7 +204,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   Future<void> _disconnect(
     BuildContext context,
   ) async {
-    {
+
       final wc = ref.read(wcProvider);
       W3MSession? wcSession = ref.watch(wcSessionProvider);
 
@@ -214,6 +215,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       ref.read(userAddressProvider.notifier).state = zeroAddress;
       ref.read(walletTypeProvider.notifier).state = null;
       ref.read(userSessionProvider.notifier).state = null;
+      ref.read(creationsNotifierProvider.notifier).onLogout();
 
       final storage = await SharedPreferences.getInstance();
 
@@ -246,6 +248,8 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
         await BackendFCM.deleteFCMToken(fcmToken);
       }
 
+
+
       try {
         // clean up services
         await BackendAuth.initGuestSession();
@@ -255,6 +259,6 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
 
       //navigate back until homescreen
       Navigator.of(context).popUntil((route) => route.isFirst);
-    }
+
   }
 }

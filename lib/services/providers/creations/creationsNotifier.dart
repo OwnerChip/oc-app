@@ -9,6 +9,10 @@ class CreationsNotifier extends Notifier<CreationsData> {
     return CreationsData.initial();
   }
 
+  Future<void> onLogout() async {
+    state = CreationsData.initial();
+  }
+
   Future<void> init() async {
     state = state.copyWith(loading: true);
 

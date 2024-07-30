@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
@@ -205,6 +206,7 @@ Future<void> onTapAuth(
   );
 
   ref.read(userSessionProvider.notifier).state = userSession;
+  ref.read(creationsNotifierProvider.notifier).init();
 
   //persist session date
   final SharedPreferences storage = await SharedPreferences.getInstance();
