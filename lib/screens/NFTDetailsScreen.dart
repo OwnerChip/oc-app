@@ -1,6 +1,7 @@
 //import packages
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
@@ -9,6 +10,7 @@ import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creationData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
@@ -74,6 +76,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
   Widget build(BuildContext context) {
     final userSession = ref.watch(userSessionProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+    final creation = ref.watch(creationData);
+
     final activeOffers = ref.watch(activeOffersProvider);
     final AsyncValue<Map<String, dynamic>> nftMetadata =
         ref.watch(nftMetadataProvider(chipInfo.tokenId));

@@ -10,9 +10,13 @@ import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinAttachment.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/payloads/uploadDigitalTwinCreationAttachmentPayload.dart';
+import 'package:ownerchip_whitelabel/services/providers/creationData.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/ChooseFileButton.dart';
@@ -81,6 +85,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
   CancelableOperation? cancellableOperation;
 
+  DigitalTwinAttachment? creationAttachment;
+  String? metadataId;
+
   @override
   void dispose() {
     _titleInputController.dispose();
@@ -96,6 +103,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
           ? ModalRoute.of(context)!.settings.arguments
               as AttachmentScreensArguments
           : null;
+
+      creationAttachment = navArgs?.twinAttachment;
+      metadataId = navArgs?.metadataId;
 
       //IF FILE TYPE IS URL
       if (navArgs != null && navArgs.type == AttachmentType.url) {
@@ -202,28 +212,49 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         isLoading = true;
         loadingText = context.loc.uploadingAttachment;
       });
-      await BackendAttachments.putAttachmentMetadataToBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          chipInfo.tokenId,
-          attachmentBeingEdited.backendUuid,
-          attachmentBeingEdited.fileName,
-          titleTextInput,
-          isPrivate,
-          attachmentUrl: attachmentBeingEdited.type == AttachmentType.url
-              ? urlTextInput
-              : null);
+
+      if (creationAttachment != null) {
+        await BackendCreation.updateAttachmentMetadata(
+          metadata: creationAttachment!.metadataId,
+          attachmentId: creationAttachment!.uid,
+          payload: UploadDigitalTwinCreationAttachmentPayload(
+            title: titleTextInput,
+            isPrivate: isPrivate,
+            link: attachmentBeingEdited.type == AttachmentType.url
+                ? urlTextInput
+                : null,
+            fileSize: creationAttachment!.fileSize,
+            fileHash: creationAttachment!.fileHash,
+            contentType: creationAttachment!.contentType,
+            fileName: creationAttachment!.fileName,
+          ),
+        );
+      } else {
+        await BackendAttachments.putAttachmentMetadataToBackend(
+            userSession!,
+            ref.read(userAddressProvider),
+            chainId,
+            collectionId,
+            chipInfo.tokenId,
+            attachmentBeingEdited.backendUuid,
+            attachmentBeingEdited.fileName,
+            titleTextInput,
+            isPrivate,
+            attachmentUrl: attachmentBeingEdited.type == AttachmentType.url
+                ? urlTextInput
+                : null);
+      }
 
       await ref.refresh(fetchAttachmentsProvider.future);
+      await ref.refresh(digitalTwinAttachmentsProvider.future);
+
 
       setState(() {
         isLoading = false;
         loadingText = '';
       });
 
-      BackendApp.sendAnalyticsTrace(userSession.sessionId,
+      BackendApp.sendAnalyticsTrace(userSession!.sessionId,
           attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
           tags: {
             'connectedWallet': ref.read(userAddressProvider).hex,
@@ -268,27 +299,57 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       int chainId = chainAndCollectionId[0];
       EthereumAddress collectionId = chainAndCollectionId[1];
 
-      List response = await BackendAttachments.postAttachmentMetadataToBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          ref.read(chipInfoProvider).tokenId,
-          fileName!,
-          _titleInputController.text,
-          isPrivate,
-          fileHash: fileHash,
-          contentType: contentType,
-          fileSize: fileSize);
+      late String fileUuid;
+      late String awsUrl;
 
-      String fileUuid = response[0];
-      String awsUrl = response[1];
+      if (metadataId == null) {
+        List response =
+            await BackendAttachments.postAttachmentMetadataToBackend(
+                userSession!,
+                ref.read(userAddressProvider),
+                chainId,
+                collectionId,
+                ref.read(chipInfoProvider).tokenId,
+                fileName!,
+                _titleInputController.text,
+                isPrivate,
+                fileHash: fileHash,
+                contentType: contentType,
+                fileSize: fileSize);
+
+        fileUuid = response[0];
+        awsUrl = response[1];
+      } else {
+        final response = await BackendCreation.prepareAttachmentUpload(
+          id: metadataId!,
+          payload: UploadDigitalTwinCreationAttachmentPayload(
+            title: titleTextInput,
+            isPrivate: isPrivate,
+            fileSize: fileSize,
+            link: null,
+            fileHash: fileHash,
+            contentType: contentType,
+            fileName: file!.name,
+          ),
+        );
+
+        fileUuid = response!.uid;
+        awsUrl = response.url!;
+      }
 
       //upload file to aws presigned url
-      var awsResponse =
-          await BackendAttachments.uploadFileToAWS(File(file!.path!), awsUrl, contentType);
+      var awsResponse = await BackendAttachments.uploadFileToAWS(
+          File(file!.path!), awsUrl, contentType);
+
+      if (metadataId != null) {
+        await BackendCreation.setAttachmentUploaded(
+          id: metadataId!,
+          attachmentId: fileUuid,
+        );
+      }
 
       var _ = await ref.refresh(fetchAttachmentsProvider.future);
+      await ref.refresh(digitalTwinAttachmentsProvider.future);
 
       setState(() {
         isLoading = false;
@@ -296,7 +357,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
       });
       if (file != null) {
         BackendApp.sendAnalyticsTrace(
-            userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
+            userSession!.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
               'chipWallet': convertTokenIdToEthereumAddress(
@@ -337,21 +398,44 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     UserSession? userSession = ref.read(userSessionProvider);
 
     try {
-      List result = await BackendAttachments.postAttachmentMetadataToBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          ref.read(chipInfoProvider).tokenId,
-          _titleInputController.text,
-          _titleInputController.text,
-          isPrivate,
-          attachmentLink: _urlInputController.text);
+      late String fileUuid;
+      late String status;
 
-      String fileUuid = result[0];
-      String status = result[1];
+      if (metadataId == null) {
+        List result = await BackendAttachments.postAttachmentMetadataToBackend(
+            userSession!,
+            ref.read(userAddressProvider),
+            chainId,
+            collectionId,
+            ref.read(chipInfoProvider).tokenId,
+            _titleInputController.text,
+            _titleInputController.text,
+            isPrivate,
+            attachmentLink: _urlInputController.text);
+
+        fileUuid = result[0];
+        status = result[1];
+      } else {
+        final response = await BackendCreation.prepareAttachmentUpload(
+            id: metadataId!,
+            payload: UploadDigitalTwinCreationAttachmentPayload(
+              title: titleTextInput,
+              isPrivate: isPrivate,
+              fileSize: null,
+              link: _urlInputController.text.isEmpty
+                  ? "https://"
+                  : _urlInputController.text,
+              fileHash: null,
+              contentType: null,
+              fileName: null,
+            ));
+
+        fileUuid = response!.uid;
+        status = 'OK';
+      }
 
       await ref.refresh(fetchAttachmentsProvider.future);
+      await ref.refresh(digitalTwinAttachmentsProvider.future);
 
       setState(() {
         isLoading = false;
@@ -360,7 +444,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
       if (status == 'OK') {
         BackendApp.sendAnalyticsTrace(
-            userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
+            userSession!.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
             tags: {
               'connectedWallet': ref.read(userAddressProvider).hex,
               'chipWallet': convertTokenIdToEthereumAddress(
@@ -408,15 +492,24 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         isLoading = true;
         loadingText = context.loc.deletingAttachment;
       });
-      var result = await BackendAttachments.deleteAttachmentFromBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          ref.read(chipInfoProvider).tokenId,
-          attachment.backendUuid);
+
+      if (creationAttachment == null) {
+        var result = await BackendAttachments.deleteAttachmentFromBackend(
+            userSession!,
+            ref.read(userAddressProvider),
+            chainId,
+            collectionId,
+            ref.read(chipInfoProvider).tokenId,
+            attachment.backendUuid);
+      } else {
+        await BackendCreation.deleteAttachment(
+          id: creationAttachment!.metadataId,
+          attachmentId: creationAttachment!.uid,
+        );
+      }
 
       var _ = await ref.refresh(fetchAttachmentsProvider.future);
+      await ref.refresh(digitalTwinAttachmentsProvider.future);
 
       setState(() {
         isLoading = false;
@@ -448,7 +541,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     });
 
     BackendApp.sendAnalyticsTrace(
-        userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
+        userSession!.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
         tags: {
           'connectedWallet': ref.read(userAddressProvider).hex,
           'chipWallet': convertTokenIdToEthereumAddress(

@@ -516,8 +516,10 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                       const SizedBox(height: 20),
 
                       AttachmentUploadButton(
-                          text: context.loc.uploadDigitalContent,
-                          icon: Icons.add),
+                        text: context.loc.uploadDigitalContent,
+                        icon: Icons.add,
+                        metadataId: null,
+                      ),
                       const SizedBox(height: 20),
                       //map over attachmentList to display all attachments as FileBox
                       if (attachmentList != null)
@@ -536,8 +538,11 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                                   Navigator.pushNamed(
                                       context, AddAttachmentScreen.routeName,
                                       arguments: AttachmentScreensArguments(
-                                          true, attachmentList[i].type,
-                                          index: i));
+                                        true,
+                                        attachmentList[i].type,
+                                        index: i,
+                                        metadataId: null,
+                                      ));
                                 },
                               ),
                               const SizedBox(height: 20),
