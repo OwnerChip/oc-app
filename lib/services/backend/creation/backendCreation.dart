@@ -3,7 +3,6 @@ import 'package:ownerchip_whitelabel/domain/creation/digitalTwinAttachment.dart'
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/backendCreationService.dart';
-import 'package:ownerchip_whitelabel/services/backend/creation/payloads/updateDigitalTwinCreationMetadataStatusPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/payloads/uploadDigitalTwinCreationAttachmentPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/responses/uploadDigitalTwinCreationAttachmentResponse.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -56,31 +55,6 @@ class BackendCreation extends Backend {
     bool success = true;
     await service
         .mintDigitalTwin(
-      id,
-      chipId,
-    )
-        .catchError((error) {
-      success = false;
-      talker.error(error);
-      Sentry.captureException(error, stackTrace: StackTrace.current);
-    });
-
-    if (!success) {
-      throw Exception('Failed to update digital twin metadata status');
-    }
-
-    return true;
-  }
-
-  static Future<bool> markDigitalTwinAsBurned({
-    required String id,
-    required String chipId,
-  }) async {
-    final service = BackendCreationService.instance;
-
-    bool success = true;
-    await service
-        .burnDigitalTwin(
       id,
       chipId,
     )
@@ -224,6 +198,146 @@ class BackendCreation extends Backend {
 
     if (!success) {
       throw Exception('Failed to delete attachment metadata');
+    }
+
+    return true;
+  }
+
+  static Future<bool> prepareBurnDigitalTwin({
+    required String id,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .prepareBurnDigitalTwin(
+      id,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
+    }
+
+    return true;
+  }
+
+  static Future<bool> cancelBurnDigitalTwin({
+    required String id,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .cancelBurnDigitalTwin(
+      id,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
+    }
+
+    return true;
+  }
+
+  static Future<bool> markDigitalTwinAsBurned({
+    required String id,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .burnDigitalTwin(
+      id,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
+    }
+
+    return true;
+  }
+
+  static Future<bool> prepareTransferDigitalTwin({
+    required String id,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .prepareTransferDigitalTwin(
+      id,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
+    }
+
+    return true;
+  }
+
+  static Future<bool> cancelTransferDigitalTwin({
+    required String id,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .cancelTransferDigitalTwin(
+      id,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
+    }
+
+    return true;
+  }
+
+  static Future<bool> markDigitalTwinAsTransferred({
+    required String id,
+    required String recipient,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .transferDigitalTwin(
+      id,
+      recipient,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
     }
 
     return true;

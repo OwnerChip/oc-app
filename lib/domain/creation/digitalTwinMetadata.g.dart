@@ -23,7 +23,8 @@ DigitalTwinMetadata _$DigitalTwinMetadataFromJson(Map<String, dynamic> json) =>
       title: json['title'] as String,
       description: json['description'] as String,
       status: $enumDecode(
-          _$DigitalTwinCreationMetadataStatusEnumMap, json['status']),
+          _$DigitalTwinCreationMetadataStatusEnumMap, json['status'],
+          unknownValue: DigitalTwinCreationMetadataStatus.unknown),
       createdAt:
           const DateTimeJsonConverter().fromJson(json['createdAt'] as String),
       tokenId: json['tokenId'] as String?,
@@ -53,5 +54,7 @@ const _$DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.draft: 'DRAFT',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
   DigitalTwinCreationMetadataStatus.toBeBurned: 'TO_BE_BURNED',
+  DigitalTwinCreationMetadataStatus.toBeTransferred: 'TO_BE_TRANSFERRED',
   DigitalTwinCreationMetadataStatus.burned: 'BURNED',
+  DigitalTwinCreationMetadataStatus.unknown: 'UNKNOWN',
 };

@@ -26,6 +26,7 @@ class DigitalTwinMetadata {
   final String description;
   final String? imageLink;
 
+  @JsonKey(unknownEnumValue: DigitalTwinCreationMetadataStatus.unknown)
   final DigitalTwinCreationMetadataStatus status;
 
   @DateTimeJsonConverter()
@@ -60,14 +61,19 @@ enum DigitalTwinCreationMetadataStatus {
   minted,
   @JsonValue("TO_BE_BURNED")
   toBeBurned,
+  @JsonValue("TO_BE_TRANSFERRED")
+  toBeTransferred,
   @JsonValue("BURNED")
   burned,
+  @JsonValue("UNKNOWN")
+  unknown,
 }
 
 const DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.pending: 'PENDING',
   DigitalTwinCreationMetadataStatus.toBeBurned: 'TO_BE_BURNED',
   DigitalTwinCreationMetadataStatus.draft: 'DRAFT',
+  DigitalTwinCreationMetadataStatus.toBeTransferred: 'TO_BE_TRANSFERRED',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
   DigitalTwinCreationMetadataStatus.burned: 'BURNED',
 };

@@ -1,54 +1,52 @@
 //import packages
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/collections.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
+import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
+import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
-import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creationData.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
-import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
-import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-import 'package:collection/collection.dart';
-
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/BigIconButton.dart';
-
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:ownerchip_whitelabel/config/collections.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/BigIconButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -107,6 +105,30 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
         ref.watch(voucherTokenOwnerProvider);
     final AsyncValue<EthereumAddress> lastSellerAddress =
         ref.watch(lastSellerAddressProvider);
+    final digitalTwinMetadata = ref.watch(digitalTwinCreationMetadataProvider);
+
+    Widget buildButtons({
+      DigitalTwinMetadata? digitalTwinMetadata,
+    }) {
+      return _buildButtons(
+        nftOwner,
+        connectedWallet,
+        approval,
+        voucherContractAndTwinNftOwner,
+        context,
+        activeOffers,
+        userSession,
+        relevantCollections,
+        tokenInfo,
+        wc,
+        chipInfo,
+        voucherContractAddress,
+        vouchertokenOwner,
+        lastSellerAddress,
+        raribleUrl,
+        digitalTwinMetadata: digitalTwinMetadata,
+      );
+    }
 
     return CustomOverlay(
       show: isLoading,
@@ -160,7 +182,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                       .metadataNameFontSize,
                                   fontWeight: CustomFonts(dotenv.get('APP_ID'))
                                       .metadataNameFontWeight)),
-                          data: (data) => Text(data['name'],
+                          data: (data) => Text(data['name'] ?? "",
                               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                                   fontSize: CustomFonts(dotenv.get('APP_ID'))
                                       .metadataNameFontSize,
@@ -177,362 +199,14 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                   indent: 0,
                   endIndent: 0,
                 ),
-                GridView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 7 / 5,
-                      crossAxisSpacing: 16,
-                    ),
-                    children: [
-                      ...nftOwner.when<List<Widget>>(
-                        data: (nftOwnerData) => connectedWallet == nftOwnerData
-                            ? approval.when(
-                                data: (approvalData) => approval.value ==
-                                            zeroAddress ||
-                                        approval.value == null
-                                    ? [
-                                        voucherContractAndTwinNftOwner
-                                            .when<Widget?>(
-                                          data: (data) => data != null &&
-                                                  data[0] != null &&
-                                                  data[0] != zeroAddress &&
-                                                  data[1] == connectedWallet
-                                              ? BigIconButton(
-                                                  text:
-                                                      context.loc.offerForSale,
-                                                  onPressed: () =>
-                                                      Navigator.pushNamed(
-                                                          context,
-                                                          OfferOnMPScreen
-                                                              .routeName),
-                                                  icon: Icon(
-                                                    Icons.euro,
-                                                    size: 35,
-                                                    color: CustomColors(dotenv
-                                                            .get('APP_ID'))
-                                                        .primaryColor,
-                                                  ),
-                                                  height: 85,
-                                                )
-                                              : null,
-                                          error: (e, s) => null,
-                                          loading: () => null,
-                                        ),
-                                        BigIconButton(
-                                          text: context.loc.transfer,
-                                          onPressed: () => Navigator.pushNamed(
-                                              context,
-                                              TransferScreen.routeName),
-                                          icon: Icon(
-                                            Icons.send,
-                                            size: 35,
-                                            color: CustomColors(
-                                                    dotenv.get('APP_ID'))
-                                                .primaryColor,
-                                          ),
-                                          height: 85,
-                                        ),
-                                      ]
-                                        .where((e) => e != null)
-                                        .cast<Widget>()
-                                        .toList()
-                                    : [],
-                                error: (e, s) => [],
-                                loading: () => [],
-                              )
-                            : [],
-                        error: (e, s) => [],
-                        loading: () => [],
-                      ),
-                      ...activeOffers
-                          .when<List<Widget?>>(
-                            data: (activeOffersData) {
-                              if (activeOffersData.isEmpty) {
-                                //TOKEN IS NOT FOR SALE
-                                return nftOwner.when(
-                                    data: (nftOwnerData) {
-                                      if (connectedWallet == zeroAddress ||
-                                          userSession == null) {
-                                        //USER IS NOT CONNECTED
-                                        return [];
-                                      } else {
-                                        //USER IS CONNECTED
-                                        if (connectedWallet == nftOwnerData) {
-                                          //USER IS OWNER
-                                          return approval.when(
-                                              data: (approvalData) {
-                                                if (approvalData ==
-                                                    zeroAddress) {
-                                                  //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED BY NEW OWNER
-                                                  return relevantCollections
-                                                      .when(
-                                                          data:
-                                                              (relevantCollectionsData) {
-                                                            late Collection
-                                                                collection;
-                                                            if (relevantCollectionsData
-                                                                        .collections[
-                                                                    tokenInfo
-                                                                        .value!
-                                                                        .chainId] !=
-                                                                null) {
-                                                              // USER HAS MINTERROLE FOR SOME COLLECTION
-                                                              collection = relevantCollectionsData
-                                                                  .collections[
-                                                                      tokenInfo
-                                                                          .value!
-                                                                          .chainId]!
-                                                                  .firstWhere(
-                                                                      (element) =>
-                                                                          element
-                                                                              .id ==
-                                                                          tokenInfo
-                                                                              .value!
-                                                                              .collectionId,
-                                                                      orElse: () => Collection(
-                                                                          zeroAddress,
-                                                                          '',
-                                                                          hasMinterRole:
-                                                                              false));
-                                                            } else {
-                                                              //USER DOES NOT HAVE MINTERROLE ANYWHERE
-                                                              collection = Collection(
-                                                                  zeroAddress,
-                                                                  '',
-                                                                  hasMinterRole:
-                                                                      false);
-                                                            }
-                                                            if (collection
-                                                                    .hasMinterRole! &&
-                                                                collection.id ==
-                                                                    tokenInfo
-                                                                        .value!
-                                                                        .collectionId) {
-                                                              // USER HAS MINTER ROLE FOR THIS TOKENS COLLECTION
-                                                              return [
-                                                                BigIconButton(
-                                                                  text: context
-                                                                      .loc
-                                                                      .burnToken,
-                                                                  onPressed:
-                                                                      () async {
-                                                                    await scanItem(
-                                                                      ref,
-                                                                      context,
-                                                                      navigateToResultPage:
-                                                                          false,
-                                                                    );
-                                                                    fromCancelable(burnToken(
-                                                                        wc,
-                                                                        chipInfo
-                                                                            .tokenId,
-                                                                        ref.read(
-                                                                            chipSignatureDataProvider),
-                                                                        connectedWallet));
-                                                                  },
-                                                                  icon: Icon(
-                                                                    Icons
-                                                                        .delete_outline,
-                                                                    size: 35,
-                                                                    color: CustomColors(
-                                                                            dotenv.get('APP_ID'))
-                                                                        .primaryColor,
-                                                                  ),
-                                                                  height: 85,
-                                                                )
-                                                              ];
-                                                            } else {
-                                                              // USER DOES NOT HAVE MINTER ROLE FOR THIS TOKENS COLLECTION
-                                                              return [];
-                                                            }
-                                                          },
-                                                          error: (e, s) => [],
-                                                          loading: () => []);
-                                                } else {
-                                                  //TOKEN IS APPROVED / IS READY TO BE CLAIMED BY NEW OWNER
-                                                  return [];
-                                                }
-                                              },
-                                              loading: () => [],
-                                              error: (e, s) => []);
-                                        } else {
-                                          //USER IS NOT OWNER
-                                          return approval.when<List<Widget>>(
-                                              data: (approvalData) {
-                                                if (approvalData ==
-                                                    zeroAddress) {
-                                                  //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED
-                                                  return voucherContractAddress
-                                                      .when<List<Widget>>(
-                                                    data:
-                                                        (voucherContractData) {
-                                                      // VOUCHER CONTRACT EXISTS
-                                                      return vouchertokenOwner
-                                                          .when(
-                                                              data:
-                                                                  (voucherTokenOwnerData) {
-                                                                if (voucherTokenOwnerData ==
-                                                                        connectedWallet &&
-                                                                    voucherContractData !=
-                                                                        null) {
-                                                                  //USER IS VOUCHER OWNER AND CAN REDEEM TWIN
-                                                                  return [
-                                                                    BigIconButton(
-                                                                      text: context
-                                                                          .loc
-                                                                          .redeemToken,
-                                                                      onPressed:
-                                                                          () async {
-                                                                        await scanItem(
-                                                                          ref,
-                                                                          context,
-                                                                          navigateToResultPage:
-                                                                              false,
-                                                                        );
-                                                                        fromCancelable(redeemTwinToken(
-                                                                            wc,
-                                                                            chipInfo.tokenId,
-                                                                            ref.read(chipSignatureDataProvider),
-                                                                            connectedWallet));
-                                                                      },
-                                                                      icon:
-                                                                          Icon(
-                                                                        Icons
-                                                                            .call_received,
-                                                                        size:
-                                                                            35,
-                                                                        color: CustomColors(dotenv.get('APP_ID'))
-                                                                            .primaryColor,
-                                                                      ),
-                                                                      height:
-                                                                          85,
-                                                                    )
-                                                                  ];
-                                                                } else {
-                                                                  //USER IS NOT VOUCHER OWNER
-                                                                  return tokenInfo
-                                                                      .when(
-                                                                          data:
-                                                                              (tokenInfoData) {
-                                                                            final EthereumAddress
-                                                                                controllerContractAddress =
-                                                                                EthereumAddress.fromHex(chainConfig[tokenInfoData.chainId]!.controllerContract);
-                                                                            if (voucherTokenOwnerData == controllerContractAddress &&
-                                                                                nftOwnerData == controllerContractAddress &&
-                                                                                activeOffersData.isEmpty) {
-                                                                              //ERROR HAPPENED WHEN TOKEN WAS OFFERED; NO OFFER IN BACKEND
-                                                                              return lastSellerAddress.when(
-                                                                                  data: (lastSellerData) {
-                                                                                    if (lastSellerData == connectedWallet) {
-                                                                                      return [];
-                                                                                    } else {
-                                                                                      return [];
-                                                                                    }
-                                                                                  },
-                                                                                  error: (e, s) => [],
-                                                                                  loading: () => []);
-                                                                            } else {
-                                                                              return [];
-                                                                            }
-                                                                          },
-                                                                          error: (e, s) =>
-                                                                              [],
-                                                                          loading: () =>
-                                                                              []);
-                                                                }
-                                                              },
-                                                              error: (e, s) =>
-                                                                  [],
-                                                              loading: () =>
-                                                                  []);
-                                                    },
-                                                    loading: () => [],
-                                                    error: (e, s) {
-                                                      return [];
-                                                    },
-                                                  );
-                                                } else {
-                                                  //TOKEN IS APPROVED / IS READY TO BE CLAIMED
-                                                  return approval.when(
-                                                      data: (approvalData) {
-                                                        if (approvalData ==
-                                                            connectedWallet) {
-                                                          //USER IS APPROVED TO CLAIM
-                                                          return [];
-                                                        } else {
-                                                          //USER IS NOT APPROVED TO CLAIM
-                                                          return [];
-                                                        }
-                                                      },
-                                                      loading: () => [],
-                                                      error: (e, s) => []);
-                                                }
-                                              },
-                                              loading: () => [],
-                                              error: (e, s) => []);
-                                        }
-                                      }
-                                    },
-                                    loading: () => [],
-                                    error: (e, s) => []);
-                              } else {
-                                //TOKEN IS FOR SALE
-                                return [
-                                  BigIconButton(
-                                    text: context.loc.buyOnRarible,
-                                    icon: Icon(
-                                      Icons.shopping_cart_outlined,
-                                      size: 35,
-                                      color: CustomColors(dotenv.get('APP_ID'))
-                                          .primaryColor,
-                                    ),
-                                    onPressed: () => {
-                                      launchUrl(raribleUrl.asData!.value,
-                                          mode: LaunchMode.externalApplication)
-                                    },
-                                  ),
-                                  if (activeOffersData.isNotEmpty &&
-                                      EthereumAddress.fromHex(
-                                              activeOffersData[0]
-                                                  .sellerAddress) ==
-                                          connectedWallet)
-                                    //USER IS SELLER
-                                    BigIconButton(
-                                        icon: Icon(
-                                          Icons.close,
-                                          size: 35,
-                                          color:
-                                              CustomColors(dotenv.get('APP_ID'))
-                                                  .primaryColor,
-                                        ),
-                                        text: context.loc.cancelOffer,
-                                        onPressed: () async {
-                                          await scanItem(
-                                            ref,
-                                            context,
-                                            navigateToResultPage: false,
-                                          );
-                                          fromCancelable(
-                                            cancelOffer(
-                                                wc,
-                                                chipInfo.tokenId,
-                                                ref.read(
-                                                    chipSignatureDataProvider),
-                                                connectedWallet),
-                                          );
-                                        })
-                                ];
-                              }
-                            },
-                            loading: () => [],
-                            error: (e, s) => [],
-                          )
-                          .where((e) => e != null)
-                          .cast<Widget>(),
-                    ]),
+                digitalTwinMetadata.when(
+                    data: (creation) {
+                      return buildButtons(digitalTwinMetadata: creation);
+                    },
+                    error: (e, s) => buildButtons(),
+                    loading: () {
+                      return const SizedBox();
+                    }),
 
                 /*** DESCRIPTION ***/
                 nftMetadata.when(
@@ -886,5 +560,365 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
         ),
       ),
     );
+  }
+
+  GridView _buildButtons(
+    AsyncValue<EthereumAddress> nftOwner,
+    EthereumAddress connectedWallet,
+    AsyncValue<EthereumAddress> approval,
+    AsyncValue<List<dynamic>?> voucherContractAndTwinNftOwner,
+    BuildContext context,
+    AsyncValue<List<ActiveOffer>> activeOffers,
+    UserSession? userSession,
+    AsyncValue<BlockchainCollectionList> relevantCollections,
+    AsyncValue<TokenChainAndCollection> tokenInfo,
+    Web3App? wc,
+    ChipInfoModel chipInfo,
+    AsyncValue<EthereumAddress?> voucherContractAddress,
+    AsyncValue<EthereumAddress?> vouchertokenOwner,
+    AsyncValue<EthereumAddress> lastSellerAddress,
+    AsyncValue<Uri> raribleUrl, {
+    DigitalTwinMetadata? digitalTwinMetadata,
+  }) {
+    return GridView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 7 / 5,
+          crossAxisSpacing: 16,
+        ),
+        children: [
+          ...nftOwner.when<List<Widget>>(
+            data: (nftOwnerData) => connectedWallet == nftOwnerData
+                ? approval.when(
+                    data: (approvalData) => approval.value == zeroAddress ||
+                            approval.value == null
+                        ? [
+                            voucherContractAndTwinNftOwner.when<Widget?>(
+                              data: (data) => data != null &&
+                                      data[0] != null &&
+                                      data[0] != zeroAddress &&
+                                      data[1] == connectedWallet
+                                  ? BigIconButton(
+                                      text: context.loc.offerForSale,
+                                      onPressed: () => Navigator.pushNamed(
+                                          context, OfferOnMPScreen.routeName),
+                                      icon: Icon(
+                                        Icons.euro,
+                                        size: 35,
+                                        color:
+                                            CustomColors(dotenv.get('APP_ID'))
+                                                .primaryColor,
+                                      ),
+                                      height: 85,
+                                    )
+                                  : null,
+                              error: (e, s) => null,
+                              loading: () => null,
+                            ),
+                            BigIconButton(
+                              text: context.loc.transfer,
+                              onPressed: () => Navigator.pushNamed(
+                                context,
+                                TransferScreen.routeName,
+                                arguments: TransferScreenArguments(
+                                  digitalTwinMetadata: digitalTwinMetadata,
+                                ),
+                              ),
+                              icon: Icon(
+                                Icons.send,
+                                size: 35,
+                                color: CustomColors(dotenv.get('APP_ID'))
+                                    .primaryColor,
+                              ),
+                              height: 85,
+                            ),
+                          ].where((e) => e != null).cast<Widget>().toList()
+                        : [],
+                    error: (e, s) => [],
+                    loading: () => [],
+                  )
+                : [],
+            error: (e, s) => [],
+            loading: () => [],
+          ),
+          ...activeOffers
+              .when<List<Widget?>>(
+                data: (activeOffersData) {
+                  if (activeOffersData.isEmpty) {
+                    //TOKEN IS NOT FOR SALE
+                    return nftOwner.when(
+                        data: (nftOwnerData) {
+                          if (connectedWallet == zeroAddress ||
+                              userSession == null) {
+                            //USER IS NOT CONNECTED
+                            return [];
+                          } else {
+                            //USER IS CONNECTED
+                            if (connectedWallet == nftOwnerData) {
+                              //USER IS OWNER
+                              return approval.when(
+                                  data: (approvalData) {
+                                    if (approvalData == zeroAddress) {
+                                      //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED BY NEW OWNER
+                                      return relevantCollections.when(
+                                          data: (relevantCollectionsData) {
+                                            late Collection collection;
+                                            if (relevantCollectionsData
+                                                        .collections[
+                                                    tokenInfo.value!.chainId] !=
+                                                null) {
+                                              // USER HAS MINTERROLE FOR SOME COLLECTION
+                                              collection =
+                                                  relevantCollectionsData
+                                                      .collections[tokenInfo
+                                                          .value!.chainId]!
+                                                      .firstWhere(
+                                                          (element) =>
+                                                              element.id ==
+                                                              tokenInfo.value!
+                                                                  .collectionId,
+                                                          orElse: () =>
+                                                              Collection(
+                                                                  zeroAddress,
+                                                                  '',
+                                                                  hasMinterRole:
+                                                                      false));
+                                            } else {
+                                              //USER DOES NOT HAVE MINTERROLE ANYWHERE
+                                              collection = Collection(
+                                                  zeroAddress, '',
+                                                  hasMinterRole: false);
+                                            }
+                                            if (collection.hasMinterRole! &&
+                                                collection.id ==
+                                                    tokenInfo
+                                                        .value!.collectionId) {
+                                              // USER HAS MINTER ROLE FOR THIS TOKENS COLLECTION
+                                              return [
+                                                BigIconButton(
+                                                  text: context.loc.burnToken,
+                                                  onPressed: () async {
+                                                    final res = await scanItem(
+                                                      ref,
+                                                      context,
+                                                      navigateToResultPage:
+                                                          false,
+                                                    );
+                                                    if (res != null) {
+                                                      fromCancelable(burnToken(
+                                                        wc,
+                                                        chipInfo.tokenId,
+                                                        ref.read(
+                                                            chipSignatureDataProvider),
+                                                        connectedWallet,
+                                                        digitalTwinMetadata:
+                                                            digitalTwinMetadata,
+                                                      ));
+                                                    }
+                                                  },
+                                                  icon: Icon(
+                                                    Icons.delete_outline,
+                                                    size: 35,
+                                                    color: CustomColors(dotenv
+                                                            .get('APP_ID'))
+                                                        .primaryColor,
+                                                  ),
+                                                  height: 85,
+                                                )
+                                              ];
+                                            } else {
+                                              // USER DOES NOT HAVE MINTER ROLE FOR THIS TOKENS COLLECTION
+                                              return [];
+                                            }
+                                          },
+                                          error: (e, s) => [],
+                                          loading: () => []);
+                                    } else {
+                                      //TOKEN IS APPROVED / IS READY TO BE CLAIMED BY NEW OWNER
+                                      return [];
+                                    }
+                                  },
+                                  loading: () => [],
+                                  error: (e, s) => []);
+                            } else {
+                              //USER IS NOT OWNER
+                              return approval.when<List<Widget>>(
+                                  data: (approvalData) {
+                                    if (approvalData == zeroAddress) {
+                                      //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED
+                                      return voucherContractAddress
+                                          .when<List<Widget>>(
+                                        data: (voucherContractData) {
+                                          // VOUCHER CONTRACT EXISTS
+                                          return vouchertokenOwner.when(
+                                              data: (voucherTokenOwnerData) {
+                                                if (voucherTokenOwnerData ==
+                                                        connectedWallet &&
+                                                    voucherContractData !=
+                                                        null) {
+                                                  //USER IS VOUCHER OWNER AND CAN REDEEM TWIN
+                                                  return [
+                                                    BigIconButton(
+                                                      text: context
+                                                          .loc.redeemToken,
+                                                      onPressed: () async {
+                                                        final res =
+                                                            await scanItem(
+                                                          ref,
+                                                          context,
+                                                          navigateToResultPage:
+                                                              false,
+                                                        );
+                                                        if (res != null) {
+                                                          fromCancelable(
+                                                              redeemTwinToken(
+                                                                  wc,
+                                                                  chipInfo
+                                                                      .tokenId,
+                                                                  ref.read(
+                                                                      chipSignatureDataProvider),
+                                                                  connectedWallet));
+                                                        }
+                                                      },
+                                                      icon: Icon(
+                                                        Icons.call_received,
+                                                        size: 35,
+                                                        color: CustomColors(
+                                                                dotenv.get(
+                                                                    'APP_ID'))
+                                                            .primaryColor,
+                                                      ),
+                                                      height: 85,
+                                                    )
+                                                  ];
+                                                } else {
+                                                  //USER IS NOT VOUCHER OWNER
+                                                  return tokenInfo.when(
+                                                      data: (tokenInfoData) {
+                                                        final EthereumAddress
+                                                            controllerContractAddress =
+                                                            EthereumAddress.fromHex(chainConfig[
+                                                                    tokenInfoData
+                                                                        .chainId]!
+                                                                .controllerContract);
+                                                        if (voucherTokenOwnerData ==
+                                                                controllerContractAddress &&
+                                                            nftOwnerData ==
+                                                                controllerContractAddress &&
+                                                            activeOffersData
+                                                                .isEmpty) {
+                                                          //ERROR HAPPENED WHEN TOKEN WAS OFFERED; NO OFFER IN BACKEND
+                                                          return lastSellerAddress
+                                                              .when(
+                                                                  data:
+                                                                      (lastSellerData) {
+                                                                    if (lastSellerData ==
+                                                                        connectedWallet) {
+                                                                      return [];
+                                                                    } else {
+                                                                      return [];
+                                                                    }
+                                                                  },
+                                                                  error:
+                                                                      (e, s) =>
+                                                                          [],
+                                                                  loading: () =>
+                                                                      []);
+                                                        } else {
+                                                          return [];
+                                                        }
+                                                      },
+                                                      error: (e, s) => [],
+                                                      loading: () => []);
+                                                }
+                                              },
+                                              error: (e, s) => [],
+                                              loading: () => []);
+                                        },
+                                        loading: () => [],
+                                        error: (e, s) {
+                                          return [];
+                                        },
+                                      );
+                                    } else {
+                                      //TOKEN IS APPROVED / IS READY TO BE CLAIMED
+                                      return approval.when(
+                                          data: (approvalData) {
+                                            if (approvalData ==
+                                                connectedWallet) {
+                                              //USER IS APPROVED TO CLAIM
+                                              return [];
+                                            } else {
+                                              //USER IS NOT APPROVED TO CLAIM
+                                              return [];
+                                            }
+                                          },
+                                          loading: () => [],
+                                          error: (e, s) => []);
+                                    }
+                                  },
+                                  loading: () => [],
+                                  error: (e, s) => []);
+                            }
+                          }
+                        },
+                        loading: () => [],
+                        error: (e, s) => []);
+                  } else {
+                    //TOKEN IS FOR SALE
+                    return [
+                      BigIconButton(
+                        text: context.loc.buyOnRarible,
+                        icon: Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 35,
+                          color:
+                              CustomColors(dotenv.get('APP_ID')).primaryColor,
+                        ),
+                        onPressed: () => {
+                          launchUrl(raribleUrl.asData!.value,
+                              mode: LaunchMode.externalApplication)
+                        },
+                      ),
+                      if (activeOffersData.isNotEmpty &&
+                          EthereumAddress.fromHex(
+                                  activeOffersData[0].sellerAddress) ==
+                              connectedWallet)
+                        //USER IS SELLER
+                        BigIconButton(
+                            icon: Icon(
+                              Icons.close,
+                              size: 35,
+                              color: CustomColors(dotenv.get('APP_ID'))
+                                  .primaryColor,
+                            ),
+                            text: context.loc.cancelOffer,
+                            onPressed: () async {
+                              final res = await scanItem(
+                                ref,
+                                context,
+                                navigateToResultPage: false,
+                              );
+                              if (res != null) {
+                                fromCancelable(
+                                  cancelOffer(
+                                      wc,
+                                      chipInfo.tokenId,
+                                      ref.read(chipSignatureDataProvider),
+                                      connectedWallet),
+                                );
+                              }
+                            })
+                    ];
+                  }
+                },
+                loading: () => [],
+                error: (e, s) => [],
+              )
+              .where((e) => e != null)
+              .cast<Widget>(),
+        ]);
   }
 }

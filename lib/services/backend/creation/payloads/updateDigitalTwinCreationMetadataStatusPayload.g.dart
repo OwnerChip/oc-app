@@ -25,5 +25,7 @@ const _$DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.draft: 'DRAFT',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
   DigitalTwinCreationMetadataStatus.toBeBurned: 'TO_BE_BURNED',
+  DigitalTwinCreationMetadataStatus.toBeTransferred: 'TO_BE_TRANSFERRED',
   DigitalTwinCreationMetadataStatus.burned: 'BURNED',
+  DigitalTwinCreationMetadataStatus.unknown: 'UNKNOWN',
 };

@@ -3,7 +3,6 @@ import 'package:ownerchip_whitelabel/domain/common/backendPaginationResponse.dar
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinAttachment.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/creation/payloads/updateDigitalTwinCreationMetadataStatusPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/payloads/uploadDigitalTwinCreationAttachmentPayload.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -45,12 +44,6 @@ abstract class BackendCreationService {
     @Query("chipId") String chipId,
   );
 
-  @POST("/{id}/burned")
-  Future<void> burnDigitalTwin(
-    @Path('id') String id,
-    @Query("chipId") String chipId,
-  );
-
   @POST("/{id}/attachment")
   Future<UploadDigitalTwinCreationAttachmentResponse?> prepareAttachmentUpload(
     @Path('id') String id,
@@ -62,7 +55,6 @@ abstract class BackendCreationService {
     @Path('id') String id,
     @Path('attachmentId') String attachmentId,
   );
-
 
   @GET("/token/{tokenId}")
   Future<DigitalTwinMetadata?> getDigitalTwinByTokenId(
@@ -86,4 +78,35 @@ abstract class BackendCreationService {
     @Path('attachmentId') String attachmentId,
     @Body() UploadDigitalTwinCreationAttachmentPayload payload,
   );
+
+  @POST("/{id}/prepareBurn")
+  Future<void> prepareBurnDigitalTwin(
+    @Path('id') String id, {
+    @Query("notify") bool notify = false,
+  });
+
+  @POST("/{id}/cancelBurn")
+  Future<void> cancelBurnDigitalTwin(
+    @Path('id') String id,
+  );
+
+  @POST("/{id}/burned")
+  Future<void> burnDigitalTwin(
+    @Path('id') String id, {
+    @Query("notify") bool notify = false,
+  });
+
+  @POST("/{id}/prepareTransfer")
+  Future<void> prepareTransferDigitalTwin(
+    @Path('id') String id,
+  );
+
+  @POST("/{id}/cancelTransfer")
+  Future<void> cancelTransferDigitalTwin(
+    @Path('id') String id,
+  );
+
+  @POST("/{id}/transferred/{to}")
+  Future<void> transferDigitalTwin(
+      @Path('id') String id, @Path('to') String to);
 }
