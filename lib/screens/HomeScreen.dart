@@ -3,59 +3,46 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:nfc_manager/nfc_manager.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/config/wallets.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/common/fcmNotificationData.dart';
-import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
-import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+//import screens
+import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
-import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+//import services
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
-import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:sentry/sentry.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-
-//import services
-import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-
-//import screens
-import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:sentry/sentry.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
@@ -254,10 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     CreationsData creations = ref.read(creationsNotifierProvider);
     ref.read(creationsNotifierProvider.notifier).init().then((_) {
       creations = ref.read(creationsNotifierProvider);
-      if ((creations.toBeMintedData != null &&
-              creations.toBeMintedData!.isNotEmpty) ||
-          (creations.toBeBurnedData != null &&
-              creations.toBeBurnedData!.isNotEmpty)) {
+      if (creations.data != null && creations.data!.isNotEmpty) {
         Navigator.of(context).pushNamed(CreationsPage.routeName);
       }
     });
@@ -492,13 +476,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         SizedBox(height: 40, child: Text(context.loc.loading)),
                     error: (err, stack) => Container()),
             if (creations.initialized &&
-                ((creations.toBeMintedData?.isNotEmpty ?? false) ||
-                    (creations.toBeBurnedData?.isNotEmpty ?? false))) ...[
+                (creations.data != null && creations.data!.isNotEmpty)) ...[
               const SizedBox(height: 20),
               CustomRoundedButton(
                 width: 250,
                 text: context.loc.nftCreationsHomeScreenButtonTitle(
-                  creations.toBeMintedData!.total,
+                  creations.data!.total,
                 ),
                 onPressed: () =>
                     Navigator.pushNamed(context, CreationsPage.routeName),

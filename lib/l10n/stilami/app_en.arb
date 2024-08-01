@@ -432,5 +432,6 @@
     "nftCreationsPageRefreshing": "Refreshing...",
     "nftCreationsHomeScreenButtonTitle": "Mint new Digital Twin ({number})",
     "nftCreationsPageToBeBurned": "To be burned",
-    "nftCreationsPagePending": "To be minted"
+    "nftCreationsPagePending": "To be minted",
+    "nftCreationsPageToBeTransferred": "To be transferred"
 }

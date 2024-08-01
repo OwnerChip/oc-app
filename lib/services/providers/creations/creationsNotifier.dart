@@ -18,24 +18,17 @@ class CreationsNotifier extends Notifier<CreationsData> {
 
     try {
       // Fetch data from backend
-      final data = await Future.wait([
-        BackendCreation.getMyDigitalTwins(
-          1,
-          status: [
-            DigitalTwinCreationMetadataStatus.pending,
-          ],
-        ),
-        BackendCreation.getMyDigitalTwins(
-          1,
-          status: [
-            DigitalTwinCreationMetadataStatus.toBeBurned,
-          ],
-        ),
-      ]);
+      final data = await BackendCreation.getMyDigitalTwins(
+        1,
+        status: [
+          DigitalTwinCreationMetadataStatus.pending,
+          DigitalTwinCreationMetadataStatus.toBeBurned,
+          DigitalTwinCreationMetadataStatus.toBeTransferred,
+        ],
+      );
 
       state = state.copyWith(
-        toBeMintedData: data[0],
-        toBeBurnedData: data[1],
+        data: data,
         loading: false,
         initialized: true,
       );

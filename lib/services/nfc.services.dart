@@ -12,7 +12,6 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
-
 //import screens
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
@@ -20,7 +19,6 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -28,14 +26,12 @@ import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-
 //import services
 import 'package:ownerchip_whitelabel/services/secora.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
-
 //import misc
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -131,7 +127,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       context.loc.holdPhoneToNfcChip);
 }
 
-Future<void> scanItem(
+Future<dynamic> scanItem(
   WidgetRef ref,
   BuildContext context, {
   bool navigateToResultPage = true,
@@ -178,6 +174,7 @@ Future<void> scanItem(
           );
         }
       }
+      return signature;
     } catch (e) {
       // check if wallet is connected
 
@@ -516,7 +513,7 @@ Future<dynamic> scanClosure(
   if (Platform.isAndroid) {
     nfcOverlay.showNfcOverlay(context, alertMessage, () {
       NfcManager.instance.stopSession();
-      completer.complete();
+      completer.complete(null);
     });
   }
 
@@ -583,7 +580,7 @@ Future<dynamic> scanClosure(
             e,
             stackTrace: stackTrace,
           );
-          completer.complete();
+          completer.complete(null);
           rethrow;
         }
       });
