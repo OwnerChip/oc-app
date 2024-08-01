@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ownerchip_whitelabel/domain/creation/digitalTwinAttachment.dart';
 import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,19 +9,15 @@ import '../../domain/classDefinition.dart';
 import '../../utils/localization.helper.dart';
 
 class AttachmentUploadButton extends StatelessWidget {
-  AttachmentUploadButton({
-    super.key,
-    required this.text,
-    required this.icon,
-    this.showOptions = true,
-    this.metadataId,
-  });
+  AttachmentUploadButton(
+      {super.key,
+      required this.text,
+      required this.icon,
+      this.showOptions = true});
 
   final String text;
   final IconData icon;
   final bool showOptions;
-
-  final String? metadataId;
 
   @override
   Widget build(BuildContext context) {
@@ -38,18 +33,11 @@ class AttachmentUploadButton extends StatelessWidget {
       onSelected: (int value) {
         if (value == 0) {
           Navigator.pushNamed(context, AddAttachmentScreen.routeName,
-              arguments: AttachmentScreensArguments(
-                false,
-                AttachmentType.text,
-                metadataId: metadataId,
-              ));
+              arguments:
+                  AttachmentScreensArguments(false, AttachmentType.text));
         } else {
           Navigator.pushNamed(context, AddAttachmentScreen.routeName,
-              arguments: AttachmentScreensArguments(
-                false,
-                AttachmentType.url,
-                metadataId: metadataId,
-              ));
+              arguments: AttachmentScreensArguments(false, AttachmentType.url));
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[

@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:ownerchip_whitelabel/domain/creation/digitalTwinAttachment.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import '../domain/classDefinition.dart';
@@ -19,15 +18,10 @@ class AttachmentScreensArguments {
   final AttachmentType type;
   final int? index;
 
-  final DigitalTwinAttachment? twinAttachment;
-  final String? metadataId;
-
   AttachmentScreensArguments(
     this.isEditMode,
     this.type, {
     this.index,
-    this.twinAttachment,
-    required this.metadataId,
   });
 }
 
