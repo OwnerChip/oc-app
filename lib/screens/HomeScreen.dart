@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/common/fcmNotificationData.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+
 //import screens
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
@@ -21,6 +22,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
+
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
@@ -33,8 +35,10 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -399,27 +403,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       appBar: const CustomAppBar(
         showBackButton: false,
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          _buildBody(
-            context,
-            relevantCollections,
-            creations,
-          ),
-          app.isLoading
-              ? Center(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.2),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: CustomColors(dotenv.get('APP_ID')).primaryColor,
-                      ),
-                    ),
-                  ),
-                )
-              : Container(),
-        ],
+      body: _buildBody(
+        context,
+        relevantCollections,
+        creations,
       ),
     );
   }
