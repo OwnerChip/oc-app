@@ -69,7 +69,7 @@ class CreatorDataBoxContent extends StatelessWidget {
                 triggerPopup(context);
               },
               child: Text(
-                "OwnerChip",
+                creatorData.name,
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColorLight,
