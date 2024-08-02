@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
@@ -96,7 +97,11 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                       );
                     } else if (metadata.status ==
                         DigitalTwinCreationMetadataStatus.toBeTransferred) {
-                      _transferItem(context, metadata);
+                      _transferItem(
+                        context,
+                        creations,
+                        metadata,
+                      );
                     }
                   },
                   child: Padding(
@@ -229,7 +234,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     );
   }
 
-  Future<void> _burnItem(
+  Future<bool> _scanItem(
     BuildContext context,
     CreationsData creations,
     DigitalTwinMetadata metadata,
@@ -240,7 +245,35 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       navigateToResultPage: false,
     );
 
-    if (res != null) {
+    if (res == null) {
+      return false;
+    }
+
+    final chipInfo = ref.read(chipInfoProvider);
+
+    if ([
+      DigitalTwinCreationMetadataStatus.toBeBurned,
+      DigitalTwinCreationMetadataStatus.toBeTransferred,
+    ].contains(metadata.status)) {
+      if (chipInfo.chipEthereumAddress.hex != metadata.tokenId) {
+        ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+            context.loc.nftCreationsPageError,
+            context.loc.nftCreationsPageChipMismatchError,
+            'error'));
+
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  Future<void> _burnItem(
+    BuildContext context,
+    CreationsData creations,
+    DigitalTwinMetadata metadata,
+  ) async {
+    if (await _scanItem(context, creations, metadata)) {
       final userSession = ref.read(userSessionProvider)!;
       final wc = ref.read(wcProvider);
 
@@ -261,12 +294,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     CreationsData creations,
     DigitalTwinMetadata metadata,
   ) async {
-    final res = await scanItem(
-      ref,
-      context,
-      navigateToResultPage: false,
-    );
-    if (res != null) {
+    if (await _scanItem(context, creations, metadata)) {
       final userSession = ref.read(userSessionProvider)!;
       final wc = ref.read(wcProvider);
 
@@ -280,13 +308,11 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
   }
 
   Future<void> _transferItem(
-      BuildContext context, DigitalTwinMetadata metadata) async {
-    final res = await scanItem(
-      ref,
-      context,
-      navigateToResultPage: false,
-    );
-    if (res != null) {
+    BuildContext context,
+    CreationsData creations,
+    DigitalTwinMetadata metadata,
+  ) async {
+    if (await _scanItem(context, creations, metadata)) {
       Navigator.pushNamed(context, TransferScreen.routeName,
           arguments: TransferScreenArguments(
             digitalTwinMetadata: metadata,
