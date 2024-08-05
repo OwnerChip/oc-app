@@ -167,7 +167,7 @@ void main() {
       int customerId = 100;
 
       // act
-      String id = generateOwnerCardIdentifier(
+      String id = generateCardIdentifier(
           customerId, dotenv.get('OWNERCARD_BASE_ID'));
 
       // assert
@@ -181,7 +181,7 @@ void main() {
       int customerId = 103;
 
       // act
-      String id = generateOwnerCardIdentifier(
+      String id = generateCardIdentifier(
           customerId, dotenv.get('OWNERCARD_BASE_ID'));
 
       // assert
@@ -194,7 +194,7 @@ void main() {
       int customerId = 299;
 
       // act
-      String id = generateOwnerCardIdentifier(
+      String id = generateCardIdentifier(
           customerId, dotenv.get('OWNERCARD_BASE_ID'));
 
       // assert

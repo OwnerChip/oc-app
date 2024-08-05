@@ -12,6 +12,7 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
+
 //import screens
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
@@ -26,12 +27,14 @@ import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+
 //import services
 import 'package:ownerchip_whitelabel/services/secora.services.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -325,7 +328,6 @@ Future<void> authenticateCard(
       ref,
       jwt,
     );
-
   }
 
   return await scanClosure(
@@ -461,11 +463,20 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
       context, ref, callback, "CARD_LOST", context.loc.scanToTriggerCardLost);
 }
 
-Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
-    Function setStateCallback, String customerId) async {
-  String identifier = generateOwnerCardIdentifier(
-      int.parse(customerId), dotenv.get('OWNERCARD_BASE_ID'));
+Future<dynamic> importKeyToSlotZero(
+  BuildContext context,
+  WidgetRef ref,
+  Function setStateCallback,
+  String customerId, {
+  required String cardBaseId,
+}) async {
+  String identifier = generateCardIdentifier(
+    int.parse(customerId),
+    cardBaseId,
+  );
   Uint8List seed = hexToBytes(identifier);
+
+
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     var pubKeyZero;

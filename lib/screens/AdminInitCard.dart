@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -18,6 +19,8 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/credentials.dart';
+
+
 
 class AdminInitCard extends ConsumerStatefulWidget {
   const AdminInitCard({Key? key}) : super(key: key);
@@ -34,6 +37,8 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
   List<EthereumAddress> allChipAddresses = [];
   String customerId = '';
 
+
+
   void setChipAddressZero(EthereumAddress chipAddress0) {
     setState(() {
       this.chipAddress0 = chipAddress0;
@@ -42,24 +47,6 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
 
   @override
   Widget build(BuildContext context) {
-    String baseId = dotenv.get('OWNERCARD_BASE_ID');
-    Map<String, EthereumAddress> slot0Addresses = {
-      'OwnerChip':
-          EthereumAddress.fromHex('0x3e873dd1a384860640dff4a78b80f95907ccc3c5'),
-      'Stebo':
-          EthereumAddress.fromHex('0xdb166d2468d111bba8f80904cfd8143cebd07507'),
-      'Infineon':
-          EthereumAddress.fromHex('0x3ad219eb491f5587bc26738cc9abd842f57e188f'),
-      'Stilami':
-          EthereumAddress.fromHex('0x9eb5ac7ce359f50176f98a4b6b6bdbca0cd79185')
-    };
-    List<String> keys = ['OwnerChip', 'Stebo', 'Infineon', 'Stilami'];
-    List values = [
-      'ID: 100 \nSlot 0:${slot0Addresses['OwnerChip']!.hex.substring(0, 6)}...',
-      'ID: 101 \nSlot 0: ${slot0Addresses['Stebo']!.hex.substring(0, 6)}...',
-      'ID: 102 \nSlot 0: ${slot0Addresses['Infineon']!.hex.substring(0, 6)}...',
-      'ID: 103 \nSlot 0: ${slot0Addresses['Stilami']!.hex.substring(0, 6)}...'
-    ];
     return Scaffold(
       appBar: const CustomAppBar(
         text: 'Init OwnerCards slot',
@@ -71,7 +58,13 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
           const Text(
               'ATTENTION: Key slot 0 can only be set on OwnerCards that are not yet PIN code locked. '),
           const SizedBox(height: 10),
-          InfoKeyValues(keys: keys, values: values),
+          InfoKeyValues(
+            keys: OwnercardData.instance.map((e) => e.name).toList(),
+            values: OwnercardData.instance
+                .map((e) =>
+                    "${e.appId.toString()}\nOwnerCard: ${e.ownerCard.hex.substring(0, 6)}...\nCertificate: ${e.certificateCard.hex.substring(0, 6)}...")
+                .toList(),
+          ),
           const SizedBox(height: 20),
           //text input field for the customer id
           Form(
@@ -132,7 +125,30 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                   allChipAddresses = [];
                 });
                 await importKeyToSlotZero(
-                    context, ref, setChipAddressZero, customerId);
+                  context,
+                  ref,
+                  setChipAddressZero,
+                  customerId,
+                  cardBaseId: dotenv.get('OWNERCARD_BASE_ID'),
+                );
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+          CustomRoundedButton(
+            text: 'Init Certificate Card slot 0',
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                setState(() {
+                  allChipAddresses = [];
+                });
+                await importKeyToSlotZero(
+                  context,
+                  ref,
+                  setChipAddressZero,
+                  customerId,
+                  cardBaseId: dotenv.get('CERTIFICATE_CARD_BASE_ID'),
+                );
               }
             },
           ),

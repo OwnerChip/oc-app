@@ -240,7 +240,7 @@ Future<XFile> generateVoucherMetadataFile(
 }
 
 // generate OwnerCard identifier [from customer 100 to 3582]
-String generateOwnerCardIdentifier(int customerId, String baseIdentifier) {
+String generateCardIdentifier(int customerId, String baseIdentifier) {
   return (customerId == 103)
       ? '${baseIdentifier}0e0f'
       : (customerId < 256)
