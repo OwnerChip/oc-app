@@ -90,7 +90,7 @@
     "ownershipCheck": "Eigentums-Check",
     "authenticityNftFound": "Token auf Blockchain gefunden.",
     "authenticityNftNotFound": "Token nicht auf Blockchain gefunden.",
-    "authenticityCheck": "Echtheits-Check",
+    "authenticityCheck": "Echtheitszertifikat",
     "nfcCheck": "NFC Check",
     "whoops": "Ups!",
     "youAreNotNftOwner": "Dieser Gegenstand gehört nicht Ihnen.",
