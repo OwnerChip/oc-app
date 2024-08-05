@@ -4,36 +4,42 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:web3dart/web3dart.dart';
 
 class DisplayLongStringWithCopy extends StatelessWidget {
-  const DisplayLongStringWithCopy(
-      {super.key,
-      required this.string,
-      this.iconSize = 25,
-      this.textCopiedMessage = 'Copied!',
-      this.textStyles});
+  const DisplayLongStringWithCopy({
+    super.key,
+    required this.string,
+    this.iconSize = 25,
+    this.textCopiedMessage = 'Copied!',
+    this.textStyles,
+    this.maxLength = 8,
+  });
 
   final String string;
   final double iconSize;
   final TextStyle? textStyles;
   final String textCopiedMessage;
 
+  final int maxLength;
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
       children: [
-        Text('${string.substring(0, 8)}...',
+        Text('${string.substring(0, maxLength)}...',
             style: textStyles ?? Theme.of(context).textTheme.headlineSmall),
-        IconButton(
-            color: Theme.of(context).primaryColor,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            iconSize: iconSize,
-            onPressed: () {
+        const SizedBox(
+          width: 8,
+        ),
+        InkWell(
+            onTap: () {
               Clipboard.setData(ClipboardData(text: string));
               ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBar(content: Text(textCopiedMessage)));
             },
-            icon: const Icon(Icons.copy))
+            child: Icon(
+              Icons.copy,
+              color: Theme.of(context).primaryColor,
+              size: iconSize,
+            ))
       ],
     );
   }

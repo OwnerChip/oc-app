@@ -28,6 +28,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -39,10 +40,12 @@ import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -430,19 +433,21 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                               ),
                               // ownership
                               creatorData.when(
-                                data: (nftOwnerData) {
-                                  return nftOwnerData.name;
+                                data: (nftCreatorData) {
+                                  return nftCreatorData.name;
                                 },
-                                error: (e, s) => context.loc.ownerError,
+                                error: (e, s) => context
+                                    .loc.nftDetailsErrorFetchingCertificateData,
                                 loading: () => context.loc.loading,
                               ),
                               // creation date
                               creatorData.when(
-                                data: (nftOwnerData) {
+                                data: (nftCreatorData) {
                                   return formatter
-                                      .format(nftOwnerData.createdAt);
+                                      .format(nftCreatorData.createdAt);
                                 },
-                                error: (e, s) => context.loc.ownerError,
+                                error: (e, s) => context
+                                    .loc.nftDetailsErrorFetchingCertificateData,
                                 loading: () => context.loc.loading,
                               ),
                             ]),
@@ -452,6 +457,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                 : InfoKeyValues(keys: [
                                     context.loc.nftDetailsPageCollection,
                                     "Blockchain",
+                                    "Token ID",
                                   ], values: [
                                     // first, try to find collection in collections list
                                     (allCollections.collections[
@@ -475,15 +481,20 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                 ))).name,
                                     chainConfig[tokenInfoData.chainId]!
                                         .networkName,
+                                    DisplayLongStringWithCopy(
+                                      string: BigInt.parse(
+                                              chipInfo.chipEthereumAddress
+                                                  .toString()
+                                                  .substring(2),
+                                              radix: 16)
+                                          .toString(),
+                                      maxLength: 8,
+                                      iconSize: 20,
+                                      textStyles: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall,
+                                    )
                                   ]),
-                            //spacing
-                            ChipInfo(
-                              tokenId: BigInt.parse(
-                                  chipInfo.chipEthereumAddress
-                                      .toString()
-                                      .substring(2),
-                                  radix: 16),
-                            ),
                             tokenInfoData.chainId == 0
                                 ? Container()
                                 : InfoKeyValues(keys: [
@@ -505,7 +516,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                           return context.loc.unconfirmed;
                                         }
                                       },
-                                      error: (e, s) => context.loc.ownerError,
+                                      error: (e, s) => context.loc
+                                          .nftDetailsErrorFetchingCertificateData,
                                       loading: () => context.loc.loading,
                                     ),
                                   ]),

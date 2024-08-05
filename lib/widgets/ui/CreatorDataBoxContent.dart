@@ -29,7 +29,7 @@ class CreatorDataBoxContent extends StatelessWidget {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            InfoKeyValues(keyWidth: 90, valueWidth: 162, keys: [
+            InfoKeyValues(keys: [
               'Name',
               'Affiliation',
               context.loc.createdAt,

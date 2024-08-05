@@ -4,17 +4,14 @@ import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class InfoKeyValues extends StatelessWidget {
-  InfoKeyValues(
-      {super.key,
-      required this.keys,
-      required this.values,
-      this.keyWidth = 135,
-      this.valueWidth = 135});
+  const InfoKeyValues({
+    super.key,
+    required this.keys,
+    required this.values,
+  });
 
   final List<String> keys;
   final List<dynamic> values;
-  final double keyWidth;
-  final double valueWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +25,12 @@ class InfoKeyValues extends StatelessWidget {
           return Column(
             children: [
               Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: keyWidth,
+                  Flexible(
+                    flex: 1,
                     child: Flex(
                       direction: Axis.horizontal,
                       children: [
@@ -45,13 +42,13 @@ class InfoKeyValues extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(
-                    width: 10,
+                    width: 4,
                   ),
                   Flexible(
+                      flex: 1,
                       child: values[idx] is String
                           ? Linkify(
-                              style:
-                                  Theme.of(context).textTheme.headlineSmall,
+                              style: Theme.of(context).textTheme.headlineSmall,
                               onOpen: (link) async {
                                 if (!await launchUrl(Uri.parse(link.url))) {
                                   throw Exception(

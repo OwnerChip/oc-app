@@ -122,7 +122,7 @@
     "scanNow": "Jetzt scannen",
     "pleaseSelect": "- bitte auswählen -",
     "pleaseSelectChainAndCollection": "Bitte Blockchain & Collection auswählen",
-    "digitalTwin": "Digital Twin / Echtheitszertifikat",
+    "digitalTwin": "Zertifikat",
     "authenticity": "Echtheit",
     "ownership": "Eigentum",
     "unconfirmed": "Nicht bestätigt",
@@ -427,6 +427,7 @@
     "nftDetailsPageAuthenticityNotCertified": "Nicht zertifiziert",
     "nftDetailsPageCertifier": "Zertifizierer",
     "nftDetailsPageCreationDate": "Datum der Erstellung",
-    "nftDetailsPageCollection": "Sammlung"
+    "nftDetailsPageCollection": "Sammlung",
+    "nftDetailsErrorFetchingCertificateData": "unbekannt"
 
 }
