@@ -52,7 +52,7 @@ class PukDisplay extends ConsumerWidget {
                   text: context.loc.connectOwnerCard,
                   onPressed: (() async {
                     try {
-                      await authenticateCard(ref, context, pin!);
+                      await authenticateCard(ref, context, pin: pin!);
                       ScaffoldMessenger.of(context).showSnackBar(
                           returnSnackBarWidget(
                               context.loc.successHeadingSnackbar,

@@ -10,6 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 
@@ -256,10 +257,12 @@ Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
 //returns MsgSignature if everything worked correctly
 //returns null if user cancels scan or error occurs
 Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
-    msgHashToSign, Function toggleLoading, String pin) async {
+    msgHashToSign, Function toggleLoading, String? pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    bool pinVerified = await verifyPin(nfc, pin);
+    if (pin != null) {
+      bool pinVerified = await verifyPin(nfc, pin);
+    }
     EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
         nfc,
@@ -270,14 +273,40 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
     return signature;
   }
 
-  return await scanClosure(context, ref, callback, "MAKE_CARD_SIGNATURE",
-      context.loc.holdPhoneToCard);
+  return await scanClosure(
+      context,
+      ref,
+      callback,
+      "MAKE_CARD_SIGNATURE",
+      pin == null
+          ? context.loc.holdPhoneCloseToCertificateCardToInit
+          : context.loc.holdPhoneToCard);
 }
 
 Future<void> authenticateCard(
-    WidgetRef ref, BuildContext context, String pin) async {
+  WidgetRef ref,
+  BuildContext context, {
+  String? pin,
+}) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
+    final firstPubKey = await getPubKeyN(nfc, 0x00);
+    final address = OwnercardData.fromPubKeyZeros(firstPubKey);
+
+    final bool isCertificateCard = OwnercardData.isCertificateCard(address);
+
+    if (pin == null) {
+      // check if the card is a certificate card
+      if (!OwnercardData.isCertificateCard(address)) {
+        throw context.loc.cardIsNotCertificateCard;
+      }
+    } else {
+      // check if the card is an owner card
+      if (!OwnercardData.isOwnerCard(address)) {
+        throw context.loc.cardIsNotOwnerCard;
+      }
+    }
+
     final String message =
         "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
 
@@ -290,7 +319,9 @@ Future<void> authenticateCard(
     final prefixedMessage =
         "\x19Ethereum Signed Message:\n${siweMessage[1].length}${siweMessage[1]}";
     Uint8List msgHashToSign = keccakUtf8(prefixedMessage);
-    final bool pinVerified = await verifyPin(nfc, pin);
+    if (pin != null) {
+      await verifyPin(nfc, pin);
+    }
     final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
       nfc,
@@ -327,11 +358,19 @@ Future<void> authenticateCard(
       signature,
       ref,
       jwt,
+      isCertificateCard,
     );
   }
 
   return await scanClosure(
-      context, ref, callback, "AUTHENTICATE_CARD", context.loc.holdPhoneToCard);
+    context,
+    ref,
+    callback,
+    "AUTHENTICATE_CARD",
+    pin == null
+        ? context.loc.holdPhoneCloseToCertificateCardToInit
+        : context.loc.holdPhoneToCard,
+  );
 }
 
 Future<String?> setPinOnCard(
@@ -339,6 +378,13 @@ Future<String?> setPinOnCard(
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+
+    final address = OwnercardData.fromPubKeyZeros(pubKeyZero);
+
+    if (OwnercardData.isCertificateCard(address)) {
+      throw context.loc.cannotSetPinOnCertificateCard;
+    }
+
     if (pubKeyZero.isNotEmpty) {
       return await setPin(nfc, pin);
     } else {
@@ -354,6 +400,12 @@ Future<String?> resetPinOnCard(
     BuildContext context, WidgetRef ref, String puk, String pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
+    Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+    final address = OwnercardData.fromPubKeyZeros(pubKeyZero);
+    if (OwnercardData.isCertificateCard(address)) {
+      throw context.loc.cannotResetPinOnCertificateCard;
+    }
+
     bool success = await unlockPin(nfc, puk);
     if (success) {
       return await setPin(nfc, pin);
@@ -476,7 +528,6 @@ Future<dynamic> importKeyToSlotZero(
   );
   Uint8List seed = hexToBytes(identifier);
 
-
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     var pubKeyZero;
@@ -488,8 +539,8 @@ Future<dynamic> importKeyToSlotZero(
     BackendCustomer.sendCardInitToBackend(
         customerId, createFirstKeyChipResponse[0]);
 
-    EthereumAddress cardWalletAddress = EthereumAddress.fromHex(
-        "0x${bytesToHex(publicKeyToAddress(pubKeyZero))}");
+    EthereumAddress cardWalletAddress =
+        OwnercardData.fromPubKeyZeros(pubKeyZero);
 
     setStateCallback(cardWalletAddress);
   }

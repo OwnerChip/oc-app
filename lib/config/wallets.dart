@@ -5,6 +5,8 @@ enum EWalletType {
   ownerCard,
   walletConnect,
   web3auth,
+
+  certificateCard,
 }
 
 final WalletType _ownerCard = WalletType(
@@ -25,8 +27,15 @@ final WalletType _web3auth = WalletType(
   EWalletType.web3auth,
 );
 
+final WalletType _certificateCard = WalletType(
+  "CertificateCard",
+  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/app_logo_splash.png",
+  EWalletType.certificateCard,
+);
+
 final Map<EWalletType, WalletType> walletConfig = {
   EWalletType.ownerCard: _ownerCard,
   EWalletType.walletConnect: _walletConnect,
   EWalletType.web3auth: _web3auth,
+  EWalletType.certificateCard: _certificateCard,
 };

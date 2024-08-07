@@ -137,7 +137,6 @@ Future<String> makeAndSendGaslessTx(
     String signature = "";
     if (walletType.type == EWalletType.ownerCard) {
       String hash = await getGaslessTxHash(request, toAddress);
-
       var cardSignature =
           // ignore: use_build_context_synchronously
           await Navigator.pushNamed(context, PinScreen.routeName,
@@ -149,6 +148,15 @@ Future<String> makeAndSendGaslessTx(
                   })) as MsgSignature;
 
       signature = msgSignatureToHex(cardSignature);
+    } else if (walletType.type == EWalletType.certificateCard) {
+      final sig = await makeCardSignature(
+        ref,
+        context,
+        await getGaslessTxHash(request, toAddress),
+        toggleLoading,
+        null,
+      );
+      signature = msgSignatureToHex(sig!);
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
 
@@ -401,7 +409,11 @@ Future<String> makeAndSendNormalTx(
     throw Exception('Wallet type not found');
   }
 
-  if ([EWalletType.ownerCard, EWalletType.web3auth].contains(walletType.type)) {
+  if ([
+    EWalletType.ownerCard,
+    EWalletType.certificateCard,
+    EWalletType.web3auth,
+  ].contains(walletType.type)) {
     final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
     final params = txParams[0];
 
@@ -476,6 +488,17 @@ Future<String> makeAndSendNormalTx(
 
       msgSignature =
           MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
+    } else if (walletType.type == EWalletType.certificateCard) {
+      final sig = await makeCardSignature(
+        ref,
+        context,
+        hash,
+        () {},
+        null,
+      );
+
+      msgSignature =
+          MsgSignature(sig!.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
     } else {
       final priv = await Web3AuthFlutter.getPrivKey();
 
@@ -756,6 +779,44 @@ void unsubscribeWcListeners(WidgetRef ref, BuildContext context) {
   }
 }
 
+Future<void> onCertificateCardLogin(
+  WidgetRef ref,
+  BuildContext context,
+  bool removeWalletPopup,
+) async {
+  try {
+    if (!await checkInternetConnection()) {
+      throw "No internet connection";
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.errorHeadingSnackBar,
+        context.loc.errorNoInternetConnection,
+        'error'));
+    return;
+  }
+
+  await authenticateCard(
+    ref,
+    context,
+    pin: null,
+  );
+  final walletType = ref.read(walletTypeProvider);
+  if (walletType != null) {
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.successHeadingSnackbar,
+        context.loc.certificateCardLoginSuccess,
+        'success'));
+  }
+
+  //navigate to previous screen
+  Navigator.pop(context);
+  if (removeWalletPopup) {
+    //remove wallet popup
+    Navigator.pop(context);
+  }
+}
+
 Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
     bool removeWalletPopup) async {
   try {
@@ -769,7 +830,11 @@ Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
         'error'));
     return;
   }
-  await authenticateCard(ref, context, pin);
+  await authenticateCard(
+    ref,
+    context,
+    pin: pin,
+  );
   ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
       context.loc.successHeadingSnackbar,
       context.loc.successCardLogin,

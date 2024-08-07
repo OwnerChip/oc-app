@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class OwnercardData {
@@ -12,6 +14,11 @@ class OwnercardData {
     required this.ownerCard,
     required this.certificateCard,
   });
+
+  static EthereumAddress fromPubKeyZeros(Uint8List pubKey) {
+    return EthereumAddress.fromHex(
+        "0x${bytesToHex(publicKeyToAddress(pubKey))}");
+  }
 
   static bool isCertificateCard(EthereumAddress address) {
     return instance.any((element) => element.certificateCard == address);

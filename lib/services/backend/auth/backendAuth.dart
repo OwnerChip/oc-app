@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
@@ -84,14 +85,12 @@ abstract class BackendAuth extends Backend {
       // create a guest session
       if (cached != null &&
           JwtToken.decode(cached).exp > BackendAuth.nowPlusThreeHours()) {
-        talker
-            .info("recreating services with cached guest session \n $cached");
+        talker.info("recreating services with cached guest session \n $cached");
         final jwt = JwtToken.decode(cached);
         Backend.recreateServices(jwt.raw);
       } else {
         talker.info("creating new guest session");
-        final newJwt =
-        JwtToken.decode(await BackendAuth.createGuestSession());
+        final newJwt = JwtToken.decode(await BackendAuth.createGuestSession());
         storage.setString("guestSession", newJwt.raw);
         print(newJwt.exp);
         Backend.recreateServices(newJwt.raw);
@@ -179,13 +178,14 @@ abstract class BackendAuth extends Backend {
     );
   }
 
-  /// save a userSession of a OwnerCard
+  /// save a userSession of a OwnerCard or CertificateCard
   static Future<void> saveUserSession(
     String sessionId,
     EthereumAddress cardWalletAddress,
     MsgSignature signature,
     WidgetRef ref,
     String? jwt,
+    bool isCertificateCard,
   ) async {
     late JwtToken jwtToken;
 
@@ -214,18 +214,17 @@ abstract class BackendAuth extends Backend {
     Backend.recreateServices(jwtToken.raw);
 
     UserSession userSession = UserSession(
-      sessionId,
-      signature,
-      ref.read(userAddressProvider),
-      isOwnerCard,
-      jwtToken,
-      await BackendFCM.getAndSaveFCMToken(sessionId)
-    );
-
+        sessionId,
+        signature,
+        ref.read(userAddressProvider),
+        isOwnerCard,
+        jwtToken,
+        await BackendFCM.getAndSaveFCMToken(sessionId));
 
     ref.read(userSessionProvider.notifier).state = userSession;
-    ref.read(walletTypeProvider.notifier).state =
-        walletConfig[EWalletType.ownerCard];
+    ref.read(walletTypeProvider.notifier).state = walletConfig[isCertificateCard
+        ? EWalletType.certificateCard
+        : EWalletType.ownerCard];
     ref.read(creationsNotifierProvider.notifier).init();
 
     //persist session date

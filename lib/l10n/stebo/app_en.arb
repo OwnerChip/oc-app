@@ -221,6 +221,7 @@
     "transferOnlyToOwnerCard": "Transfer only possible to initialized OwnerCard.",
     "digitalContentWillBeTransferred": "Public and private Digital Content will be transferred together with the token.",
     "ownercard": "OwnerCard",
+    "certificatecard": "Certificate Card",
     "or": "or",
     "cardNotInitializedByAdmin": "OwnerCard not yet initialized by admin.",
     "deletingAttachment": "Deleting attachment",
@@ -434,6 +435,15 @@
     "nftCreationsPagePending": "To be minted",
     "nftCreationsPageToBeTransferred": "To be transferred",
     "nftCreationsPageError": "Error",
-    "nftCreationsPageChipMismatchError": "Chip mismatch"
+    "nftCreationsPageChipMismatchError": "Chip mismatch",
+    "@_CERTIFICATE_CARD": {},
+    "certificateCardLoginSuccess": "Successfully connected with Certificate Card.",
+    "cannotSetPinOnCertificateCard": "Cannot set PIN on Certificate Card",
+    "cannotResetPinOnCertificateCard": "Cannot reset PIN on Certificate Card",
+    "cardIsNotCertificateCard": "NFC chip is not a Certificate Card.",
+    "cardIsNotOwnerCard": "NFC chip is not an OwnerCard.",
+    "holdPhoneCloseToCertificateCardToInit": "Hold your phone close to the Certificate Card"
+
+
 
 }

@@ -11,11 +11,14 @@ import 'package:flutter/gestures.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
@@ -52,7 +55,7 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
               Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
                 runAlignment: WrapAlignment.center,
-                runSpacing: 24,
+                runSpacing: 12,
                 alignment: WrapAlignment.start,
                 children: [
                   // Web3auth with Apple
@@ -104,6 +107,23 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                     backgroundColor: CustomColors(dotenv.get('APP_ID'))
                         .ownerCardWalletIconBackgroundColor,
                   ),
+
+                  // Certificate Card
+                  if (dotenv.get("IS_INTERNAL") == "true")
+                    WalletIcon(
+                      iconPath:
+                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
+                      walletName: context.loc.certificatecard,
+                      onTap: () async {
+                        onCertificateCardLogin(
+                          ref,
+                          context,
+                          false,
+                        );
+                      },
+                      backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                          .ownerCardWalletIconBackgroundColor,
+                    ),
                   WalletIcon(
                     iconPath:
                         "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/walletconnect.png",

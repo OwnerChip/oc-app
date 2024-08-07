@@ -34,8 +34,8 @@ class WalletIcon extends StatelessWidget {
                         blurRadius: 5,
                       )
                     ]),
-                width: 60,
-                height: 60,
+                width: 52,
+                height: 52,
                 child: Padding(
                   padding: const EdgeInsets.all(7),
                   child:
@@ -51,7 +51,7 @@ class WalletIcon extends StatelessWidget {
                             ),
                 )),
             SizedBox(
-                width: 130,
+                width: 112,
                 child: Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
