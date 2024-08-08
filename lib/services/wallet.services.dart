@@ -835,10 +835,14 @@ Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
     context,
     pin: pin,
   );
-  ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-      context.loc.successHeadingSnackbar,
-      context.loc.successCardLogin,
-      'success'));
+  final type = ref.read(walletTypeProvider);
+  if (type != null) {
+    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+        context.loc.successHeadingSnackbar,
+        context.loc.successCardLogin,
+        'success'));
+  }
+
   //navigate to previous screen
   Navigator.pop(context);
   if (removeWalletPopup) {
