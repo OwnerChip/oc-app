@@ -869,9 +869,7 @@ Future<void> setupWeb3Auth() async {
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
-      network: dotenv.get('IS_INTERNAL') == 'true'
-          ? Network.sapphire_devnet
-          : Network.sapphire_mainnet,
+      network: Network.sapphire_mainnet,
       redirectUrl: redirectUrl,
       whiteLabel: WhiteLabelData(
         mode: ThemeModes.dark,
