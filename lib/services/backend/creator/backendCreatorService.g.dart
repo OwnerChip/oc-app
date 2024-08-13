@@ -47,6 +47,36 @@ class _BackendCreatorService implements BackendCreatorService {
     return httpResponse;
   }
 
+  @override
+  Future<Web3AuthDataDto?> updateWeb3AuthData(
+      {required UpdateWeb3AuthDataPayload payload}) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(payload.toJson());
+    final _result = await _dio
+        .fetch<Map<String, dynamic>?>(_setStreamType<Web3AuthDataDto>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/web3auth',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value =
+        _result.data == null ? null : Web3AuthDataDto.fromJson(_result.data!);
+    return value;
+  }
+
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
     if (T != dynamic &&
         !(requestOptions.responseType == ResponseType.bytes ||

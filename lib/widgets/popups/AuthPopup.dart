@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/payloads/updateWeb3AuthDataPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
@@ -16,10 +19,12 @@ import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifie
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
@@ -31,7 +36,11 @@ import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 Future<dynamic> authPopupBuilder(
-    BuildContext context, WidgetRef ref, Web3App wc, String walletName) async {
+  BuildContext context,
+  WidgetRef ref,
+  Web3App wc,
+  String walletName,
+) async {
   return showDialog<dynamic>(
     context: context,
     builder: (BuildContext context) {
@@ -195,6 +204,25 @@ Future<void> onTapAuth(
   }
 
   Backend.recreateServices(token.raw);
+
+  if (walletType.type == EWalletType.web3auth) {
+    try {
+      final data = await Web3AuthFlutter.getUserInfo();
+      final payload = UpdateWeb3AuthDataPayload(
+        name: data.name,
+        email: data.email,
+        picture: data.profileImage,
+        providerType: data.typeOfLogin ?? "",
+      );
+      await BackendCreator.updateWeb3AuthData(payload);
+    } catch (e, st) {
+      talker.error(
+        'Error updating web3auth data',
+        e,
+        st,
+      );
+    }
+  }
 
   UserSession userSession = UserSession(
     sessionId,

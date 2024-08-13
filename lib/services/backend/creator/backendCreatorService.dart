@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:ownerchip_whitelabel/domain/creator/web3AuthDataDto.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/payloads/updateWeb3AuthDataPayload.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'backendCreatorService.g.dart';
@@ -28,5 +30,10 @@ abstract class BackendCreatorService {
   @GET("/{tokenId}")
   Future<HttpResponse> getCreatorData({
     @Path("tokenId") required String tokenId,
+  });
+
+  @POST("/web3auth")
+  Future<Web3AuthDataDto?> updateWeb3AuthData({
+    @Body() required UpdateWeb3AuthDataPayload payload,
   });
 }
