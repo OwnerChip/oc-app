@@ -205,7 +205,7 @@ Future<void> _loginWithWeb3Auth(
   Navigator.pop(context);
   await Web3AuthFlutter.login(
     LoginParams(loginProvider: provider),
-  ).then((e) {
+  ).then((e) async {
     final Web3AuthNotifier web3AuthNotifier =
         ref.read(web3AuthNotifierProvider.notifier);
 

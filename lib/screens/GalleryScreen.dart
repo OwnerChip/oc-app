@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/oc/oc_owned_nft.dart';
 import 'package:ownerchip_whitelabel/services/providers/common/notifierPaginationData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nft/nftForOwner/nftForOwnerData.dart';
@@ -15,6 +16,7 @@ import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/utils/urls.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
@@ -139,7 +141,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                 getNotifier: () =>
                     ref.read(ocNFTsMintedByUserNotifierProvider.notifier),
                 buildEmptyState: (context) =>
-                    _buildYouHaventMintedAnyItems(context),
+                    _buildYouHaventMintedAnyItems(context, userSession!.jwt),
                 buildErrorState: (context) =>
                     _buildErrorLoadingCreatedItems(context),
                 scrollController: _mintedNftsScrollController,
@@ -341,7 +343,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
         ]);
   }
 
-  Column _buildYouHaventMintedAnyItems(BuildContext context) {
+  Column _buildYouHaventMintedAnyItems(
+    BuildContext context,
+    JwtToken jwtToken,
+  ) {
     return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -357,9 +362,9 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
             height: 20,
           ),
           CustomRoundedButton(
-              text: context.loc.orderChips,
+              text: context.loc.signupAsCertifier,
               onPressed: () => {
-                    launchUrl(Uri.parse(context.loc.orderChipsUrl),
+                    launchUrl(Uri.parse(getBecomeACreatorUrl(jwtToken.raw)),
                         mode: LaunchMode.externalApplication)
                   },
               width: 250),

@@ -36,6 +36,7 @@ class MoreInfoScreen extends ConsumerStatefulWidget {
 class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionProvider);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
@@ -71,7 +72,11 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                           .pushReplacementNamed(OnboardingScreen.routeName);
                     },
                     width: 250)),
-            ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
+            ...MoreInfoButtons(
+              dotenv.get('APP_ID'),
+              context.loc,
+              session?.jwt.raw,
+            )
                 .roundedButtons
                 .map((button) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
@@ -111,7 +116,11 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                         width: 250))
                 : Container(),
             const SizedBox(height: 60),
-            ...MoreInfoButtons(dotenv.get('APP_ID'), context.loc)
+            ...MoreInfoButtons(
+              dotenv.get('APP_ID'),
+              context.loc,
+              session?.jwt.raw,
+            )
                 .outlinedRoundedButtons
                 .map((button) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
