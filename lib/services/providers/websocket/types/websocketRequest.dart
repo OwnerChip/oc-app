@@ -13,12 +13,8 @@ class WebsocketRequest {
 
   final String type;
 
-  @DynamicOneSideJsonConverter()
-  final dynamic data;
-
   const WebsocketRequest({
     required this.type,
-    required this.data,
   });
 }
 
@@ -31,15 +27,3 @@ extension WebsocketRequestTypeExtension on WebsocketRequestType {
 final websocketRequestTypes = {
   WebsocketRequestType.ping: '1',
 };
-
-class DynamicOneSideJsonConverter<T> implements JsonConverter<T, Object?> {
-  const DynamicOneSideJsonConverter();
-
-  @override
-  T fromJson(Object? json) {
-    throw Exception('not implemented');
-  }
-
-  @override
-  Object? toJson(T object) => (object as dynamic).toJson();
-}

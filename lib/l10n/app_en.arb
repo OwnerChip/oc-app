@@ -443,6 +443,9 @@
   "cannotResetPinOnCertificateCard": "Cannot reset PIN on Certificate Card",
   "cardIsNotCertificateCard": "NFC chip is not a Certificate Card.",
   "cardIsNotOwnerCard": "NFC chip is not an OwnerCard.",
-  "holdPhoneCloseToCertificateCardToInit": "Hold your phone close to the Certificate Card"
-
+  "holdPhoneCloseToCertificateCardToInit": "Hold your phone close to the Certificate Card",
+  "@_QR_CODE_LOGIN": {},
+  "scanQRCode": "Scan QR code",
+  "noConnection": "No connection",
+  "invalidQRCode": "Invalid QR code"
 }

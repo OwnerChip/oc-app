@@ -11,6 +11,5 @@ class WebsocketPingRequest extends WebsocketRequest {
   @override
   Map<String, dynamic> toJson() => _$WebsocketPingRequestToJson(this);
 
-  WebsocketPingRequest()
-      : super(type: WebsocketRequestType.ping.str, data: null);
+  WebsocketPingRequest() : super(type: WebsocketRequestType.ping.str);
 }
