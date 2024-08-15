@@ -27,7 +27,6 @@ abstract class BackendAuthService {
     return _BackendAuthService(dio, baseUrl: "${dio.options.baseUrl}/auth");
   }
 
-
   // @deprecated
   @POST("/{expiration}")
   Future<String> getSessionExpiration({
@@ -48,5 +47,4 @@ abstract class BackendAuthService {
 
   @GET("/session/terminate")
   Future<void> terminateSession();
-
 }

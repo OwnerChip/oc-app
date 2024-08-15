@@ -46,6 +46,7 @@ dependencies:
   retrofit: ^4.1.0
   native_ios_dialog: ^0.2.1
   mobile_scanner: ^5.1.1
+  socket_io_client: ^2.0.3+1
 
   #  Logger
   ansicolor: ^2.0.2

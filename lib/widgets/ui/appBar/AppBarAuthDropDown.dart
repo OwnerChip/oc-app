@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotif
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -215,6 +216,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       ref.read(userAddressProvider.notifier).state = zeroAddress;
       ref.read(walletTypeProvider.notifier).state = null;
       ref.read(userSessionProvider.notifier).state = null;
+      ref.read(websocketProvider.notifier).disconnect();
       ref.read(creationsNotifierProvider.notifier).onLogout();
 
       final storage = await SharedPreferences.getInstance();

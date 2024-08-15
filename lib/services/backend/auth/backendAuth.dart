@@ -17,6 +17,7 @@ import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry/sentry.dart';
@@ -213,6 +214,7 @@ abstract class BackendAuth extends Backend {
 
     Backend.recreateServices(jwtToken.raw);
 
+
     UserSession userSession = UserSession(
         sessionId,
         signature,
@@ -226,7 +228,7 @@ abstract class BackendAuth extends Backend {
         ? EWalletType.certificateCard
         : EWalletType.ownerCard];
     ref.read(creationsNotifierProvider.notifier).init();
-
+    ref.read(websocketProvider.notifier).init();
     //persist session date
     final SharedPreferences storage = await SharedPreferences.getInstance();
     storage.setString(
