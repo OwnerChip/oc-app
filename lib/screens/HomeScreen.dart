@@ -30,6 +30,7 @@ import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotif
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -139,6 +140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
+            ref.read(websocketProvider.notifier).init();
           } else {
             if (privKey == null) {}
           }
@@ -150,6 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
+            ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
             storage.remove('session');
@@ -171,6 +174,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
+            ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
             storage.remove('session');
