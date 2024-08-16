@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
+import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -53,7 +55,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
             right: 12,
             top: CustomAppBar.kCustomAppBarHeight - 16,
             width: 220,
-            height: 120,
+            height: 160,
             child: Container(
               decoration: BoxDecoration(
                 color: CustomColors(dotenv.get('APP_ID')).cardColor,
@@ -126,6 +128,22 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                           _buildItem(
                             context,
                             () {
+                              _onScanQRClicked(context);
+                            },
+                            (context) => Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  context.loc.scanQRCode,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                          _buildDivider(),
+                          _buildItem(
+                            context,
+                            () {
                               _onLogoutClicked(context);
                             },
                             (context) => Row(
@@ -181,6 +199,65 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     widget.closeOverlay();
   }
 
+  void _onScanQRClicked(BuildContext context) {
+    final socket = ref.read(websocketProvider);
+
+    if (!socket.connected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+          context.loc.errorHeadingSnackBar,
+          context.loc.noConnection,
+          'error',
+        ),
+      );
+      return;
+    }
+
+    final sessionId = ref.read(userSessionProvider)!.sessionId;
+    final socketId = socket.socket!.id!;
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    Navigator.of(context)
+        .pushNamed(QRCodeScannerScreen.routeName)
+        .then((dynamic response) {
+      if (response == null) {
+        return null;
+      }
+      if (response is! String) {
+        return null;
+      }
+
+      final split = response.split(':');
+
+      if (split[0] == "OWNERCHIP_LOGIN") {
+        final requestId = split[1];
+
+        BackendAuth.confirmQrCodeLogin(
+          requestId: requestId,
+          sessionId: sessionId,
+          socketId: socketId,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+            context.loc.successHeadingSnackbar,
+            context.loc.walletAuthenticated,
+            'success',
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar,
+            context.loc.invalidQRCode,
+            'error',
+          ),
+        );
+      }
+    });
+    widget.closeOverlay();
+  }
+
   void _copyAddress() {
     final userSession = ref.read(userSessionProvider);
     if (userSession == null) return;
@@ -204,61 +281,58 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   Future<void> _disconnect(
     BuildContext context,
   ) async {
+    final wc = ref.read(wcProvider);
+    W3MSession? wcSession = ref.watch(wcSessionProvider);
 
-      final wc = ref.read(wcProvider);
-      W3MSession? wcSession = ref.watch(wcSessionProvider);
+    final session = ref.read(userSessionProvider);
+    final FCMToken? fcmToken = session?.fcmToken;
 
-      final session = ref.read(userSessionProvider);
-      final FCMToken? fcmToken = session?.fcmToken;
+    //reset providers
+    ref.read(userAddressProvider.notifier).state = zeroAddress;
+    ref.read(walletTypeProvider.notifier).state = null;
+    ref.read(userSessionProvider.notifier).state = null;
+    ref.read(websocketProvider.notifier).disconnect();
+    ref.read(creationsNotifierProvider.notifier).onLogout();
 
-      //reset providers
-      ref.read(userAddressProvider.notifier).state = zeroAddress;
-      ref.read(walletTypeProvider.notifier).state = null;
-      ref.read(userSessionProvider.notifier).state = null;
-      ref.read(creationsNotifierProvider.notifier).onLogout();
+    final storage = await SharedPreferences.getInstance();
 
-      final storage = await SharedPreferences.getInstance();
+    //remove session and wallet type from storage
+    storage.remove('session');
+    storage.remove('walletType');
+    storage.remove('userSession');
 
-      //remove session and wallet type from storage
-      storage.remove('session');
-      storage.remove('walletType');
-      storage.remove('userSession');
+    ref.refresh(web3AuthNotifierProvider);
 
-      ref.refresh(web3AuthNotifierProvider);
+    try {
+      await Web3AuthFlutter.logout().catchError((_) {});
+    } catch (e) {
+      talker.error('Error logging out of web3auth', e);
+    }
 
-      try {
-        await Web3AuthFlutter.logout().catchError((_) {});
-      } catch (e) {
-        talker.error('Error logging out of web3auth', e);
-      }
+    if (wc != null && wcSession != null) {
+      await wc.disconnectSession(
+          topic: wcSession.topic!,
+          reason: const WalletConnectError(
+              code: 6000,
+              message:
+                  'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+    }
 
-      if (wc != null && wcSession != null) {
-        await wc.disconnectSession(
-            topic: wcSession.topic!,
-            reason: const WalletConnectError(
-                code: 6000,
-                message:
-                    'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
-      }
+    final terminated = await BackendAuth.terminateSession();
 
-      final terminated = await BackendAuth.terminateSession();
+    // fallback to delete fcm token if session termination failed
+    if (!terminated && fcmToken != null) {
+      await BackendFCM.deleteFCMToken(fcmToken);
+    }
 
-      // fallback to delete fcm token if session termination failed
-      if (!terminated && fcmToken != null) {
-        await BackendFCM.deleteFCMToken(fcmToken);
-      }
+    try {
+      // clean up services
+      await BackendAuth.initGuestSession();
+    } catch (e) {
+      talker.error('Error cleaning up services', e);
+    }
 
-
-
-      try {
-        // clean up services
-        await BackendAuth.initGuestSession();
-      } catch (e) {
-        talker.error('Error cleaning up services', e);
-      }
-
-      //navigate back until homescreen
-      Navigator.of(context).popUntil((route) => route.isFirst);
-
+    //navigate back until homescreen
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 }

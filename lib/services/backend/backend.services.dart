@@ -50,11 +50,16 @@ abstract class Backend {
     return client;
   }
 
+  static String? get jwt => _jwt;
+  static String? _jwt;
+
   static void recreateServices(String? jwt) {
     if (jwt != null && jwt.isEmpty) {
       jwt = null;
     }
-    if(jwt == null) {
+    _jwt = jwt;
+
+    if (jwt == null) {
       talker.debug("JWT is null", StackTrace.current);
     }
 

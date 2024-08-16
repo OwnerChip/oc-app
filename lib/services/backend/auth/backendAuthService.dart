@@ -1,5 +1,6 @@
 import "package:dio/dio.dart";
 import "package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart";
+import "package:ownerchip_whitelabel/services/backend/auth/payloads/qrcodeLoginConfirmPayload.dart";
 import "package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart";
 import "package:ownerchip_whitelabel/services/backend/backend.services.dart";
 import "package:retrofit/retrofit.dart";
@@ -27,7 +28,6 @@ abstract class BackendAuthService {
     return _BackendAuthService(dio, baseUrl: "${dio.options.baseUrl}/auth");
   }
 
-
   // @deprecated
   @POST("/{expiration}")
   Future<String> getSessionExpiration({
@@ -49,4 +49,9 @@ abstract class BackendAuthService {
   @GET("/session/terminate")
   Future<void> terminateSession();
 
+  @POST("/qrCode/{id}/confirm")
+  Future<void> qrCodeLoginConfirm({
+    @Path("id") required String id,
+    @Body() required QrCodeLoginConfirmPayload payload,
+  });
 }

@@ -52,6 +52,8 @@ import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 
+import 'providers/websocket/websocketNotifier.dart';
+
 Uri convertToWcLink({
   required String appLink,
   required String wcUri,
@@ -763,6 +765,7 @@ void onSessionDisconnect(ModalDisconnect? args, WidgetRef ref) {
   storage.then((value) => value.remove('userSession'));
 
   ref.read(userSessionProvider.notifier).state = null;
+  ref.read(websocketProvider.notifier).disconnect();
   ref.read(wcSessionProvider.notifier).state = null;
   ref.read(walletTypeProvider.notifier).state = null;
   ref.read(userAddressProvider.notifier).state = zeroAddress;

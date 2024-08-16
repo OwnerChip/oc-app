@@ -11,12 +11,14 @@ import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/walletSignature/walletSignature.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/payloads/qrcodeLoginConfirmPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry/sentry.dart';
@@ -226,7 +228,7 @@ abstract class BackendAuth extends Backend {
         ? EWalletType.certificateCard
         : EWalletType.ownerCard];
     ref.read(creationsNotifierProvider.notifier).init();
-
+    ref.read(websocketProvider.notifier).init();
     //persist session date
     final SharedPreferences storage = await SharedPreferences.getInstance();
     storage.setString(
@@ -268,5 +270,32 @@ abstract class BackendAuth extends Backend {
 
       return makeRandomInt().toString();
     });
+  }
+
+  static Future<bool> confirmQrCodeLogin({
+    required String requestId,
+    required String sessionId,
+    required String socketId,
+  }) async {
+    bool success = true;
+    await BackendAuthService.instance
+        .qrCodeLoginConfirm(
+      id: requestId,
+      payload: QrCodeLoginConfirmPayload(
+        sessionId: sessionId,
+        socketId: socketId,
+      ),
+    )
+        .catchError((e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+      success = false;
+    });
+
+    return success;
   }
 }

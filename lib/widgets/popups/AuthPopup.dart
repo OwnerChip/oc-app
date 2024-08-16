@@ -17,6 +17,7 @@ import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -234,6 +235,7 @@ Future<void> onTapAuth(
   );
 
   ref.read(userSessionProvider.notifier).state = userSession;
+  ref.read(websocketProvider.notifier).init();
   ref.read(creationsNotifierProvider.notifier).init();
 
   //persist session date

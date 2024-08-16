@@ -13,6 +13,10 @@ abstract class BackendApp extends Backend {
   static Future<void> sendAnalyticsTrace(
       String caseId, String description, String type,
       {Map<String, dynamic>? tags}) async {
+    if (Backend.jwt == null) {
+      throw Exception('JWT is null');
+    }
+
     await BackendAppService.instance
         .sendAnalyticsEvent(
       payload: SendAnalyticsPayload(
@@ -33,6 +37,10 @@ abstract class BackendApp extends Backend {
 
   static Future<AppDto> getApp() async {
     try {
+      if (Backend.jwt == null) {
+        throw Exception('JWT is null');
+      }
+
       final response = await BackendAppService.instance
           .getAppCollections(
         packageName: dotenv.get('BITRISEIO_PACKAGE_NAME'),
