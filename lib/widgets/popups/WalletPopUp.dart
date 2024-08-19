@@ -153,6 +153,23 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                     backgroundColor: CustomColors(dotenv.get('APP_ID'))
                         .ownerCardWalletIconBackgroundColor,
                   ),
+                  WalletIcon(
+                    walletName: 'Email',
+                    icon: Icon(
+                      Icons.email,
+                      color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
+                    ),
+                    onTap: () async {
+                      await _loginWithWeb3Auth(
+                        context,
+                        ref: ref,
+                        provider: web3auth.Provider.email_passwordless,
+                        w3mService: w3mService,
+                      );
+                    },
+                    backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                        .ownerCardWalletIconBackgroundColor,
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
