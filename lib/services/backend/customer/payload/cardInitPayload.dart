@@ -10,8 +10,10 @@ class CardInitPayload {
   Map<String, dynamic> toJson() => _$CardInitPayloadToJson(this);
 
   final String id;
+  final bool isCertificateCard;
 
   const CardInitPayload({
     required this.id,
+    this.isCertificateCard = false,
   });
 }

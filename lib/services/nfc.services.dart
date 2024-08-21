@@ -521,6 +521,7 @@ Future<dynamic> importKeyToSlotZero(
   Function setStateCallback,
   String customerId, {
   required String cardBaseId,
+  bool isCertificateCard = false,
 }) async {
   String identifier = generateCardIdentifier(
     int.parse(customerId),
@@ -537,7 +538,10 @@ Future<dynamic> importKeyToSlotZero(
       pubKeyZero = await getPubKeyN(nfc, 0x00);
     }
     BackendCustomer.sendCardInitToBackend(
-        customerId, createFirstKeyChipResponse[0]);
+      customerId,
+      createFirstKeyChipResponse[0],
+      isCertificateCard,
+    );
 
     EthereumAddress cardWalletAddress =
         OwnercardData.fromPubKeyZeros(pubKeyZero);

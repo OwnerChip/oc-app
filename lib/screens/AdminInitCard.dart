@@ -130,6 +130,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                   setChipAddressZero,
                   customerId,
                   cardBaseId: dotenv.get('OWNERCARD_BASE_ID'),
+                  isCertificateCard: false,
                 );
               }
             },
@@ -148,6 +149,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                   setChipAddressZero,
                   customerId,
                   cardBaseId: dotenv.get('CERTIFICATE_CARD_BASE_ID'),
+                  isCertificateCard: true,
                 );
               }
             },
