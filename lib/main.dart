@@ -109,6 +109,7 @@ class MyApp extends ConsumerStatefulWidget {
 //root widget
 class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   StreamSubscription? _msgSubscription;
+  StreamSubscription? _bgSubscription;
 
   @override
   void initState() {
@@ -140,6 +141,10 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     );
 
     _msgSubscription = FirebaseMessaging.onMessage.listen(_onMessageReceived);
+    FirebaseMessaging.onBackgroundMessage((message) async {
+      _onMessageReceived(message);
+    });
+    _bgSubscription = FirebaseMessaging.onMessageOpenedApp.listen(_onMessageReceived);
     FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
       if (initialMessage != null) {
         _onMessageReceived(initialMessage);
@@ -153,6 +158,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _msgSubscription?.cancel();
+    _bgSubscription?.cancel();
 
     unsubscribeWcListeners(ref, context);
   }
