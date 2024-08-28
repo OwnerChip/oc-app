@@ -66,19 +66,35 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
           ),
           body: SmartRefresher(
             enablePullDown: true,
-            enablePullUp: false,
+            enablePullUp: creations.page < creations.totalPages,
             controller: _refreshController,
             onRefresh: () async {
-              await ref.read(creationsNotifierProvider.notifier).init();
+              _refreshController.requestRefresh();
+              await ref.read(creationsNotifierProvider.notifier).load();
               _refreshController.refreshCompleted();
+            },
+            onLoading: () async {
+              _refreshController.requestLoading();
+
+              if (creations.page < creations.totalPages) {
+                await ref
+                    .read(creationsNotifierProvider.notifier)
+                    .load(page: creations.page + 1);
+              }
+
+              _refreshController.loadComplete();
             },
             header: CustomHeader(
               builder: (context, mode) => _buildHeader(context, mode: mode),
             ),
+            footer: CustomFooter(
+              height: 55,
+              builder: (context, mode) => _buildFooter(context, mode),
+            ),
             child: ListView.builder(
-              itemCount: creations.data!.data.length,
+              itemCount: creations.data!.length,
               itemBuilder: (context, index) {
-                final metadata = creations.data!.data[index];
+                final metadata = creations.data![index];
                 return InkWell(
                   onTap: () {
                     if (metadata.status ==
@@ -192,6 +208,44 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       case DigitalTwinCreationMetadataStatus.toBeTransferred:
         return context.loc.nftCreationsPageToBeTransferred;
     }
+  }
+
+  Widget _buildFooter(
+    BuildContext context,
+    LoadStatus? loadStatus, {
+    bool error = false,
+  }) {
+    return SizedBox(
+      height: 55.0,
+      child: Center(
+        child: Column(
+          children: [
+            AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                transitionBuilder: (child, animation) {
+                  return RotationTransition(
+                    turns: animation,
+                    child: child,
+                  );
+                },
+                child: loadStatus == LoadStatus.loading
+                    ? CircularProgressIndicator(
+                        color: CustomColors(dotenv.get("APP_ID")).primaryColor,
+                      )
+                    : Icon(
+                        Icons.arrow_upward,
+                        color: CustomColors(dotenv.get("APP_ID")).primaryColor,
+                      )),
+            Text(
+              loadStatus == LoadStatus.loading
+                  ? context.loc.nftCreationsPageLoading
+                  : context.loc.nftCreationsPagePullToLoadMore,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildHeader(

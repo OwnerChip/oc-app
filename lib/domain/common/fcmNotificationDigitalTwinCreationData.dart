@@ -11,6 +11,7 @@ class FcmNotificationDigitalTwinCreationData {
   Map<String, dynamic> toJson() =>
       _$FcmNotificationDigitalTwinCreationDataToJson(this);
 
+  final String userWalletAddress;
   final String metadataId;
   final String title;
   final String imageUri;
@@ -19,5 +20,6 @@ class FcmNotificationDigitalTwinCreationData {
     required this.metadataId,
     required this.title,
     required this.imageUri,
+    required this.userWalletAddress,
   });
 }

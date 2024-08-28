@@ -68,8 +68,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Web3App? wcClient;
   bool shippingPopupIsShown = false;
 
-  StreamSubscription? _msgSubscription;
-
   Future<void>
       _checkAndRemovePersistedStorageDependingOnPreviousAppVersion() async {
     final storage = await SharedPreferences.getInstance();
@@ -233,57 +231,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         );
 
         if (ref.read(appNotifierProvider).appDto == null) {
-          ref.read(appNotifierProvider.notifier).init();
+          ref.read(appNotifierProvider.notifier).init().then((_) {
+            _checkCreations();
+          });
         }
-        _checkCreations();
       });
     });
 
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
-
-    initMessaging();
   }
 
   void _checkCreations() {
-    CreationsData creations = ref.read(creationsNotifierProvider);
-    ref.read(creationsNotifierProvider.notifier).init().then((_) {
-      creations = ref.read(creationsNotifierProvider);
-      if (creations.data != null && creations.data!.isNotEmpty) {
-        Navigator.of(context).pushNamed(CreationsPage.routeName);
-      }
+    ref.read(creationsNotifierProvider.notifier).load().then((_) {
+      ref.read(creationsNotifierProvider.notifier).navigateConditionally(
+            context,
+            null,
+          );
     });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _msgSubscription?.cancel();
     super.dispose();
-  }
-
-  Future<void> initMessaging() async {
-    FirebaseMessaging.instance.requestPermission(
-      provisional: true,
-    );
-
-    _msgSubscription = FirebaseMessaging.onMessage.listen(_onMessageReceived);
-    FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
-      if (initialMessage != null) {
-        _onMessageReceived(initialMessage);
-      }
-    });
-    talker.log('Firebase messaging initialized');
-  }
-
-  Future<void> _onMessageReceived(RemoteMessage message) async {
-    talker.log('Message received: ${message.toMap()}');
-
-    final data = FCMNotificationData.fromJson(message.data);
-
-    if (data.isDigitalTwinCreation || data.isDigitalTwinBurn) {
-      _checkCreations();
-    }
   }
 
   Future<void> makeAlchemyRefreshMetadata() async {
@@ -472,7 +443,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               CustomRoundedButton(
                 width: 250,
                 text: context.loc.nftCreationsHomeScreenButtonTitle(
-                  creations.data!.total,
+                  creations.total,
                 ),
                 onPressed: () =>
                     Navigator.pushNamed(context, CreationsPage.routeName),

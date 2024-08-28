@@ -21,11 +21,13 @@ class _BackendCreationService implements BackendCreationService {
   @override
   Future<BackendPaginationResponse<DigitalTwinMetadata>?> getMyDigitalTwins(
     int page,
+    int limit,
     List<String> status,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'page': page,
+      r'limit': limit,
       r'status': status,
     };
     final _headers = <String, dynamic>{};

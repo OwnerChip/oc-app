@@ -1133,7 +1133,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
         ref.refresh(digitalTwinAttachmentsProvider);
         ref.refresh(digitalTwinCreationMetadataProvider);
 
-        ref.read(creationsNotifierProvider.notifier).init();
+        ref.read(creationsNotifierProvider.notifier).load();
 
         Navigator.of(context).pushNamedAndRemoveUntil(
           OfferForSaleCreatedTokenScreen.routeName,

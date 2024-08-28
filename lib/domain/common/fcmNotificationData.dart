@@ -17,8 +17,13 @@ class FCMNotificationData {
   final String type;
   final String json;
 
+  final Map<String, dynamic>? params;
+
   bool get isDigitalTwinCreation => type == "DIGITAL_TWIN_CREATION";
+
   bool get isDigitalTwinBurn => type == "DIGITAL_TWIN_BURN";
+
+  bool get isDigitalTwinTransfer => type == "DIGITAL_TWIN_TRANSFER";
 
   decodeAsDigitalTwinCreation() {
     return FcmNotificationDigitalTwinCreationData.fromJson(jsonDecode(json));
@@ -27,5 +32,6 @@ class FCMNotificationData {
   const FCMNotificationData({
     required this.type,
     required this.json,
+    this.params,
   });
 }

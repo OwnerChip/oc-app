@@ -236,7 +236,7 @@ Future<void> onTapAuth(
 
   ref.read(userSessionProvider.notifier).state = userSession;
   ref.read(websocketProvider.notifier).init();
-  ref.read(creationsNotifierProvider.notifier).init();
+  ref.read(creationsNotifierProvider.notifier).load();
 
   //persist session date
   final SharedPreferences storage = await SharedPreferences.getInstance();

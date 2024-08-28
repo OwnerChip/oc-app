@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -200,10 +201,15 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   }
 
   void _onScanQRClicked(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(
+      ScaffoldKey.getScaffoldKey("HomeScreen").currentContext ??
+          navigatorKey.currentContext!,
+    );
+
     final socket = ref.read(websocketProvider);
 
     if (!socket.connected) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         returnSnackBarWidget(
           context.loc.errorHeadingSnackBar,
           context.loc.noConnection,
@@ -216,7 +222,6 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     final sessionId = ref.read(userSessionProvider)!.sessionId;
     final socketId = socket.socket!.id!;
 
-    Navigator.of(context).popUntil((route) => route.isFirst);
     Navigator.of(context)
         .pushNamed(QRCodeScannerScreen.routeName)
         .then((dynamic response) {
@@ -236,17 +241,27 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
           requestId: requestId,
           sessionId: sessionId,
           socketId: socketId,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-            context.loc.successHeadingSnackbar,
-            context.loc.walletAuthenticated,
-            'success',
-          ),
-        );
+        ).then((value) {
+          if (value) {
+            messenger.showSnackBar(
+              returnSnackBarWidget(
+                context.loc.successHeadingSnackbar,
+                context.loc.walletAuthenticated,
+                'success',
+              ),
+            );
+          } else {
+            messenger.showSnackBar(
+              returnSnackBarWidget(
+                context.loc.errorHeadingSnackBar,
+                context.loc.invalidQRCode,
+                'error',
+              ),
+            );
+          }
+        });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           returnSnackBarWidget(
             context.loc.errorHeadingSnackBar,
             context.loc.invalidQRCode,

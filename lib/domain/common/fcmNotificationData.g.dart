@@ -10,6 +10,7 @@ FCMNotificationData _$FCMNotificationDataFromJson(Map<String, dynamic> json) =>
     FCMNotificationData(
       type: json['type'] as String,
       json: json['json'] as String,
+      params: json['params'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$FCMNotificationDataToJson(
@@ -17,4 +18,5 @@ Map<String, dynamic> _$FCMNotificationDataToJson(
     <String, dynamic>{
       'type': instance.type,
       'json': instance.json,
+      'params': instance.params,
     };

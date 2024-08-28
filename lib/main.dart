@@ -1,6 +1,9 @@
 //import packages
 
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +12,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:ownerchip_whitelabel/domain/common/fcmNotificationData.dart';
 import 'package:ownerchip_whitelabel/firebase_options.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
@@ -28,14 +32,19 @@ import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithStep
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'screens/AddAttachmentScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
+
 //import screens
 import 'screens/HomeScreen.dart';
 import 'screens/MetadataInputScreen.dart';
@@ -99,10 +108,52 @@ class MyApp extends ConsumerStatefulWidget {
 
 //root widget
 class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
+  StreamSubscription? _msgSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    initMessaging();
+  }
+
+  Future<void> _onMessageReceived(RemoteMessage message) async {
+    talker.log('Message received: ${message.toMap()}');
+
+    final data = FCMNotificationData.fromJson(message.data);
+
+    if (data.isDigitalTwinCreation ||
+        data.isDigitalTwinBurn ||
+        data.isDigitalTwinTransfer) {
+      await ref.read(creationsNotifierProvider.notifier).load();
+      ref.read(creationsNotifierProvider.notifier).navigateConditionally(
+            navigatorKey.currentContext ?? context,
+            data.decodeAsDigitalTwinCreation().userWalletAddress,
+            isFromNotification: true,
+          );
+    }
+  }
+
+  Future<void> initMessaging() async {
+    FirebaseMessaging.instance.requestPermission(
+      provisional: true,
+    );
+
+    _msgSubscription = FirebaseMessaging.onMessage.listen(_onMessageReceived);
+    FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
+      if (initialMessage != null) {
+        _onMessageReceived(initialMessage);
+      }
+    });
+    talker.log('Firebase messaging initialized');
+  }
+
   @override
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    _msgSubscription?.cancel();
+
     unsubscribeWcListeners(ref, context);
   }
 

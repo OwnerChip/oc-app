@@ -16,6 +16,7 @@ class BackendCreation extends Backend {
   static Future<BackendPaginationResponse<DigitalTwinMetadata>?>
       getMyDigitalTwins(
     int page, {
+    int limit = 10,
     List<DigitalTwinCreationMetadataStatus> status = const [],
   }) async {
     final service = BackendCreationService.instance;
@@ -24,6 +25,7 @@ class BackendCreation extends Backend {
     final res = await service
         .getMyDigitalTwins(
       page,
+      limit,
       status.map((e) => DigitalTwinCreationMetadataStatusEnumMap[e]!).toList(),
     )
         .catchError((error) {

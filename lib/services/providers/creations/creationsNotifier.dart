@@ -1,7 +1,15 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
+import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 
 class CreationsNotifier extends Notifier<CreationsData> {
   @override
@@ -13,13 +21,83 @@ class CreationsNotifier extends Notifier<CreationsData> {
     state = CreationsData.initial();
   }
 
-  Future<void> init() async {
+  Future<void> navigateConditionally(
+    BuildContext context,
+    String? notificationUserWalletAddress, {
+    bool isFromNotification = false,
+  }) async {
+    final session = ref.read(userSessionProvider);
+
+    if (isFromNotification &&
+        (session == null ||
+            (notificationUserWalletAddress != null &&
+                session.userWalletAddress.hex.toLowerCase() !=
+                    notificationUserWalletAddress.toLowerCase()))) {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Theme.of(context).cardColor,
+
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          title: Text(
+            session == null
+                ? context.loc.nftCreationsNotLoggedInTitle
+                : context.loc.nftCreationsLoggedInWithDifferentWalletTitle,
+            textAlign: TextAlign.center,
+          ),
+          titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                fontSize:
+                    CustomFonts(dotenv.get('APP_ID')).metadataNameFontSize,
+                fontWeight:
+                    CustomFonts(dotenv.get('APP_ID')).metadataNameFontWeight,
+              ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                session == null
+                    ? context.loc.nftCreationsNotLoggedInDescription
+                    : context
+                        .loc.nftCreationsLoggedInWithDifferentWalletDescription,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                  session == null
+                      ? context.loc.nftCreationsNotLoggedInButton
+                      : context
+                          .loc.nftCreationsLoggedInWidthDifferentWalletButton,
+                  style: Theme.of(context).textTheme.bodyMedium!),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (state.data != null && state.data!.isNotEmpty) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        CreationsPage.routeName,
+        (route) => route.isFirst,
+      );
+    }
+  }
+
+  Future<void> load({int page = 1}) async {
     state = state.copyWith(loading: true);
 
     try {
       // Fetch data from backend
       final data = await BackendCreation.getMyDigitalTwins(
-        1,
+        page,
+        limit: 10,
         status: [
           DigitalTwinCreationMetadataStatus.pending,
           DigitalTwinCreationMetadataStatus.toBeBurned,
@@ -28,7 +106,15 @@ class CreationsNotifier extends Notifier<CreationsData> {
       );
 
       state = state.copyWith(
-        data: data,
+        data: page == 1
+            ? data?.data ?? []
+            : [
+                ...(state.data ?? []),
+                ...(data?.data ?? []),
+              ],
+        page: page,
+        totalPages: data?.totalPages ?? 1,
+        total: data?.total ?? 0,
         loading: false,
         initialized: true,
       );

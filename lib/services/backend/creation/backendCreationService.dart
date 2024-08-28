@@ -35,6 +35,7 @@ abstract class BackendCreationService {
   @GET("/")
   Future<BackendPaginationResponse<DigitalTwinMetadata>?> getMyDigitalTwins(
     @Query("page") int page,
+    @Query("limit") int limit,
     @Query("status") List<String> status,
   );
 

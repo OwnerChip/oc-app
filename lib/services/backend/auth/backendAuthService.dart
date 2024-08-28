@@ -50,7 +50,7 @@ abstract class BackendAuthService {
   Future<void> terminateSession();
 
   @POST("/qrCode/{id}/confirm")
-  Future<void> qrCodeLoginConfirm({
+  Future<HttpResponse> qrCodeLoginConfirm({
     @Path("id") required String id,
     @Body() required QrCodeLoginConfirmPayload payload,
   });

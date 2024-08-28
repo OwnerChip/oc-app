@@ -227,7 +227,7 @@ abstract class BackendAuth extends Backend {
     ref.read(walletTypeProvider.notifier).state = walletConfig[isCertificateCard
         ? EWalletType.certificateCard
         : EWalletType.ownerCard];
-    ref.read(creationsNotifierProvider.notifier).init();
+    ref.read(creationsNotifierProvider.notifier).load();
     ref.read(websocketProvider.notifier).init();
     //persist session date
     final SharedPreferences storage = await SharedPreferences.getInstance();
@@ -278,7 +278,7 @@ abstract class BackendAuth extends Backend {
     required String socketId,
   }) async {
     bool success = true;
-    await BackendAuthService.instance
+    final response = await BackendAuthService.instance
         .qrCodeLoginConfirm(
       id: requestId,
       payload: QrCodeLoginConfirmPayload(
@@ -296,6 +296,6 @@ abstract class BackendAuth extends Backend {
       success = false;
     });
 
-    return success;
+    return response.response.statusCode == 200 && success;
   }
 }

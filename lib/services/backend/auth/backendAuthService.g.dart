@@ -152,7 +152,7 @@ class _BackendAuthService implements BackendAuthService {
   }
 
   @override
-  Future<void> qrCodeLoginConfirm({
+  Future<HttpResponse<dynamic>> qrCodeLoginConfirm({
     required String id,
     required QrCodeLoginConfirmPayload payload,
   }) async {
@@ -161,22 +161,26 @@ class _BackendAuthService implements BackendAuthService {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(payload.toJson());
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _result =
+        await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
-        .compose(
-          _dio.options,
-          '/qrCode/${id}/confirm',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        ))));
+            .compose(
+              _dio.options,
+              '/qrCode/${id}/confirm',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = _result.data;
+    final httpResponse = HttpResponse(value, _result);
+    return httpResponse;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
