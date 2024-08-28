@@ -31,7 +31,7 @@ abstract class BackendCollectionService {
   @GET("")
   Future<HttpResponse> getAllCollections();
 
-  @POST("{hex}/recovery")
+  @POST("/{hex}/recovery")
   Future<void> recoverCollection({
     @Path("hex") required String hex,
     @Body() required SendCardLostPayload body,

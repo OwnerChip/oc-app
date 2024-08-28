@@ -63,7 +63,7 @@ class _BackendCollectionService implements BackendCollectionService {
     )
         .compose(
           _dio.options,
-          '${hex}/recovery',
+          '/${hex}/recovery',
           queryParameters: queryParameters,
           data: _data,
         )
