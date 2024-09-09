@@ -455,7 +455,13 @@
     "@_QR_CODE_LOGIN": {},
     "scanQRCode": "Scan QR code",
     "noConnection": "No connection",
-    "invalidQRCode": "Invalid QR code"
+    "invalidQRCode": "Invalid QR code",
+    "@_LOGIN_WITH_EMAIL": {},
+    "loginWithEmail_EnterEmailText": "Please enter your email address",
+    "loginWithEmail_Hint": "Email",
+    "loginWithEmail_okButton": "Ok",
+    "loginWithEmail_cancelButton": "Cancel",
+    "loginWithEmail_ValidationError": "Please enter a valid email address"
 
 
 

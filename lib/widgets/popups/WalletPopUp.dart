@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,6 +17,7 @@ import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/EmailLoginPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -160,12 +162,17 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                       color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
                     ),
                     onTap: () async {
-                      await _loginWithWeb3Auth(
-                        context,
-                        ref: ref,
-                        provider: web3auth.Provider.email_passwordless,
-                        w3mService: w3mService,
-                      );
+                      _enterEmailPopup(context, ref).then((email) {
+                        if (email != null) {
+                          _loginWithWeb3Auth(
+                            context,
+                            ref: ref,
+                            provider: web3auth.Provider.email_passwordless,
+                            w3mService: w3mService,
+                            email: email,
+                          );
+                        }
+                      });
                     },
                     backgroundColor: CustomColors(dotenv.get('APP_ID'))
                         .ownerCardWalletIconBackgroundColor,
@@ -213,15 +220,30 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
   );
 }
 
+Future<String?> _enterEmailPopup(BuildContext context, WidgetRef ref) async {
+  return showDialog<String?>(
+    context: context,
+    builder: (BuildContext context) {
+      return const EmailLoginPopup();
+    },
+  );
+}
+
 Future<void> _loginWithWeb3Auth(
   BuildContext context, {
   required web3auth.Provider provider,
   required WidgetRef ref,
   W3MService? w3mService,
+  String? email,
 }) async {
   Navigator.pop(context);
   await Web3AuthFlutter.login(
-    LoginParams(loginProvider: provider),
+    LoginParams(
+      loginProvider: provider,
+      extraLoginOptions: ExtraLoginOptions(
+        login_hint: email,
+      ),
+    ),
   ).then((e) async {
     final Web3AuthNotifier web3AuthNotifier =
         ref.read(web3AuthNotifierProvider.notifier);
