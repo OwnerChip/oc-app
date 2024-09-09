@@ -321,11 +321,15 @@
     "youDoNotOwnAnyItems": "Du besitzt noch keine Digital Twins.",
     "legalHintTerrorismFinancing": "Ich habe all meine Sorgfaltspflichten in Hinblick auf die Verhinderung von Geldwäsche und Terrorismusfinanzierung nach den für mich anwendbaren Rechtsvorschriften erfüllt.",
     "shippingHint": "Ich bin verantwortlich für die Bearbeitung, Verpackung und Versandkosten im Zusammenhang mit dem Angebot.",
+
+
     "@_APPBAR": {},
     "appBarProfileTitle": "Profil",
     "appBarWalletIdTitle": "Wallet ID",
     "copiedAddressToClipboard": "Adresse kopiert.",
     "appbarMyBalanceButton": "Mein Guthaben",
+
+
     "@_MYBALANCE": {},
     "myBalanceTitle": "Mein Guthaben",
     "myBalanceTotalBalance": "Gesamtes Guthaben",
@@ -353,6 +357,8 @@
     "myBalanceWithdrawPasteAddressButton": "Einfügen",
     "myBalanceWithdrawWrongAddress": "Bitte gib eine gültige Wallet Addresse ein",
     "myBalanceWithdrawMaxAmount": "Max: {amount}",
+
+
     "@_ONBOARDING": {},
     "onboardingTitle": "Schön, dass du da bist!",
     "onboardingFeatureAuthenticityTitle": "Echtheit verifizieren",
@@ -388,6 +394,8 @@
     "onboardingUserCompleteButtonTitle": "Jetzt scannen!",
     "onboardingCheckboxShowAgainTitle": "Beim nächsten Mal anzeigen",
     "onboardingMoreInfoShowTutorialButtonTitle": "Tutorial anzeigen",
+
+
     "@_GALLERY": {},
     "galleryPullToRefresh": "Zum Aktualisieren herunterziehen",
     "galleryRefreshing": "Neu laden...",
@@ -397,12 +405,16 @@
     "errorLoadingOwnedItems": "Fehler beim Laden der Digital Twins",
     "errorLoadingCreatedItems": "Fehler beim Laden der Digital Twins",
     "galleryErrorLoadingMore": "Fehler beim Laden der Digital Twins",
+
+
     "@_OFFER_FOR_SALE": {},
     "offerForSaleCreatedTokenAppBarTitle": "Zum Verkauf anbieten",
     "offerForSaleCreatedTokenTitle" : "Digital Twin erstellt",
     "offerForSaleCreatedTokenSubtitle" : "Du hast erfolgreich einen Digital Twin für dein Objekt erstellt.",
     "offerForSaleCreatedTokenButton" : "Jetzt anbieten",
     "offerForSaleCreatedTokenViewTokenButton" : "Token ansehen",
+
+
     "@_OFFER_ON_MP": {},
     "offerOnMpEmailHint": "Deine Email Adresse wird verwendet, um dich über den Status des Angebots zu informieren.",
     "offerOnMpPriceHint": "5% Protokollgebühr + Marktplatzgebühr wird vom Verkaufspreis abgezogen. EUR Wert variiert mit Wechselkurs.",
@@ -411,12 +423,24 @@
     "offerOnMpErrorFetchingPrice": "Fehler beim Laden aktueller Kurse",
     "offerOnMpPublishedDialogTitle": "Auf Marktplatz veröffentlicht",
     "offerOnMpPublishedDialogSubtitle": "Dein Gegenstand steht nun zum Verkauf!",
+
+
     "@_NEW_VERSION": {},
     "newVersionTitle": "App aktualisieren",
     "newVersionAvailable": "Eine neue Version der App ist verfügbar! Bitte aktualisiere auf die neueste Version.",
     "newVersionUpdateButton": "Aktualisieren",
+
+
     "@_SCAN_RESULT_PAGE": {},
     "scanResultPageShowCertificateButton": "Zertifikatsdetails anzeigen",
+    "scanResultPage_ownershipCheck": "Ownership Check",
+    "scanResultPage_ownershipOwnerOffered": "You are the owner of this item. Digital Twin is offered on a marketplace.",
+    "scanResultPage_ownershipOwnerNotOffered": "You are the owner of this item.",
+    "scanResultPage_ownershipNotOwnerOffered": "You are not the owner of this item. Digital Twin is offered on a marketplace.",
+    "scanResultPage_ownershipNotOwnerNotOffered": "Your are not the owner of this item.",
+    "scanResultPage_buttonOwnerOffered": "Show Offer",
+    "scanResultPage_buttonNotOwnerOffered": "Show Offer",
+
     "@_NFT_DETAILS_PAGE": {},
     "nftDetailsPageShowCertificateButton": "Zertifikatsdetails anzeigen",
     "nftDetailsPageAuthenticityCertified": "Zertifiziert",
@@ -424,6 +448,49 @@
     "nftDetailsPageCertifier": "Zertifizierer",
     "nftDetailsPageCreationDate": "Datum der Erstellung",
     "nftDetailsPageCollection": "Sammlung",
-    "nftDetailsErrorFetchingCertificateData": "unbekannt"
+    "nftDetailsErrorFetchingCertificateData": "unbekannt",
+
+
+    "@_NFT_CREATIONS_PAGE": {},
+    "nftCreationsPageTitle": "Digital Twins",
+    "nftCreationsPagePullToRefresh": "Pull to refresh",
+    "nftCreationsPageRefreshing": "Refreshing...",
+    "nftCreationsHomeScreenButtonTitle": "Mint new Digital Twin ({number})",
+    "nftCreationsPageToBeBurned": "To be burned",
+    "nftCreationsPagePending": "To be minted",
+    "nftCreationsPageToBeTransferred": "To be transferred",
+    "nftCreationsPageError": "Error",
+    "nftCreationsPageChipMismatchError": "Chip mismatch",
+    "nftCreationsPagePullToLoadMore": "Pull to load more",
+    "nftCreationsPageLoading": "Loading...",
+    "nftCreationsLoggedInWithDifferentWalletTitle": "Wallet",
+    "nftCreationsLoggedInWithDifferentWalletDescription": "You are logged in with a different wallet. Please log in with the wallet you used to create the Digital Twin.",
+    "nftCreationsLoggedInWidthDifferentWalletButton": "Close",
+    "nftCreationsNotLoggedInTitle": "Wallet",
+    "nftCreationsNotLoggedInDescription": "Please log in with the wallet you used to create the Digital Twin.",
+    "nftCreationsNotLoggedInButton": "Close",
+
+
+    "@_CERTIFICATE_CARD": {},
+    "certificateCardLoginSuccess": "Successfully connected with Certificate Card.",
+    "cannotSetPinOnCertificateCard": "Cannot set PIN on Certificate Card",
+    "cannotResetPinOnCertificateCard": "Cannot reset PIN on Certificate Card",
+    "cardIsNotCertificateCard": "NFC chip is not a Certificate Card.",
+    "cardIsNotOwnerCard": "NFC chip is not an OwnerCard.",
+    "holdPhoneCloseToCertificateCardToInit": "Hold your phone close to the Certificate Card",
+
+
+    "@_QR_CODE_LOGIN": {},
+    "scanQRCode": "Scan QR code",
+    "noConnection": "No connection",
+    "invalidQRCode": "Invalid QR code",
+
+
+    "@_LOGIN_WITH_EMAIL": {},
+    "loginWithEmail_EnterEmailText": "Please enter your email address",
+    "loginWithEmail_Hint": "Email",
+    "loginWithEmail_okButton": "Ok",
+    "loginWithEmail_cancelButton": "Cancel",
+    "loginWithEmail_ValidationError": "Please enter a valid email address"
 
 }

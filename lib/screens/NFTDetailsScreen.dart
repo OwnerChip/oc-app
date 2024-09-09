@@ -500,22 +500,32 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                 : InfoKeyValues(keys: [
                                     context.loc.ownership,
                                   ], values: [
-                                    nftOwner.when(
-                                      data: (nftOwnerData) {
-                                        if (ref.read(userAddressProvider) ==
-                                            zeroAddress) {
-                                          return context.loc.unconfirmed;
-                                        } else if (approval.value !=
-                                                zeroAddress &&
-                                            approval.value != null) {
-                                          return context.loc.transferred;
-                                        } else if (connectedWallet ==
-                                            nftOwnerData) {
-                                          return context.loc.confirmed;
-                                        } else {
-                                          return context.loc.unconfirmed;
-                                        }
-                                      },
+                                    activeOffers.when(
+                                      data: (offers) => nftOwner.when(
+                                        data: (nftOwnerData) {
+                                          if (ref.read(userAddressProvider) ==
+                                              zeroAddress) {
+                                            return context.loc.unconfirmed;
+                                          } else if (approval.value !=
+                                                  zeroAddress &&
+                                              approval.value != null) {
+                                            return context.loc.transferred;
+                                          } else if (connectedWallet ==
+                                                  nftOwnerData ||
+                                              offers.any((element) =>
+                                                  element.sellerAddress
+                                                      .toLowerCase() ==
+                                                  connectedWallet.hex
+                                                      .toLowerCase())) {
+                                            return context.loc.confirmed;
+                                          } else {
+                                            return context.loc.unconfirmed;
+                                          }
+                                        },
+                                        error: (e, s) => context.loc
+                                            .nftDetailsErrorFetchingCertificateData,
+                                        loading: () => context.loc.loading,
+                                      ),
                                       error: (e, s) => context.loc
                                           .nftDetailsErrorFetchingCertificateData,
                                       loading: () => context.loc.loading,

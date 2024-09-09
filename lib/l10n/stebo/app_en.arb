@@ -323,11 +323,15 @@
     "youDoNotOwnAnyItems": "You do not own any digital twins.",
     "legalHintTerrorismFinancing": "I have fulfilled all my due diligence obligations with regard to the prevention of money laundering and terrorist financing in accordance with the laws applicable to me.",
     "shippingHint": "I am responsible for handling, packaging and shipping costs associated with the offer.",
+
+
     "@_APPBAR": {},
     "appBarProfileTitle": "Profile",
     "appBarWalletIdTitle": "Wallet ID",
     "copiedAddressToClipboard": "Address copied to clipboard",
     "appbarMyBalanceButton": "My Balance",
+
+
     "@_MYBALANCE": {},
     "myBalanceTitle": "My Balance",
     "myBalanceTotalBalance": "Total Balance",
@@ -355,56 +359,64 @@
     "myBalanceWithdrawPasteAddressButton": "Paste",
     "myBalanceWithdrawWrongAddress": "Please enter a valid address",
     "myBalanceWithdrawMaxAmount": "Max: {amount}",
+
+
     "@_ONBOARDING": {},
     "onboardingTitle": "Great that you're here!",
-    "onboardingFeatureAuthenticityTitle": "Prove authenticity",
-    "onboardingFeatureAuthenticitySubtitle": "Scan items to verify authenticity.",
-    "onboardingFeatureDigitalExperiencesTitle": "Digital experiences",
-    "onboardingFeatureDigitalExperiencesSubtitle": "Unlock digital experiences attached to physical items.",
+    "onboardingFeatureAuthenticityTitle": "Prove Authenticity",
+    "onboardingFeatureAuthenticitySubtitle": "Tap items to verify authenticity.",
+    "onboardingFeatureDigitalExperiencesTitle": "Access Digital Content",
+    "onboardingFeatureDigitalExperiencesSubtitle": "Unlock digital content attached to physical items.",
     "onboardingFeatureSellTitle": "Sell & Re-Sell",
-    "onboardingFeatureSellSubtitle": "Trade physical items on web3 marketplaces.",
-    "onboardingStartButton": "Start tutorial",
+    "onboardingFeatureSellSubtitle": "Trade physical-digital package on web3 marketplaces.",
+    "onboardingStartButton": "Start Tutorial",
     "onboardingUserPageTitle": "How to use this App",
     "onboardingPagination": "Step {current}/",
-    "onboardingUserPageStep1Title": "Scan NFC chip",
-    "onboardingUserPageStep1Subtitle": "Press \"Scan Now\" and hold your phone close to the chip.",
+    "onboardingUserPageStep1Title": "Tap NFC chip",
+    "onboardingUserPageStep1Subtitle": "Press \"Tap Now\" and hold your phone close to the chip.",
     "onboardingUserPageStep2Title": "Login with your wallet",
     "onboardingUserPageStep2Subtitle": "Identify yourself using your OwnerCard or your crypto wallet to prove and transfer ownership and unlock private digital content.",
     "onboardingUsePageNextButtonTitle": "Next",
     "onboardingUserPageCompleteButtonTitle": "Next",
     "onboardingUserCompleteCreatorPageTitle": "Are you a Creator?",
-    "onboardingUserCompleteCreatorPageSubtitle": "Learn how to create a Digital Twin NFT.",
+    "onboardingUserCompleteCreatorPageSubtitle": "Learn how to create a Digital Twin.",
     "onboardingUserCompleteCreatorButtonTitle": "Start Creator Tutorial",
-    "onboardingCreatorPageTitle": "How to create an NFT",
+    "onboardingCreatorPageTitle": "How to create a Digital Twin",
     "onboardingCreatorStep1Title": "Got NFC Chips?",
     "onboardingCreatorStep1SubTitle": "Order our StarterKit and get registered as a Creator.",
     "onboardingCreatorStep1OrderButtonTitle": "Order now",
-    "onboardingCreatorStep2Title": "Attach the chip",
-    "onboardingCreatorStep2SubTitle": "Incorporate the chip into your item, for example by using adhesive foils, glue, or stickers.",
+    "onboardingCreatorStep2Title": "Attach the NFC chip",
+    "onboardingCreatorStep2SubTitle": "Incorporate the NFC chip into your item, for example by using adhesive foils, glue, or stickers.",
     "onboardingCreatorStep3Title": "Watch Video Tutorial",
     "onboardingCreatorStep3SubTitle": "Watch our App Demo to create your first Digital Twin in a few minutes.",
     "onboardingCreatorStep3YoutubeVideoURL": "https://youtube.com/watch?v=iB8g9QLSvw0",
-    "onboardingCreatorCompleteButtonTitle": "Create Digital Twin NFT",
+    "onboardingCreatorCompleteButtonTitle": "Create Digital Twin",
     "onboardingUserCompleteTitle": "You're all done!",
     "onboardingUserCompleteSubtitle": "You have completed the tutorial.",
-    "onboardingUserCompleteButtonTitle": "Start scanning now!",
+    "onboardingUserCompleteButtonTitle": "Start tapping now!",
     "onboardingCheckboxShowAgainTitle": "Show again next time",
     "onboardingMoreInfoShowTutorialButtonTitle": "Show Tutorial",
+
+
     "@_GALLERY": {},
     "galleryPullToRefresh": "Pull to refresh",
     "galleryRefreshing": "Refreshing...",
     "galleryLoadMore": "Load more",
     "galleryLoadingMore": "Loading...",
-    "galleryNoMoreItems": "No more NFTs to load",
-    "errorLoadingOwnedItems": "Error loading owned NFTs",
-    "errorLoadingCreatedItems": "Error loading created NFTs",
-    "galleryErrorLoadingMore": "Error loading more NFTs",
+    "galleryNoMoreItems": "No more Digital Twins to load",
+    "errorLoadingOwnedItems": "Error loading owned Digital Twins",
+    "errorLoadingCreatedItems": "Error loading created Digital Twins",
+    "galleryErrorLoadingMore": "Error loading more Digital Twins",
+
+
     "@_OFFER_FOR_SALE": {},
     "offerForSaleCreatedTokenAppBarTitle": "Offer for sale",
-    "offerForSaleCreatedTokenTitle" : "Token created",
-    "offerForSaleCreatedTokenSubtitle" : "You have successfully created a digital twin for your physical object.",
-    "offerForSaleCreatedTokenButton" : "Offer for sale",
-    "offerForSaleCreatedTokenViewTokenButton" : "View token",
+    "offerForSaleCreatedTokenTitle": "Token created",
+    "offerForSaleCreatedTokenSubtitle": "You have successfully created a digital twin for your physical object.",
+    "offerForSaleCreatedTokenButton": "Offer for sale",
+    "offerForSaleCreatedTokenViewTokenButton": "View token",
+
+
     "@_OFFER_ON_MP": {},
     "offerOnMpEmailHint": "We will use this email address to notify you about the status of the offer.",
     "offerOnMpPriceHint": "5% protocol fees + marketplace fees will be deducted from payout amount. Please check the support section for more details.",
@@ -413,12 +425,25 @@
     "offerOnMpErrorFetchingPrice": "Error fetching current price",
     "offerOnMpPublishedDialogTitle": "Published on Marketplace",
     "offerOnMpPublishedDialogSubtitle": "Your item is now available for sale!",
+
+
     "@_NEW_VERSION": {},
     "newVersionTitle": "Update App",
     "newVersionAvailable": "A new version of the app is available! Please update to the latest version.",
     "newVersionUpdateButton": "Update",
+
+
     "@_SCAN_RESULT_PAGE": {},
     "scanResultPageShowCertificateButton": "Show Certificate Details",
+    "scanResultPage_ownershipCheck": "Ownership Check",
+    "scanResultPage_ownershipOwnerOffered": "You are the owner of this item. Digital Twin is offered on a marketplace.",
+    "scanResultPage_ownershipOwnerNotOffered": "You are the owner of this item.",
+    "scanResultPage_ownershipNotOwnerOffered": "You are not the owner of this item. Digital Twin is offered on a marketplace.",
+    "scanResultPage_ownershipNotOwnerNotOffered": "Your are not the owner of this item.",
+    "scanResultPage_buttonOwnerOffered": "Show Offer",
+    "scanResultPage_buttonNotOwnerOffered": "Show Offer",
+
+
     "@_NFT_DETAILS_PAGE": {},
     "nftDetailsPageShowCertificateButton": "Show Certificate Details",
     "nftDetailsPageAuthenticityCertified": "Certified",
@@ -427,6 +452,8 @@
     "nftDetailsPageCreationDate": "Creation date",
     "nftDetailsPageCollection": "Collection",
     "nftDetailsErrorFetchingCertificateData": "unknown",
+
+
     "@_NFT_CREATIONS_PAGE": {},
     "nftCreationsPageTitle": "Digital Twins",
     "nftCreationsPagePullToRefresh": "Pull to refresh",
@@ -445,6 +472,8 @@
     "nftCreationsNotLoggedInTitle": "Wallet",
     "nftCreationsNotLoggedInDescription": "Please log in with the wallet you used to create the Digital Twin.",
     "nftCreationsNotLoggedInButton": "Close",
+
+
     "@_CERTIFICATE_CARD": {},
     "certificateCardLoginSuccess": "Successfully connected with Certificate Card.",
     "cannotSetPinOnCertificateCard": "Cannot set PIN on Certificate Card",
@@ -452,17 +481,19 @@
     "cardIsNotCertificateCard": "NFC chip is not a Certificate Card.",
     "cardIsNotOwnerCard": "NFC chip is not an OwnerCard.",
     "holdPhoneCloseToCertificateCardToInit": "Hold your phone close to the Certificate Card",
+
+
     "@_QR_CODE_LOGIN": {},
     "scanQRCode": "Scan QR code",
     "noConnection": "No connection",
     "invalidQRCode": "Invalid QR code",
+
+
     "@_LOGIN_WITH_EMAIL": {},
     "loginWithEmail_EnterEmailText": "Please enter your email address",
     "loginWithEmail_Hint": "Email",
     "loginWithEmail_okButton": "Ok",
     "loginWithEmail_cancelButton": "Cancel",
     "loginWithEmail_ValidationError": "Please enter a valid email address"
-
-
 
 }

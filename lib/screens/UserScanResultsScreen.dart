@@ -245,31 +245,43 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(context.loc.ownershipCheck,
+                                  Text(
+                                      context.loc.scanResultPage_ownershipCheck,
                                       style: Theme.of(context)
                                           .textTheme
                                           .headlineMedium),
 
                                   //OWNERSHIP CHECK ICON
                                   nftOwner.when(
-                                    data: ((nftOwnerData) => userSession == null
-                                        ?
-                                        //NFT owner exists and wallet is NOT connected
-                                        SvgPicture.asset(
-                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
-                                        : connectedWallet == nftOwnerData
-                                            ?
-                                            //NFT owner exists and wallet is connected and wallet is owner
-                                            approval.value == zeroAddress
-                                                ? SvgPicture.asset(
-                                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
-                                                // NFT owner has approved another wallet
-                                                : SvgPicture.asset(
-                                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                    data: (nftOwnerData) => activeOffers.when(
+                                      data: (offers) => userSession == null
+                                          ?
+                                          //NFT owner exists and wallet is NOT connected
+                                          SvgPicture.asset(
+                                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                          : connectedWallet == nftOwnerData ||
+                                                  offers.any((offer) =>
+                                                      offer.sellerAddress
+                                                          .toLowerCase() ==
+                                                      connectedWallet.hex
+                                                          .toLowerCase())
+                                              ?
+                                              //NFT owner exists and wallet is connected and wallet is owner
+                                              approval.value == zeroAddress
+                                                  ? SvgPicture.asset(
+                                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
+                                                  // NFT owner has approved another wallet
+                                                  : SvgPicture.asset(
+                                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
 
-                                            //NFT owner exists and wallet is connected and wallet is NOT owner
-                                            : SvgPicture.asset(
-                                                "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg")),
+                                              //NFT owner exists and wallet is connected and wallet is NOT owner
+                                              : SvgPicture.asset(
+                                                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg"),
+                                      error: (e, s) => SvgPicture.asset(
+                                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
+                                      loading: () =>
+                                          const CircularProgressIndicator(),
+                                    ),
                                     error: (e, s) => SvgPicture.asset(
                                         "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
                                     loading: () =>
@@ -366,7 +378,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                                                 Alignment.centerLeft,
                                                                             child:
                                                                                 Text(
-                                                                              context.loc.youAreNFTOwner,
+                                                                              context.loc.scanResultPage_ownershipOwnerNotOffered,
                                                                               textAlign: TextAlign.left,
                                                                               style: Theme.of(context).textTheme.bodyMedium,
                                                                             ),
@@ -382,7 +394,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                                                 Alignment.centerLeft,
                                                                             child:
                                                                                 Text(
-                                                                              context.loc.youAreNFTOwner,
+                                                                              context.loc.scanResultPage_ownershipOwnerNotOffered,
                                                                               textAlign: TextAlign.left,
                                                                               style: Theme.of(context).textTheme.bodyMedium,
                                                                             ),
@@ -481,7 +493,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                                                         } else {
                                                                                           return Column(
                                                                                             children: [
-                                                                                              Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
+                                                                                              Text(context.loc.scanResultPage_ownershipNotOwnerNotOffered, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
                                                                                             ],
                                                                                           );
                                                                                         }
@@ -500,10 +512,10 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                                                             ]);
                                                                                           } else {
                                                                                             //USER IS NOT SELLER AND ITEM HAS NOT BEEN REDEEMED YET
-                                                                                            return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                            return Text(context.loc.scanResultPage_ownershipNotOwnerNotOffered, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
                                                                                           }
                                                                                         } else if (snapshot.hasError) {
-                                                                                          return Text(context.loc.youAreNotNftOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
+                                                                                          return Text(context.loc.scanResultPage_ownershipNotOwnerNotOffered, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
                                                                                         } else {
                                                                                           return const CircularProgressIndicator();
                                                                                         }
@@ -517,7 +529,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                                       error: (e, s) => Text(
                                                                           context
                                                                               .loc
-                                                                              .youAreNotNftOwner,
+                                                                              .scanResultPage_ownershipNotOwnerNotOffered,
                                                                           textAlign: TextAlign
                                                                               .left,
                                                                           style: Theme.of(context)
@@ -538,7 +550,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                                       child: Text(
                                                                           context
                                                                               .loc
-                                                                              .youAreNotNftOwner,
+                                                                              .scanResultPage_ownershipNotOwnerNotOffered,
                                                                           textAlign: TextAlign
                                                                               .center,
                                                                           style: Theme.of(context)
@@ -585,7 +597,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                                   return Text(
                                                                       context
                                                                           .loc
-                                                                          .youAreNotNftOwner,
+                                                                          .scanResultPage_ownershipNotOwnerNotOffered,
                                                                       textAlign:
                                                                           TextAlign
                                                                               .left,
@@ -610,31 +622,32 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                             },
                                             loading: () => Container(),
                                             error: (e, s) => Text(
-                                                context.loc.youAreNotNftOwner,
+                                                context.loc
+                                                    .scanResultPage_ownershipNotOwnerNotOffered,
                                                 textAlign: TextAlign.left,
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .bodyMedium));
                                       } else {
                                         //TOKEN IS FOR SALE
-                                        if (activeOffersData.isNotEmpty &&
-                                            EthereumAddress.fromHex(
-                                                    activeOffersData[0]
-                                                        .sellerAddress) ==
-                                                connectedWallet) {
+                                        if (activeOffersData.any((offer) =>
+                                            offer.sellerAddress.toLowerCase() ==
+                                            connectedWallet.hex
+                                                .toLowerCase())) {
                                           //USER IS SELLER
                                           return Column(
                                             children: [
                                               Text(
                                                   context.loc
-                                                      .tokenCurrentlyOfferedForSale,
+                                                      .scanResultPage_ownershipOwnerOffered,
                                                   textAlign: TextAlign.left,
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .bodyMedium),
                                               const SizedBox(height: 10),
                                               CustomRoundedButton(
-                                                text: context.loc.buyOnRarible,
+                                                text: context.loc
+                                                    .scanResultPage_buttonOwnerOffered,
                                                 onPressed: () => {
                                                   launchUrl(
                                                       raribleUrl.asData!.value,
@@ -653,14 +666,15 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                       Alignment.centerLeft,
                                                   child: Text(
                                                       context.loc
-                                                          .itemAvailableForSale,
+                                                          .scanResultPage_ownershipNotOwnerOffered,
                                                       textAlign: TextAlign.left,
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .bodyMedium)),
                                               const SizedBox(height: 10),
                                               CustomRoundedButton(
-                                                text: context.loc.buyOnRarible,
+                                                text: context.loc
+                                                    .scanResultPage_buttonNotOwnerOffered,
                                                 onPressed: () => {
                                                   launchUrl(
                                                       raribleUrl.asData!.value,
