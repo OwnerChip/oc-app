@@ -497,9 +497,29 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
     final TokenChainAndCollection tokenInfo =
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
+
+    final EthereumAddress chipAddress = createFirstKeyChipResponse[0];
+
+    try {
+      Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+
+      final pubKeyZeroAddress = OwnercardData.fromPubKeyZeros(pubKeyZero);
+
+      if(OwnercardData.isCertificateCard(pubKeyZeroAddress)) {
+        throw context.loc.cannotCardLostOnCertificateCard;
+      }
+    } catch (e) {
+      if(e is String) {
+        rethrow;
+      }
+      // ignore as slot 0 is not initialized for chip
+    }
+
+
+
     if (tokenInfo.collectionId != zeroAddress) {
       return await BackendCollection.sendCardLostToBackend(
-          createFirstKeyChipResponse[0],
+          chipAddress,
           tokenInfo.collectionId,
           chipSignature,
           sessionId,

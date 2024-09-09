@@ -482,6 +482,7 @@
     "cardIsNotCertificateCard": "NFC chip is not a Certificate Card.",
     "cardIsNotOwnerCard": "NFC chip is not an OwnerCard.",
     "holdPhoneCloseToCertificateCardToInit": "Hold your phone close to the Certificate Card",
+    "cannotCardLostOnCertificateCard": "Cannot use Certificate Card for card lost.",
 
 
     "@_QR_CODE_LOGIN": {},
