@@ -18,7 +18,15 @@ class WebsocketRequest {
   });
 }
 
-enum WebsocketRequestType { ping }
+enum WebsocketRequestType {
+  ping,
+  qrCodeLoginConfirm,
+
+  newJwt,
+
+  refreshGallery,
+
+}
 
 extension WebsocketRequestTypeExtension on WebsocketRequestType {
   String get str => websocketRequestTypes[this]!;
@@ -26,4 +34,7 @@ extension WebsocketRequestTypeExtension on WebsocketRequestType {
 
 final websocketRequestTypes = {
   WebsocketRequestType.ping: '1',
+  WebsocketRequestType.qrCodeLoginConfirm: '2',
+  WebsocketRequestType.newJwt: '3',
+  WebsocketRequestType.refreshGallery: '4',
 };

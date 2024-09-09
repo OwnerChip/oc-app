@@ -352,7 +352,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       final userSession = ref.read(userSessionProvider)!;
       final wc = ref.read(wcProvider);
 
-      createToken(
+      await createToken(
         userSession.sessionId,
         wc!,
         ref.read(chipSignatureDataProvider),
