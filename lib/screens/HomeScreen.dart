@@ -442,9 +442,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               const SizedBox(height: 20),
               CustomRoundedButton(
                 width: 250,
-                text: context.loc.nftCreationsHomeScreenButtonTitle(
-                  creations.total,
-                ),
+                text: context.loc.nftCreationsHomeScreenButtonTitle,
                 onPressed: () =>
                     Navigator.pushNamed(context, CreationsPage.routeName),
               ),
