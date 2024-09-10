@@ -505,11 +505,11 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
 
       final pubKeyZeroAddress = OwnercardData.fromPubKeyZeros(pubKeyZero);
 
-      if(OwnercardData.isCertificateCard(pubKeyZeroAddress)) {
+      if (OwnercardData.isCertificateCard(pubKeyZeroAddress)) {
         throw context.loc.cannotCardLostOnCertificateCard;
       }
     } catch (e) {
-      if(e is String) {
+      if (e is String) {
         rethrow;
       }
       // ignore as slot 0 is not initialized for chip
@@ -688,4 +688,38 @@ Future<void> stopNfcOniOSAndAndroid(NFCOverlay nfcOverlay) async {
     await Future.delayed(const Duration(seconds: 2));
     NfcManager.instance.stopSession();
   }
+}
+
+Future<void> preventRepeatedNFCScan(
+  Function fun, {
+  Duration delay = const Duration(seconds: 4),
+  bool android = true,
+  bool ios = false,
+}) async {
+  if (android && !Platform.isAndroid) {
+    return fun();
+  }
+
+  if (ios && !Platform.isIOS) {
+    return fun();
+  }
+
+  await NfcManager.instance.startSession(
+      invalidateAfterFirstRead: false,
+      onError: (error) async {
+        talker.info("NFC Error: $error");
+      },
+      onDiscovered: (NfcTag tag) async {
+        talker.info("NFC Tag discovered: $tag");
+      });
+  await Future.delayed(delay);
+
+  final res = await fun();
+
+  if (Platform.isAndroid) {
+    await Future.delayed(const Duration(seconds: 2));
+  }
+  await NfcManager.instance.stopSession();
+
+  return res;
 }

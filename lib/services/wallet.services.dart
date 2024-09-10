@@ -151,6 +151,8 @@ Future<String> makeAndSendGaslessTx(
 
       signature = msgSignatureToHex(cardSignature);
     } else if (walletType.type == EWalletType.certificateCard) {
+      // add this delay, because if you scan the card immediately after scanning the chip, it will cause an error
+      await Future.delayed(const Duration(seconds: 3));
       final sig = await makeCardSignature(
         ref,
         context,
@@ -162,26 +164,29 @@ Future<String> makeAndSendGaslessTx(
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-      w3mService!.launchConnectedWallet();
+      await preventRepeatedNFCScan(() async {
+        w3mService!.launchConnectedWallet();
 
-      toggleLoading();
+        toggleLoading();
 
-      signature = await wc!
-          .request(
-        topic: wcSession!.topic!,
-        chainId: 'eip155:${w3mService?.selectedChain?.chainId ?? chainId}',
-        request: SessionRequestParams(
-          method: 'eth_signTypedData_v4',
-          params: [walletAddress.toString(), json.encode(typedData)],
-        ),
-      )
-          .onError((error, stackTrace) {
-        talker.error(
-          'error signing gasless tx $error',
-          stackTrace,
-        );
-        throw error!;
+        signature = await wc!
+            .request(
+          topic: wcSession!.topic!,
+          chainId: 'eip155:${w3mService?.selectedChain?.chainId ?? chainId}',
+          request: SessionRequestParams(
+            method: 'eth_signTypedData_v4',
+            params: [walletAddress.toString(), json.encode(typedData)],
+          ),
+        )
+            .onError((error, stackTrace) {
+          talker.error(
+            'error signing gasless tx $error',
+            stackTrace,
+          );
+          throw error!;
+        });
       });
+
       //turn on loading again, while waiting for gasless tx to be mined
       toggleLoading();
     } else {
@@ -491,6 +496,8 @@ Future<String> makeAndSendNormalTx(
       msgSignature =
           MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
     } else if (walletType.type == EWalletType.certificateCard) {
+      // add this delay, because if you scan the card immediately after scanning the chip, it will cause an error
+      await Future.delayed(const Duration(seconds: 3));
       final sig = await makeCardSignature(
         ref,
         context,
@@ -528,21 +535,28 @@ Future<String> makeAndSendNormalTx(
   } else {
     final W3MService? w3mService = ref.read(w3mServiceProvider);
 
-    await wcSwitchToChainConditionally(w3mService, chainId).catchError((e) {
-      talker.error('Failed to switch to chain: $e');
+    late Future<dynamic> txnFuture;
+
+    await preventRepeatedNFCScan( () async {
+      // await Future.delayed(const Duration(seconds: 3));
+      await wcSwitchToChainConditionally(w3mService, chainId).catchError((e) {
+        talker.error('Failed to switch to chain: $e');
+      });
+      await Future.delayed(const Duration(seconds: 3));
+
+      txnFuture = wc.request(
+        topic: wcSession!.topic!,
+        chainId: 'eip155:$chainId',
+        request: SessionRequestParams(
+          method: 'eth_sendTransaction',
+          params: txParams,
+        ),
+      );
+
+      w3mService!.launchConnectedWallet();
+
     });
-    await Future.delayed(const Duration(seconds: 3));
 
-    final txnFuture = wc.request(
-      topic: wcSession!.topic!,
-      chainId: 'eip155:$chainId',
-      request: SessionRequestParams(
-        method: 'eth_sendTransaction',
-        params: txParams,
-      ),
-    );
-
-    w3mService!.launchConnectedWallet();
 
     txnHash = await txnFuture;
   }
