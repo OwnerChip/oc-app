@@ -47,7 +47,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       if (state.socket != null) {
         talker.info("WebsocketNotifier.init: disconnecting");
         state.socket?.disconnect();
-        state = state.copyWith(socket: null, connected: false);
+        state = state.copyWith(connected: false);
       }
 
       final url = dotenv
@@ -79,26 +79,28 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             .error("WebsocketNotifier.init: error connecting to $url \n $data");
       });
 
-      websocketRequestTypes.forEach((key, value) {
-        socket.on(value, (data) {
-          talker.info("WebsocketNotifier.init: received $value \n $data");
-          switch (key) {
-            case WebsocketRequestType.ping:
-              talker.info("WebsocketNotifier.init: received ping");
-              break;
-            case WebsocketRequestType.qrCodeLoginConfirm:
-              talker
-                  .info("WebsocketNotifier.init: received qrCodeLoginConfirm");
-              break;
-            case WebsocketRequestType.newJwt:
-              talker.info("WebsocketNotifier.init: received newJwt");
-              break;
-            case WebsocketRequestType.refreshGallery:
-              talker.info("WebsocketNotifier.init: received refreshGallery");
-              ref.read(creationsNotifierProvider.notifier).load();
-              break;
-          }
-        });
+      socket.onAny((event, data) {
+        talker.info("WebsocketNotifier.init: received $event \n $data");
+
+        final eventEnum = websocketRequestTypes.entries
+            .firstWhere((element) => element.value == event)
+            .key;
+
+        switch (eventEnum) {
+          case WebsocketRequestType.ping:
+            talker.info("WebsocketNotifier.init: received ping");
+            break;
+          case WebsocketRequestType.qrCodeLoginConfirm:
+            talker.info("WebsocketNotifier.init: received qrCodeLoginConfirm");
+            break;
+          case WebsocketRequestType.newJwt:
+            talker.info("WebsocketNotifier.init: received newJwt");
+            break;
+          case WebsocketRequestType.refreshGallery:
+            talker.info("WebsocketNotifier.init: received refreshGallery");
+            ref.read(creationsNotifierProvider.notifier).load();
+            break;
+        }
       });
 
       _pingTimer?.cancel();
