@@ -2,13 +2,16 @@ import 'dart:async';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/types/websocketPingRequest.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/types/websocketRequest.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class WebsocketNotifier extends Notifier<WebsocketData> {
   @override
@@ -85,7 +88,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             .error("WebsocketNotifier.init: error connecting to $url \n $data");
       });
 
-      socket.onAny((event, data) {
+      socket.onAny((event, data) async {
         talker.info("WebsocketNotifier.init: received $event \n $data");
 
         final eventEnum = websocketRequestTypes.entries
@@ -101,6 +104,15 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             break;
           case WebsocketRequestType.newJwt:
             talker.info("WebsocketNotifier.init: received newJwt");
+            final storage = await SharedPreferences.getInstance();
+
+            //remove session and wallet type from storage
+            storage.remove('session');
+            storage.remove('walletType');
+            storage.remove('userSession');
+            ref.read(w3mServiceProvider)?.disconnect();
+            await BackendAuth.initGuestSession();
+
             break;
           case WebsocketRequestType.refreshGallery:
             talker.info("WebsocketNotifier.init: received refreshGallery");

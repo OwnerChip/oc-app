@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.da
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/qrcodeLoginConfirmPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/responses/getMeResponse.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
@@ -238,8 +239,9 @@ abstract class BackendAuth extends Backend {
     storage.setString(
       'walletType',
       jsonEncode(walletConfig[isCertificateCard
-          ? EWalletType.certificateCard
-          : EWalletType.ownerCard]!.toJson()),
+              ? EWalletType.certificateCard
+              : EWalletType.ownerCard]!
+          .toJson()),
     );
   }
 
@@ -299,5 +301,18 @@ abstract class BackendAuth extends Backend {
     });
 
     return response.response.statusCode == 200 && success;
+  }
+
+  static Future<GetMeResponse> getMe() async {
+    return BackendAuthService.instance.getMe().catchError((e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+
+      throw e;
+    });
   }
 }

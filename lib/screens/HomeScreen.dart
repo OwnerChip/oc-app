@@ -19,6 +19,7 @@ import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
@@ -109,6 +110,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       final storedWcSession = storage.getString('session');
       final storedWalletType = storage.getString('walletType');
       final storedUserSession = storage.getString('userSession');
+
+
       //check if a session is stored
       if (storedWalletType != null &&
           ((storedUserSession != null &&
@@ -118,6 +121,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
             UserSession.fromJson(jsonDecode(storedUserSession));
+
+        final me = await BackendAuth.getMe();
+
+        if(me.role != backendSession.jwt.role) {
+          //remove session and wallet type from storage
+          storage.remove('session');
+          storage.remove('walletType');
+          storage.remove('userSession');
+          wcService?.disconnect();
+          await BackendAuth.initGuestSession();
+          return;
+        }
 
         if (walletType.type == EWalletType.web3auth) {
           String? privKey;

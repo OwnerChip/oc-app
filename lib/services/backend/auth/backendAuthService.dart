@@ -2,6 +2,7 @@ import "package:dio/dio.dart";
 import "package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart";
 import "package:ownerchip_whitelabel/services/backend/auth/payloads/qrcodeLoginConfirmPayload.dart";
 import "package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart";
+import "package:ownerchip_whitelabel/services/backend/auth/responses/getMeResponse.dart";
 import "package:ownerchip_whitelabel/services/backend/backend.services.dart";
 import "package:retrofit/retrofit.dart";
 
@@ -54,4 +55,7 @@ abstract class BackendAuthService {
     @Path("id") required String id,
     @Body() required QrCodeLoginConfirmPayload payload,
   });
+
+  @GET("/me")
+  Future<GetMeResponse> getMe();
 }
