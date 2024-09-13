@@ -142,7 +142,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           } else {
             if (privKey == null) {}
           }
-        } else if (walletType.type == EWalletType.ownerCard) {
+        } else if (walletType.type == EWalletType.ownerCard ||
+            walletType.type == EWalletType.certificateCard) {
           if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
               backendSession.jwt.raw.isNotEmpty) {
             ref.read(userAddressProvider.notifier).state =

@@ -237,7 +237,9 @@ abstract class BackendAuth extends Backend {
     );
     storage.setString(
       'walletType',
-      jsonEncode(walletConfig[EWalletType.ownerCard]!.toJson()),
+      jsonEncode(walletConfig[isCertificateCard
+          ? EWalletType.certificateCard
+          : EWalletType.ownerCard]!.toJson()),
     );
   }
 

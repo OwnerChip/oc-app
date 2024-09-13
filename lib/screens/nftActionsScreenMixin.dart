@@ -1111,6 +1111,15 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           ChipInfoModel chipInfo = ref.read(chipInfoProvider);
           await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+
+          await BackendCreation.markDigitalTwinAsMinted(
+              id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex);
+          ref.refresh(digitalTwinAttachmentsProvider);
+          ref.refresh(digitalTwinCreationMetadataProvider);
+
+          ref.read(creationsNotifierProvider.notifier).load();
+
+
         } catch (e, st) {
           Sentry.captureException(
             e,
@@ -1127,13 +1136,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           setState(() {});
         }
 
-        final chipInfo = ref.read(chipInfoProvider);
-        BackendCreation.markDigitalTwinAsMinted(
-            id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex);
-        ref.refresh(digitalTwinAttachmentsProvider);
-        ref.refresh(digitalTwinCreationMetadataProvider);
-
-        ref.read(creationsNotifierProvider.notifier).load();
 
         Navigator.of(context).pushNamedAndRemoveUntil(
           OfferForSaleCreatedTokenScreen.routeName,
