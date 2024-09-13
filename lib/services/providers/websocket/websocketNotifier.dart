@@ -56,11 +56,17 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
           .replaceAll("http", "ws");
       final socket = io(
         url,
-        OptionBuilder().setAuth(
-          {
-            "token": session.jwt.raw,
-          },
-        ).setTransports(['websocket']).build(),
+        OptionBuilder()
+            .setAuth(
+              {
+                "token": session.jwt.raw,
+              },
+            )
+            .setTransports(['websocket'])
+            .setReconnectionAttempts(9999)
+            .setReconnectionDelay(1000)
+            .setReconnectionDelayMax(5000)
+            .build(),
       );
       talker.info("WebsocketNotifier.init: connecting to $url");
 
