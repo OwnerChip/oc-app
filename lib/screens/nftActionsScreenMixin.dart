@@ -352,11 +352,11 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
         isLoading = false;
       });
 
-      if (digitalTwinMetadata != null) {
-        await BackendCreation.cancelBurnDigitalTwin(
-          id: digitalTwinMetadata.id,
-        );
-      }
+      // if (digitalTwinMetadata != null) {
+      //   await BackendCreation.cancelBurnDigitalTwin(
+      //     id: digitalTwinMetadata.id,
+      //   );
+      // }
 
       // send Error to analytics
       burnProcess.throwable = e;
@@ -834,11 +834,11 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       setState(() {
         isLoading = false;
       });
-      if (digitalTwinMetadata != null) {
-        await BackendCreation.cancelTransferDigitalTwin(
-          id: digitalTwinMetadata.id,
-        );
-      }
+      // if (digitalTwinMetadata != null) {
+      //   await BackendCreation.cancelTransferDigitalTwin(
+      //     id: digitalTwinMetadata.id,
+      //   );
+      // }
       // send Error to analytics
       transferProcess.throwable = e;
       transferProcess.status = const SpanStatus.aborted();
