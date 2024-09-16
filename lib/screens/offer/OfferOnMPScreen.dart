@@ -87,7 +87,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   String loadingSvgPath =
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   bool isRotating = true;
-  String currencyDropdownValue = 'MATIC';
+  String currencyDropdownValue = 'POL';
   bool raribleCheck = true;
   bool _legalHintCheck = false;
 
