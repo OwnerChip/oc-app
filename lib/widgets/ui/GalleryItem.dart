@@ -45,7 +45,7 @@ class GalleryItem extends StatelessWidget {
           ),
           Flexible(
             child: Text(
-              item.name,
+              item.name ?? "",
               style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                     color: CustomColors(dotenv.get('APP_ID')).accentColor,
                   ),

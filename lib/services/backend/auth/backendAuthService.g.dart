@@ -19,36 +19,6 @@ class _BackendAuthService implements BackendAuthService {
   String? baseUrl;
 
   @override
-  Future<String> getSessionExpiration({
-    required int expiration,
-    required GetSessionExpirationPayload payload,
-  }) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
-    final _data = <String, dynamic>{};
-    _data.addAll(payload.toJson());
-    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-          _dio.options,
-          '/${expiration}',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        ))));
-    final value = _result.data!;
-    return value;
-  }
-
-  @override
   Future<String> getSessionId() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};

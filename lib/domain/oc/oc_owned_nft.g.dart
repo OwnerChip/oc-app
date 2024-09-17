@@ -11,7 +11,7 @@ OcOwnedNft _$OcOwnedNftFromJson(Map<String, dynamic> json) => OcOwnedNft(
           AlchemyContract.fromJson(json['contract'] as Map<String, dynamic>),
       tokenId: json['tokenId'] as String,
       tokenType: json['tokenType'] as String,
-      name: json['name'] as String,
+      name: json['name'] as String?,
       description: json['description'] as String?,
       tokenUri: json['tokenUri'] as String,
       image: OcNftImage.fromJson(json['image'] as Map<String, dynamic>),

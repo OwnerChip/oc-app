@@ -44,10 +44,11 @@ class JwtToken {
         ...payloadMap,
       });
     } catch (e, st) {
-      Sentry.captureException(
-        e,
-        stackTrace: st,
-      );
+      Sentry.captureException(e,
+          stackTrace: st,
+          hint: Hint.withMap({
+            'jwt': jwt,
+          }));
       talker.error(e, st);
       rethrow;
     }
