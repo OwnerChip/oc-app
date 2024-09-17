@@ -363,7 +363,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
       BackendApp.sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
-        'error': e,
+        'error': e.toString(),
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
