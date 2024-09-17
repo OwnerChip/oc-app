@@ -8,6 +8,7 @@ import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/utils/future_errors.dart';
 import 'package:web3dart/web3dart.dart';
 
 //this provider fetches all attachments from backend, and saves them to localAttachmentsProvider!
@@ -25,9 +26,8 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     nftOwner = await ref.read(nftOwnerProvider.future);
   } catch (e) {
     print(e);
-    if (e == 'No owner found.') {
-      tokenExists =
-          false; //if "No owner found." error is thrown, token does not exist
+    if (e == FutureErrors.noOwnerFound) {
+      tokenExists = false; //if error is thrown, token does not exist
     }
   }
   final EthereumAddress userWalletAddress = ref.read(userAddressProvider);
@@ -57,7 +57,8 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     SignatureData tokenSignatureData = ref.read(chipSignatureDataProvider);
 
     UserSession? userSession = ref.read(userSessionProvider);
-    response = await BackendAttachments.getPublicAndPrivateAttachmentsFromBackend(
+    response =
+        await BackendAttachments.getPublicAndPrivateAttachmentsFromBackend(
       userSession!,
       userWalletAddress,
       chainId,
@@ -66,7 +67,8 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
     );
   } else {
     //get all public attachments
-    response = await BackendAttachments.getPublicAttachmentsFromBackend(chipInfo.tokenId);
+    response = await BackendAttachments.getPublicAttachmentsFromBackend(
+        chipInfo.tokenId);
     print(response);
   }
   //create list of attachments

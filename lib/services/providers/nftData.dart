@@ -18,6 +18,7 @@ import 'package:ownerchip_whitelabel/services/providers/nft/nftMintedByUser/nftM
 import 'package:ownerchip_whitelabel/services/providers/nft/nftMintedByUser/nftMintedByUserNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/utils/future_errors.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -54,8 +55,7 @@ final nftOwnerProvider =
       await ref.watch(findTokenProvider(chipInfo.tokenId).future);
   // ERROR HANDLING
   if (config.chainId == 0 || config.collectionId == zeroAddress) {
-    return Future.error(
-        'No owner found.'); //If you want to change the "No owner found." error message, please double check if no other code depends on this string
+    return Future.error(FutureErrors.noOwnerFound);
   }
   EthereumAddress nftOwner = await getTwinOwner(
       getRPCUrlFromChainId(config.chainId),
