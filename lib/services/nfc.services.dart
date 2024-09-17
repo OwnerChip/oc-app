@@ -515,17 +515,9 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
       // ignore as slot 0 is not initialized for chip
     }
 
-
-
     if (tokenInfo.collectionId != zeroAddress) {
-      return await BackendCollection.sendCardLostToBackend(
-          chipAddress,
-          tokenInfo.collectionId,
-          chipSignature,
-          sessionId,
-          email,
-          name,
-          telNr);
+      return await BackendCollection.sendCardLostToBackend(chipAddress,
+          tokenInfo.collectionId, chipSignature, sessionId, email, name, telNr);
     } else {
       throw context.loc.tokenDoesNotExist;
     }
@@ -605,12 +597,16 @@ Future<dynamic> scanClosure(
 
   NfcManager.instance.startSession(
       onError: (error) async {
-        //check if future is already completed
-        if (error.message.contains('Session invalidated by user')) {
-          //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
-          completer.complete(null);
-        } else {
-          completer.completeError(error);
+        try {
+          //check if future is already completed
+          if (error.message.contains('Session invalidated by user')) {
+            //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
+            completer.complete(null);
+          } else {
+            completer.completeError(error);
+          }
+        } catch (_) {
+          //
         }
       },
       alertMessage: alertMessage,
@@ -628,7 +624,12 @@ Future<dynamic> scanClosure(
           final result =
               await callback(nfc, sessionId, createFirstKeyChipResponse);
 
-          completer.complete(result);
+          try {
+            completer.complete(result);
+          } catch (e) {
+            //
+          }
+
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
           BackendApp.sendAnalyticsTrace(sessionId, '', analyticsType,
@@ -666,7 +667,11 @@ Future<dynamic> scanClosure(
             e,
             stackTrace: stackTrace,
           );
-          completer.complete(null);
+          try {
+            completer.complete(null);
+          } catch (e) {
+            //
+          }
           rethrow;
         }
       });
