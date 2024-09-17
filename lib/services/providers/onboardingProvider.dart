@@ -38,7 +38,11 @@ class OnboardingProvider extends StateNotifier<AsyncValue<OnboardingStatus>> {
   }
 
   Future<void> showedTutorial() async {
-    final current = state.value!;
+    final current = state.value;
+
+    if (current == null) {
+      return;
+    }
 
     state = AsyncData(current.copyWith(
       showedTutorial: true,
