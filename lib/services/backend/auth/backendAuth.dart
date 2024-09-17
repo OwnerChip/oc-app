@@ -150,36 +150,6 @@ abstract class BackendAuth extends Backend {
     });
   }
 
-  /// get session expiration time
-  static Future<dynamic> getSessionExpiration(
-      int sessionDuration,
-      String sessionId,
-      EthereumAddress userWalletAddress,
-      MsgSignature signature) async {
-    return int.parse(
-      await BackendAuthService.instance
-          .getSessionExpiration(
-        expiration: sessionDuration,
-        payload: GetSessionExpirationPayload(
-          sessionId: sessionId,
-          userWalletSignature: WalletSignature.fromMsgSignature(
-            signature,
-          ),
-          walletAddress: userWalletAddress.hex,
-        ),
-      )
-          .catchError((e) {
-        Sentry.captureException(
-          e,
-        );
-        talker.error(
-          e,
-        );
-
-        throw e;
-      }),
-    );
-  }
 
   /// save a userSession of a OwnerCard or CertificateCard
   static Future<void> saveUserSession(
@@ -194,8 +164,8 @@ abstract class BackendAuth extends Backend {
 
     if (jwt == null) {
       int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-      int sessionExpirationDate = await getSessionExpiration(
-          sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
+      // int sessionExpirationDate = await getSessionExpiration(
+      //     sevenDaysInSeconds, sessionId, cardWalletAddress, signature);
 
       jwtToken = JwtToken(
         raw: "",
@@ -203,7 +173,7 @@ abstract class BackendAuth extends Backend {
         sessionId: sessionId,
         role: "user",
         iat: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        exp: sessionExpirationDate ~/ 1000,
+        exp: BackendAuth.nowPlusThreeHours(),
       );
     } else {
       jwtToken = JwtToken.decode(jwt);

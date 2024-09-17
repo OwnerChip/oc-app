@@ -191,8 +191,6 @@ Future<void> onTapAuth(
     signature = hexSignatureToRSV(hexSignature);
 
     int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-    int sessionExpirationDate = await BackendAuth.getSessionExpiration(
-        sevenDaysInSeconds, sessionId, userWalletAddress, signature);
 
     token = JwtToken(
       raw: "",
@@ -200,7 +198,7 @@ Future<void> onTapAuth(
       sessionId: sessionId,
       role: "user",
       iat: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      exp: sessionExpirationDate,
+      exp: BackendAuth.nowPlusThreeHours(),
     );
   }
 

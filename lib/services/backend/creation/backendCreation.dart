@@ -31,13 +31,9 @@ class BackendCreation extends Backend {
         .catchError((error) {
       success = false;
       talker.error(error);
-      Sentry.captureException(error, stackTrace: StackTrace.current);
+      // Sentry.captureException(error, stackTrace: StackTrace.current);
       return null;
     });
-
-    if (!success) {
-      throw Exception('Failed to get digital twins');
-    }
 
     return res;
   }
