@@ -1,18 +1,18 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 class WebsocketData {
   final Socket? socket;
-  final bool connected;
+
+  bool get connected => socket?.connected ?? false;
 
   const WebsocketData({
     required this.socket,
-    required this.connected,
   });
 
   factory WebsocketData.initial() {
     return const WebsocketData(
       socket: null,
-      connected: false,
     );
   }
 
@@ -22,7 +22,6 @@ class WebsocketData {
   }) {
     return WebsocketData(
       socket: socket ?? this.socket,
-      connected: connected ?? this.connected,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -25,14 +26,24 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
     WebsocketRequest request,
   ) async {
     try {
-      if (state.socket == null) {
+      if (state.socket != null && state.socket!.connected) {
+        state.socket?.emit(
+          request.type,
+          request.toJson(),
+        );
+      }
+    } catch (e, s) {
+      talker.error(e, s);
+    }
+  }
+
+  void onResumedFromBackground() {
+    try {
+      final socket = state.socket;
+      if (socket != null && !socket.connected) {
+        init();
         return;
       }
-
-      state.socket?.emit(
-        request.type,
-        request.toJson(),
-      );
     } catch (e, s) {
       talker.error(e, s);
     }
@@ -48,47 +59,47 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       }
 
       if (state.socket != null) {
-        talker.info("WebsocketNotifier.init: disconnecting");
         state.socket?.disconnect();
-        state = state.copyWith(connected: false);
       }
 
       final url = dotenv
           .get("OC_BACKEND_URL_TEST")
           .replaceAll("https", "wss")
           .replaceAll("http", "ws");
-      final socket = io(
-        url,
-        OptionBuilder()
-            .setAuth(
-              {
-                "token": session.jwt.raw,
-              },
-            )
-            .setTransports(['websocket'])
-            .setReconnectionAttempts(9999)
-            .setReconnectionDelay(1000)
-            .setReconnectionDelayMax(5000)
-            .build(),
+      state = state.copyWith(
+        socket: io(
+          url,
+          OptionBuilder()
+              .setAuth(
+                {
+                  "token": session.jwt.raw,
+                },
+              )
+              .setTransports(['websocket'])
+              .setReconnectionAttempts(9999)
+              .setReconnectionDelay(1000)
+              .setReconnectionDelayMax(5000)
+              .build(),
+        ),
       );
+
       talker.info("WebsocketNotifier.init: connecting to $url");
 
-      socket.onConnect((_) {
-        state = state.copyWith(socket: socket, connected: true);
+      onConnect(_) {
+        state = state.copyWith(connected: true);
         talker.info("WebsocketNotifier.init: connected to $url");
-      });
+      }
 
-      socket.onDisconnect((_) {
-        state = state.copyWith(socket: null, connected: false);
-        talker.info("WebsocketNotifier.init: disconnected from $url");
-      });
+      state.socket?.onConnect(onConnect);
 
-      socket.onConnectError((data) {
+      onConnectError(data) {
         talker
             .error("WebsocketNotifier.init: error connecting to $url \n $data");
-      });
+      }
 
-      socket.onAny((event, data) async {
+      state.socket?.onConnectError(onConnectError);
+
+      onAny(String event, data) async {
         talker.info("WebsocketNotifier.init: received $event \n $data");
 
         final eventEnum = websocketRequestTypes.entries
@@ -119,7 +130,25 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             ref.read(creationsNotifierProvider.notifier).load();
             break;
         }
-      });
+      }
+
+      state.socket?.onAny(onAny);
+
+      onDisconnect(_) {
+        state = state.copyWith(connected: false);
+        talker.info("WebsocketNotifier.init: disconnected from $url");
+
+        // remove all listeners
+        state.socket?.off('connect');
+        state.socket?.off('connect_error');
+        state.socket?.off('connect_timeout');
+        state.socket?.off('connecting');
+        state.socket?.off('disconnect');
+        state.socket?.offAny();
+
+      }
+
+      state.socket?.onDisconnect(onDisconnect);
 
       _pingTimer?.cancel();
       _pingTimer = Timer.periodic(
@@ -131,8 +160,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         },
       );
 
-      socket.connect();
-      talker.info("WebsocketNotifier.init: connecting to $url");
+      state.socket?.connect();
     } catch (e, s) {
       talker.error(e, s);
     }

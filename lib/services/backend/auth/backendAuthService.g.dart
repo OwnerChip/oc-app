@@ -184,13 +184,14 @@ class _BackendAuthService implements BackendAuthService {
   }
 
   @override
-  Future<GetMeResponse> getMe() async {
+  Future<GetMeResponse?> getMe({required String authorization}) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'Authorization': authorization};
+    _headers.removeWhere((k, v) => v == null);
     const Map<String, dynamic>? _data = null;
     final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<GetMeResponse>(Options(
+        .fetch<Map<String, dynamic>?>(_setStreamType<GetMeResponse>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -206,7 +207,8 @@ class _BackendAuthService implements BackendAuthService {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final value = GetMeResponse.fromJson(_result.data!);
+    final value =
+        _result.data == null ? null : GetMeResponse.fromJson(_result.data!);
     return value;
   }
 

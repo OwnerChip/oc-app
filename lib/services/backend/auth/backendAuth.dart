@@ -303,8 +303,11 @@ abstract class BackendAuth extends Backend {
     return response.response.statusCode == 200 && success;
   }
 
-  static Future<GetMeResponse> getMe() async {
-    return BackendAuthService.instance.getMe().catchError((e) {
+  static Future<GetMeResponse?> getMe(String jwt) async {
+    return BackendAuthService.instance.getMe(
+      authorization: "Bearer $jwt"
+
+    ).catchError((e) {
       Sentry.captureException(
         e,
       );
@@ -312,7 +315,7 @@ abstract class BackendAuth extends Backend {
         e,
       );
 
-      throw e;
+      return null;
     });
   }
 }

@@ -111,7 +111,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       final storedWalletType = storage.getString('walletType');
       final storedUserSession = storage.getString('userSession');
 
-
       //check if a session is stored
       if (storedWalletType != null &&
           ((storedUserSession != null &&
@@ -122,9 +121,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         final backendSession =
             UserSession.fromJson(jsonDecode(storedUserSession));
 
-        final me = await BackendAuth.getMe();
+        final me = await BackendAuth.getMe(
+          backendSession.jwt.raw,
+        );
 
-        if(me.role != backendSession.jwt.role) {
+        if (me != null && me.role != backendSession.jwt.role) {
           //remove session and wallet type from storage
           storage.remove('session');
           storage.remove('walletType');

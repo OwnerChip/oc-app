@@ -34,6 +34,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //import misc
@@ -115,6 +116,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
+
     initMessaging();
   }
 
@@ -129,7 +132,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       await ref.read(creationsNotifierProvider.notifier).load();
       ref.read(creationsNotifierProvider.notifier).navigateConditionally(
             navigatorKey.currentContext ?? context,
-            data.decodeAsDigitalTwinCreation().userWalletAddress,
+            data.decodeAsDigitalTwinCreation().walletAddress,
             isFromNotification: true,
           );
     }
@@ -144,13 +147,36 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     FirebaseMessaging.onBackgroundMessage((message) async {
       _onMessageReceived(message);
     });
-    _bgSubscription = FirebaseMessaging.onMessageOpenedApp.listen(_onMessageReceived);
+    _bgSubscription =
+        FirebaseMessaging.onMessageOpenedApp.listen(_onMessageReceived);
     FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
       if (initialMessage != null) {
         _onMessageReceived(initialMessage);
       }
     });
     talker.log('Firebase messaging initialized');
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    talker.log('App lifecycle state changed to $state');
+
+    switch (state) {
+      case AppLifecycleState.detached:
+        break;
+      case AppLifecycleState.resumed:
+        talker.log('App resumed');
+        ref.read(websocketProvider.notifier).onResumedFromBackground();
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.hidden:
+        break;
+      case AppLifecycleState.paused:
+        break;
+    }
   }
 
   @override

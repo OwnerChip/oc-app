@@ -8,12 +8,12 @@ part of 'getMeResponse.dart';
 
 GetMeResponse _$GetMeResponseFromJson(Map<String, dynamic> json) =>
     GetMeResponse(
-      userWalletAddress: json['userWalletAddress'] as String,
+      walletAddress: json['walletAddress'] as String,
       role: json['role'] as String,
     );
 
 Map<String, dynamic> _$GetMeResponseToJson(GetMeResponse instance) =>
     <String, dynamic>{
-      'userWalletAddress': instance.userWalletAddress,
+      'walletAddress': instance.walletAddress,
       'role': instance.role,
     };

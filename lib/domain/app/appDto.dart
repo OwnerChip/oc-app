@@ -14,7 +14,7 @@ class AppDto {
 
   final String googlePlayLink;
 
-  final AppVersion minRequiredVersion;
+  final AppVersion? minRequiredVersion;
 
   const AppDto({
     required this.appStoreLink,

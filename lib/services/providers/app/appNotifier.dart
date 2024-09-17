@@ -56,7 +56,6 @@ class AppNotifier extends Notifier<AppData> {
             backgroundColor: Theme.of(context).cardColor,
             title: Text(
               context.loc.newVersionTitle,
-
             ),
             content: Text(
               context.loc.newVersionAvailable,
@@ -68,8 +67,8 @@ class AppNotifier extends Notifier<AppData> {
                 child: Text(
                   context.loc.newVersionUpdateButton,
                   style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                    color: CustomColors(dotenv.get("APP_ID")).accentColor,
-                  ),
+                        color: CustomColors(dotenv.get("APP_ID")).accentColor,
+                      ),
                 ),
               ),
             ],
@@ -91,7 +90,9 @@ class AppNotifier extends Notifier<AppData> {
 
       state = state.copyWith(
         appDto: appDto,
-        upgradeRequired: appDto.minRequiredVersion > currentVersion,
+        upgradeRequired: appDto.minRequiredVersion != null
+            ? appDto.minRequiredVersion! > currentVersion
+            : false,
       );
     } catch (e, st) {
       talker.error("Error getting app data from backend: $e", st);

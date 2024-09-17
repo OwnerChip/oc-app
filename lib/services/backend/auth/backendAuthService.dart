@@ -57,5 +57,7 @@ abstract class BackendAuthService {
   });
 
   @GET("/me")
-  Future<GetMeResponse> getMe();
+  Future<GetMeResponse?> getMe({
+    @Header("Authorization") required String authorization,
+  });
 }

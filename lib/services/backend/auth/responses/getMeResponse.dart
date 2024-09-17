@@ -9,11 +9,11 @@ class GetMeResponse {
 
   Map<String, dynamic> toJson() => _$GetMeResponseToJson(this);
 
-  final String userWalletAddress;
+  final String walletAddress;
   final String role;
 
   const GetMeResponse({
-    required this.userWalletAddress,
+    required this.walletAddress,
     required this.role,
   });
 }
