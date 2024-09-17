@@ -270,6 +270,8 @@ Future<void> _loginWithWeb3Auth(
       w3mService!.web3App! as Web3App,
       walletConfig[EWalletType.web3auth]!.name,
     );
+  }).catchError((e) {
+    // ignore
   });
 }
 
