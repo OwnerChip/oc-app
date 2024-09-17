@@ -163,6 +163,12 @@ final getNftsForOwnerProvider =
   chainIds.remove(80001);
   final UserSession? userSession = ref.read(userSessionProvider);
   final EthereumAddress? walletAddress = userSession?.userWalletAddress;
+
+  if (walletAddress == null) {
+    talker.error('User wallet address is null');
+    return null;
+  }
+
   final BlockchainCollectionList ocCollections =
       await ref.watch(appCollectionProvider.future);
 
