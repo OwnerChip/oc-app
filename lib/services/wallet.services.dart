@@ -491,7 +491,11 @@ Future<String> makeAndSendNormalTx(
                       () {},
                       pin,
                     );
-                  })) as MsgSignature;
+                  })) as MsgSignature?;
+
+      if (sig == null) {
+        throw Exception('Failed to sign message');
+      }
 
       msgSignature =
           MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));

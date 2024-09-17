@@ -30,10 +30,6 @@ abstract class BackendCreator extends Backend {
             Token.fromJson(creatorData['token']),
       );
     } catch (e, st) {
-      Sentry.captureException(
-        e,
-        stackTrace: st,
-      );
       talker.error(e, st);
       rethrow;
     }
