@@ -4,12 +4,11 @@ import 'package:web3dart/web3dart.dart';
 import '../domain/classDefinition.dart';
 
 class MetadataInputScreenArguments {
-  final String sessionId;
   final int chainId;
   final EthereumAddress collectionId;
   final EthereumAddress? voucherAddress;
 
-  MetadataInputScreenArguments(this.sessionId, this.chainId, this.collectionId,
+  MetadataInputScreenArguments(this.chainId, this.collectionId,
       {this.voucherAddress});
 }
 

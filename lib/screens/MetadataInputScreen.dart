@@ -129,7 +129,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
   }
 
   Future<void> createToken(
-      String sessionId,
       Web3App? wc,
       SignatureData signatureData,
       Map<String, dynamic> metadata,
@@ -144,6 +143,7 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
     });
 
     final UserSession userSession = ref.read(userSessionProvider)!;
+    final sessionId = userSession.sessionId;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
 
@@ -553,7 +553,6 @@ class _MetadataScreen extends ConsumerState<MetadataScreen> {
                               if (_formKey.currentState!.validate()) {
                                 setTraits(traitsStateArray);
                                 fromCancelable(createToken(
-                                    navArgs.sessionId,
                                     wc,
                                     signatureData,
                                     metadata,

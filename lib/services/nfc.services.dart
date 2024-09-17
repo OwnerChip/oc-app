@@ -103,15 +103,20 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       }
 
       if (showChainSelector) {
-        Navigator.pushNamed(context, ChainSelectorScreen.routeName,
-            arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
+        Navigator.pushNamed(
+          context,
+          ChainSelectorScreen.routeName,
+          arguments: MetadataInputScreenArguments(
+            0,
+            zeroAddress,
+          ),
+        );
       } else {
         int chainId = relevantCollections.collections.keys.first;
         Collection? collection =
             relevantCollections.collections[chainId]!.first;
         Navigator.pushNamed(context, MetadataScreen.routeName,
-            arguments: MetadataInputScreenArguments(
-                sessionId, chainId, collection.id,
+            arguments: MetadataInputScreenArguments(chainId, collection.id,
                 voucherAddress: collection.voucherAddress));
       }
     }

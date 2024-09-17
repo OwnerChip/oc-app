@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:sentry/sentry.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -25,8 +26,10 @@ import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+
 //import dotenv
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 //import svg
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
@@ -43,7 +46,9 @@ class ChainSelectorScreen extends ConsumerStatefulWidget {
 
 class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
   void onInitializeButtonPress(
-      BuildContext context, mounted, String sessionId) async {
+    BuildContext context,
+    mounted,
+  ) async {
     final wcSession = ref.read(wcSessionProvider);
     BlockchainCollectionList relevantCollections =
         await ref.read(findAllMinterRolesProvider.future);
@@ -62,8 +67,10 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
         if (chainId != null && collection != null) {
           Navigator.pushNamed(context, MetadataScreen.routeName,
               arguments: MetadataInputScreenArguments(
-                  sessionId, chainId, collection.id,
-                  voucherAddress: collection.voucherAddress));
+                chainId,
+                collection.id,
+                voucherAddress: collection.voucherAddress,
+              ));
         }
       }
     } catch (e, s) {
@@ -147,8 +154,7 @@ class _ChainSelectorScreen extends ConsumerState<ChainSelectorScreen> {
             onPressed: chainId == null || collection == null
                 ? null
                 : () {
-                    onInitializeButtonPress(
-                        context, mounted, navArgs.sessionId);
+                    onInitializeButtonPress(context, mounted);
                   },
           ),
         ],
