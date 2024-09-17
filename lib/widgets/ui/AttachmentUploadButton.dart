@@ -8,8 +8,13 @@ import '../../domain/classDefinition.dart';
 
 import '../../utils/localization.helper.dart';
 
+enum AttachmentUploadButtonOption {
+  file,
+  url,
+}
+
 class AttachmentUploadButton extends StatelessWidget {
-  AttachmentUploadButton(
+  const AttachmentUploadButton(
       {super.key,
       required this.text,
       required this.icon,
@@ -21,7 +26,7 @@ class AttachmentUploadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<int>(
+    return PopupMenuButton<AttachmentUploadButtonOption>(
       constraints: const BoxConstraints(minWidth: double.infinity),
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
@@ -30,19 +35,25 @@ class AttachmentUploadButton extends StatelessWidget {
       padding: EdgeInsets.all(0),
       position: PopupMenuPosition.under,
       initialValue: null,
-      onSelected: (int value) {
-        if (value == 0) {
-          Navigator.pushNamed(context, AddAttachmentScreen.routeName,
-              arguments:
-                  AttachmentScreensArguments(false, AttachmentType.text));
-        } else {
-          Navigator.pushNamed(context, AddAttachmentScreen.routeName,
-              arguments: AttachmentScreensArguments(false, AttachmentType.url));
+      onSelected: (AttachmentUploadButtonOption value) {
+
+        switch(value) {
+
+          case AttachmentUploadButtonOption.file:
+            Navigator.pushNamed(context, AddAttachmentScreen.routeName,
+                arguments:
+                AttachmentScreensArguments(false, AttachmentType.text));
+            break;
+          case AttachmentUploadButtonOption.url:
+            Navigator.pushNamed(context, AddAttachmentScreen.routeName,
+                arguments: AttachmentScreensArguments(false, AttachmentType.url));
+            break;
         }
+
       },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
-        PopupMenuItem<int>(
-          value: 0,
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<AttachmentUploadButtonOption>>[
+        PopupMenuItem<AttachmentUploadButtonOption>(
+          value: AttachmentUploadButtonOption.file,
           child: Container(
               alignment: Alignment.center,
               width: double.infinity,
@@ -51,8 +62,8 @@ class AttachmentUploadButton extends StatelessWidget {
                       color: CustomColors(dotenv.get('APP_ID')).primaryColor))),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<int>(
-          value: 1,
+        PopupMenuItem<AttachmentUploadButtonOption>(
+          value: AttachmentUploadButtonOption.url,
           child: Container(
               alignment: Alignment.center,
               width: double.infinity,
