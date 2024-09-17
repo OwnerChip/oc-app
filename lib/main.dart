@@ -48,7 +48,7 @@ import 'screens/ChainSelectorScreen.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
-import 'screens/MetadataInputScreen.dart';
+import 'screens/metadataInput/MetadataInputScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'screens/TransferScreen.dart';
 import 'screens/UserScanResultsScreen.dart';

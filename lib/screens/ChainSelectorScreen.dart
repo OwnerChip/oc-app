@@ -21,7 +21,7 @@ import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 
 //import screens
-import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputScreen.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
