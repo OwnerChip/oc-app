@@ -97,11 +97,11 @@ class AlchemyContract {
   factory AlchemyContract.fromJson(Map<String, dynamic> json) {
     return AlchemyContract(
       address: json['address'],
-      name: json['name'],
-      symbol: json['symbol'],
-      totalSupply: json['totalSupply'],
-      tokenType: json['tokenType'],
-      contractDeployer: json['contractDeployer'],
+      name: json['name'] ?? '',
+      symbol: json['symbol'] ?? '',
+      totalSupply: json['totalSupply'] ?? '',
+      tokenType: json['tokenType'] ?? '',
+      contractDeployer: json['contractDeployer'] ?? '',
       deployedBlockNumber: json['deployedBlockNumber'],
       openSeaMetadata: OpenSeaMetadata.fromJson(json['openSeaMetadata']),
       isSpam: json['isSpam'],
