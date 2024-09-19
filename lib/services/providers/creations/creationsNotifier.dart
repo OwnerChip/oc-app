@@ -83,10 +83,10 @@ class CreationsNotifier extends Notifier<CreationsData> {
     }
 
     if (state.data != null && state.data!.isNotEmpty) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        CreationsPage.routeName,
-        (route) => route.isFirst,
-      );
+      if(Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      Navigator.of(context).pushNamed(CreationsPage.routeName);
     }
   }
 

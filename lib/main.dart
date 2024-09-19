@@ -132,7 +132,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
       await ref.read(creationsNotifierProvider.notifier).load();
       ref.read(creationsNotifierProvider.notifier).navigateConditionally(
             navigatorKey.currentContext ?? context,
-            data.decodeAsDigitalTwinCreation().walletAddress,
+            data.decodeAsDigitalTwinCreation().userWalletAddress,
             isFromNotification: true,
           );
     }
