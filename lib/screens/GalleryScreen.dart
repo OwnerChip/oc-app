@@ -361,13 +361,22 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
           const SizedBox(
             height: 20,
           ),
-          CustomRoundedButton(
-              text: context.loc.signupAsCertifier,
-              onPressed: () => {
-                    launchUrl(Uri.parse(getBecomeACreatorUrl(jwtToken.raw)),
-                        mode: LaunchMode.externalApplication)
-                  },
-              width: 250),
+          if (jwtToken.canMint())
+            CustomRoundedButton(
+                text: context.loc.orderChips,
+                onPressed: () => {
+                      launchUrl(Uri.parse(context.loc.orderChipsUrl),
+                          mode: LaunchMode.externalApplication)
+                    },
+                width: 250)
+          else
+            CustomRoundedButton(
+                text: context.loc.signupAsCertifier,
+                onPressed: () => {
+                      launchUrl(Uri.parse(getBecomeACreatorUrl(jwtToken.raw)),
+                          mode: LaunchMode.externalApplication)
+                    },
+                width: 250),
         ]);
   }
 

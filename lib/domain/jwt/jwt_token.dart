@@ -29,6 +29,10 @@ class JwtToken {
     required this.exp,
   });
 
+  bool canMint() {
+    return ["creator", "admin", "superadmin"].contains(role);
+  }
+
   factory JwtToken.decode(String jwt) {
     try {
       final parts = jwt.split('.');
