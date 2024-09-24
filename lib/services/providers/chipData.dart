@@ -29,8 +29,13 @@ final chipSignatureDataProvider =
 
 class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
   ChipInfoNotifier()
-      : super(ChipInfoModel(
-            chipEthereumAddress: zeroAddress, tokenId: BigInt.from(0)));
+      : super(
+          ChipInfoModel(
+            chipEthereumAddress: zeroAddress,
+            tokenId: BigInt.from(0),
+            firstSlotKey: zeroAddress,
+          ),
+        );
 
   void setTokenId(BigInt tokenId) {
     state.tokenId = tokenId;
@@ -42,6 +47,10 @@ class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
 
   void setChipToInitialized() {
     state.chipIsInitialized = true;
+  }
+
+  void setFirstSlotKey(EthereumAddress? firstSlotKey) {
+    state.firstSlotKey = firstSlotKey ?? zeroAddress;
   }
 }
 

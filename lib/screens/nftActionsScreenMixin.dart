@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
@@ -1020,10 +1021,19 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     try {
+
+      final chipInfo = ref.read(chipInfoProvider);
+
+      String functionSignature = mintVoucherFunctionSignature;
+
+      if (OwnercardData.isCertificateCard(chipInfo.firstSlotKey)) {
+        functionSignature = mintVoucherToCertificateCardFunctionSignature;
+      }
+
       //check if user is allowed to use gas station
       final List response = await BackendMetaTx.checkMetaTx(
         EthereumAddress.fromHex(metadata.collectionId),
-        mintFunctionSignature,
+        functionSignature,
       );
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
@@ -1047,7 +1057,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
         return await makeAndSendNormalTx(
             context,
             ref,
-            mintVoucherFunctionSignature,
+            functionSignature,
             chainId,
             EthereumAddress.fromHex(metadata.collection.voucherAddress),
             signatureData,
@@ -1065,7 +1075,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () => makeAndSendGaslessTx(
                   ref,
                   ScaffoldKey.getScaffoldKey('CreationsPage').currentContext!,
-                  mintVoucherFunctionSignature,
+                  functionSignature,
                   chainId,
                   EthereumAddress.fromHex(metadata.collection.voucherAddress),
                   signatureData,
@@ -1084,7 +1094,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             throw 'Please connect with MetaMask or similar wallet.';
           }
 
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         talker.error('Error minting token: $e', st);

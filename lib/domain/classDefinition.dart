@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
@@ -97,18 +98,24 @@ class TokenChainAndCollection {
   final EthereumAddress collectionId;
   final BigInt tokenId;
 
+  bool get minted => chainId != 0 && collectionId != zeroAddress;
+
   TokenChainAndCollection(this.chainId, this.collectionId, this.tokenId);
 }
 
 class ChipInfoModel {
-  ChipInfoModel(
-      {required this.chipEthereumAddress,
-      required this.tokenId,
-      this.chipIsInitialized = false});
+  ChipInfoModel({
+    required this.chipEthereumAddress,
+    required this.tokenId,
+    required this.firstSlotKey,
+    this.chipIsInitialized = false,
+  });
 
   EthereumAddress chipEthereumAddress;
   BigInt tokenId;
+   EthereumAddress firstSlotKey;
   bool chipIsInitialized;
+
 }
 
 class SignatureData {

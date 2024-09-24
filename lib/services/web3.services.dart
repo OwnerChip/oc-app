@@ -217,6 +217,39 @@ Future<bool> verifyTokenSigner(
   }
 }
 
+String makeMintToCertificateData(String functionSignatureHash, Uint8List hash,
+    MsgSignature signature, String tokenURI, String? voucherTokenURI) {
+  String data = ((functionSignatureHash == mintVoucherFunctionSignature ||
+              functionSignatureHash ==
+                  mintVoucherToCertificateCardFunctionSignature) &&
+          voucherTokenURI != null &&
+          voucherTokenURI != "")
+      ?
+      // voucherToken mint calldata
+      functionSignatureHash +
+          uint8ListTo32ByteHex(hash) + //bytes32
+          "c0".padLeft(64, '0') + //string1 position
+          //position of string2 is string1 position + 96 bytes (3 lines below in call data)
+          (0xc0 + 96).toRadixString(16).padLeft(64, '0') + //string2 position
+          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
+          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(tokenURI) + //string1;
+          (voucherTokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(voucherTokenURI) //string2;
+      // twinToken mint calldata
+      : functionSignatureHash +
+          uint8ListTo32ByteHex(hash) + //bytes32
+          "a0".padLeft(64, '0') + //string prefix
+          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
+          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
+          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
+          stringToHex(tokenURI); //string;
+  return data;
+}
+
 String makeMintData(String functionSignatureHash, Uint8List hash,
     MsgSignature signature, String tokenURI, String? voucherTokenURI) {
   String data = (functionSignatureHash == mintVoucherFunctionSignature &&
@@ -277,6 +310,15 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash ==
+      mintVoucherToCertificateCardFunctionSignature) {
+    data = makeMintToCertificateData(
+      functionSignatureHash,
+      randomValueHash,
+      signature,
+      tokenURI!,
+      voucherTokenURI!,
+    );
   } else if (functionSignatureHash == erc20TransferFunctionSignature) {
     data = makeErc20TransferData(
       functionSignatureHash,
@@ -591,9 +633,9 @@ Future<EthereumAddress> getVoucherContractFromTwin(
   try {
     var result = await queryCollectionContract(
         chainRpcUrl, collectionId, "voucherNFTCollectionAddress", []);
-    final address =  result[0];
+    final address = result[0];
 
-    if(address == zeroAddress) {
+    if (address == zeroAddress) {
       throw Exception('Voucher contract address is zero address');
     }
 

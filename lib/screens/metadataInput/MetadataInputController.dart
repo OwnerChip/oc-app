@@ -1,6 +1,3 @@
-
-
-
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +25,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:mime/mime.dart';
+import '../../config/ownercard.dart';
 import '../../utils/logger.dart';
 
 mixin MetadataInputController on ConsumerState<MetadataScreen> {
@@ -105,8 +103,7 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
     });
   }
 
-  Future<void> createToken(
-      Web3App? wc,
+  Future<void> createToken(Web3App? wc,
       SignatureData signatureData,
       Map<String, dynamic> metadata,
       int chainId,
@@ -133,6 +130,16 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
       BackendApp.sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
           tags: {'connectedWallet': connectedWallet.hex});
 
+      final chipInfo = ref.read(chipInfoProvider);
+
+      String functionSignature = (voucherCollectionId != null)
+          ? mintVoucherFunctionSignature
+          : mintFunctionSignature;
+
+      if (OwnercardData.isCertificateCard(chipInfo.firstSlotKey)) {
+        functionSignature = mintVoucherToCertificateCardFunctionSignature;
+      }
+
       /////////// TWIN METADATA ///////////
       String twinTokenMetadataCID = '';
 
@@ -153,7 +160,6 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
 
       Map<String, dynamic> voucherMetadata = {...metadata};
 
-      ChipInfoModel chipInfo = ref.read(chipInfoProvider);
       XFile jsonFileVoucher = await generateVoucherMetadataFile(
           voucherMetadata, chipInfo.tokenId, context);
       String voucherTokenMetadataCID =
@@ -170,7 +176,7 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
 
       //check if user is allowed to use gas station
       final List response =
-      await BackendMetaTx.checkMetaTx(collectionId, mintFunctionSignature);
+      await BackendMetaTx.checkMetaTx(collectionId, functionSignature);
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
 
@@ -192,9 +198,7 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
         return await makeAndSendNormalTx(
             context,
             ref,
-            (voucherCollectionId != null)
-                ? mintVoucherFunctionSignature
-                : mintFunctionSignature,
+            functionSignature,
             chainId,
             voucherCollectionId ?? collectionId,
             signatureData,
@@ -212,11 +216,10 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
               function: () {
                 return makeAndSendGaslessTx(
                     ref,
-                    ScaffoldKey.getScaffoldKey('MetadataInputScreen')
+                    ScaffoldKey
+                        .getScaffoldKey('MetadataInputScreen')
                         .currentContext!,
-                    (voucherCollectionId != null)
-                        ? mintVoucherFunctionSignature
-                        : mintFunctionSignature,
+                    functionSignature,
                     chainId,
                     voucherCollectionId ?? collectionId,
                     signatureData,
