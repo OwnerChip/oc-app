@@ -113,9 +113,8 @@ class ChipInfoModel {
 
   EthereumAddress chipEthereumAddress;
   BigInt tokenId;
-   EthereumAddress firstSlotKey;
+  EthereumAddress firstSlotKey;
   bool chipIsInitialized;
-
 }
 
 class SignatureData {
@@ -170,6 +169,8 @@ class UserSession {
   final EthereumAddress userWalletAddress;
   final bool isOwnerCard;
 
+  final bool isCertificateCard;
+
   int get expiryDate => jwt.exp;
 
   late final JwtToken jwt;
@@ -180,6 +181,7 @@ class UserSession {
     this.signatureData,
     this.userWalletAddress,
     this.isOwnerCard,
+    this.isCertificateCard,
     this.jwt,
     this.fcmToken,
   );
@@ -189,6 +191,7 @@ class UserSession {
         'signatureData': msgSignatureToJson(signatureData),
         'userWalletAddress': userWalletAddress.hex,
         'isOwnerCard': isOwnerCard,
+        'isCertificateCard': isCertificateCard,
         'expiryDate': expiryDate.toString(),
         'jwt': jwt.toJson(),
         'fcmToken': fcmToken?.toJson() ?? null,
@@ -199,6 +202,7 @@ class UserSession {
         signatureData = msgSignatureFromJson(json['signatureData']),
         userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
         isOwnerCard = json['isOwnerCard'],
+        isCertificateCard = json['isCertificateCard'],
         jwt = JwtToken.fromJson(json['jwt']),
         fcmToken = json['fcmToken'] != null
             ? FCMToken.fromJson(json['fcmToken'])

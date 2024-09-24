@@ -2,6 +2,7 @@
 
 //import packages
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/ownercard.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 
@@ -21,13 +23,16 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/secora.services.dart';
@@ -41,7 +46,9 @@ import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/AppBarAuthDropDown.dart';
 import 'package:sentry/sentry.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 
@@ -68,14 +75,6 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
     }
     final firstPubKey = await getPubKeyN(nfc, 0x00);
     final firstPubKeyAddress = OwnercardData.fromPubKeyZeros(firstPubKey);
-
-    //set chip info data in provider
-    setChipInfoProvider(
-      ref,
-      chipEthereumAddress,
-      chipTokenId,
-      firstPubKeyAddress: firstPubKeyAddress,
-    );
 
     //set chip info data in provider
     setChipInfoProvider(
@@ -180,11 +179,12 @@ Future<dynamic> scanItem(
     // and its a minted token,
     // we authenticate it before proceeding
     if (config.minted && OwnercardData.isCertificateCard(firstPubKeyAddress)) {
+      setDeferredUserSession(ref);
       await authCardCallback(
         ref,
         context,
         nfc,
-        sessionId,
+        await BackendAuth.getSessionId(),
         createFirstKeyChipResponse,
         pin: null,
       );
@@ -217,7 +217,16 @@ Future<dynamic> scanItem(
           Navigator.pushNamed(
             context,
             UserScanResultsScreen.routeName,
-          );
+          ).then((_) {
+            if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
+              disconnectWallet(
+                ref,
+                context,
+              ).then((_) {
+                restoreDeferredUserSession(ref);
+              });
+            }
+          });
         }
       }
       return signature;
@@ -243,6 +252,50 @@ Future<dynamic> scanItem(
 
   return await scanClosure(
       context, ref, callback, "SCAN_ITEM", context.loc.holdPhoneToNfcChip);
+}
+
+void setDeferredUserSession(WidgetRef ref) {
+  final userSession = ref.read(userSessionProvider);
+  final walletType = ref.read(walletTypeProvider);
+
+  ref.read(deferredUserSessionProvider.notifier).state =
+      DeferredUserSessionData(
+    userSession: userSession,
+    walletType: walletType,
+  );
+}
+
+Future<void> restoreDeferredUserSession(WidgetRef ref) async {
+  final DeferredUserSessionData? deferredUserSession =
+      ref.read(deferredUserSessionProvider);
+  if (deferredUserSession != null) {
+    ref.read(userAddressProvider.notifier).state =
+        deferredUserSession.userSession!.userWalletAddress;
+    ref.read(userSessionProvider.notifier).state =
+        deferredUserSession.userSession;
+    ref.read(walletTypeProvider.notifier).state =
+        deferredUserSession.walletType;
+    Backend.recreateServices(deferredUserSession.userSession!.jwt.raw);
+    ref.read(creationsNotifierProvider.notifier).load();
+    ref.read(websocketProvider.notifier).init();
+    //persist session date
+    final SharedPreferences storage = await SharedPreferences.getInstance();
+    storage.setString(
+      'userSession',
+      jsonEncode(deferredUserSession.userSession!.toJson()),
+    );
+    storage.setString(
+      'walletType',
+      jsonEncode(
+        deferredUserSession.walletType!.toJson() ?? '{}',
+      ),
+    );
+  } else {
+    disconnectWallet(
+      ref,
+      ref.context,
+    );
+  }
 }
 
 void setChipInfoProvider(

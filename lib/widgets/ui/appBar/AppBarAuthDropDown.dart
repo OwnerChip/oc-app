@@ -189,7 +189,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   }
 
   void _onLogoutClicked(BuildContext context) async {
-    await _disconnect(context);
+    await disconnectWallet(ref, context);
     Navigator.of(context).popUntil((route) => route.isFirst);
     widget.closeOverlay();
   }
@@ -293,61 +293,64 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     );
   }
 
-  Future<void> _disconnect(
+
+}
+
+Future<void> disconnectWallet(
+    WidgetRef ref,
     BuildContext context,
-  ) async {
-    final wc = ref.read(wcProvider);
-    W3MSession? wcSession = ref.watch(wcSessionProvider);
+    ) async {
+  final wc = ref.read(wcProvider);
+  W3MSession? wcSession = ref.watch(wcSessionProvider);
 
-    final session = ref.read(userSessionProvider);
-    final FCMToken? fcmToken = session?.fcmToken;
+  final session = ref.read(userSessionProvider);
+  final FCMToken? fcmToken = session?.fcmToken;
 
-    //reset providers
-    ref.read(userAddressProvider.notifier).state = zeroAddress;
-    ref.read(walletTypeProvider.notifier).state = null;
-    ref.read(userSessionProvider.notifier).state = null;
-    ref.read(websocketProvider.notifier).disconnect();
-    ref.read(creationsNotifierProvider.notifier).onLogout();
+  //reset providers
+  ref.read(userAddressProvider.notifier).state = zeroAddress;
+  ref.read(walletTypeProvider.notifier).state = null;
+  ref.read(userSessionProvider.notifier).state = null;
+  ref.read(websocketProvider.notifier).disconnect();
+  ref.read(creationsNotifierProvider.notifier).onLogout();
 
-    final storage = await SharedPreferences.getInstance();
+  final storage = await SharedPreferences.getInstance();
 
-    //remove session and wallet type from storage
-    storage.remove('session');
-    storage.remove('walletType');
-    storage.remove('userSession');
+  //remove session and wallet type from storage
+  storage.remove('session');
+  storage.remove('walletType');
+  storage.remove('userSession');
 
-    ref.refresh(web3AuthNotifierProvider);
+  ref.refresh(web3AuthNotifierProvider);
 
-    try {
-      await Web3AuthFlutter.logout().catchError((_) {});
-    } catch (e) {
-      talker.error('Error logging out of web3auth', e);
-    }
-
-    if (wc != null && wcSession != null) {
-      await wc.disconnectSession(
-          topic: wcSession.topic!,
-          reason: const WalletConnectError(
-              code: 6000,
-              message:
-                  'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
-    }
-
-    final terminated = await BackendAuth.terminateSession();
-
-    // fallback to delete fcm token if session termination failed
-    if (!terminated && fcmToken != null) {
-      await BackendFCM.deleteFCMToken(fcmToken);
-    }
-
-    try {
-      // clean up services
-      await BackendAuth.initGuestSession();
-    } catch (e) {
-      talker.error('Error cleaning up services', e);
-    }
-
-    //navigate back until homescreen
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  try {
+    await Web3AuthFlutter.logout().catchError((_) {});
+  } catch (e) {
+    talker.error('Error logging out of web3auth', e);
   }
+
+  if (wc != null && wcSession != null) {
+    await wc.disconnectSession(
+        topic: wcSession.topic!,
+        reason: const WalletConnectError(
+            code: 6000,
+            message:
+            'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+  }
+
+  final terminated = await BackendAuth.terminateSession();
+
+  // fallback to delete fcm token if session termination failed
+  if (!terminated && fcmToken != null) {
+    await BackendFCM.deleteFCMToken(fcmToken);
+  }
+
+  try {
+    // clean up services
+    await BackendAuth.initGuestSession();
+  } catch (e) {
+    talker.error('Error cleaning up services', e);
+  }
+
+  //navigate back until homescreen
+  Navigator.of(context).popUntil((route) => route.isFirst);
 }

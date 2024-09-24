@@ -150,7 +150,6 @@ abstract class BackendAuth extends Backend {
     });
   }
 
-
   /// save a userSession of a OwnerCard or CertificateCard
   static Future<void> saveUserSession(
     String sessionId,
@@ -190,7 +189,8 @@ abstract class BackendAuth extends Backend {
         sessionId,
         signature,
         ref.read(userAddressProvider),
-        isOwnerCard,
+        !isCertificateCard,
+        isCertificateCard,
         jwtToken,
         await BackendFCM.getAndSaveFCMToken(sessionId));
 
@@ -200,19 +200,21 @@ abstract class BackendAuth extends Backend {
         : EWalletType.ownerCard];
     ref.read(creationsNotifierProvider.notifier).load();
     ref.read(websocketProvider.notifier).init();
-    //persist session date
-    final SharedPreferences storage = await SharedPreferences.getInstance();
-    storage.setString(
-      'userSession',
-      jsonEncode(userSession.toJson()),
-    );
-    storage.setString(
-      'walletType',
-      jsonEncode(walletConfig[isCertificateCard
-              ? EWalletType.certificateCard
-              : EWalletType.ownerCard]!
-          .toJson()),
-    );
+    // persist session date if not a certificate card
+    if(!isCertificateCard) {
+      final SharedPreferences storage = await SharedPreferences.getInstance();
+      storage.setString(
+        'userSession',
+        jsonEncode(userSession.toJson()),
+      );
+      storage.setString(
+        'walletType',
+        jsonEncode(walletConfig[isCertificateCard
+            ? EWalletType.certificateCard
+            : EWalletType.ownerCard]!
+            .toJson()),
+      );
+    }
   }
 
   static Future<bool> terminateSession() async {
@@ -274,10 +276,9 @@ abstract class BackendAuth extends Backend {
   }
 
   static Future<GetMeResponse?> getMe(String jwt) async {
-    return BackendAuthService.instance.getMe(
-      authorization: "Bearer $jwt"
-
-    ).catchError((e) {
+    return BackendAuthService.instance
+        .getMe(authorization: "Bearer $jwt")
+        .catchError((e) {
       Sentry.captureException(
         e,
       );
