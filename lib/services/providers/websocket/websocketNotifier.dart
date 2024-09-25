@@ -50,7 +50,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
     }
   }
 
-  void init() {
+  Future<void> init() async {
     try {
       final session = ref.read(userSessionProvider);
       talker.info("WebsocketNotifier.init");
@@ -59,8 +59,12 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         return;
       }
 
-      if (state.socket != null) {
-        state.socket?.disconnect();
+      state.socket?.close();
+
+      // wait for socket to disconnect
+      await Future.delayed(const Duration(seconds: 1));
+      while (!(state.socket?.disconnected ?? true)) {
+        await Future.delayed(const Duration(seconds: 1));
       }
 
       final url = dotenv
@@ -107,7 +111,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             .firstWhereOrNull((element) => element.value == event)
             ?.key;
 
-        if(eventEnum == null) {
+        if (eventEnum == null) {
           talker.error("WebsocketNotifier.init: received unknown event $event");
           return;
         }

@@ -219,12 +219,7 @@ Future<dynamic> scanItem(
             UserScanResultsScreen.routeName,
           ).then((_) {
             if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
-              disconnectWallet(
-                ref,
-                context,
-              ).then((_) {
-                restoreDeferredUserSession(ref);
-              });
+              restoreDeferredUserSession(ref);
             }
           });
         }
@@ -232,6 +227,7 @@ Future<dynamic> scanItem(
       return signature;
     } catch (e) {
       // check if wallet is connected
+      restoreDeferredUserSession(ref);
 
       if (navigateToResultPage &&
           ref.read(wcSessionProvider) == null &&
