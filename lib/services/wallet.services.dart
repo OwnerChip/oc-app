@@ -155,7 +155,8 @@ Future<String> makeAndSendGaslessTx(
     } else if (walletType.type == EWalletType.certificateCard) {
       // add this delay, because if you scan the card immediately after scanning the chip, it will cause an error
       await Future.delayed(const Duration(seconds: 3));
-      final sig = await getCardSignature!(await getGaslessTxHash(request, toAddress));
+      final sig =
+          await getCardSignature!(await getGaslessTxHash(request, toAddress));
       signature = msgSignatureToHex(sig!);
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
@@ -375,6 +376,7 @@ Future<String> makeAndSendNormalTx(
   BigInt? gasAmount,
   BigInt? gasPrice,
   BlockchainToken? token,
+  Future<MsgSignature?> Function(String hash)? getCardSignature,
 }) async {
   var txParams = await buildEthSendTransactionRequest(
     getRPCUrlFromChainId(chainId),
@@ -467,12 +469,8 @@ Future<String> makeAndSendNormalTx(
     } else if (walletType.type == EWalletType.certificateCard) {
       // add this delay, because if you scan the card immediately after scanning the chip, it will cause an error
       await Future.delayed(const Duration(seconds: 3));
-      final sig = await makeCardSignature(
-        ref,
-        context,
-        hash,
-        () {},
-        null,
+      final sig = await getCardSignature!(
+        hex.encode(hash),
       );
 
       signature = MsgSignature(sig!.r, sig.s, sig.v - 27 + (chainId * 2 + 35));

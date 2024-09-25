@@ -403,6 +403,20 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           typedDataHash: typedDataHash,
           price: BigInt.from(priceInPrimaryChainCurrency),
           token: token,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures =
+            await getChipSignatures(
+              ref,
+              context,
+              [dataForSign['signHash'], hash],
+              toggleLoading,
+            );
+
+            final chipSignature = chipSignatures[0];
+            hexSignature = msgSignatureToHex(chipSignature!);
+
+            return chipSignatures[1];
+          },
         );
       }
 
