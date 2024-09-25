@@ -7,13 +7,18 @@ import 'package:web3dart/web3dart.dart';
 
 class SignatureDataNotifier extends StateNotifier<SignatureData> {
   SignatureDataNotifier()
-      : super(SignatureData(
+      : super(
+          SignatureData(
             hashedMsg: Uint8List(0),
-            signature: MsgSignature(BigInt.from(0), BigInt.from(0), 0)));
+            signature: MsgSignature(BigInt.from(0), BigInt.from(0), 0),
+            tokenId: BigInt.from(0),
+          ),
+        );
 
   void setSignatureData(SignatureData signatureData) {
     state.hashedMsg = signatureData.hashedMsg;
     state.signature = signatureData.signature;
+    state.tokenId = signatureData.tokenId;
     state.hasBeenUsedInSmartContract = false;
   }
 

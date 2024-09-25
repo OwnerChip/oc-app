@@ -73,8 +73,15 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       BackendApp.sendAnalyticsTrace(
           sessionId, chipWalletAddress, "CHIP_INITIALIZED");
     }
-    final firstPubKey = await getPubKeyN(nfc, 0x00);
-    final firstPubKeyAddress = OwnercardData.fromPubKeyZeros(firstPubKey);
+
+    EthereumAddress? firstPubKeyAddress;
+
+    try {
+      final firstPubKey = await getPubKeyN(nfc, 0x00);
+      firstPubKeyAddress = OwnercardData.fromPubKeyZeros(firstPubKey);
+    } catch (e) {
+      // ignore as slot 0 is not initialized for chip or not supported
+    }
 
     //set chip info data in provider
     setChipInfoProvider(
@@ -94,8 +101,11 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
         nfc, sessionId, chipEthereumAddress, chipTokenId);
     Uint8List hashedMsg = verificationResult[0];
     MsgSignature signature = verificationResult[1];
-    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-        SignatureData(hashedMsg: hashedMsg, signature: signature));
+    ref.read(chipSignatureDataProvider.notifier).setSignatureData(SignatureData(
+          hashedMsg: hashedMsg,
+          signature: signature,
+          tokenId: chipTokenId,
+        ));
 
     //TOKEN DOES NOT EXIST
     if (config.collectionId == zeroAddress) {
@@ -161,8 +171,33 @@ Future<dynamic> scanItem(
     String chipWalletAddress = chipEthereumAddress.toString();
     BigInt chipTokenId = createFirstKeyChipResponse[1];
 
-    final firstPubKey = await getPubKeyN(nfc, 0x00);
-    final firstPubKeyAddress = OwnercardData.fromPubKeyZeros(firstPubKey);
+    TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(chipTokenId).future);
+
+    EthereumAddress? firstPubKeyAddress;
+
+    try {
+      final firstPubKey = await getPubKeyN(nfc, 0x00);
+      firstPubKeyAddress = OwnercardData.fromPubKeyZeros(firstPubKey);
+
+      // if the card is a certificate card,
+      // and its a minted token,
+      // we authenticate it before proceeding
+      if (config.minted &&
+          OwnercardData.isCertificateCard(firstPubKeyAddress)) {
+        setDeferredUserSession(ref);
+        await authCardCallback(
+          ref,
+          context,
+          nfc,
+          await BackendAuth.getSessionId(),
+          createFirstKeyChipResponse,
+          pin: null,
+        );
+      }
+    } catch (e) {
+      // ignore as slot 0 is not initialized for chip or not supported
+    }
 
     //set chip info data in provider
     setChipInfoProvider(
@@ -172,32 +207,19 @@ Future<dynamic> scanItem(
       firstPubKeyAddress: firstPubKeyAddress,
     );
 
-    TokenChainAndCollection config =
-        await ref.watch(findTokenProvider(chipTokenId).future);
-
-    // if the card is a certificate card,
-    // and its a minted token,
-    // we authenticate it before proceeding
-    if (config.minted && OwnercardData.isCertificateCard(firstPubKeyAddress)) {
-      setDeferredUserSession(ref);
-      await authCardCallback(
-        ref,
-        context,
-        nfc,
-        await BackendAuth.getSessionId(),
-        createFirstKeyChipResponse,
-        pin: null,
-      );
-    }
-
     //verify signature
     try {
       List verificationResult = await verifySignatureAuthenticity(
           nfc, sessionId, chipEthereumAddress, chipTokenId);
       Uint8List hashedMsg = verificationResult[0];
       MsgSignature signature = verificationResult[1];
-      ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-          SignatureData(hashedMsg: hashedMsg, signature: signature));
+      ref
+          .read(chipSignatureDataProvider.notifier)
+          .setSignatureData(SignatureData(
+            hashedMsg: hashedMsg,
+            signature: signature,
+            tokenId: chipTokenId,
+          ));
 
       if (navigateToResultPage) {
         //TOKEN DOES NOT EXIST
@@ -223,6 +245,8 @@ Future<dynamic> scanItem(
             }
           });
         }
+      } else {
+        restoreDeferredUserSession(ref);
       }
       return signature;
     } catch (e) {
@@ -264,7 +288,8 @@ void setDeferredUserSession(WidgetRef ref) {
 Future<void> restoreDeferredUserSession(WidgetRef ref) async {
   final DeferredUserSessionData? deferredUserSession =
       ref.read(deferredUserSessionProvider);
-  if (deferredUserSession != null) {
+  if (deferredUserSession != null &&
+      deferredUserSession.walletType?.type != EWalletType.certificateCard) {
     ref.read(userAddressProvider.notifier).state =
         deferredUserSession.userSession!.userWalletAddress;
     ref.read(userSessionProvider.notifier).state =
@@ -334,14 +359,24 @@ Future<void> verifyAuthenticity(
 }
 
 /*GET SIGNATURE OF A MESSAGE/HASH FROM A CHIP WHICH IS NOT PIN LOCKED*/
-Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
-    msgHashToSign, Function toggleLoading) async {
+Future<List<MsgSignature?>> getChipSignatures(
+    WidgetRef ref,
+    BuildContext context,
+    List<dynamic> msgHashToSign,
+    Function toggleLoading) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     EthereumAddress chipWalletAddress = createFirstKeyChipResponse[0];
-    MsgSignature signature = await signHash(
-        nfc, 0x01, chipWalletAddress, hexToBytes(msgHashToSign), true);
-    return signature;
+
+    final List<MsgSignature?> signatures = [];
+
+    for (final msgHash in msgHashToSign) {
+      MsgSignature signature = await signHash(nfc, 0x01, chipWalletAddress,
+          msgHash is Uint8List ? msgHash : hexToBytes(msgHash), true);
+      signatures.add(signature);
+    }
+
+    return signatures;
   }
 
   return await scanClosure(context, ref, callback, "MAKE_CHIP_SIGNATURE",
@@ -603,8 +638,11 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
         nfc, sessionId, chipEthereumAddress, chipTokenId);
     Uint8List hashedMsg = verificationResult[0];
     MsgSignature signature = verificationResult[1];
-    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-        SignatureData(hashedMsg: hashedMsg, signature: signature));
+    ref.read(chipSignatureDataProvider.notifier).setSignatureData(SignatureData(
+          hashedMsg: hashedMsg,
+          signature: signature,
+          tokenId: chipTokenId,
+        ));
 
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
     final TokenChainAndCollection tokenInfo =

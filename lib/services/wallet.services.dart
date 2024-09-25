@@ -21,6 +21,7 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -103,6 +104,7 @@ Future<String> makeAndSendGaslessTx(
   BigInt? amount,
   BlockchainToken? token,
   BigInt? gasAmount,
+  Future<MsgSignature?> Function(String hash)? getCardSignature,
 }) async {
   final List<Map<String, dynamic>> gaslessTxParams = await makeGaslessParams(
     functionSignatureHash: functionSignatureHash,
@@ -145,21 +147,15 @@ Future<String> makeAndSendGaslessTx(
               arguments: PinScreenArguments(
                   activeFeature: PinScreenActiveFeature.verifyPinTx,
                   callback: (String pin) async {
-                    return await makeCardSignature(
-                        ref, context, hash, toggleLoading, pin);
+                    return (await makeCardSignature(
+                        ref, context, hash, toggleLoading, pin));
                   })) as MsgSignature;
 
       signature = msgSignatureToHex(cardSignature);
     } else if (walletType.type == EWalletType.certificateCard) {
       // add this delay, because if you scan the card immediately after scanning the chip, it will cause an error
       await Future.delayed(const Duration(seconds: 3));
-      final sig = await makeCardSignature(
-        ref,
-        context,
-        await getGaslessTxHash(request, toAddress),
-        toggleLoading,
-        null,
-      );
+      final sig = await getCardSignature!(await getGaslessTxHash(request, toAddress));
       signature = msgSignatureToHex(sig!);
     } else if (walletType.type == EWalletType.walletConnect) {
       final W3MService? w3mService = ref.read(w3mServiceProvider);
@@ -172,7 +168,7 @@ Future<String> makeAndSendGaslessTx(
         signature = await wc!
             .request(
           topic: wcSession!.topic!,
-          chainId: 'eip155:${w3mService?.selectedChain?.chainId ?? chainId}',
+          chainId: 'eip155:${w3mService.selectedChain?.chainId ?? chainId}',
           request: SessionRequestParams(
             method: 'eth_signTypedData_v4',
             params: [walletAddress.toString(), json.encode(typedData)],
@@ -424,40 +420,10 @@ Future<String> makeAndSendNormalTx(
     final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
     final params = txParams[0];
 
-    Uint8List signature = Uint8List(0);
-
-    final transaction = await _fillMissingData(
-      transaction: Transaction(
-        from: walletAddress,
-        to: toAddress,
-        data:
-            params['data'] != null ? hexToBytes(params['data']) : Uint8List(0),
-        gasPrice: params['gasPrice'] != null
-            ? EtherAmount.inWei(BigInt.parse(
-                params['gasPrice'].toString().substring(2),
-                radix: 16,
-              ))
-            : null,
-        maxGas: params["gas"] != null
-            ? BigInt.parse(
-                params['gas'].toString().substring(
-                      2,
-                    ),
-                radix: 16,
-              ).toInt()
-            : null,
-        value: params['value'] != null
-            ? EtherAmount.inWei(
-                BigInt.parse(
-                  params['value'].toString().substring(2),
-                  radix: 16,
-                ),
-              )
-            : EtherAmount.zero(),
-        nonce: params['nonce'] != null
-            ? int.parse(params['nonce'].toString().substring(2), radix: 16)
-            : null,
-      ),
+    final transaction = await buildTransactionObject(
+      walletAddress: walletAddress,
+      toAddress: toAddress,
+      params: params,
       chainId: chainId,
       client: client,
     );
@@ -475,7 +441,7 @@ Future<String> makeAndSendNormalTx(
     final rawTx = Uint8List.fromList(rlp.encode(encoded));
     final hash = keccak256(rawTx);
 
-    final MsgSignature msgSignature;
+    final MsgSignature signature;
 
     if (walletType.type == EWalletType.ownerCard) {
       final sig =
@@ -497,8 +463,7 @@ Future<String> makeAndSendNormalTx(
         throw Exception('Failed to sign message');
       }
 
-      msgSignature =
-          MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
+      signature = MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
     } else if (walletType.type == EWalletType.certificateCard) {
       // add this delay, because if you scan the card immediately after scanning the chip, it will cause an error
       await Future.delayed(const Duration(seconds: 3));
@@ -510,14 +475,13 @@ Future<String> makeAndSendNormalTx(
         null,
       );
 
-      msgSignature =
-          MsgSignature(sig!.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
+      signature = MsgSignature(sig!.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
     } else {
       final priv = await Web3AuthFlutter.getPrivKey();
 
       final Credentials creds = EthPrivateKey.fromHex(priv);
 
-      msgSignature = creds.signToEcSignature(
+      signature = creds.signToEcSignature(
         rawTx,
         chainId: chainId,
       );
@@ -526,7 +490,7 @@ Future<String> makeAndSendNormalTx(
     final signedTx = rlp.encode(
       _encodeToRlp(
         transaction,
-        msgSignature,
+        signature,
         chainId: chainId,
       ),
     );
@@ -541,7 +505,7 @@ Future<String> makeAndSendNormalTx(
 
     late Future<dynamic> txnFuture;
 
-    await preventRepeatedNFCScan( () async {
+    await preventRepeatedNFCScan(() async {
       // await Future.delayed(const Duration(seconds: 3));
       await wcSwitchToChainConditionally(w3mService, chainId).catchError((e) {
         talker.error('Failed to switch to chain: $e');
@@ -558,14 +522,55 @@ Future<String> makeAndSendNormalTx(
       );
 
       w3mService!.launchConnectedWallet();
-
     });
-
 
     txnHash = await txnFuture;
   }
 
   return txnHash;
+}
+
+Future<Transaction> buildTransactionObject({
+  required EthereumAddress walletAddress,
+  required EthereumAddress toAddress,
+  required params,
+  required int chainId,
+  required Web3Client client,
+}) async {
+  return await _fillMissingData(
+    transaction: Transaction(
+      from: walletAddress,
+      to: toAddress,
+      data: params['data'] != null ? hexToBytes(params['data']) : Uint8List(0),
+      gasPrice: params['gasPrice'] != null
+          ? EtherAmount.inWei(BigInt.parse(
+              params['gasPrice'].toString().substring(2),
+              radix: 16,
+            ))
+          : null,
+      maxGas: params["gas"] != null
+          ? BigInt.parse(
+              params['gas'].toString().substring(
+                    2,
+                  ),
+              radix: 16,
+            ).toInt()
+          : null,
+      value: params['value'] != null
+          ? EtherAmount.inWei(
+              BigInt.parse(
+                params['value'].toString().substring(2),
+                radix: 16,
+              ),
+            )
+          : EtherAmount.zero(),
+      nonce: params['nonce'] != null
+          ? int.parse(params['nonce'].toString().substring(2), radix: 16)
+          : null,
+    ),
+    chainId: chainId,
+    client: client,
+  );
 }
 
 Future<void> wcSwitchToChainConditionally(

@@ -361,13 +361,19 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       order: raribleV2Order,
     );
 
-    final MsgSignature? chipSignature = await getChipSignature(
-      ref,
-      context,
-      dataForSign['signHash'],
-      toggleLoading,
-    );
-    final String hexSignature = msgSignatureToHex(chipSignature!);
+    String? hexSignature;
+
+    if (walletType?.type != EWalletType.certificateCard) {
+      final List<MsgSignature?> chipSignature = await getChipSignatures(
+        ref,
+        context,
+        [
+          dataForSign['signHash'],
+        ],
+        toggleLoading,
+      );
+      hexSignature = msgSignatureToHex(chipSignature[0]!);
+    }
 
     try {
       const functionSignature = offerItemErc20FunctionSignature;
@@ -426,6 +432,20 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                   encodedOfferData: typedDataHashAndEncodedData.encodedData,
                   toggleLoading: toggleLoading,
                   token: token,
+                  getCardSignature: (hash) async {
+                    final List<MsgSignature?> chipSignatures =
+                        await getChipSignatures(
+                      ref,
+                      context,
+                      [dataForSign['signHash'], hash],
+                      toggleLoading,
+                    );
+
+                    final chipSignature = chipSignatures[0];
+                    hexSignature = msgSignatureToHex(chipSignature!);
+
+                    return chipSignatures[1];
+                  },
                 );
               },
               fallback: normalTx,
@@ -441,6 +461,23 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         talker.error(e, st);
       }
 
+      if (hexSignature == null) {
+        final List<MsgSignature?> chipSignatures = await getChipSignatures(
+          ref,
+          context,
+          [
+            dataForSign['signHash'],
+          ],
+          toggleLoading,
+        );
+
+        final chipSignature = chipSignatures[0];
+        if (chipSignature == null) {
+          throw Exception('Chip signature is null');
+        }
+        hexSignature = msgSignatureToHex(chipSignature);
+      }
+
       talker.info("Transaction hash: $txnHash");
 
       //wait until TX is succeeded or failed
@@ -449,7 +486,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status == true) {
-        RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
+        RaribleV2Order order = raribleV2Order.setSignature(hexSignature!);
 
         await Future.delayed(const Duration(seconds: 2));
         var response = await RaribleOrders.createRaribleOrder(
@@ -472,7 +509,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           salt: raribleV2Order.salt.toString(),
           encodedData: typedDataHashAndEncodedData.encodedData,
           typedDataHash: typedDataHash,
-          chipSignature: hexSignature,
+          chipSignature: hexSignature!,
           marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
           offchainOfferId: response['id'],
           offerPaymentToken: token?.contractAddress.hex ?? zeroAddress.hex,

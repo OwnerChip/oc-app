@@ -120,11 +120,15 @@ class ChipInfoModel {
 class SignatureData {
   Uint8List hashedMsg;
   MsgSignature signature;
+
+  BigInt tokenId;
+
   bool hasBeenUsedInSmartContract;
 
   SignatureData(
       {required this.hashedMsg,
       required this.signature,
+      required this.tokenId ,
       this.hasBeenUsedInSmartContract = false});
 }
 

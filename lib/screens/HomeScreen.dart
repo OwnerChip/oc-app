@@ -125,7 +125,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           backendSession.jwt.raw,
         );
 
-        if (me != null && me.role != backendSession.jwt.role) {
+        if (walletType.type == EWalletType.certificateCard ||
+            (me != null && me.role != backendSession.jwt.role)) {
           //remove session and wallet type from storage
           storage.remove('session');
           storage.remove('walletType');
