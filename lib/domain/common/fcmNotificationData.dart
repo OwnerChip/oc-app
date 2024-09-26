@@ -25,7 +25,7 @@ class FCMNotificationData {
 
   bool get isDigitalTwinTransfer => type == "DIGITAL_TWIN_TRANSFER";
 
-  decodeAsDigitalTwinCreation() {
+  FcmNotificationDigitalTwinCreationData decodeAsDigitalTwinCreation() {
     return FcmNotificationDigitalTwinCreationData.fromJson(jsonDecode(json));
   }
 

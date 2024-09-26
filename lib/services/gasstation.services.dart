@@ -83,6 +83,15 @@ Future<Map<String, dynamic>> buildTypedV4Request(
       toAccount!,
       amount!,
     );
+  } else if (functionSignatureHash ==
+      mintVoucherToCertificateCardFunctionSignature) {
+    data = makeMintToCertificateData(
+      functionSignatureHash,
+      randomValueHash,
+      signature,
+      tokenURI!,
+      voucherTokenURI!,
+    );
   } else if (functionSignatureHash == mintVoucherFunctionSignature) {
     data = makeMintData(functionSignatureHash, randomValueHash, signature,
         tokenURI!, voucherTokenURI!);
@@ -149,10 +158,10 @@ Future<Map<String, dynamic>> buildTypedData(int chainId, request) async {
 }
 
 Future<bool> verifyGaslessTransaction(
-    Map<String, dynamic> req, {
-      required int chainId,
-      required String signature,
-    }) async {
+  Map<String, dynamic> req, {
+  required int chainId,
+  required String signature,
+}) async {
   final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
 
   final contract = await getForwarderContract(

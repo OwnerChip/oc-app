@@ -77,6 +77,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _sellerPayoutInputController =
+      TextEditingController();
+
+  String sellerPayoutAddress = '';
 
   CancelableOperation? cancellableOperation;
   bool isLoading = false;
@@ -110,6 +114,27 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     super.initState();
     _setCurrencyDropDownValuesFuture = setCurrencyDropDownValues();
     _initCreatorData();
+    _initPayoutWalletAddress();
+  }
+
+  void _initPayoutWalletAddress() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userSession = ref.read(userSessionProvider);
+      final deferredUserSession = ref.read(deferredUserSessionProvider);
+
+      if ((userSession?.isCertificateCard ?? false) &&
+          (deferredUserSession != null)) {
+        _sellerPayoutInputController.text =
+            deferredUserSession.userSession?.userWalletAddress.hex ?? '';
+        sellerPayoutAddress = _sellerPayoutInputController.text;
+        return;
+      }
+
+      if (userSession != null && !userSession.isCertificateCard) {
+        _sellerPayoutInputController.text = userSession.userWalletAddress.hex;
+        sellerPayoutAddress = _sellerPayoutInputController.text;
+      }
+    });
   }
 
   void _initCreatorData() {
@@ -336,13 +361,19 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       order: raribleV2Order,
     );
 
-    final MsgSignature? chipSignature = await getChipSignature(
-      ref,
-      context,
-      dataForSign['signHash'],
-      toggleLoading,
-    );
-    final String hexSignature = msgSignatureToHex(chipSignature!);
+    String? hexSignature;
+
+    if (walletType?.type != EWalletType.certificateCard) {
+      final List<MsgSignature?> chipSignature = await getChipSignatures(
+        ref,
+        context,
+        [
+          dataForSign['signHash'],
+        ],
+        toggleLoading,
+      );
+      hexSignature = msgSignatureToHex(chipSignature[0]!);
+    }
 
     try {
       const functionSignature = offerItemErc20FunctionSignature;
@@ -367,11 +398,25 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           wc!,
           wcSession,
           walletType!,
-          sellerPayoutAddress: userSession.userWalletAddress,
+          sellerPayoutAddress: _getPayoutAddress(),
           tokenId: config.tokenId,
           typedDataHash: typedDataHash,
           price: BigInt.from(priceInPrimaryChainCurrency),
           token: token,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures =
+            await getChipSignatures(
+              ref,
+              context,
+              [dataForSign['signHash'], hash],
+              toggleLoading,
+            );
+
+            final chipSignature = chipSignatures[0];
+            hexSignature = msgSignatureToHex(chipSignature!);
+
+            return chipSignatures[1];
+          },
         );
       }
 
@@ -394,13 +439,27 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                   typedDataHash: typedDataHash,
                   controllerContractId: controllerContractAddress,
                   tokenId: config.tokenId,
-                  sellerPayoutAddress: userSession.userWalletAddress,
+                  sellerPayoutAddress: _getPayoutAddress(),
                   salt: raribleV2Order.salt,
                   endTimestamp: raribleV2Order.end,
                   price: BigInt.from(priceInPrimaryChainCurrency),
                   encodedOfferData: typedDataHashAndEncodedData.encodedData,
                   toggleLoading: toggleLoading,
                   token: token,
+                  getCardSignature: (hash) async {
+                    final List<MsgSignature?> chipSignatures =
+                        await getChipSignatures(
+                      ref,
+                      context,
+                      [dataForSign['signHash'], hash],
+                      toggleLoading,
+                    );
+
+                    final chipSignature = chipSignatures[0];
+                    hexSignature = msgSignatureToHex(chipSignature!);
+
+                    return chipSignatures[1];
+                  },
                 );
               },
               fallback: normalTx,
@@ -416,6 +475,23 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
         talker.error(e, st);
       }
 
+      if (hexSignature == null) {
+        final List<MsgSignature?> chipSignatures = await getChipSignatures(
+          ref,
+          context,
+          [
+            dataForSign['signHash'],
+          ],
+          toggleLoading,
+        );
+
+        final chipSignature = chipSignatures[0];
+        if (chipSignature == null) {
+          throw Exception('Chip signature is null');
+        }
+        hexSignature = msgSignatureToHex(chipSignature);
+      }
+
       talker.info("Transaction hash: $txnHash");
 
       //wait until TX is succeeded or failed
@@ -424,7 +500,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
 
       //if transaction is mined, then navigate to NFTDetailsScreen
       if (txnReceipt?.status == true) {
-        RaribleV2Order order = raribleV2Order.setSignature(hexSignature);
+        RaribleV2Order order = raribleV2Order.setSignature(hexSignature!);
 
         await Future.delayed(const Duration(seconds: 2));
         var response = await RaribleOrders.createRaribleOrder(
@@ -441,13 +517,13 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
               : chainConfig[config.chainId]!.nativeTokenSymbol,
           sellerWalletAddress:
               ref.read(userSessionProvider)!.userWalletAddress.toString(),
-          sellerPayoutAddress: userSession.userWalletAddress.hex,
+          sellerPayoutAddress: _getPayoutAddress().hex,
           sellerEmail: email,
           validUntil: raribleV2Order.end,
           salt: raribleV2Order.salt.toString(),
           encodedData: typedDataHashAndEncodedData.encodedData,
           typedDataHash: typedDataHash,
-          chipSignature: hexSignature,
+          chipSignature: hexSignature!,
           marketplaceContract: raribleExchangeV2Contracts[config.chainId]!,
           offchainOfferId: response['id'],
           offerPaymentToken: token?.contractAddress.hex ?? zeroAddress.hex,
@@ -551,6 +627,24 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
     }
   }
 
+  EthereumAddress _getPayoutAddress() {
+    try {
+      return EthereumAddress.fromHex(sellerPayoutAddress);
+    } catch (e) {
+      final session = ref.read(userSessionProvider);
+      if (session?.isCertificateCard ?? false) {
+        final deferredUserSession = ref.read(deferredUserSessionProvider);
+        if (deferredUserSession == null ||
+            deferredUserSession.userSession == null) {
+          throw Exception('Invalid payout address');
+        }
+
+        return deferredUserSession.userSession!.userWalletAddress;
+      }
+      return session!.userWalletAddress;
+    }
+  }
+
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
     cancellableOperation?.cancel();
     cancellableOperation =
@@ -561,6 +655,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   @override
   void dispose() {
     _emailController.dispose();
+    _sellerPayoutInputController.dispose();
     super.dispose();
   }
 
@@ -568,6 +663,9 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   Widget build(BuildContext context) {
     AsyncValue<Map> ethPriceEur =
         ref.watch(ethPriceProvider(currencyDropdownValue));
+    final userSession = ref.watch(userSessionProvider);
+    final deferredUserSession = ref.watch(deferredUserSessionProvider);
+
     final offerOnMpData = ref.watch(offerOnMpProvider);
     return CustomOverlay(
         show: isLoading,
@@ -666,6 +764,62 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                                     },
                                   ),
                                 ]),
+                            const SizedBox(
+                              height: 40,
+                            ),
+                            if (userSession?.isCertificateCard ?? false)
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(context.loc.payoutWalletAddress,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineSmall!),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    TextFormField(
+                                      controller: _sellerPayoutInputController,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
+                                      cursorColor: CustomColors(
+                                              dotenv.get('APP_ID').toString())
+                                          .accentColor,
+                                      decoration: customInputDecoration(
+                                          context,
+                                          context
+                                              .loc.enterWalletAddressForPayout,
+                                          fillColor:
+                                              CustomColors(dotenv.get('APP_ID'))
+                                                  .cardColor),
+                                      keyboardType: TextInputType.text,
+                                      obscureText: false,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          sellerPayoutAddress = value;
+                                        });
+                                      },
+                                      validator: (value) {
+                                        try {
+                                          final res =
+                                              EthereumAddress.fromHex(value!);
+
+                                          final certificateCardSession =
+                                              userSession?.userWalletAddress;
+
+                                          if (certificateCardSession == res) {
+                                            throw Exception(
+                                                'Payout address cannot be the same as the certificate card address');
+                                          }
+                                        } catch (e) {
+                                          return context.loc
+                                              .pleaseEnterValidWalletAddress;
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ]),
                             const SizedBox(
                               height: 40,
                             ),

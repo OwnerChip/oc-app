@@ -722,23 +722,32 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                 BigIconButton(
                                                   text: context.loc.burnToken,
                                                   onPressed: () async {
-                                                    final res = await scanItem(
-                                                      ref,
-                                                      context,
-                                                      navigateToResultPage:
-                                                          false,
-                                                    );
-                                                    if (res != null) {
-                                                      fromCancelable(burnToken(
-                                                        wc,
-                                                        chipInfo.tokenId,
-                                                        ref.read(
-                                                            chipSignatureDataProvider),
-                                                        connectedWallet,
-                                                        digitalTwinMetadata:
-                                                            digitalTwinMetadata,
-                                                      ));
+                                                    final sig = ref.read(
+                                                        chipSignatureDataProvider);
+                                                    if (sig.tokenId !=
+                                                        chipInfo.tokenId) {
+                                                      final res =
+                                                          await scanItem(
+                                                        ref,
+                                                        context,
+                                                        navigateToResultPage:
+                                                            false,
+                                                      );
+
+                                                      if (res == null) {
+                                                        return;
+                                                      }
                                                     }
+
+                                                    fromCancelable(burnToken(
+                                                      wc,
+                                                      chipInfo.tokenId,
+                                                      ref.read(
+                                                          chipSignatureDataProvider),
+                                                      connectedWallet,
+                                                      digitalTwinMetadata:
+                                                          digitalTwinMetadata,
+                                                    ));
                                                   },
                                                   icon: Icon(
                                                     Icons.delete_outline,
@@ -786,23 +795,30 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                       text: context
                                                           .loc.redeemToken,
                                                       onPressed: () async {
-                                                        final res =
-                                                            await scanItem(
-                                                          ref,
-                                                          context,
-                                                          navigateToResultPage:
-                                                              false,
-                                                        );
-                                                        if (res != null) {
-                                                          fromCancelable(
-                                                              redeemTwinToken(
-                                                                  wc,
-                                                                  chipInfo
-                                                                      .tokenId,
-                                                                  ref.read(
-                                                                      chipSignatureDataProvider),
-                                                                  connectedWallet));
+                                                        final sig = ref.read(
+                                                            chipSignatureDataProvider);
+                                                        if (sig.tokenId !=
+                                                            chipInfo.tokenId) {
+                                                          final res =
+                                                              await scanItem(
+                                                            ref,
+                                                            context,
+                                                            navigateToResultPage:
+                                                                false,
+                                                          );
+
+                                                          if (res == null) {
+                                                            return;
+                                                          }
                                                         }
+                                                        fromCancelable(
+                                                            redeemTwinToken(
+                                                                wc,
+                                                                chipInfo
+                                                                    .tokenId,
+                                                                ref.read(
+                                                                    chipSignatureDataProvider),
+                                                                connectedWallet));
                                                       },
                                                       icon: Icon(
                                                         Icons.call_received,
@@ -918,20 +934,26 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                             ),
                             text: context.loc.cancelOffer,
                             onPressed: () async {
-                              final res = await scanItem(
-                                ref,
-                                context,
-                                navigateToResultPage: false,
-                              );
-                              if (res != null) {
-                                fromCancelable(
-                                  cancelOffer(
-                                      wc,
-                                      chipInfo.tokenId,
-                                      ref.read(chipSignatureDataProvider),
-                                      connectedWallet),
+                              final sig = ref.read(chipSignatureDataProvider);
+                              if (sig.tokenId != chipInfo.tokenId) {
+                                final res = await scanItem(
+                                  ref,
+                                  context,
+                                  navigateToResultPage: false,
                                 );
+
+                                if (res == null) {
+                                  return;
+                                }
                               }
+
+                              fromCancelable(
+                                cancelOffer(
+                                    wc,
+                                    chipInfo.tokenId,
+                                    ref.read(chipSignatureDataProvider),
+                                    connectedWallet),
+                              );
                             })
                     ];
                   }

@@ -20,7 +20,11 @@ abstract class BackendMetaTx extends Backend {
             collectionId: collectionId.hex,
             functionSignatureHash: functionSignatureHash)
         .then((e) {
-      return [true, e];
+      if (e.response.statusCode == 200) {
+        return [true, e.response.data];
+      } else {
+        return [false, e.response.data];
+      }
     }, onError: (e) {
       return [false, e.toString()];
     });

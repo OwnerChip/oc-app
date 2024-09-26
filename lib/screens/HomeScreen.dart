@@ -125,7 +125,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           backendSession.jwt.raw,
         );
 
-        if (me != null && me.role != backendSession.jwt.role) {
+        if (walletType.type == EWalletType.certificateCard ||
+            (me != null && me.role != backendSession.jwt.role)) {
           //remove session and wallet type from storage
           storage.remove('session');
           storage.remove('walletType');
@@ -158,8 +159,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           } else {
             if (privKey == null) {}
           }
-        } else if (walletType.type == EWalletType.ownerCard ||
-            walletType.type == EWalletType.certificateCard) {
+        } else if (walletType.type == EWalletType.ownerCard) {
           if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
               backendSession.jwt.raw.isNotEmpty) {
             ref.read(userAddressProvider.notifier).state =

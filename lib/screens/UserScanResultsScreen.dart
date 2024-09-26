@@ -101,6 +101,29 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
     final AsyncValue<EthereumAddress> lastSellerAddress =
         ref.watch(lastSellerAddressProvider);
 
+    final deferredSession = ref.watch(deferredUserSessionProvider);
+    // if token is transferred, and ready to be claimed restore deferred session
+    if ((approval.hasValue &&
+                approval.value != null &&
+                (approval.value != zeroAddress) ||
+            (nftOwner.hasValue &&
+                nftOwner.value != null &&
+                nftOwner.value ==
+                    deferredSession?.userSession?.userWalletAddress) ||
+            (activeOffers.hasValue &&
+                (activeOffers.value?.any((offer) =>
+                        offer.sellerAddress.toLowerCase() ==
+                        deferredSession?.userSession?.userWalletAddress.hex
+                            .toLowerCase()) ??
+                    false))) &&
+        (deferredSession != null &&
+            userSession?.userWalletAddress !=
+                deferredSession.userSession?.userWalletAddress)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        restoreDeferredUserSession(ref);
+      });
+    }
+
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),
     );

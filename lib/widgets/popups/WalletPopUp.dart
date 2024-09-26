@@ -111,21 +111,21 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                   ),
 
                   // Certificate Card
-                  if (dotenv.get("IS_INTERNAL") == "true")
-                    WalletIcon(
-                      iconPath:
-                          "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
-                      walletName: context.loc.certificatecard,
-                      onTap: () async {
-                        onCertificateCardLogin(
-                          ref,
-                          context,
-                          false,
-                        );
-                      },
-                      backgroundColor: CustomColors(dotenv.get('APP_ID'))
-                          .ownerCardWalletIconBackgroundColor,
-                    ),
+                  // if (dotenv.get("IS_INTERNAL") == "true")
+                  //   WalletIcon(
+                  //     iconPath:
+                  //         "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/ownercard_logo.png",
+                  //     walletName: context.loc.certificatecard,
+                  //     onTap: () async {
+                  //       onCertificateCardLogin(
+                  //         ref,
+                  //         context,
+                  //         false,
+                  //       );
+                  //     },
+                  //     backgroundColor: CustomColors(dotenv.get('APP_ID'))
+                  //         .ownerCardWalletIconBackgroundColor,
+                  //   ),
                   WalletIcon(
                     iconPath:
                         "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/walletconnect.png",

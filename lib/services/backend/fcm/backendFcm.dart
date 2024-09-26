@@ -42,6 +42,7 @@ abstract class BackendFCM extends Backend {
     )
         .then((res) {
       fcm = res;
+      talker.log('FCM token saved: ${fcm?.toJson()}');
     }).catchError((e) {
       Sentry.captureException(e);
       talker.log('Error saving FCM token: $e');

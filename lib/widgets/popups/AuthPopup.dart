@@ -145,7 +145,8 @@ Future<void> onTapAuth(
   final oldUserSession = ref.read(userSessionProvider);
   String sessionId =
       oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
-  bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
+  final bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
+  final bool isCertificateCard = oldUserSession?.isCertificateCard ?? false;
 
   late final JwtToken token;
   late final MsgSignature signature;
@@ -228,6 +229,7 @@ Future<void> onTapAuth(
     signature,
     ref.read(userAddressProvider),
     isOwnerCard,
+    isCertificateCard,
     token,
     await BackendFCM.getAndSaveFCMToken(sessionId),
   );

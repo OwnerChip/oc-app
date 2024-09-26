@@ -13,6 +13,7 @@ import 'package:ownerchip_whitelabel/services/providers/websocket/websocketData.
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import "package:collection/collection.dart";
 
 class WebsocketNotifier extends Notifier<WebsocketData> {
   @override
@@ -49,7 +50,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
     }
   }
 
-  void init() {
+  Future<void> init() async {
     try {
       final session = ref.read(userSessionProvider);
       talker.info("WebsocketNotifier.init");
@@ -58,12 +59,16 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         return;
       }
 
-      if (state.socket != null) {
-        state.socket?.disconnect();
+      state.socket?.close();
+
+      // wait for socket to disconnect
+      await Future.delayed(const Duration(seconds: 1));
+      while (!(state.socket?.disconnected ?? true)) {
+        await Future.delayed(const Duration(seconds: 1));
       }
 
       final url = dotenv
-          .get("OC_BACKEND_URL_TEST")
+          .get("OC_BACKEND_URL")
           .replaceAll("https", "wss")
           .replaceAll("http", "ws");
       state = state.copyWith(
@@ -103,8 +108,13 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         talker.info("WebsocketNotifier.init: received $event \n $data");
 
         final eventEnum = websocketRequestTypes.entries
-            .firstWhere((element) => element.value == event)
-            .key;
+            .firstWhereOrNull((element) => element.value == event)
+            ?.key;
+
+        if (eventEnum == null) {
+          talker.error("WebsocketNotifier.init: received unknown event $event");
+          return;
+        }
 
         switch (eventEnum) {
           case WebsocketRequestType.ping:
@@ -145,7 +155,6 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         state.socket?.off('connecting');
         state.socket?.off('disconnect');
         state.socket?.offAny();
-
       }
 
       state.socket?.onDisconnect(onDisconnect);

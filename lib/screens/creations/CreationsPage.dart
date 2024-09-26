@@ -60,7 +60,6 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
         svgPath: loadingSvgPath,
       ),
       child: Scaffold(
-          key: ScaffoldKey.getScaffoldKey('CreationsPage'),
           appBar: CustomAppBar(
             text: context.loc.nftCreationsPageTitle,
           ),

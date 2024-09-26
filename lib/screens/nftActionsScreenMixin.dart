@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
@@ -14,6 +15,7 @@ import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachm
 import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creationData.dart';
@@ -99,16 +101,27 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       Future<String> normalTx() async {
         return await makeAndSendNormalTx(
-            context,
-            ref,
-            recoverTokenFunctionSignature,
-            config.chainId,
-            controllerContractAddress,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            walletType!);
+          context,
+          ref,
+          recoverTokenFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc!,
+          wcSession,
+          walletType!,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures = await getChipSignatures(
+              ref,
+              context,
+              [hash],
+              toggleLoading,
+            );
+
+            return chipSignatures[0];
+          },
+        );
       }
 
       try {
@@ -116,19 +129,31 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           txnHash = await callFunctionWithFallback(
               function: () {
                 return makeAndSendGaslessTx(
-                    ref,
-                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
-                    recoverTokenFunctionSignature,
-                    config.chainId,
-                    config.collectionId,
-                    signatureData,
-                    connectedWallet,
-                    wc,
-                    wcSession,
-                    metaTxAgreementId,
-                    walletType!,
-                    controllerContractId: controllerContractAddress,
-                    toggleLoading: toggleLoading);
+                  ref,
+                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                  recoverTokenFunctionSignature,
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  wcSession,
+                  metaTxAgreementId,
+                  walletType!,
+                  controllerContractId: controllerContractAddress,
+                  toggleLoading: toggleLoading,
+                  getCardSignature: (hash) async {
+                    final List<MsgSignature?> chipSignatures =
+                        await getChipSignatures(
+                      ref,
+                      context,
+                      [hash],
+                      toggleLoading,
+                    );
+
+                    return chipSignatures[0];
+                  },
+                );
               },
               fallback: normalTx,
               predicate: gaslessTransactionFallbackPredicate);
@@ -264,34 +289,57 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       Future<String> normalNx() async {
         return await makeAndSendNormalTx(
-            context,
-            ref,
-            burnFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            walletType!);
+          context,
+          ref,
+          burnFunctionSignature,
+          config.chainId,
+          config.collectionId,
+          signatureData,
+          connectedWallet,
+          wc!,
+          wcSession,
+          walletType!,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures = await getChipSignatures(
+              ref,
+              context,
+              [hash],
+              toggleLoading,
+            );
+
+            return chipSignatures[0];
+          },
+        );
       }
 
       try {
         if (canUseGasStation) {
           txnHash = await callFunctionWithFallback(
               function: () => makeAndSendGaslessTx(
-                  ref,
-                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
-                  burnFunctionSignature,
-                  config.chainId,
-                  config.collectionId,
-                  signatureData,
-                  connectedWallet,
-                  wc,
-                  wcSession,
-                  metaTxAgreementId,
-                  walletType!,
-                  toggleLoading: toggleLoading),
+                    ref,
+                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                    burnFunctionSignature,
+                    config.chainId,
+                    config.collectionId,
+                    signatureData,
+                    connectedWallet,
+                    wc,
+                    wcSession,
+                    metaTxAgreementId,
+                    walletType!,
+                    toggleLoading: toggleLoading,
+                    getCardSignature: (hash) async {
+                      final List<MsgSignature?> chipSignatures =
+                          await getChipSignatures(
+                        ref,
+                        context,
+                        [hash],
+                        toggleLoading,
+                      );
+
+                      return chipSignatures[0];
+                    },
+                  ),
               fallback: normalNx,
               predicate: gaslessTransactionFallbackPredicate);
           ;
@@ -443,20 +491,32 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           txnHash = await callFunctionWithFallback(
             function: () {
               return makeAndSendGaslessTx(
-                  ref,
-                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
-                  cancelMarketplaceOfferSignature,
-                  config.chainId,
-                  config.collectionId,
-                  signatureData,
-                  connectedWallet,
-                  wc,
-                  wcSession,
-                  metaTxAgreementId,
-                  walletType!,
-                  controllerContractId: controllerContractAddress,
-                  encodedOfferData: cancelTxCalldata,
-                  toggleLoading: toggleLoading);
+                ref,
+                ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                cancelMarketplaceOfferSignature,
+                config.chainId,
+                config.collectionId,
+                signatureData,
+                connectedWallet,
+                wc,
+                wcSession,
+                metaTxAgreementId,
+                walletType!,
+                controllerContractId: controllerContractAddress,
+                encodedOfferData: cancelTxCalldata,
+                toggleLoading: toggleLoading,
+                getCardSignature: (hash) async {
+                  final List<MsgSignature?> chipSignatures =
+                      await getChipSignatures(
+                    ref,
+                    context,
+                    [hash],
+                    toggleLoading,
+                  );
+
+                  return chipSignatures[0];
+                },
+              );
             },
             fallback: normalTx,
             predicate: gaslessTransactionFallbackPredicate,
@@ -574,16 +634,27 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       Future<String> normalTx() async {
         return await makeAndSendNormalTx(
-            context,
-            ref,
-            transferFromFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            walletType!);
+          context,
+          ref,
+          transferFromFunctionSignature,
+          config.chainId,
+          config.collectionId,
+          signatureData,
+          connectedWallet,
+          wc!,
+          wcSession,
+          walletType!,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures = await getChipSignatures(
+              ref,
+              context,
+              [hash],
+              toggleLoading,
+            );
+
+            return chipSignatures[0];
+          },
+        );
       }
 
       try {
@@ -591,19 +662,31 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           txnHash = await callFunctionWithFallback(
               function: () {
                 return makeAndSendGaslessTx(
-                    ref,
-                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
-                    transferFromFunctionSignature,
-                    config.chainId,
-                    config.collectionId,
-                    signatureData,
-                    connectedWallet,
-                    wc,
-                    wcSession,
-                    metaTxAgreementId,
-                    walletType!,
-                    tokenId: tokenId,
-                    toggleLoading: toggleLoading);
+                  ref,
+                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                  transferFromFunctionSignature,
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  wcSession,
+                  metaTxAgreementId,
+                  walletType!,
+                  tokenId: tokenId,
+                  toggleLoading: toggleLoading,
+                  getCardSignature: (hash) async {
+                    final List<MsgSignature?> chipSignatures =
+                        await getChipSignatures(
+                      ref,
+                      context,
+                      [hash],
+                      toggleLoading,
+                    );
+
+                    return chipSignatures[0];
+                  },
+                );
               },
               fallback: normalTx);
         } else {
@@ -728,18 +811,29 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       String txnHash = "";
       Future<String> normalTx() async {
         return await makeAndSendNormalTx(
-            context,
-            ref,
-            approveFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            ref.read(walletTypeProvider)!,
-            tokenId: tokenId,
-            toAccount: to);
+          context,
+          ref,
+          approveFunctionSignature,
+          config.chainId,
+          config.collectionId,
+          signatureData,
+          connectedWallet,
+          wc!,
+          wcSession,
+          ref.read(walletTypeProvider)!,
+          tokenId: tokenId,
+          toAccount: to,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures = await getChipSignatures(
+              ref,
+              context,
+              [hash],
+              toggleLoading,
+            );
+
+            return chipSignatures[0];
+          },
+        );
       }
 
       try {
@@ -763,6 +857,17 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                   tokenId: tokenId,
                   enableRecovery: isOwnerCard,
                   toggleLoading: toggleLoading,
+                  getCardSignature: (hash) async {
+                    final List<MsgSignature?> chipSignatures =
+                        await getChipSignatures(
+                      ref,
+                      context,
+                      [hash],
+                      toggleLoading,
+                    );
+
+                    return chipSignatures[0];
+                  },
                 );
               },
               fallback: normalTx,
@@ -894,17 +999,28 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       Future<String> normalTx() async {
         return await makeAndSendNormalTx(
-            context,
-            ref,
-            redeemItemFunctionSignature,
-            config.chainId,
-            controllerContractAddress,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            walletType!,
-            offerHash: offerHash);
+          context,
+          ref,
+          redeemItemFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc!,
+          wcSession,
+          walletType!,
+          offerHash: offerHash,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures = await getChipSignatures(
+              ref,
+              context,
+              [hash],
+              toggleLoading,
+            );
+
+            return chipSignatures[0];
+          },
+        );
       }
 
       try {
@@ -912,20 +1028,32 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           txnHash = await callFunctionWithFallback(
             function: () {
               return makeAndSendGaslessTx(
-                  ref,
-                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
-                  redeemItemFunctionSignature,
-                  config.chainId,
-                  config.collectionId,
-                  signatureData,
-                  connectedWallet,
-                  wc,
-                  wcSession,
-                  metaTxAgreementId,
-                  walletType!,
-                  controllerContractId: controllerContractAddress,
-                  offerHash: offerHash,
-                  toggleLoading: toggleLoading);
+                ref,
+                ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                redeemItemFunctionSignature,
+                config.chainId,
+                config.collectionId,
+                signatureData,
+                connectedWallet,
+                wc,
+                wcSession,
+                metaTxAgreementId,
+                walletType!,
+                controllerContractId: controllerContractAddress,
+                offerHash: offerHash,
+                toggleLoading: toggleLoading,
+                getCardSignature: (hash) async {
+                  final List<MsgSignature?> chipSignatures =
+                      await getChipSignatures(
+                    ref,
+                    context,
+                    [hash],
+                    toggleLoading,
+                  );
+
+                  return chipSignatures[0];
+                },
+              );
             },
             fallback: normalTx,
             predicate: gaslessTransactionFallbackPredicate,
@@ -1020,10 +1148,18 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
 
     try {
+      final chipInfo = ref.read(chipInfoProvider);
+
+      String functionSignature = mintVoucherFunctionSignature;
+
+      if (OwnercardData.isCertificateCard(chipInfo.firstSlotKey)) {
+        functionSignature = mintVoucherToCertificateCardFunctionSignature;
+      }
+
       //check if user is allowed to use gas station
       final List response = await BackendMetaTx.checkMetaTx(
         EthereumAddress.fromHex(metadata.collectionId),
-        mintFunctionSignature,
+        functionSignature,
       );
       final bool canUseGasStation = response[0];
       final metaTxAgreementId = response[1];
@@ -1045,38 +1181,61 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       Future<String> normalTx() async {
         return await makeAndSendNormalTx(
-            context,
-            ref,
-            mintVoucherFunctionSignature,
-            chainId,
-            EthereumAddress.fromHex(metadata.collection.voucherAddress),
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            walletType!,
-            twinTokenMetadataCID: metadata.twinTokenMetadataCID,
-            voucherTokenMetadataCID: metadata.voucherTokenMetadataCID);
+          context,
+          ref,
+          functionSignature,
+          chainId,
+          EthereumAddress.fromHex(metadata.collection.voucherAddress),
+          signatureData,
+          connectedWallet,
+          wc!,
+          wcSession,
+          walletType!,
+          twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+          voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
+          getCardSignature: (hash) async {
+            final List<MsgSignature?> chipSignatures = await getChipSignatures(
+              ref,
+              context,
+              [hash],
+              toggleLoading,
+            );
+
+            return chipSignatures[0];
+          },
+        );
       }
 
       try {
         if (canUseGasStation) {
           txnHash = await callFunctionWithFallback(
               function: () => makeAndSendGaslessTx(
-                  ref,
-                  ScaffoldKey.getScaffoldKey('CreationsPage').currentContext!,
-                  mintVoucherFunctionSignature,
-                  chainId,
-                  EthereumAddress.fromHex(metadata.collection.voucherAddress),
-                  signatureData,
-                  connectedWallet,
-                  wc,
-                  wcSession,
-                  metaTxAgreementId,
-                  walletType!,
-                  twinTokenMetadataCID: metadata.twinTokenMetadataCID,
-                  voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
-                  toggleLoading: toggleLoading),
+                    ref,
+                    ScaffoldKey.getScaffoldKey('CreationsPage').currentContext!,
+                    functionSignature,
+                    chainId,
+                    EthereumAddress.fromHex(metadata.collection.voucherAddress),
+                    signatureData,
+                    connectedWallet,
+                    wc,
+                    wcSession,
+                    metaTxAgreementId,
+                    walletType!,
+                    twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+                    voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
+                    toggleLoading: toggleLoading,
+                    getCardSignature: (hash) async {
+                      final List<MsgSignature?> chipSignatures =
+                          await getChipSignatures(
+                        ref,
+                        context,
+                        [hash],
+                        toggleLoading,
+                      );
+
+                      return chipSignatures[0];
+                    },
+                  ),
               fallback: normalTx,
               predicate: gaslessTransactionFallbackPredicate);
         } else {
@@ -1084,7 +1243,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             throw 'Please connect with MetaMask or similar wallet.';
           }
 
-          await normalTx();
+          txnHash = await normalTx();
         }
       } catch (e, st) {
         talker.error('Error minting token: $e', st);
@@ -1118,8 +1277,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           ref.refresh(digitalTwinCreationMetadataProvider);
 
           ref.read(creationsNotifierProvider.notifier).load();
-
-
         } catch (e, st) {
           Sentry.captureException(
             e,
@@ -1135,7 +1292,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           isLoading = false;
           setState(() {});
         }
-
 
         Navigator.of(context).pushNamedAndRemoveUntil(
           OfferForSaleCreatedTokenScreen.routeName,
