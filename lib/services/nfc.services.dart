@@ -289,9 +289,10 @@ Future<void> restoreDeferredUserSession(WidgetRef ref) async {
   final DeferredUserSessionData? deferredUserSession =
       ref.read(deferredUserSessionProvider);
   if (deferredUserSession != null &&
-      deferredUserSession.walletType?.type != EWalletType.certificateCard) {
+      deferredUserSession.walletType?.type != EWalletType.certificateCard &&
+      deferredUserSession.userSession != null) {
     ref.read(userAddressProvider.notifier).state =
-        deferredUserSession.userSession!.userWalletAddress;
+        deferredUserSession.userSession?.userWalletAddress ?? zeroAddress;
     ref.read(userSessionProvider.notifier).state =
         deferredUserSession.userSession;
     ref.read(walletTypeProvider.notifier).state =
