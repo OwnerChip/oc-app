@@ -3,25 +3,23 @@
 import 'dart:math';
 
 import 'package:async/async.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:info_popup/info_popup.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/payloads/offerItemPayload.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
+import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -29,7 +27,6 @@ import 'package:ownerchip_whitelabel/services/providers/offerOnMp/offerOnMpNotif
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
-import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/rarible/orders/raribleOrders.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -40,29 +37,20 @@ import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomCheckBox.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/LoadingIndicator.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:collection/collection.dart';
-
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CryptoCurrencyDropdown.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCheckBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
-import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
-import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:reown_appkit/reown_appkit.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OfferOnMPScreen extends ConsumerStatefulWidget {
   const OfferOnMPScreen({Key? key}) : super(key: key);
@@ -162,8 +150,8 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
       TokenChainAndCollection config,
       SignatureData signatureData,
       EthereumAddress connectedWallet,
-      Web3App? wc,
-      W3MSession? wcSession,
+      ReownAppKitModal? wc,
+      ReownAppKitModalSession? wcSession,
       UserSession userSession,
       WalletType? walletType) async {
     //check if user is allowed to use gas station
@@ -204,7 +192,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           signatureData,
           connectedWallet,
           wc!,
-          wcSession,
           walletType!,
           twinTokenMetadataCID: twinTokenMetadataCID,
           voucherTokenMetadataCID: voucherTokenMetadataCID,
@@ -225,7 +212,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                     signatureData,
                     connectedWallet,
                     wc,
-                    wcSession,
                     metaTxAgreementId,
                     walletType!,
                     twinTokenMetadataCID: twinTokenMetadataCID,
@@ -251,10 +237,10 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
   }
 
   Future<void> offerToken() async {
-    final Web3App? wc = ref.read(wcProvider);
+    final ReownAppKitModal? wc = ref.read(w3mServiceProvider);
     final SignatureData signatureData = ref.read(chipSignatureDataProvider);
     final UserSession userSession = ref.read(userSessionProvider)!;
-    final W3MSession? wcSession = ref.read(wcSessionProvider);
+    final ReownAppKitModalSession? wcSession = ref.read(wcSessionProvider);
     final WalletType? walletType = ref.read(walletTypeProvider);
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
     final TokenChainAndCollection config =
@@ -365,7 +351,6 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
           signatureData,
           connectedWallet,
           wc!,
-          wcSession,
           walletType!,
           sellerPayoutAddress: userSession.userWalletAddress,
           tokenId: config.tokenId,
@@ -387,8 +372,7 @@ class _OfferOnMPScreen extends ConsumerState<OfferOnMPScreen> {
                   config.collectionId,
                   signatureData,
                   connectedWallet,
-                  wc,
-                  wcSession,
+                  wc!,
                   metaTxAgreementId,
                   walletType!,
                   typedDataHash: typedDataHash,

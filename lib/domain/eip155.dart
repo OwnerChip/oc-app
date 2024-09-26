@@ -1,5 +1,5 @@
 import 'package:ownerchip_whitelabel/domain/ethereum_transaction.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 
 enum EIP155Methods {
   personalSign,
@@ -55,7 +55,7 @@ class EIP155 {
   };
 
   static Future<dynamic> callMethod(
-      {required Web3App web3App,
+      {required ReownAppKitModal web3App,
       required String topic,
       required EIP155Methods method,
       required String chainId,
@@ -113,7 +113,7 @@ class EIP155 {
   }
 
   static Future<dynamic> personalSign({
-    required Web3App web3App,
+    required ReownAppKitModal web3App,
     required String topic,
     required String chainId,
     required String address,
@@ -130,7 +130,7 @@ class EIP155 {
   }
 
   static Future<dynamic> ethSign({
-    required Web3App web3App,
+    required ReownAppKitModal web3App,
     required String topic,
     required String chainId,
     required String address,
@@ -147,7 +147,7 @@ class EIP155 {
   }
 
   static Future<dynamic> ethSignTypedData({
-    required Web3App web3App,
+    required ReownAppKitModal web3App,
     required String topic,
     required String chainId,
     required String address,
@@ -164,7 +164,7 @@ class EIP155 {
   }
 
   static Future<dynamic> ethSignTransaction({
-    required Web3App web3App,
+    required ReownAppKitModal web3App,
     required String topic,
     required String chainId,
     required EthereumTransaction transaction,
@@ -180,7 +180,7 @@ class EIP155 {
   }
 
   static Future<dynamic> ethSendTransaction({
-    required Web3App web3App,
+    required ReownAppKitModal web3App,
     required String topic,
     required String chainId,
     required EthereumTransaction transaction,

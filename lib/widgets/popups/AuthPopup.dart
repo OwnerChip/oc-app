@@ -1,20 +1,22 @@
 import 'dart:convert';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
-import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
-import 'package:ownerchip_whitelabel/services/backend/creator/payloads/updateWeb3AuthDataPayload.dart';
-import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
-import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
+import 'package:ownerchip_whitelabel/services/backend/creator/payloads/updateWeb3AuthDataPayload.dart';
+import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
+import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
@@ -23,23 +25,16 @@ import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:web3dart/credentials.dart';
-import 'package:web3dart/crypto.dart';
-import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
+
 import '../../utils/localization.helper.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 Future<dynamic> authPopupBuilder(
   BuildContext context,
   WidgetRef ref,
-  Web3App wc,
+  ReownAppKitModal wc,
   String walletName,
 ) async {
   return showDialog<dynamic>(
@@ -124,7 +119,7 @@ Future<void> onTapAuth(
   WidgetRef ref,
 ) async {
   EthereumAddress userWalletAddress = ref.read(userAddressProvider);
-  W3MSession? session = ref.read(wcSessionProvider);
+  ReownAppKitModalSession? session = ref.read(wcSessionProvider);
   Web3AuthNotifierData web3AuthData = ref.read(web3AuthNotifierProvider);
   WalletType? walletType = ref.read(walletTypeProvider);
 
@@ -163,7 +158,6 @@ Future<void> onTapAuth(
       ref,
       siweMessage[1],
       userWalletAddress,
-      session,
       walletType,
       siweMessage: true,
     );
@@ -184,7 +178,6 @@ Future<void> onTapAuth(
       ref,
       message,
       userWalletAddress,
-      session,
       walletType,
     );
 

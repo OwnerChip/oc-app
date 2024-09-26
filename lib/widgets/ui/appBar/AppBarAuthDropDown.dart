@@ -19,9 +19,9 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class AppBarAuthDropDown extends ConsumerStatefulWidget {
   const AppBarAuthDropDown({
@@ -296,8 +296,8 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   Future<void> _disconnect(
     BuildContext context,
   ) async {
-    final wc = ref.read(wcProvider);
-    W3MSession? wcSession = ref.watch(wcSessionProvider);
+    final wc = ref.read(w3mServiceProvider);
+    ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
 
     final session = ref.read(userSessionProvider);
     final FCMToken? fcmToken = session?.fcmToken;
@@ -325,12 +325,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     }
 
     if (wc != null && wcSession != null) {
-      await wc.disconnectSession(
-          topic: wcSession.topic!,
-          reason: const WalletConnectError(
-              code: 6000,
-              message:
-                  'MANUAL DISCONNECT')); //WC disconnect event is triggered and riverpod state is deleted in listener
+      await wc.disconnect(); //WC disconnect event is triggered and riverpod state is deleted in listener
     }
 
     final terminated = await BackendAuth.terminateSession();

@@ -1,41 +1,36 @@
 //package imports
-import 'package:flutter_svg/svg.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputController.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
-
+import 'package:flutter_svg/svg.dart';
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
-
 //screen imports
 import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
-
-//widget imports
-import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
-
+import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputController.dart';
+import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 //service imports
 
 //theme imports
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
+//widget imports
+import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SetImageWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class MetadataScreen extends ConsumerStatefulWidget {
   const MetadataScreen({super.key});
@@ -64,7 +59,7 @@ class _MetadataScreenState extends ConsumerState<MetadataScreen>
   Widget build(BuildContext context) {
     final navArgs = ModalRoute.of(context)!.settings.arguments
         as MetadataInputScreenArguments;
-    final wc = ref.watch(wcProvider);
+    final wc = ref.watch(w3mServiceProvider);
     int chainId = navArgs.chainId;
     EthereumAddress collectionId = navArgs.collectionId;
     EthereumAddress? voucherCollectionId = navArgs.voucherAddress;

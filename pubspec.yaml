@@ -37,7 +37,7 @@ dependencies:
   pinput: ^3.0.0
   control_style: ^0.1.0
   country_picker: ^2.0.23
-  web3modal_flutter: 3.2.2
+  reown_appkit: ^1.0.1
   web3auth_flutter: ^4.0.0
   info_popup: ^4.3.1
   video_player: ^2.8.6
