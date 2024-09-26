@@ -74,7 +74,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen>
 
   @override
   Widget build(BuildContext context) {
-    final wc = ref.watch(wcProvider);
+    final wc = ref.watch(w3mServiceProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);

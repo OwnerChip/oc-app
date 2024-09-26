@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/AppBarAuthDropDown.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 
 class AppBarAuth extends ConsumerStatefulWidget {
   const AppBarAuth({super.key});
@@ -43,8 +39,8 @@ class _AppBarAuthState extends ConsumerState<AppBarAuth> {
 
   @override
   Widget build(BuildContext context) {
-    Web3App? wc = ref.watch(wcProvider);
-    W3MSession? wcSession = ref.watch(wcSessionProvider);
+    ReownAppKitModal? wc = ref.watch(w3mServiceProvider);
+    ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
     UserSession? userSession = ref.watch(userSessionProvider);
 
     // If the user is using a certificate card,

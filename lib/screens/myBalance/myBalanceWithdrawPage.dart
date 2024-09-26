@@ -10,29 +10,23 @@ import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawConfirmationDialog.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
-import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/qrCode.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/stylingWidgets/CustomInputDecoration.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AddressInputField.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 
 class MyBalanceWithdrawPage extends ConsumerStatefulWidget {
   const MyBalanceWithdrawPage({
@@ -350,7 +344,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       );
 
       final chipSignature = ref.read(chipSignatureDataProvider);
-      final wc = ref.read(wcProvider);
+      final wc = ref.read(w3mServiceProvider);
       final wcSession = ref.read(wcSessionProvider);
       final userSession = ref.read(userSessionProvider);
 
@@ -586,8 +580,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     required MyBalanceListItem item,
     required SignatureData chipSignature,
     required UserSession userSession,
-    required Web3App wc,
-    required W3MSession? wcSession,
+    required ReownAppKitModal wc,
+    required ReownAppKitModalSession? wcSession,
     required WalletType walletType,
   }) async {
     final blockchainToken = chainTokenConfigs[item.chain]![item.token!];
@@ -601,7 +595,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       chipSignature,
       userSession.userWalletAddress,
       wc,
-      wcSession,
       walletType,
       // convert double to BigInt
       amount: _amount,
@@ -619,8 +612,8 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     required MyBalanceListItem item,
     required SignatureData chipSignature,
     required UserSession userSession,
-    required Web3App wc,
-    required W3MSession? wcSession,
+    required ReownAppKitModal wc,
+    required ReownAppKitModalSession? wcSession,
     required WalletType walletType,
   }) async {
     return await makeAndSendNormalTx(
@@ -632,7 +625,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       chipSignature,
       userSession.userWalletAddress,
       wc,
-      wcSession,
       walletType,
       // convert double to BigInt
       amount: _amount,

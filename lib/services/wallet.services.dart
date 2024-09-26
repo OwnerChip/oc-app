@@ -6,17 +6,15 @@ import 'package:convert/convert.dart';
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
-
+import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/eip155.dart';
-import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
@@ -26,7 +24,6 @@ import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
-
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -34,24 +31,14 @@ import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walletconnect_flutter_v2/apis/sign_api/utils/sign_api_validator_utils.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:web3modal_flutter/web3modal_flutter.dart';
-import 'package:convert/convert.dart';
 import 'package:web3dart/src/utils/rlp.dart' as rlp;
-
-//misc imports
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/domain/eip155.dart';
-
-//service imports
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/services/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 
 import 'providers/websocket/websocketNotifier.dart';
 
@@ -83,8 +70,8 @@ Future<String> makeAndSendGaslessTx(
   EthereumAddress toAddress,
   SignatureData signatureData,
   EthereumAddress walletAddress,
-  Web3App? wc, //Note: wc and wcSession are null if OwnerCard is used for tx
-  W3MSession? wcSession,
+  ReownAppKitModal? wc,
+  //Note: wc and wcSession are null if OwnerCard is used for tx
   String metaTxAgreementId,
   WalletType walletType, {
   EthereumAddress? controllerContractId,
@@ -159,7 +146,7 @@ Future<String> makeAndSendGaslessTx(
           await getCardSignature!(await getGaslessTxHash(request, toAddress));
       signature = msgSignatureToHex(sig!);
     } else if (walletType.type == EWalletType.walletConnect) {
-      final W3MService? w3mService = ref.read(w3mServiceProvider);
+      final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
 
       await preventRepeatedNFCScan(() async {
         w3mService!.launchConnectedWallet();
@@ -168,7 +155,7 @@ Future<String> makeAndSendGaslessTx(
 
         signature = await wc!
             .request(
-          topic: wcSession!.topic!,
+          topic: wc.session?.topic,
           chainId: 'eip155:${w3mService.selectedChain?.chainId ?? chainId}',
           request: SessionRequestParams(
             method: 'eth_signTypedData_v4',
@@ -358,8 +345,7 @@ Future<String> makeAndSendNormalTx(
   EthereumAddress toAddress,
   SignatureData signatureData,
   EthereumAddress walletAddress,
-  Web3App wc,
-  W3MSession? wcSession,
+  ReownAppKitModal wc,
   WalletType walletType, {
   EthereumAddress? toAccount,
   BigInt? tokenId,
@@ -499,7 +485,7 @@ Future<String> makeAndSendNormalTx(
 
     talker.log('Transaction sent: $txnHash');
   } else {
-    final W3MService? w3mService = ref.read(w3mServiceProvider);
+    final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
 
     late Future<dynamic> txnFuture;
 
@@ -511,7 +497,7 @@ Future<String> makeAndSendNormalTx(
       await Future.delayed(const Duration(seconds: 3));
 
       txnFuture = wc.request(
-        topic: wcSession!.topic!,
+        topic: wc.session?.topic!,
         chainId: 'eip155:$chainId',
         request: SessionRequestParams(
           method: 'eth_sendTransaction',
@@ -572,7 +558,7 @@ Future<Transaction> buildTransactionObject({
 }
 
 Future<void> wcSwitchToChainConditionally(
-    W3MService? w3mService, int chainId) async {
+    ReownAppKitModal? w3mService, int chainId) async {
   final wallet = w3mService?.selectedWallet;
 
   if (wallet != null &&
@@ -593,12 +579,12 @@ Future<void> wcSwitchToChainConditionally(
     w3mService!.launchConnectedWallet();
 
     await w3mService.requestSwitchToChain(
-      W3MChainInfo(
-        chainName: chain.networkName,
+      ReownAppKitModalNetworkInfo(
+        name: chain.networkName,
         chainId: "$chainId",
-        namespace: "eip155",
-        tokenName: chain.nativeTokenSymbol,
+        currency: chain.nativeTokenSymbol,
         rpcUrl: chain.rpcUrl,
+        explorerUrl: chain.blockchainExplorerUrl,
       ),
     );
 
@@ -612,10 +598,10 @@ Future<void> wcSwitchToChainConditionally(
     await Future.delayed(const Duration(seconds: 3));
     while (!SignApiValidatorUtils.isValidNamespacesChainId(
       chainId: "eip155:$chainId",
-      namespaces: w3mService.web3App?.signEngine.sessions
-              .get(w3mService.session!.topic!)
+      namespaces: w3mService.appKit
+              ?.getActiveSessions()[w3mService.session!.topic!]
               ?.namespaces ??
-          {},
+          {} as dynamic,
     )) {
       await Future.delayed(const Duration(seconds: 5));
       if (tries++ > 10) {
@@ -632,7 +618,6 @@ Future<String> sendPersonalSignRequest(
   WidgetRef ref,
   String message,
   EthereumAddress walletAddress,
-  W3MSession? wcSession,
   WalletType walletType, {
   bool siweMessage = false,
   int chainId = 1,
@@ -667,12 +652,12 @@ Future<String> sendPersonalSignRequest(
       throw Exception('Failed to sign message with Web3Auth');
     }
   } else {
-    final W3MService? w3mService = ref.read(w3mServiceProvider);
+    final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
     w3mService!.launchConnectedWallet();
 
     try {
       String signature = await w3mService.request(
-        topic: wcSession!.topic!,
+        topic: w3mService.session!.topic!,
         chainId: "eip155:${w3mService.selectedChain?.chainId ?? chainId}",
         request: SessionRequestParams(
           method: 'personal_sign',
@@ -695,9 +680,10 @@ Future<String> getGaslessTxHash(request, collectionId) async {
   return hash;
 }
 
-Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
+Future<ReownAppKitModal> initWcClient(WidgetRef ref, BuildContext context) async {
   //create Web3Modal service and set provider
-  final W3MService w3mService = W3MService(
+  final ReownAppKitModal w3mService = ReownAppKitModal(
+    context: context,
     projectId: dotenv.env['WC_PROJECT_ID']!,
     metadata: PairingMetadata(
       name: 'OwnerChip',
@@ -718,26 +704,25 @@ Future<Web3App> initWcClient(WidgetRef ref, BuildContext context) async {
 
   await w3mService.init();
   ref.read(w3mServiceProvider.notifier).state = w3mService;
+  ref.read(wcProvider.notifier).state = w3mService.appKit! ;
 
-  final Web3App wcClient = w3mService.web3App! as Web3App;
   //set walletconnect client provider
-  ref.read(wcProvider.notifier).state = wcClient;
 
   // Register event handlers
   final events = EIP155.events.values.toList();
-  for (int chainId in chainConfig.keys) {
-    for (final event in events) {
-      wcClient.registerEventHandler(chainId: 'eip155:$chainId', event: event);
-    }
-  }
+  // for (int chainId in chainConfig.keys) {
+  //   for (final event in events) {
+  //     wcClient.registerEventHandler(chainId: 'eip155:$chainId', event: event);
+  //   }
+  // }
 
-  return wcClient;
+  return w3mService;
 }
 
 void Function(ModalConnect?) wrapOnSessionConnect(
     WidgetRef ref, BuildContext context) {
   return (ModalConnect? args) {
-    Web3App? wc = ref.read(wcProvider);
+    IReownAppKit? wc = ref.read(wcProvider);
 
     //set session and wallet type provider
     ref.read(wcSessionProvider.notifier).state = args?.session;
@@ -793,13 +778,12 @@ void onSessionDisconnect(ModalDisconnect? args, WidgetRef ref) {
 }
 
 void unsubscribeWcListeners(WidgetRef ref, BuildContext context) {
-  Web3App? wcClient = ref.read(wcProvider);
-  W3MService? w3mService = ref.read(w3mServiceProvider);
-  if (wcClient != null) {
-    w3mService?.onModalConnect.unsubscribe(wrapOnSessionConnect(ref, context));
-    w3mService?.onModalDisconnect.unsubscribe(wrapOnSessionDisconnect(ref));
-    w3mService?.onSessionEventEvent.unsubscribe(wrapOnSessionEvent(ref));
-    w3mService?.onSessionExpireEvent.unsubscribe(wrapOnSessionExpire(ref));
+  ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
+  if (w3mService != null) {
+    w3mService.onModalConnect.unsubscribe(wrapOnSessionConnect(ref, context));
+    w3mService.onModalDisconnect.unsubscribe(wrapOnSessionDisconnect(ref));
+    w3mService.onSessionEventEvent.unsubscribe(wrapOnSessionEvent(ref));
+    w3mService.onSessionExpireEvent.unsubscribe(wrapOnSessionExpire(ref));
   }
 }
 

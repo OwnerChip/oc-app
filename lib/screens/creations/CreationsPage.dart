@@ -11,7 +11,6 @@ import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotif
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -328,7 +327,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
   ) async {
     if (await _scanItem(context, creations, metadata)) {
       final userSession = ref.read(userSessionProvider)!;
-      final wc = ref.read(wcProvider);
+      final wc = ref.read(w3mServiceProvider);
 
       final tokenId = BigInt.parse(metadata.tokenId!);
 
@@ -349,7 +348,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
   ) async {
     if (await _scanItem(context, creations, metadata)) {
       final userSession = ref.read(userSessionProvider)!;
-      final wc = ref.read(wcProvider);
+      final wc = ref.read(w3mServiceProvider);
 
       await createToken(
         userSession.sessionId,

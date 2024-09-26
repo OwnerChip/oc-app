@@ -35,8 +35,8 @@ import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     implements ConsumerState<T> {
@@ -63,7 +63,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     });
   }
 
-  Future<void> recoverToken(Web3App? wc, BigInt tokenId,
+  Future<void> recoverToken(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
@@ -101,18 +101,18 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       Future<String> normalTx() async {
         return await makeAndSendNormalTx(
-          context,
-          ref,
-          recoverTokenFunctionSignature,
-          config.chainId,
-          controllerContractAddress,
-          signatureData,
-          connectedWallet,
-          wc!,
-          wcSession,
-          walletType!,
+            context,
+            ref,
+            recoverTokenFunctionSignature,
+            config.chainId,
+            controllerContractAddress,
+            signatureData,
+            connectedWallet,
+            wc!,
+            walletType!,
           getCardSignature: (hash) async {
-            final List<MsgSignature?> chipSignatures = await getChipSignatures(
+            final List<MsgSignature?> chipSignatures =
+            await getChipSignatures(
               ref,
               context,
               [hash],
@@ -129,22 +129,20 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           txnHash = await callFunctionWithFallback(
               function: () {
                 return makeAndSendGaslessTx(
-                  ref,
-                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
-                  recoverTokenFunctionSignature,
-                  config.chainId,
-                  config.collectionId,
-                  signatureData,
-                  connectedWallet,
-                  wc,
-                  wcSession,
-                  metaTxAgreementId,
-                  walletType!,
-                  controllerContractId: controllerContractAddress,
-                  toggleLoading: toggleLoading,
+                    ref,
+                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                    recoverTokenFunctionSignature,
+                    config.chainId,
+                    config.collectionId,
+                    signatureData,
+                    connectedWallet,
+                    wc,
+                    metaTxAgreementId,
+                    walletType!,
+                    controllerContractId: controllerContractAddress,
+                    toggleLoading: toggleLoading,
                   getCardSignature: (hash) async {
-                    final List<MsgSignature?> chipSignatures =
-                        await getChipSignatures(
+                    final List<MsgSignature?> chipSignatures = await getChipSignatures(
                       ref,
                       context,
                       [hash],
@@ -234,7 +232,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
   }
 
   Future<void> burnToken(
-    Web3App? wc,
+    ReownAppKitModal? wc,
     BigInt tokenId,
     SignatureData signatureData,
     EthereumAddress connectedWallet, {
@@ -297,7 +295,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           signatureData,
           connectedWallet,
           wc!,
-          wcSession,
           walletType!,
           getCardSignature: (hash) async {
             final List<MsgSignature?> chipSignatures = await getChipSignatures(
@@ -324,7 +321,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                     signatureData,
                     connectedWallet,
                     wc,
-                    wcSession,
                     metaTxAgreementId,
                     walletType!,
                     toggleLoading: toggleLoading,
@@ -425,7 +421,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
+  Future<void> cancelOffer(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
@@ -481,7 +477,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             signatureData,
             connectedWallet,
             wc!,
-            wcSession,
             walletType!,
             encodedOfferData: cancelTxCalldata);
       }
@@ -499,7 +494,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                 signatureData,
                 connectedWallet,
                 wc,
-                wcSession,
                 metaTxAgreementId,
                 walletType!,
                 controllerContractId: controllerContractAddress,
@@ -602,7 +596,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> claimToken(Web3App? wc, BigInt tokenId,
+  Future<void> claimToken(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
@@ -642,7 +636,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           signatureData,
           connectedWallet,
           wc!,
-          wcSession,
           walletType!,
           getCardSignature: (hash) async {
             final List<MsgSignature?> chipSignatures = await getChipSignatures(
@@ -670,7 +663,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                   signatureData,
                   connectedWallet,
                   wc,
-                  wcSession,
                   metaTxAgreementId,
                   walletType!,
                   tokenId: tokenId,
@@ -768,7 +760,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
   }
 
   Future<void> approveToken(
-    Web3App? wc,
+    ReownAppKitModal? wc,
     BigInt tokenId,
     EthereumAddress to,
     SignatureData signatureData,
@@ -819,7 +811,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           signatureData,
           connectedWallet,
           wc!,
-          wcSession,
           ref.read(walletTypeProvider)!,
           tokenId: tokenId,
           toAccount: to,
@@ -850,7 +841,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                   signatureData,
                   connectedWallet,
                   wc,
-                  wcSession,
                   metaTxAgreementId,
                   ref.read(walletTypeProvider)!,
                   toAccount: to,
@@ -964,7 +954,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> redeemTwinToken(Web3App? wc, BigInt tokenId,
+  Future<void> redeemTwinToken(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
@@ -1007,7 +997,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           signatureData,
           connectedWallet,
           wc!,
-          wcSession,
           walletType!,
           offerHash: offerHash,
           getCardSignature: (hash) async {
@@ -1036,7 +1025,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                 signatureData,
                 connectedWallet,
                 wc,
-                wcSession,
                 metaTxAgreementId,
                 walletType!,
                 controllerContractId: controllerContractAddress,
@@ -1130,7 +1118,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
   Future<void> createToken(
     String sessionId,
-    Web3App? wc,
+    ReownAppKitModal? wc,
     SignatureData signatureData,
     DigitalTwinMetadata metadata,
   ) async {
@@ -1189,7 +1177,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           signatureData,
           connectedWallet,
           wc!,
-          wcSession,
           walletType!,
           twinTokenMetadataCID: metadata.twinTokenMetadataCID,
           voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
@@ -1218,7 +1205,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                     signatureData,
                     connectedWallet,
                     wc,
-                    wcSession,
                     metaTxAgreementId,
                     walletType!,
                     twinTokenMetadataCID: metadata.twinTokenMetadataCID,

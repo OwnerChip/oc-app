@@ -2,6 +2,7 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputScreen.dart';
@@ -21,8 +22,9 @@ import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+
 import 'package:web3dart/web3dart.dart';
 import 'package:mime/mime.dart';
 import '../../config/ownercard.dart';
@@ -103,7 +105,8 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
     });
   }
 
-  Future<void> createToken(Web3App? wc,
+  Future<void> createToken(
+      ReownAppKitModal? wc,
       SignatureData signatureData,
       Map<String, dynamic> metadata,
       int chainId,
@@ -204,7 +207,6 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
             signatureData,
             connectedWallet,
             wc!,
-            wcSession,
             walletType!,
             twinTokenMetadataCID: twinTokenMetadataCID,
             voucherTokenMetadataCID: voucherTokenMetadataCID);
@@ -225,7 +227,6 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
                     signatureData,
                     connectedWallet,
                     wc,
-                    wcSession,
                     metaTxAgreementId,
                     walletType!,
                     twinTokenMetadataCID: twinTokenMetadataCID,

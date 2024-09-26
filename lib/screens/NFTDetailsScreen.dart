@@ -28,7 +28,6 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
-
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
@@ -36,7 +35,6 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/BigIconButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/ChipInfo.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -45,11 +43,10 @@ import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -82,7 +79,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
         ref.watch(nftImageProvider(chipInfo.tokenId));
     final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
-    final wc = ref.watch(wcProvider);
+    final wc = ref.watch(w3mServiceProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
@@ -594,7 +591,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     UserSession? userSession,
     AsyncValue<BlockchainCollectionList> relevantCollections,
     AsyncValue<TokenChainAndCollection> tokenInfo,
-    Web3App? wc,
+    ReownAppKitModal? wc,
     ChipInfoModel chipInfo,
     AsyncValue<EthereumAddress?> voucherContractAddress,
     AsyncValue<EthereumAddress?> vouchertokenOwner,

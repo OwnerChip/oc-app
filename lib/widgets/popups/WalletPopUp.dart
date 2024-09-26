@@ -1,38 +1,36 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
-import 'package:flutter/gestures.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
+import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
-import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/EmailLoginPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/PukDisplay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/WalletIcon.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:reown_appkit/reown_appkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:web3auth_flutter/enums.dart' as web3auth;
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:web3auth_flutter/enums.dart' as web3auth;
+
 import '../../utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
-import 'package:web3modal_flutter/web3modal_flutter.dart';
 
 Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
-  final W3MService? w3mService = ref.read(w3mServiceProvider);
+  final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -138,12 +136,12 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                         await Future.delayed(const Duration(seconds: 1));
                       }
 
-                      await w3mService?.openModal(navigatorKey.currentContext!);
+                      await w3mService?.openModalView();
                       if (ref.read(wcSessionProvider) != null) {
                         authPopupBuilder(
                           navigatorKey.currentContext!,
                           ref,
-                          w3mService!.web3App! as Web3App,
+                          w3mService!,
                           "WalletConnect",
                         ).then((e) {
                           if (e == null || e == false) {
@@ -233,7 +231,7 @@ Future<void> _loginWithWeb3Auth(
   BuildContext context, {
   required web3auth.Provider provider,
   required WidgetRef ref,
-  W3MService? w3mService,
+  ReownAppKitModal? w3mService,
   String? email,
 }) async {
   Navigator.pop(context);
@@ -267,7 +265,7 @@ Future<void> _loginWithWeb3Auth(
     authPopupBuilder(
       navigatorKey.currentContext!,
       ref,
-      w3mService!.web3App! as Web3App,
+      w3mService!,
       walletConfig[EWalletType.web3auth]!.name,
     );
   }).catchError((e) {
