@@ -6,7 +6,7 @@
     "legalUrl": "https://www.stilami.com/de/AGB",
     "privacyUrl": "https://www.stilami.com/datenschutzerklarung.html",
     "orderChipsUrl": "http://www.ownerchip.com/orderchips",
-    "collectionsButtonTex“t": "Kollektionen",
+    "collectionsButtonText": "Kollektionen",
     "stilamiIdentityButtonText": "Stilami Identity",
     "initializeChip": "NFT erstellen",
     "youAreOwner": "Sie sind der Eigentümer",
