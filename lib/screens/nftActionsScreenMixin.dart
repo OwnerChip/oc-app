@@ -1031,51 +1031,45 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       int chainId = 137;
 
-      Future<String> normalTx() async {
-        return await makeAndSendNormalTx(
-            context,
-            ref,
-            mintVoucherFunctionSignature,
-            chainId,
-            EthereumAddress.fromHex(metadata.collection.voucherAddress),
-            signatureData,
-            connectedWallet,
-            wc!,
-            walletType!,
-            twinTokenMetadataCID: metadata.twinTokenMetadataCID,
-            voucherTokenMetadataCID: metadata.voucherTokenMetadataCID);
-      }
+      // Future<String> normalTx() async {
+      //   return await makeAndSendNormalTx(
+      //       context,
+      //       ref,
+      //       mintVoucherFunctionSignature,
+      //       chainId,
+      //       EthereumAddress.fromHex(metadata.collection.voucherAddress),
+      //       signatureData,
+      //       connectedWallet,
+      //       wc!,
+      //       walletType!,
+      //       twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+      //       voucherTokenMetadataCID: metadata.voucherTokenMetadataCID);
+      // }
 
       try {
         if (canUseGasStation) {
-          txnHash = await callFunctionWithFallback(
-              function: () => makeAndSendGaslessTx(
-                  ref,
-                  ScaffoldKey.getScaffoldKey('CreationsPage').currentContext!,
-                  mintVoucherFunctionSignature,
-                  chainId,
-                  EthereumAddress.fromHex(metadata.collection.voucherAddress),
-                  signatureData,
-                  connectedWallet,
-                  wc,
-                  metaTxAgreementId,
-                  walletType!,
-                  twinTokenMetadataCID: metadata.twinTokenMetadataCID,
-                  voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
-                  toggleLoading: toggleLoading),
-              fallback: normalTx,
-              predicate: gaslessTransactionFallbackPredicate);
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              context,
+              mintVoucherFunctionSignature,
+              chainId,
+              EthereumAddress.fromHex(metadata.collection.voucherAddress),
+              signatureData,
+              connectedWallet,
+              wc,
+              metaTxAgreementId,
+              walletType!,
+              twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+              voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
+              toggleLoading: toggleLoading);
         } else {
-          if (wc == null) {
-            throw 'Please connect with MetaMask or similar wallet.';
-          }
+          throw Exception("Can't use gas station");
 
-          await normalTx();
         }
       } catch (e, st) {
         talker.error('Error minting token: $e', st);
         Sentry.captureException(e, stackTrace: st);
-        await normalTx();
+        throw Exception("Can't mint token with gas station at the moment");
       }
 
       //wait until TX is succeeded or failed
