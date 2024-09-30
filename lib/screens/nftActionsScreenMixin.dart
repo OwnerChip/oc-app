@@ -1167,74 +1167,67 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       int chainId = 137;
 
-      Future<String> normalTx() async {
-        return await makeAndSendNormalTx(
-          context,
-          ref,
-          functionSignature,
-          chainId,
-          EthereumAddress.fromHex(metadata.collection.voucherAddress),
-          signatureData,
-          connectedWallet,
-          wc!,
-          walletType!,
-          twinTokenMetadataCID: metadata.twinTokenMetadataCID,
-          voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
-          getCardSignature: (hash) async {
-            final List<MsgSignature?> chipSignatures = await getChipSignatures(
-              ref,
-              context,
-              [hash],
-              toggleLoading,
-            );
-
-            return chipSignatures[0];
-          },
-        );
-      }
+      // Future<String> normalTx() async {
+      //   return await makeAndSendNormalTx(
+      //     context,
+      //     ref,
+      //     functionSignature,
+      //     chainId,
+      //     EthereumAddress.fromHex(metadata.collection.voucherAddress),
+      //     signatureData,
+      //     connectedWallet,
+      //     wc!,
+      //     walletType!,
+      //     twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+      //     voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
+      //     getCardSignature: (hash) async {
+      //       final List<MsgSignature?> chipSignatures = await getChipSignatures(
+      //         ref,
+      //         context,
+      //         [hash],
+      //         toggleLoading,
+      //       );
+      //
+      //       return chipSignatures[0];
+      //     },
+      //   );
+      // }
 
       try {
         if (canUseGasStation) {
-          txnHash = await callFunctionWithFallback(
-              function: () => makeAndSendGaslessTx(
-                    ref,
-                    ScaffoldKey.getScaffoldKey('CreationsPage').currentContext!,
-                    functionSignature,
-                    chainId,
-                    EthereumAddress.fromHex(metadata.collection.voucherAddress),
-                    signatureData,
-                    connectedWallet,
-                    wc,
-                    metaTxAgreementId,
-                    walletType!,
-                    twinTokenMetadataCID: metadata.twinTokenMetadataCID,
-                    voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
-                    toggleLoading: toggleLoading,
-                    getCardSignature: (hash) async {
-                      final List<MsgSignature?> chipSignatures =
-                          await getChipSignatures(
-                        ref,
-                        context,
-                        [hash],
-                        toggleLoading,
-                      );
+          txnHash = await makeAndSendGaslessTx(
+            ref,
+            context,
+            functionSignature,
+            chainId,
+            EthereumAddress.fromHex(metadata.collection.voucherAddress),
+            signatureData,
+            connectedWallet,
+            wc,
+            metaTxAgreementId,
+            walletType!,
+            twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+            voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
+            toggleLoading: toggleLoading,
+            getCardSignature: (hash) async {
+              final List<MsgSignature?> chipSignatures =
+              await getChipSignatures(
+                ref,
+                context,
+                [hash],
+                toggleLoading,
+              );
 
-                      return chipSignatures[0];
-                    },
-                  ),
-              fallback: normalTx,
-              predicate: gaslessTransactionFallbackPredicate);
+              return chipSignatures[0];
+            },
+          );
         } else {
-          if (wc == null) {
-            throw 'Please connect with MetaMask or similar wallet.';
-          }
-
-          txnHash = await normalTx();
+          throw Exception("Can't use gas station");
         }
       } catch (e, st) {
         talker.error('Error minting token: $e', st);
         Sentry.captureException(e, stackTrace: st);
-        await normalTx();
+        throw Exception("Can't mint token with gas station at the moment");
       }
 
       //wait until TX is succeeded or failed

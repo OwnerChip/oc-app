@@ -8,7 +8,7 @@ class MoreInfoButtons {
   List<MoreInfoButton> roundedButtons = [];
   List<MoreInfoButton> outlinedRoundedButtons = [];
 
-  MoreInfoButtons(appEnvironment, AppLocalizations loc, String? jwt) {
+  MoreInfoButtons(appEnvironment, dynamic loc, String? jwt) {
     switch (appEnvironment) {
       case 'ownerchip':
         roundedButtons = [
