@@ -116,7 +116,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () {
                 return makeAndSendGaslessTx(
                     ref,
-                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                    context,
                     recoverTokenFunctionSignature,
                     config.chainId,
                     config.collectionId,
@@ -278,7 +278,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           txnHash = await callFunctionWithFallback(
               function: () => makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                  context,
                   burnFunctionSignature,
                   config.chainId,
                   config.collectionId,
@@ -439,7 +439,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             function: () {
               return makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                  context,
                   cancelMarketplaceOfferSignature,
                   config.chainId,
                   config.collectionId,
@@ -585,7 +585,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () {
                 return makeAndSendGaslessTx(
                     ref,
-                    ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                    context,
                     transferFromFunctionSignature,
                     config.chainId,
                     config.collectionId,
@@ -739,7 +739,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () {
                 return makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
+                  context,
                   approveFunctionSignature,
                   // APPROVE
                   config.chainId,
@@ -902,7 +902,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             function: () {
               return makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey(pageKey).currentContext!,
+                  context,
                   redeemItemFunctionSignature,
                   config.chainId,
                   config.collectionId,
