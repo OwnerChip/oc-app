@@ -246,12 +246,16 @@ Future<dynamic> scanItem(
           });
         }
       } else {
-        restoreDeferredUserSession(ref);
+        if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
+          restoreDeferredUserSession(ref);
+        }
       }
       return signature;
     } catch (e) {
       // check if wallet is connected
-      restoreDeferredUserSession(ref);
+      if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
+        restoreDeferredUserSession(ref);
+      }
 
       if (navigateToResultPage &&
           ref.read(wcSessionProvider) == null &&

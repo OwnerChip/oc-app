@@ -90,7 +90,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
               builder: (context, mode) => _buildFooter(context, mode),
             ),
             child: ListView.builder(
-              itemCount: creations.data!.length,
+              itemCount: creations.data?.length ?? 0,
               itemBuilder: (context, index) {
                 final metadata = creations.data![index];
                 return InkWell(
