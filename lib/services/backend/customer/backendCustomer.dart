@@ -12,8 +12,11 @@ abstract class BackendCustomer extends Backend {
   static Future<void> sendCardInitToBackend(
     String customerId,
     EthereumAddress chipAddress,
+    bool isCertificateCard,
   ) async {
-    final service = BackendCustomerService.instanceProd;
+    final service = isCertificateCard
+        ? BackendCustomerService.instance
+        : BackendCustomerService.instanceProd;
 
     try {
       await service.sendCardInitToBackend(
@@ -21,6 +24,7 @@ abstract class BackendCustomer extends Backend {
         appId: dotenv.get('BITRISEIO_PACKAGE_NAME'),
         payload: CardInitPayload(
           id: chipAddress.hex,
+          isCertificateCard: isCertificateCard,
         ),
       );
     } catch (e, s) {
@@ -38,7 +42,8 @@ abstract class BackendCustomer extends Backend {
     final service = BackendCustomerService.instance;
 
     try {
-      talker.info('Getting creator for wallet address: ${walletAddress.hex} - customer id: ${getCustomerId()}');
+      talker.info(
+          'Getting creator for wallet address: ${walletAddress.hex} - customer id: ${getCustomerId()}');
       return await service
           .getCreator(
         customerId: getCustomerId(),

@@ -1,17 +1,19 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ownerchip_whitelabel/utils/urls.dart';
 
 class MoreInfoButtons {
   List<MoreInfoButton> roundedButtons = [];
   List<MoreInfoButton> outlinedRoundedButtons = [];
 
-  MoreInfoButtons(appEnvironment, loc) {
+  MoreInfoButtons(appEnvironment, dynamic loc, String? jwt) {
     switch (appEnvironment) {
       case 'ownerchip':
         roundedButtons = [
           MoreInfoButton(loc.viewProjects, loc.projectsUrl),
-          MoreInfoButton(loc.orderChips, loc.orderChipsUrl),
+          MoreInfoButton(loc.signupAsCertifier, getBecomeACreatorUrl(jwt)),
         ];
         outlinedRoundedButtons = [
           MoreInfoButton(loc.support, loc.supportUrl),
@@ -28,8 +30,8 @@ class MoreInfoButtons {
         break;
       case 'stilami':
         roundedButtons = [
-          MoreInfoButton(loc.stilamiIdentityButtonText, loc.stilamiIdentityUrl),
-          MoreInfoButton(loc.collectionsButtonText, loc.collectionsUrl),
+          MoreInfoButton((loc as dynamic).stilamiIdentityButtonText, (loc as dynamic).stilamiIdentityUrl),
+          MoreInfoButton((loc as dynamic).collectionsButtonText, (loc as dynamic).collectionsUrl),
         ];
         outlinedRoundedButtons = [
           MoreInfoButton(loc.support, loc.supportUrl),

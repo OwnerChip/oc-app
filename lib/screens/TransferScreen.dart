@@ -1,230 +1,58 @@
 //import packages
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
-import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
+import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
-import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/AddressInputField.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:async/async.dart';
-import 'package:sentry/sentry.dart';
-
-//import services
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
-import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
-
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/AddressInputField.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3dart/web3dart.dart';
+
+class TransferScreenArguments {
+  final DigitalTwinMetadata? digitalTwinMetadata;
+
+  TransferScreenArguments({
+    this.digitalTwinMetadata,
+  });
+}
 
 class TransferScreen extends ConsumerStatefulWidget {
-  const TransferScreen({Key? key}) : super(key: key);
+  const TransferScreen({
+    Key? key,
+    this.digitalTwinMetadata,
+  }) : super(key: key);
 
+  final DigitalTwinMetadata? digitalTwinMetadata;
   static const routeName = '/transfer';
 
   @override
   _TransferScreenState createState() => _TransferScreenState();
 }
 
-class _TransferScreenState extends ConsumerState<TransferScreen> {
+class _TransferScreenState extends ConsumerState<TransferScreen>
+    with NftActionScreenMixin<TransferScreen> {
   final _formKey = GlobalKey<FormState>();
   final _inputController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
-  bool isLoading = false;
-  bool isRotating = true;
-  String loadingSvgPath =
-      '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
-  String loadingText = '';
   String textInput = '';
-
-  CancelableOperation? cancellableOperation;
-
-  Future<void> toggleLoading() async {
-    setState(() {
-      isLoading = !isLoading;
-    });
-  }
-
-  Future<void> approveToken(
-      Web3App? wc,
-      BigInt tokenId,
-      EthereumAddress to,
-      SignatureData signatureData,
-      EthereumAddress connectedWallet,
-      String sessionId) async {
-    final wcSession = ref.read(wcSessionProvider);
-    final TokenChainAndCollection config =
-        await ref.watch(findTokenProvider(tokenId).future);
-    final UserSession userSession = ref.read(userSessionProvider)!;
-    final isOwnerCard = userSession?.isOwnerCard;
-    final transferProcess = Sentry.startTransaction('initApprove()', 'task');
-    try {
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.transferInProgress;
-      });
-
-      BackendApp.sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
-        'connectedWallet': connectedWallet.hex,
-        'chipWallet':
-            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
-        'to': to.toString(),
-      });
-
-      final List response = await BackendMetaTx.checkMetaTx(
-          config.collectionId, transferFromFunctionSignature);
-      final bool canUseGasStation = response[0];
-      final metaTxAgreementId = response[1];
-
-      String txnHash = "";
-      Future<String> normalTx() async {
-        return await makeAndSendNormalTx(
-            context,
-            ref,
-            approveFunctionSignature,
-            config.chainId,
-            config.collectionId,
-            signatureData,
-            connectedWallet,
-            wc!,
-            wcSession,
-            ref.read(walletTypeProvider)!,
-            tokenId: tokenId,
-            toAccount: to);
-      }
-
-      try {
-        if (canUseGasStation) {
-          txnHash = await callFunctionWithFallback(
-              function: () {
-                return makeAndSendGaslessTx(
-                  ref,
-                  ScaffoldKey.getScaffoldKey('TransferScreen').currentContext!,
-                  approveFunctionSignature,
-                  // APPROVE
-                  config.chainId,
-                  config.collectionId,
-                  signatureData,
-                  connectedWallet,
-                  wc,
-                  wcSession,
-                  metaTxAgreementId,
-                  ref.read(walletTypeProvider)!,
-                  toAccount: to,
-                  tokenId: tokenId,
-                  enableRecovery: isOwnerCard,
-                  toggleLoading: toggleLoading,
-                );
-              },
-              fallback: normalTx,
-              predicate: gaslessTransactionFallbackPredicate);
-        } else {
-          if (wc == null) {
-            throw 'Please connect with MetaMask or similar wallet.';
-          }
-
-          txnHash = await normalTx();
-        }
-      } catch (e, st) {
-        Sentry.captureException(e, stackTrace: st);
-        talker.error(e, st);
-      }
-
-      talker.info('Transaction hash: $txnHash');
-
-      var txnReceipt =
-          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
-      if (txnReceipt?.status == true) {
-        //this means transfer succeeded
-        setState(() {
-          isRotating = false;
-          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
-          loadingText = context.loc.transferSuccess;
-        });
-
-        try {
-          await Future.delayed(const Duration(seconds: 2));
-          //refresh provider state to update nft owner & approval for next screen
-          await ref.refresh(nftOwnerProvider.future);
-          await ref.refresh(nftApprovalProvider.future);
-        } catch (e) {
-          print(e);
-          Sentry.captureException(e);
-        }
-
-        setState(() {
-          isLoading = false;
-        });
-
-        //check if previous route is user scan result screen
-        Navigator.pop(navigatorKey.currentContext!);
-
-        // send status to analytics
-        transferProcess.finish();
-        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS",
-            tags: {
-              'connectedWallet': connectedWallet.hex,
-              'chipWallet': convertTokenIdToEthereumAddress(
-                  ref.read(chipInfoProvider).tokenId),
-              'to': to.toString(),
-            });
-      } else {
-        throw Exception(context.loc.transferError);
-      }
-    } catch (e, s) {
-      setState(() {
-        isLoading = false;
-      });
-      // send Error to analytics
-      transferProcess.throwable = e;
-      transferProcess.status = const SpanStatus.aborted();
-      transferProcess.finish();
-      BackendApp.sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR",
-          tags: {
-            'connectedWallet': connectedWallet.hex,
-            'chipWallet': convertTokenIdToEthereumAddress(
-                ref.read(chipInfoProvider).tokenId),
-            'to': to.toString(),
-          });
-      await Sentry.captureException(e, stackTrace: s);
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.transferError, 'error'),
-      );
-      print("Error: $e");
-    }
-  }
-
-  Future<dynamic> fromCancelable(Future<dynamic> future) async {
-    cancellableOperation?.cancel();
-    cancellableOperation =
-        CancelableOperation.fromFuture(future, onCancel: () {});
-    return cancellableOperation;
-  }
 
   @override
   void initState() {
@@ -246,7 +74,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wc = ref.watch(wcProvider);
+    final wc = ref.watch(w3mServiceProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
@@ -312,12 +140,14 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                     context, ref);
 
                             fromCancelable(approveToken(
-                                wc,
-                                chipInfo.tokenId,
-                                chipWalletAddress,
-                                signatureData,
-                                connectedWallet,
-                                sessionId));
+                              wc,
+                              chipInfo.tokenId,
+                              chipWalletAddress,
+                              signatureData,
+                              connectedWallet,
+                              sessionId,
+                              digitalTwinMetadata: widget.digitalTwinMetadata,
+                            ));
                           })),
                       const SizedBox(height: 30),
                       Text(
@@ -340,13 +170,16 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                                       {
                                         FocusScope.of(context).unfocus(),
                                         fromCancelable(approveToken(
-                                            wc,
-                                            chipInfo.tokenId,
-                                            EthereumAddress.fromHex(
-                                                textInput.trim()),
-                                            signatureData,
-                                            connectedWallet,
-                                            sessionId))
+                                          wc,
+                                          chipInfo.tokenId,
+                                          EthereumAddress.fromHex(
+                                              textInput.trim()),
+                                          signatureData,
+                                          connectedWallet,
+                                          sessionId,
+                                          digitalTwinMetadata:
+                                              widget.digitalTwinMetadata,
+                                        ))
                                       }
                                   })),
                       const SizedBox(

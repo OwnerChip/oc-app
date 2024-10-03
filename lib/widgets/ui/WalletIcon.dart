@@ -4,16 +4,20 @@ import 'package:flutter_svg/svg.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 
 class WalletIcon extends StatelessWidget {
-  final String iconPath;
+  final String? iconPath;
+  final Widget? icon;
   final String walletName;
   final VoidCallback onTap;
   final Color backgroundColor;
 
   WalletIcon(
-      {required this.iconPath,
+      {this.iconPath,
+      this.icon,
       required this.walletName,
       required this.onTap,
-      this.backgroundColor = const Color.fromARGB(255, 243, 243, 243)});
+      this.backgroundColor = const Color.fromARGB(255, 243, 243, 243)}) {
+    assert(iconPath != null || icon != null);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,24 +38,25 @@ class WalletIcon extends StatelessWidget {
                         blurRadius: 5,
                       )
                     ]),
-                width: 60,
-                height: 60,
+                width: 52,
+                height: 52,
                 child: Padding(
                   padding: const EdgeInsets.all(7),
                   child:
                       //if iconpath ends with svg
-                      iconPath.endsWith('.svg')
-                          ? SvgPicture.asset(
-                              iconPath,
-                              fit: BoxFit.contain,
-                            )
-                          : Image.asset(
-                              iconPath,
-                              fit: BoxFit.contain,
-                            ),
+                      icon ??
+                          (iconPath!.endsWith('.svg')
+                              ? SvgPicture.asset(
+                                  iconPath!,
+                                  fit: BoxFit.contain,
+                                )
+                              : Image.asset(
+                                  iconPath!,
+                                  fit: BoxFit.contain,
+                                )),
                 )),
             SizedBox(
-                width: 130,
+                width: 112,
                 child: Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(

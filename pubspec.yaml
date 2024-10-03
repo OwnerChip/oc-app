@@ -37,7 +37,7 @@ dependencies:
   pinput: ^3.0.0
   control_style: ^0.1.0
   country_picker: ^2.0.23
-  web3modal_flutter: 3.2.2
+  reown_appkit: ^1.0.1
   web3auth_flutter: ^4.0.0
   info_popup: ^4.3.1
   video_player: ^2.8.6
@@ -46,6 +46,7 @@ dependencies:
   retrofit: ^4.1.0
   native_ios_dialog: ^0.2.1
   mobile_scanner: ^5.1.1
+  socket_io_client: ^2.0.3+1
 
   #  Logger
   ansicolor: ^2.0.2
@@ -53,6 +54,10 @@ dependencies:
   talker_dio_logger: ^4.2.0
   confetti: ^0.7.0
   path_drawing: ^1.0.1
+
+  # firebase
+  firebase_core: ^3.2.0
+  firebase_messaging: ^15.0.3
 
 dev_dependencies:
   flutter_test:

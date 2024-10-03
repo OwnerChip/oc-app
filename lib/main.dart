@@ -1,46 +1,57 @@
 //import packages
 
-import 'package:flutter/cupertino.dart';
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logging/logging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
+import 'package:ownerchip_whitelabel/domain/common/fcmNotificationData.dart';
+import 'package:ownerchip_whitelabel/firebase_options.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
+import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
+import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
+import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
+import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
-import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
-import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenUserComplete.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
-
-//import screens
-import 'screens/HomeScreen.dart';
-import 'screens/UserScanResultsScreen.dart';
-import 'screens/MetadataInputScreen.dart';
-import 'screens/NFTDetailsScreen.dart';
-import 'screens/ChainSelectorScreen.dart';
-import 'screens/TransferScreen.dart';
-import 'screens/AddAttachmentScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/themes/themeData.dart';
+import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+
+import 'screens/AddAttachmentScreen.dart';
+import 'screens/ChainSelectorScreen.dart';
+
+//import screens
+import 'screens/HomeScreen.dart';
+import 'screens/metadataInput/MetadataInputScreen.dart';
+import 'screens/NFTDetailsScreen.dart';
+import 'screens/TransferScreen.dart';
+import 'screens/UserScanResultsScreen.dart';
 
 // setup logger
 void _setupLogging() {
@@ -68,6 +79,10 @@ void main(List<String> args) async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   await BackendAuth.initGuestSession();
 
   //init sentry
@@ -94,10 +109,83 @@ class MyApp extends ConsumerStatefulWidget {
 
 //root widget
 class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
+  StreamSubscription? _msgSubscription;
+  StreamSubscription? _bgSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+
+    initMessaging();
+  }
+
+  Future<void> _onMessageReceived(RemoteMessage message) async {
+    talker.log('Message received: ${message.toMap()}');
+
+    final data = FCMNotificationData.fromJson(message.data);
+
+    if (data.isDigitalTwinCreation ||
+        data.isDigitalTwinBurn ||
+        data.isDigitalTwinTransfer) {
+      await ref.read(creationsNotifierProvider.notifier).load();
+      ref.read(creationsNotifierProvider.notifier).navigateConditionally(
+            navigatorKey.currentContext ?? context,
+            data.decodeAsDigitalTwinCreation().userWalletAddress,
+            isFromNotification: true,
+          );
+    }
+  }
+
+  Future<void> initMessaging() async {
+    FirebaseMessaging.instance.requestPermission(
+      provisional: true,
+    );
+
+    _msgSubscription = FirebaseMessaging.onMessage.listen(_onMessageReceived);
+    FirebaseMessaging.onBackgroundMessage((message) async {
+      _onMessageReceived(message);
+    });
+    _bgSubscription =
+        FirebaseMessaging.onMessageOpenedApp.listen(_onMessageReceived);
+    FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
+      if (initialMessage != null) {
+        _onMessageReceived(initialMessage);
+      }
+    });
+    talker.log('Firebase messaging initialized');
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    talker.log('App lifecycle state changed to $state');
+
+    switch (state) {
+      case AppLifecycleState.detached:
+        break;
+      case AppLifecycleState.resumed:
+        talker.log('App resumed');
+        ref.read(websocketProvider.notifier).onResumedFromBackground();
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.hidden:
+        break;
+      case AppLifecycleState.paused:
+        break;
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    _msgSubscription?.cancel();
+    _bgSubscription?.cancel();
+
     unsubscribeWcListeners(ref, context);
   }
 
@@ -150,7 +238,15 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         NFTDetailsScreen.routeName: (context) => const NFTDetailsScreen(),
         ChainSelectorScreen.routeName: (context) => const ChainSelectorScreen(),
         MoreInfoScreen.routeName: (context) => const MoreInfoScreen(),
-        TransferScreen.routeName: (context) => const TransferScreen(),
+        TransferScreen.routeName: (context) {
+          TransferScreenArguments? args = ModalRoute.of(context)!
+              .settings
+              .arguments as TransferScreenArguments?;
+
+          return TransferScreen(
+            digitalTwinMetadata: args?.digitalTwinMetadata,
+          );
+        },
         AddAttachmentScreen.routeName: (context) => const AddAttachmentScreen(),
         ListAttachmentsScreen.routeName: (context) =>
             const ListAttachmentsScreen(),
@@ -171,6 +267,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         OfferForSaleCreatedTokenScreen.routeName: (context) =>
             const OfferForSaleCreatedTokenScreen(),
         QRCodeScannerScreen.routeName: (context) => const QRCodeScannerScreen(),
+        CreationsPage.routeName: (context) => const CreationsPage(),
       },
     );
   }

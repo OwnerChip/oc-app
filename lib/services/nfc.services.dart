@@ -10,17 +10,17 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
-import 'package:ownerchip_whitelabel/screens/MetadataInputScreen.dart';
+import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
-import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -103,15 +103,20 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       }
 
       if (showChainSelector) {
-        Navigator.pushNamed(context, ChainSelectorScreen.routeName,
-            arguments: MetadataInputScreenArguments(sessionId, 0, zeroAddress));
+        Navigator.pushNamed(
+          context,
+          ChainSelectorScreen.routeName,
+          arguments: MetadataInputScreenArguments(
+            0,
+            zeroAddress,
+          ),
+        );
       } else {
         int chainId = relevantCollections.collections.keys.first;
         Collection? collection =
             relevantCollections.collections[chainId]!.first;
         Navigator.pushNamed(context, MetadataScreen.routeName,
-            arguments: MetadataInputScreenArguments(
-                sessionId, chainId, collection.id,
+            arguments: MetadataInputScreenArguments(chainId, collection.id,
                 voucherAddress: collection.voucherAddress));
       }
     }
@@ -131,7 +136,7 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
       context.loc.holdPhoneToNfcChip);
 }
 
-Future<void> scanItem(
+Future<dynamic> scanItem(
   WidgetRef ref,
   BuildContext context, {
   bool navigateToResultPage = true,
@@ -178,6 +183,7 @@ Future<void> scanItem(
           );
         }
       }
+      return signature;
     } catch (e) {
       // check if wallet is connected
 
@@ -256,10 +262,12 @@ Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
 //returns MsgSignature if everything worked correctly
 //returns null if user cancels scan or error occurs
 Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
-    msgHashToSign, Function toggleLoading, String pin) async {
+    msgHashToSign, Function toggleLoading, String? pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    bool pinVerified = await verifyPin(nfc, pin);
+    if (pin != null) {
+      bool pinVerified = await verifyPin(nfc, pin);
+    }
     EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
         nfc,
@@ -270,14 +278,40 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
     return signature;
   }
 
-  return await scanClosure(context, ref, callback, "MAKE_CARD_SIGNATURE",
-      context.loc.holdPhoneToCard);
+  return await scanClosure(
+      context,
+      ref,
+      callback,
+      "MAKE_CARD_SIGNATURE",
+      pin == null
+          ? context.loc.holdPhoneCloseToCertificateCardToInit
+          : context.loc.holdPhoneToCard);
 }
 
 Future<void> authenticateCard(
-    WidgetRef ref, BuildContext context, String pin) async {
+  WidgetRef ref,
+  BuildContext context, {
+  String? pin,
+}) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
+    final firstPubKey = await getPubKeyN(nfc, 0x00);
+    final address = OwnercardData.fromPubKeyZeros(firstPubKey);
+
+    final bool isCertificateCard = OwnercardData.isCertificateCard(address);
+
+    if (pin == null) {
+      // check if the card is a certificate card
+      if (!OwnercardData.isCertificateCard(address)) {
+        throw context.loc.cardIsNotCertificateCard;
+      }
+    } else {
+      // check if the card is an owner card
+      if (!OwnercardData.isOwnerCard(address)) {
+        throw context.loc.cardIsNotOwnerCard;
+      }
+    }
+
     final String message =
         "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
 
@@ -290,7 +324,9 @@ Future<void> authenticateCard(
     final prefixedMessage =
         "\x19Ethereum Signed Message:\n${siweMessage[1].length}${siweMessage[1]}";
     Uint8List msgHashToSign = keccakUtf8(prefixedMessage);
-    final bool pinVerified = await verifyPin(nfc, pin);
+    if (pin != null) {
+      await verifyPin(nfc, pin);
+    }
     final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
     MsgSignature signature = await signHash(
       nfc,
@@ -327,13 +363,19 @@ Future<void> authenticateCard(
       signature,
       ref,
       jwt,
+      isCertificateCard,
     );
-
-    Backend.recreateServices(jwt);
   }
 
   return await scanClosure(
-      context, ref, callback, "AUTHENTICATE_CARD", context.loc.holdPhoneToCard);
+    context,
+    ref,
+    callback,
+    "AUTHENTICATE_CARD",
+    pin == null
+        ? context.loc.holdPhoneCloseToCertificateCardToInit
+        : context.loc.holdPhoneToCard,
+  );
 }
 
 Future<String?> setPinOnCard(
@@ -341,6 +383,13 @@ Future<String?> setPinOnCard(
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+
+    final address = OwnercardData.fromPubKeyZeros(pubKeyZero);
+
+    if (OwnercardData.isCertificateCard(address)) {
+      throw context.loc.cannotSetPinOnCertificateCard;
+    }
+
     if (pubKeyZero.isNotEmpty) {
       return await setPin(nfc, pin);
     } else {
@@ -356,6 +405,12 @@ Future<String?> resetPinOnCard(
     BuildContext context, WidgetRef ref, String puk, String pin) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
+    Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+    final address = OwnercardData.fromPubKeyZeros(pubKeyZero);
+    if (OwnercardData.isCertificateCard(address)) {
+      throw context.loc.cannotResetPinOnCertificateCard;
+    }
+
     bool success = await unlockPin(nfc, puk);
     if (success) {
       return await setPin(nfc, pin);
@@ -447,15 +502,27 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
     final TokenChainAndCollection tokenInfo =
         await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
     SignatureData chipSignature = ref.read(chipSignatureDataProvider);
+
+    final EthereumAddress chipAddress = createFirstKeyChipResponse[0];
+
+    try {
+      Uint8List pubKeyZero = await getPubKeyN(nfc, 0x00);
+
+      final pubKeyZeroAddress = OwnercardData.fromPubKeyZeros(pubKeyZero);
+
+      if (OwnercardData.isCertificateCard(pubKeyZeroAddress)) {
+        throw context.loc.cannotCardLostOnCertificateCard;
+      }
+    } catch (e) {
+      if (e is String) {
+        rethrow;
+      }
+      // ignore as slot 0 is not initialized for chip
+    }
+
     if (tokenInfo.collectionId != zeroAddress) {
-      return await BackendCollection.sendCardLostToBackend(
-          createFirstKeyChipResponse[0],
-          tokenInfo.collectionId,
-          chipSignature,
-          sessionId,
-          email,
-          name,
-          telNr);
+      return await BackendCollection.sendCardLostToBackend(chipAddress,
+          tokenInfo.collectionId, chipSignature, sessionId, email, name, telNr);
     } else {
       throw context.loc.tokenDoesNotExist;
     }
@@ -465,11 +532,20 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
       context, ref, callback, "CARD_LOST", context.loc.scanToTriggerCardLost);
 }
 
-Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
-    Function setStateCallback, String customerId) async {
-  String identifier = generateOwnerCardIdentifier(
-      int.parse(customerId), dotenv.get('OWNERCARD_BASE_ID'));
+Future<dynamic> importKeyToSlotZero(
+  BuildContext context,
+  WidgetRef ref,
+  Function setStateCallback,
+  String customerId, {
+  required String cardBaseId,
+  bool isCertificateCard = false,
+}) async {
+  String identifier = generateCardIdentifier(
+    int.parse(customerId),
+    cardBaseId,
+  );
   Uint8List seed = hexToBytes(identifier);
+
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     var pubKeyZero;
@@ -479,10 +555,13 @@ Future<dynamic> importKeyToSlotZero(BuildContext context, WidgetRef ref,
       pubKeyZero = await getPubKeyN(nfc, 0x00);
     }
     BackendCustomer.sendCardInitToBackend(
-        customerId, createFirstKeyChipResponse[0]);
+      customerId,
+      createFirstKeyChipResponse[0],
+      isCertificateCard,
+    );
 
-    EthereumAddress cardWalletAddress = EthereumAddress.fromHex(
-        "0x${bytesToHex(publicKeyToAddress(pubKeyZero))}");
+    EthereumAddress cardWalletAddress =
+        OwnercardData.fromPubKeyZeros(pubKeyZero);
 
     setStateCallback(cardWalletAddress);
   }
@@ -517,18 +596,22 @@ Future<dynamic> scanClosure(
   if (Platform.isAndroid) {
     nfcOverlay.showNfcOverlay(context, alertMessage, () {
       NfcManager.instance.stopSession();
-      completer.complete();
+      completer.complete(null);
     });
   }
 
   NfcManager.instance.startSession(
       onError: (error) async {
-        //check if future is already completed
-        if (error.message.contains('Session invalidated by user')) {
-          //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
-          completer.complete(null);
-        } else {
-          completer.completeError(error);
+        try {
+          //check if future is already completed
+          if (error.message.contains('Session invalidated by user')) {
+            //Note: this catches NFC Error Msg with text "Bad State: Future already completed" and ignores it. This occurs when user scans very quickly in succession. Does not affect app functionality.
+            completer.complete(null);
+          } else {
+            completer.completeError(error);
+          }
+        } catch (_) {
+          //
         }
       },
       alertMessage: alertMessage,
@@ -546,7 +629,12 @@ Future<dynamic> scanClosure(
           final result =
               await callback(nfc, sessionId, createFirstKeyChipResponse);
 
-          completer.complete(result);
+          try {
+            completer.complete(result);
+          } catch (e) {
+            //
+          }
+
           stopNfcOniOSAndAndroid(nfcOverlay);
           scanProcess.finish();
           BackendApp.sendAnalyticsTrace(sessionId, '', analyticsType,
@@ -584,7 +672,11 @@ Future<dynamic> scanClosure(
             e,
             stackTrace: stackTrace,
           );
-          completer.complete();
+          try {
+            completer.complete(null);
+          } catch (e) {
+            //
+          }
           rethrow;
         }
       });
@@ -606,4 +698,38 @@ Future<void> stopNfcOniOSAndAndroid(NFCOverlay nfcOverlay) async {
     await Future.delayed(const Duration(seconds: 2));
     NfcManager.instance.stopSession();
   }
+}
+
+Future<void> preventRepeatedNFCScan(
+  Function fun, {
+  Duration delay = const Duration(seconds: 4),
+  bool android = true,
+  bool ios = false,
+}) async {
+  if (android && !Platform.isAndroid) {
+    return fun();
+  }
+
+  if (ios && !Platform.isIOS) {
+    return fun();
+  }
+
+  await NfcManager.instance.startSession(
+      invalidateAfterFirstRead: false,
+      onError: (error) async {
+        talker.info("NFC Error: $error");
+      },
+      onDiscovered: (NfcTag tag) async {
+        talker.info("NFC Tag discovered: $tag");
+      });
+  await Future.delayed(delay);
+
+  final res = await fun();
+
+  if (Platform.isAndroid) {
+    await Future.delayed(const Duration(seconds: 2));
+  }
+  await NfcManager.instance.stopSession();
+
+  return res;
 }

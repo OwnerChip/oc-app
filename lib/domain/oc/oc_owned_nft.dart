@@ -16,7 +16,7 @@ class OcOwnedNft {
   final String tokenId;
 
   final String tokenType;
-  final String name;
+  final String? name;
   final String? description;
   final String tokenUri;
   final OcNftImage image;
@@ -25,8 +25,8 @@ class OcOwnedNft {
     required this.contract,
     required this.tokenId,
     required this.tokenType,
-    required this.name,
-    required this.description,
+    this.name,
+    this.description,
     required this.tokenUri,
     required this.image,
   });

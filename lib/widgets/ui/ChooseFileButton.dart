@@ -9,6 +9,11 @@ import '../../domain/classDefinition.dart';
 import '../../utils/localization.helper.dart';
 import 'CustomRoundedButton.dart';
 
+enum ChooseFileButtonOption {
+  file,
+  gallery,
+}
+
 class ChooseFileButton extends StatelessWidget {
   ChooseFileButton(
       {super.key,
@@ -24,25 +29,31 @@ class ChooseFileButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<int>(
+    return PopupMenuButton<ChooseFileButtonOption>(
       constraints: const BoxConstraints(minWidth: double.infinity),
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
           side: BorderSide(
               color: CustomColors(dotenv.get('APP_ID')).accentColor)),
-      padding: EdgeInsets.all(0),
+      padding: const EdgeInsets.all(0),
       position: PopupMenuPosition.under,
       initialValue: null,
-      onSelected: (int value) {
-        if (value == 0) {
-          openFileExplorerFunction();
-        } else {
-          openGalleryFunction();
+      onSelected: (ChooseFileButtonOption value) {
+        switch (value) {
+          case ChooseFileButtonOption.file:
+            openFileExplorerFunction();
+            break;
+          case ChooseFileButtonOption.gallery:
+            openGalleryFunction();
+            break;
+          default:
+            break;
         }
       },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
-        PopupMenuItem<int>(
-          value: 0,
+      itemBuilder: (BuildContext context) =>
+          <PopupMenuEntry<ChooseFileButtonOption>>[
+        PopupMenuItem<ChooseFileButtonOption>(
+          value: ChooseFileButtonOption.file,
           child: Container(
               alignment: Alignment.center,
               width: double.infinity,
@@ -51,8 +62,8 @@ class ChooseFileButton extends StatelessWidget {
                       color: CustomColors(dotenv.get('APP_ID')).primaryColor))),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<int>(
-          value: 1,
+        PopupMenuItem<ChooseFileButtonOption>(
+          value: ChooseFileButtonOption.gallery,
           child: Container(
               alignment: Alignment.center,
               width: double.infinity,

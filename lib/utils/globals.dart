@@ -3,40 +3,23 @@ import 'package:flutter/material.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class ScaffoldKey {
-  static final GlobalKey<ScaffoldState> _scaffoldKeyFirstScreen =
-      GlobalKey<ScaffoldState>();
-  static final GlobalKey<ScaffoldState> _scaffoldKeySecondScreen =
-      GlobalKey<ScaffoldState>();
-  static final GlobalKey<ScaffoldState> _scaffoldKeyThirdScreen =
-      GlobalKey<ScaffoldState>();
-  static final GlobalKey<ScaffoldState> _scaffoldKeyFourthScreen =
-      GlobalKey<ScaffoldState>();
-  static final GlobalKey<ScaffoldState> _scaffoldKeyFifthScreen =
-      GlobalKey<ScaffoldState>();
-  static final GlobalKey<ScaffoldState> _scaffoldKeySixthScreen =
-      GlobalKey<ScaffoldState>();
-
-  static final GlobalKey<ScaffoldState> _scaffoldKeySeventhScreen =
-      GlobalKey<ScaffoldState>();
+  static final Map<String, GlobalKey<ScaffoldState>> _scaffoldKeys = {
+    'MetadataInputScreen': GlobalKey<ScaffoldState>(),
+    'UserScanResultsScreen': GlobalKey<ScaffoldState>(),
+    'TransferScreen': GlobalKey<ScaffoldState>(),
+    'OfferOnMPScreen': GlobalKey<ScaffoldState>(),
+    'EnterShippingAddressScreen': GlobalKey<ScaffoldState>(),
+    'HomeScreen': GlobalKey<ScaffoldState>(),
+    'NFTDetailsScreen': GlobalKey<ScaffoldState>(),
+    'CreationsPage': GlobalKey<ScaffoldState>(),
+  };
 
   static GlobalKey<ScaffoldState> getScaffoldKey(String screenName) {
-    switch (screenName) {
-      case 'MetadataInputScreen':
-        return _scaffoldKeyFirstScreen;
-      case 'UserScanResultsScreen':
-        return _scaffoldKeySecondScreen;
-      case 'TransferScreen':
-        return _scaffoldKeyThirdScreen;
-      case 'OfferOnMPScreen':
-        return _scaffoldKeyFourthScreen;
-      case 'EnterShippingAddressScreen':
-        return _scaffoldKeyFifthScreen;
-      case 'HomeScreen':
-        return _scaffoldKeySixthScreen;
-      case 'NFTDetailsScreen':
-        return _scaffoldKeySeventhScreen;
-      default:
-        return GlobalKey<ScaffoldState>();
+    if (_scaffoldKeys.containsKey(screenName)) {
+      return _scaffoldKeys[screenName]!;
+    } else {
+      _scaffoldKeys[screenName] = GlobalKey<ScaffoldState>();
+      return _scaffoldKeys[screenName]!;
     }
   }
 }

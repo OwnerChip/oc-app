@@ -7,7 +7,7 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomImage.dart';
-import 'package:web3modal_flutter/web3modal_flutter.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 
 class GalleryItem extends StatelessWidget {
   final OcOwnedNft item;
@@ -45,7 +45,7 @@ class GalleryItem extends StatelessWidget {
           ),
           Flexible(
             child: Text(
-              item.name,
+              item.name ?? "",
               style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                     color: CustomColors(dotenv.get('APP_ID')).accentColor,
                   ),

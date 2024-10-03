@@ -5,7 +5,7 @@ import 'package:web3dart/web3dart.dart';
 
 final polygonMainnet = BlockchainConfig(
     networkName: "Polygon Mainnet",
-    nativeTokenSymbol: "MATIC",
+    nativeTokenSymbol: "POL",
     rpcUrl:
         "https://polygon-mainnet.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_POLYGON']}",
     registryContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",

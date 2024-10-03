@@ -1,53 +1,51 @@
 //import packages
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+//import screens
+import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
+import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
-import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
-import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:sentry/sentry.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-
-//import widgets
-import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-
-//import screens
-import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
+import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import widgets
+import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomHomeScreenButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
+import 'package:reown_appkit/reown_appkit.dart';
+import 'package:sentry/sentry.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
-import 'package:web3modal_flutter/services/w3m_service/models/w3m_session.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -61,7 +59,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   // setup walletconnect client
-  Web3App? wcClient;
+  ReownAppKitModal? wcClient;
   bool shippingPopupIsShown = false;
 
   Future<void>
@@ -105,6 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       final storedWcSession = storage.getString('session');
       final storedWalletType = storage.getString('walletType');
       final storedUserSession = storage.getString('userSession');
+
       //check if a session is stored
       if (storedWalletType != null &&
           ((storedUserSession != null &&
@@ -114,6 +113,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
             UserSession.fromJson(jsonDecode(storedUserSession));
+
+        final me = await BackendAuth.getMe(
+          backendSession.jwt.raw,
+        );
+
+        if (me != null && me.role != backendSession.jwt.role) {
+          //remove session and wallet type from storage
+          storage.remove('session');
+          storage.remove('walletType');
+          storage.remove('userSession');
+          wcService?.disconnect();
+          await BackendAuth.initGuestSession();
+          return;
+        }
 
         if (walletType.type == EWalletType.web3auth) {
           String? privKey;
@@ -134,10 +147,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
+            ref.read(websocketProvider.notifier).init();
           } else {
             if (privKey == null) {}
           }
-        } else if (walletType.type == EWalletType.ownerCard) {
+        } else if (walletType.type == EWalletType.ownerCard ||
+            walletType.type == EWalletType.certificateCard) {
           if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
               backendSession.jwt.raw.isNotEmpty) {
             ref.read(userAddressProvider.notifier).state =
@@ -145,16 +160,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
+            ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
             storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession(ref: ref);
+            await BackendAuth.initGuestSession();
           }
         } else {
-          final wcSession = W3MSession.fromJson(jsonDecode(storedWcSession!));
+          final wcSession = ReownAppKitModalSession.fromMap(jsonDecode(storedWcSession!));
 
           //check if the stored session expires in less than three days; if yes, remove it
           //Note: WalletConnect session duration is 7 days
@@ -166,13 +182,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
+            ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
             storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession(ref: ref);
+            await BackendAuth.initGuestSession();
           }
         }
       } else {
@@ -181,7 +198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('walletType');
         storage.remove('userSession');
         wcService?.disconnect();
-        await BackendAuth.initGuestSession(ref: ref);
+        await BackendAuth.initGuestSession();
       }
 
       if (!shippingPopupIsShown) {
@@ -200,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       storage.remove('session');
       storage.remove('walletType');
       storage.remove('userSession');
-      await BackendAuth.initGuestSession(ref: ref);
+      await BackendAuth.initGuestSession();
     } finally {
       FlutterNativeSplash.remove();
     }
@@ -209,22 +226,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+    super.initState();
 
     //check if persisted session is from previous app version; has to be called before _setProviderStatesFromPersistedState()
     _checkAndRemovePersistedStorageDependingOnPreviousAppVersion();
     //read persisted session
-    _setProviderStatesFromPersistedState();
+    _setProviderStatesFromPersistedState().then((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          provisional: false,
+          sound: true,
+        );
+
+        if (ref.read(appNotifierProvider).appDto == null) {
+          ref.read(appNotifierProvider.notifier).init().then((_) {
+            _checkCreations();
+          });
+        }
+      });
+    });
 
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ref.read(appNotifierProvider).appDto == null) {
-        ref.read(appNotifierProvider.notifier).init();
-      }
+  void _checkCreations() {
+    ref.read(creationsNotifierProvider.notifier).load().then((_) {
+      ref.read(creationsNotifierProvider.notifier).navigateConditionally(
+            context,
+            null,
+          );
     });
+  }
 
-    super.initState();
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> makeAlchemyRefreshMetadata() async {
@@ -237,7 +277,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  //do stuff on app resume
+//do stuff on app resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
@@ -252,7 +292,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> onButtonPress(bool isInitialize) async {
     try {
-
       //check if there is internet connections
       if (!await checkInternetConnection()) {
         throw Exception("No internet connection");
@@ -319,6 +358,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final app = ref.watch(appNotifierProvider);
+    final creations = ref.watch(creationsNotifierProvider);
 
     final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
@@ -348,29 +388,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       appBar: const CustomAppBar(
         showBackButton: false,
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          _buildBody(context, relevantCollections),
-          app.isLoading
-              ? Center(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.2),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: CustomColors(dotenv.get('APP_ID')).primaryColor,
-                      ),
-                    ),
-                  ),
-                )
-              : Container(),
-        ],
+      body: _buildBody(
+        context,
+        relevantCollections,
+        creations,
       ),
     );
   }
 
-  ScreenBodyLayout _buildBody(BuildContext context,
-      AsyncValue<BlockchainCollectionList> relevantCollections) {
+  ScreenBodyLayout _buildBody(
+    BuildContext context,
+    AsyncValue<BlockchainCollectionList> relevantCollections,
+    CreationsData creations,
+  ) {
     return ScreenBodyLayout(
       withScrollView: false,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -417,6 +447,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     loading: () =>
                         SizedBox(height: 40, child: Text(context.loc.loading)),
                     error: (err, stack) => Container()),
+            if (creations.initialized &&
+                (creations.data != null && creations.data!.isNotEmpty)) ...[
+              const SizedBox(height: 20),
+              CustomRoundedButton(
+                width: 250,
+                text: context.loc.nftCreationsHomeScreenButtonTitle,
+                onPressed: () =>
+                    Navigator.pushNamed(context, CreationsPage.routeName),
+              ),
+            ]
           ],
         ),
 

@@ -29,6 +29,10 @@ class JwtToken {
     required this.exp,
   });
 
+  bool canMint() {
+    return ["creator", "admin", "superadmin"].contains(role);
+  }
+
   factory JwtToken.decode(String jwt) {
     try {
       final parts = jwt.split('.');
@@ -44,10 +48,11 @@ class JwtToken {
         ...payloadMap,
       });
     } catch (e, st) {
-      Sentry.captureException(
-        e,
-        stackTrace: st,
-      );
+      Sentry.captureException(e,
+          stackTrace: st,
+          hint: Hint.withMap({
+            'jwt': jwt,
+          }));
       talker.error(e, st);
       rethrow;
     }

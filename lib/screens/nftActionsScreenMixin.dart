@@ -1,37 +1,40 @@
 //import packages
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ownerchip_whitelabel/config/chains.dart';
+import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
+import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creationData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
+import 'package:ownerchip_whitelabel/services/providers/userData.dart';
+import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/rarible.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
-import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
-import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-
 //import widgets
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/config/constants.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/utils/utils.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:reown_appkit/reown_appkit.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     implements ConsumerState<T> {
@@ -42,6 +45,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
   String loadingSvgPath =
       '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/chip_dark_blue.svg';
   String loadingText = '';
+
+  String pageKey = 'NftActionsScreen';
 
   Future<dynamic> fromCancelable(Future<dynamic> future) async {
     cancellableOperation?.cancel();
@@ -56,7 +61,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     });
   }
 
-  Future<void> recoverToken(Web3App? wc, BigInt tokenId,
+  Future<void> recoverToken(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
@@ -102,7 +107,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             signatureData,
             connectedWallet,
             wc!,
-            wcSession,
             walletType!);
       }
 
@@ -112,15 +116,13 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () {
                 return makeAndSendGaslessTx(
                     ref,
-                    ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                        .currentContext!,
+                    context,
                     recoverTokenFunctionSignature,
                     config.chainId,
                     config.collectionId,
                     signatureData,
                     connectedWallet,
                     wc,
-                    wcSession,
                     metaTxAgreementId,
                     walletType!,
                     controllerContractId: controllerContractAddress,
@@ -204,8 +206,14 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> burnToken(Web3App? wc, BigInt tokenId,
-      SignatureData signatureData, EthereumAddress connectedWallet) async {
+  Future<void> burnToken(
+    ReownAppKitModal? wc,
+    BigInt tokenId,
+    SignatureData signatureData,
+    EthereumAddress connectedWallet, {
+    VoidCallback? onSuccess,
+    DigitalTwinMetadata? digitalTwinMetadata,
+  }) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
@@ -238,6 +246,13 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
                 ref.read(chipInfoProvider).tokenId)
           });
 
+      if (digitalTwinMetadata != null &&
+          digitalTwinMetadata.status !=
+              DigitalTwinCreationMetadataStatus.toBeBurned) {
+        await BackendCreation.prepareBurnDigitalTwin(
+            id: digitalTwinMetadata.id);
+      }
+
       final List response = await BackendMetaTx.checkMetaTx(
           config.collectionId, burnFunctionSignature);
       final bool canUseGasStation = response[0];
@@ -245,8 +260,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       String txnHash = "";
 
-      Future<void> normalNx() async {
-        txnHash = await makeAndSendNormalTx(
+      Future<String> normalNx() async {
+        return await makeAndSendNormalTx(
             context,
             ref,
             burnFunctionSignature,
@@ -255,25 +270,27 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             signatureData,
             connectedWallet,
             wc!,
-            wcSession,
             walletType!);
       }
 
       try {
         if (canUseGasStation) {
-          txnHash = await makeAndSendGaslessTx(
-              ref,
-              ScaffoldKey.getScaffoldKey('NFTDetailsScreen').currentContext!,
-              burnFunctionSignature,
-              config.chainId,
-              config.collectionId,
-              signatureData,
-              connectedWallet,
-              wc,
-              wcSession,
-              metaTxAgreementId,
-              walletType!,
-              toggleLoading: toggleLoading);
+          txnHash = await callFunctionWithFallback(
+              function: () => makeAndSendGaslessTx(
+                  ref,
+                  context,
+                  burnFunctionSignature,
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  metaTxAgreementId,
+                  walletType!,
+                  toggleLoading: toggleLoading),
+              fallback: normalNx,
+              predicate: gaslessTransactionFallbackPredicate);
+          ;
         } else {
           if (wc == null) {
             throw 'Please connect with MetaMask or similar wallet.';
@@ -291,6 +308,15 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
+        if (digitalTwinMetadata != null) {
+          await BackendCreation.markDigitalTwinAsBurned(
+            id: digitalTwinMetadata.id,
+          );
+        }
+
+        ref.refresh(digitalTwinAttachmentsProvider);
+        ref.refresh(digitalTwinCreationMetadataProvider);
+
         //this means burn succeeded
         setState(() {
           isRotating = false;
@@ -311,6 +337,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
         await Future.delayed(const Duration(seconds: 2));
 
+        onSuccess?.call();
+
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else {
         throw Exception(context.loc.burnedError);
@@ -319,12 +347,19 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       setState(() {
         isLoading = false;
       });
+
+      // if (digitalTwinMetadata != null) {
+      //   await BackendCreation.cancelBurnDigitalTwin(
+      //     id: digitalTwinMetadata.id,
+      //   );
+      // }
+
       // send Error to analytics
       burnProcess.throwable = e;
       burnProcess.status = const SpanStatus.aborted();
       burnProcess.finish();
       BackendApp.sendAnalyticsTrace(sessionId, "", "BURN_ERROR", tags: {
-        'error': e,
+        'error': e.toString(),
         'connectedWallet': connectedWallet.hex,
         'chipWallet':
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId)
@@ -338,7 +373,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> cancelOffer(Web3App? wc, BigInt tokenId,
+  Future<void> cancelOffer(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
@@ -394,7 +429,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             signatureData,
             connectedWallet,
             wc!,
-            wcSession,
             walletType!,
             encodedOfferData: cancelTxCalldata);
       }
@@ -405,15 +439,13 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             function: () {
               return makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                      .currentContext!,
+                  context,
                   cancelMarketplaceOfferSignature,
                   config.chainId,
                   config.collectionId,
                   signatureData,
                   connectedWallet,
                   wc,
-                  wcSession,
                   metaTxAgreementId,
                   walletType!,
                   controllerContractId: controllerContractAddress,
@@ -504,7 +536,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> claimToken(Web3App? wc, BigInt tokenId,
+  Future<void> claimToken(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final wcSession = ref.watch(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
@@ -544,7 +576,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             signatureData,
             connectedWallet,
             wc!,
-            wcSession,
             walletType!);
       }
 
@@ -554,15 +585,13 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               function: () {
                 return makeAndSendGaslessTx(
                     ref,
-                    ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                        .currentContext!,
+                    context,
                     transferFromFunctionSignature,
                     config.chainId,
                     config.collectionId,
                     signatureData,
                     connectedWallet,
                     wc,
-                    wcSession,
                     metaTxAgreementId,
                     walletType!,
                     tokenId: tokenId,
@@ -647,7 +676,180 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> redeemTwinToken(Web3App? wc, BigInt tokenId,
+  Future<void> approveToken(
+    ReownAppKitModal? wc,
+    BigInt tokenId,
+    EthereumAddress to,
+    SignatureData signatureData,
+    EthereumAddress connectedWallet,
+    String sessionId, {
+    DigitalTwinMetadata? digitalTwinMetadata,
+  }) async {
+    final wcSession = ref.read(wcSessionProvider);
+    final TokenChainAndCollection config =
+        await ref.watch(findTokenProvider(tokenId).future);
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final isOwnerCard = userSession?.isOwnerCard;
+    final transferProcess = Sentry.startTransaction('initApprove()', 'task');
+    try {
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.transferInProgress;
+      });
+
+      BackendApp.sendAnalyticsTrace(sessionId, "", "APPROVE_STARTED", tags: {
+        'connectedWallet': connectedWallet.hex,
+        'chipWallet':
+            convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
+        'to': to.toString(),
+      });
+
+      final List response = await BackendMetaTx.checkMetaTx(
+          config.collectionId, transferFromFunctionSignature);
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      if (digitalTwinMetadata != null &&
+          digitalTwinMetadata.status !=
+              DigitalTwinCreationMetadataStatus.toBeTransferred) {
+        await BackendCreation.prepareTransferDigitalTwin(
+          id: digitalTwinMetadata.id,
+        );
+      }
+
+      String txnHash = "";
+      Future<String> normalTx() async {
+        return await makeAndSendNormalTx(
+            context,
+            ref,
+            approveFunctionSignature,
+            config.chainId,
+            config.collectionId,
+            signatureData,
+            connectedWallet,
+            wc!,
+            ref.read(walletTypeProvider)!,
+            tokenId: tokenId,
+            toAccount: to);
+      }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await callFunctionWithFallback(
+              function: () {
+                return makeAndSendGaslessTx(
+                  ref,
+                  context,
+                  approveFunctionSignature,
+                  // APPROVE
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  metaTxAgreementId,
+                  ref.read(walletTypeProvider)!,
+                  toAccount: to,
+                  tokenId: tokenId,
+                  enableRecovery: isOwnerCard,
+                  toggleLoading: toggleLoading,
+                );
+              },
+              fallback: normalTx,
+              predicate: gaslessTransactionFallbackPredicate);
+        } else {
+          if (wc == null) {
+            throw 'Please connect with MetaMask or similar wallet.';
+          }
+
+          txnHash = await normalTx();
+        }
+      } catch (e, st) {
+        Sentry.captureException(e, stackTrace: st);
+        talker.error(e, st);
+      }
+
+      talker.info('Transaction hash: $txnHash');
+
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
+      if (txnReceipt?.status == true) {
+        //this means transfer succeeded
+        setState(() {
+          isRotating = false;
+          loadingSvgPath = "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/mint.svg";
+          loadingText = context.loc.transferSuccess;
+        });
+
+        if (digitalTwinMetadata != null) {
+          await BackendCreation.markDigitalTwinAsTransferred(
+            id: digitalTwinMetadata.id,
+            recipient: to.hex,
+          );
+        }
+
+        ref.refresh(digitalTwinAttachmentsProvider);
+        ref.refresh(digitalTwinCreationMetadataProvider);
+
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+          //refresh provider state to update nft owner & approval for next screen
+          await ref.refresh(nftOwnerProvider.future);
+          await ref.refresh(nftApprovalProvider.future);
+        } catch (e) {
+          print(e);
+          Sentry.captureException(e);
+        }
+
+        setState(() {
+          isLoading = false;
+        });
+
+        //check if previous route is user scan result screen
+        Navigator.pop(navigatorKey.currentContext!);
+
+        // send status to analytics
+        transferProcess.finish();
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "APPROVE_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'chipWallet': convertTokenIdToEthereumAddress(
+                  ref.read(chipInfoProvider).tokenId),
+              'to': to.toString(),
+            });
+      } else {
+        throw Exception(context.loc.transferError);
+      }
+    } catch (e, s) {
+      setState(() {
+        isLoading = false;
+      });
+      // if (digitalTwinMetadata != null) {
+      //   await BackendCreation.cancelTransferDigitalTwin(
+      //     id: digitalTwinMetadata.id,
+      //   );
+      // }
+      // send Error to analytics
+      transferProcess.throwable = e;
+      transferProcess.status = const SpanStatus.aborted();
+      transferProcess.finish();
+      BackendApp.sendAnalyticsTrace(sessionId, e.toString(), "APPROVE_ERROR",
+          tags: {
+            'connectedWallet': connectedWallet.hex,
+            'chipWallet': convertTokenIdToEthereumAddress(
+                ref.read(chipInfoProvider).tokenId),
+            'to': to.toString(),
+          });
+      await Sentry.captureException(e, stackTrace: s);
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
+            context.loc.transferError, 'error'),
+      );
+      print("Error: $e");
+    }
+  }
+
+  Future<void> redeemTwinToken(ReownAppKitModal? wc, BigInt tokenId,
       SignatureData signatureData, EthereumAddress connectedWallet) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
@@ -690,7 +892,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             signatureData,
             connectedWallet,
             wc!,
-            wcSession,
             walletType!,
             offerHash: offerHash);
       }
@@ -701,15 +902,13 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             function: () {
               return makeAndSendGaslessTx(
                   ref,
-                  ScaffoldKey.getScaffoldKey('UserScanResultsScreen')
-                      .currentContext!,
+                  context,
                   redeemItemFunctionSignature,
                   config.chainId,
                   config.collectionId,
                   signatureData,
                   connectedWallet,
                   wc,
-                  wcSession,
                   metaTxAgreementId,
                   walletType!,
                   controllerContractId: controllerContractAddress,
@@ -786,6 +985,169 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorRedeemingToken, 'error'),
       );
+    }
+  }
+
+  Future<void> createToken(
+    String sessionId,
+    ReownAppKitModal? wc,
+    SignatureData signatureData,
+    DigitalTwinMetadata metadata,
+  ) async {
+    setState(() {
+      isLoading = true;
+      loadingText = context.loc.uploadingMetadata;
+    });
+
+    final UserSession userSession = ref.read(userSessionProvider)!;
+    final wcSession = ref.read(wcSessionProvider);
+    final walletType = ref.read(walletTypeProvider);
+
+    final mintProcess = Sentry.startTransaction('initMinting()', 'task');
+
+    EthereumAddress connectedWallet = ref.read(userAddressProvider);
+
+    try {
+      //check if user is allowed to use gas station
+      final List response = await BackendMetaTx.checkMetaTx(
+        EthereumAddress.fromHex(metadata.collectionId),
+        mintFunctionSignature,
+      );
+      final bool canUseGasStation = response[0];
+      final metaTxAgreementId = response[1];
+
+      // switch to minting loading overlay
+      setState(() {
+        isLoading = true;
+        loadingText = context.loc.mintingToken;
+      });
+
+      BackendApp.sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
+        'connectedWallet': connectedWallet.hex,
+        'gasStation': canUseGasStation
+      });
+
+      String txnHash = "";
+
+      int chainId = 137;
+
+      // Future<String> normalTx() async {
+      //   return await makeAndSendNormalTx(
+      //       context,
+      //       ref,
+      //       mintVoucherFunctionSignature,
+      //       chainId,
+      //       EthereumAddress.fromHex(metadata.collection.voucherAddress),
+      //       signatureData,
+      //       connectedWallet,
+      //       wc!,
+      //       walletType!,
+      //       twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+      //       voucherTokenMetadataCID: metadata.voucherTokenMetadataCID);
+      // }
+
+      try {
+        if (canUseGasStation) {
+          txnHash = await makeAndSendGaslessTx(
+              ref,
+              context,
+              mintVoucherFunctionSignature,
+              chainId,
+              EthereumAddress.fromHex(metadata.collection.voucherAddress),
+              signatureData,
+              connectedWallet,
+              wc,
+              metaTxAgreementId,
+              walletType!,
+              twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+              voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
+              toggleLoading: toggleLoading);
+        } else {
+          throw Exception("Can't use gas station");
+
+        }
+      } catch (e, st) {
+        talker.error('Error minting token: $e', st);
+        Sentry.captureException(e, stackTrace: st);
+        throw Exception("Can't mint token with gas station at the moment");
+      }
+
+      //wait until TX is succeeded or failed
+      var txnReceipt =
+          await getTxnReceipt(getRPCUrlFromChainId(chainId), txnHash);
+
+      //if transaction is mined, then navigate to NFTDetailsScreen
+      if (txnReceipt?.status == true) {
+        mintProcess.finish();
+        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS",
+            tags: {
+              'connectedWallet': connectedWallet.hex,
+              'gasStation': canUseGasStation
+            });
+
+        try {
+          await Future.delayed(const Duration(seconds: 2));
+          //refresh providers so offer for sale button is shown correctly on NFT Details
+          ChipInfoModel chipInfo = ref.read(chipInfoProvider);
+          await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+
+          await BackendCreation.markDigitalTwinAsMinted(
+              id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex);
+          ref.refresh(digitalTwinAttachmentsProvider);
+          ref.refresh(digitalTwinCreationMetadataProvider);
+
+          ref.read(creationsNotifierProvider.notifier).load();
+
+
+        } catch (e, st) {
+          Sentry.captureException(
+            e,
+            stackTrace: st,
+          );
+          talker.error(
+            'Error refreshing providers: $e',
+            st,
+          );
+        }
+
+        if (mounted) {
+          isLoading = false;
+          setState(() {});
+        }
+
+
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          OfferForSaleCreatedTokenScreen.routeName,
+          (route) => route.isFirst,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(context.loc.successHeadingSnackbar,
+              context.loc.mintSuccess, 'success'),
+        );
+      } else {
+        throw Exception('Transaction failed');
+      }
+    } catch (e, s) {
+      // Send message mint error to analytics/ownerchip & Sentry
+      BackendApp.sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
+          tags: {'connectedWallet': connectedWallet.hex});
+      mintProcess.throwable = e;
+      mintProcess.status = const SpanStatus.aborted();
+      mintProcess.finish();
+      await Sentry.captureException(
+        e,
+        stackTrace: s,
+      );
+      talker.error('Error minting token: $e', s);
+      ScaffoldMessenger.of(context).showSnackBar(
+        returnSnackBarWidget(
+            context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
+      );
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 }

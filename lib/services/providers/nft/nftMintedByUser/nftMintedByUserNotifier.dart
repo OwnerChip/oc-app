@@ -30,6 +30,11 @@ class OCNFTsMintedByUserNotifier extends Notifier<OCNFTsMintedByUserData>
     final UserSession? userSession = ref.read(userSessionProvider);
     final EthereumAddress? walletAddress = userSession?.userWalletAddress;
 
+    if (walletAddress == null) {
+      talker.error('User wallet address is null');
+      return [];
+    }
+
     final BlockchainCollectionList ocCollections = await ref.read(
         isOwnerChipApp()
             ? allCollectionsProvider.future

@@ -9,9 +9,11 @@ part of 'cardInitPayload.dart';
 CardInitPayload _$CardInitPayloadFromJson(Map<String, dynamic> json) =>
     CardInitPayload(
       id: json['id'] as String,
+      isCertificateCard: json['isCertificateCard'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$CardInitPayloadToJson(CardInitPayload instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'isCertificateCard': instance.isCertificateCard,
     };

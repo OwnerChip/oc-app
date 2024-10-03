@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/utils/secora.commands.dart';
 import 'package:test/test.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:ownerchip_whitelabel/services/secora.services.dart';
 
 void main() {
   dotenv.load(fileName: ".env");
@@ -167,7 +167,7 @@ void main() {
       int customerId = 100;
 
       // act
-      String id = generateOwnerCardIdentifier(
+      String id = generateCardIdentifier(
           customerId, dotenv.get('OWNERCARD_BASE_ID'));
 
       // assert
@@ -181,7 +181,7 @@ void main() {
       int customerId = 103;
 
       // act
-      String id = generateOwnerCardIdentifier(
+      String id = generateCardIdentifier(
           customerId, dotenv.get('OWNERCARD_BASE_ID'));
 
       // assert
@@ -194,7 +194,7 @@ void main() {
       int customerId = 299;
 
       // act
-      String id = generateOwnerCardIdentifier(
+      String id = generateCardIdentifier(
           customerId, dotenv.get('OWNERCARD_BASE_ID'));
 
       // assert
