@@ -7,9 +7,11 @@ import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
+import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/DisplayLongStringWithCopy.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -37,6 +39,8 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionProvider);
+    final accountDeletionRequest = ref.watch(accountDeletionRequestProvider);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const CustomAppBar(
@@ -116,6 +120,134 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                         width: 250))
                 : Container(),
             const SizedBox(height: 60),
+            if (session != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CustomOutlinedButton(
+                  buttonText: context.loc.accountDeletionButton,
+                  onPressed: () => {
+                    if (accountDeletionRequest.response == null)
+                      {
+                        showCustomPopup(
+                          context,
+                          context.loc.accountDeletionPopupTitle,
+                          Column(
+                            children: [
+                              Text(
+                                context.loc.accountDeletionPopupMessage,
+                              ),
+                              const SizedBox(
+                                height: 24,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  CustomRoundedButton(
+                                    text: context
+                                        .loc.accountDeletionPopupCancelButton,
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    width: 100,
+                                  ),
+                                  CustomRoundedButton(
+                                    text: context
+                                        .loc.accountDeletionPopupDeleteButton,
+                                    onPressed: () {
+                                      ref
+                                          .read(accountDeletionRequestProvider
+                                              .notifier)
+                                          .deleteAccount();
+                                      Navigator.of(context).pop();
+
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        returnSnackBarWidget(
+                                          context.loc
+                                              .accountDeletionSentNotificationTitle,
+                                          context.loc
+                                              .accountDeletionSentNotificationMessage,
+                                          'success',
+                                        ),
+                                      );
+                                    },
+                                    width: 100,
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.error,
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        )
+                      }
+                    else
+                      {
+                        showCustomPopup(
+                          context,
+                          context.loc.accountDeletionInProgressPopupTitle,
+                          Column(
+                            children: [
+                              Text(
+                                context
+                                    .loc.accountDeletionInProgressPopupMessage,
+                              ),
+                              const SizedBox(
+                                height: 24,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  CustomRoundedButton(
+                                    text: context.loc
+                                        .accountDeletionInProgressPopupOkButton,
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    width: 100,
+                                  ),
+                                  CustomRoundedButton(
+                                    text: context.loc
+                                        .accountDeletionInProgressPopupCancelButton,
+                                    onPressed: () {
+                                      ref
+                                          .read(accountDeletionRequestProvider
+                                              .notifier)
+                                          .cancelAccountDeletion();
+                                      Navigator.of(context).pop();
+
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        returnSnackBarWidget(
+                                          context.loc
+                                              .accountDeletionCanceledNotificationTitle,
+                                          context.loc
+                                              .accountDeletionCanceledNotificationMessage,
+                                          'success',
+                                        ),
+                                      );
+                                    },
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.error,
+                                    width: 100,
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        )
+                      }
+                  },
+                  width: 250,
+                  disabled: accountDeletionRequest.loading ||
+                      !accountDeletionRequest.initialized,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
             ...MoreInfoButtons(
               dotenv.get('APP_ID'),
               context.loc,

@@ -9,6 +9,8 @@ class CustomOutlinedButton extends StatelessWidget {
   final String buttonText;
   final Color? color;
 
+  final bool disabled;
+
   // Use default values for width and height if not provided
   const CustomOutlinedButton({
     super.key,
@@ -17,6 +19,7 @@ class CustomOutlinedButton extends StatelessWidget {
     required this.onPressed,
     required this.buttonText,
     this.color,
+    this.disabled = false,
   });
 
   @override
@@ -24,24 +27,28 @@ class CustomOutlinedButton extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18.0),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: disabled ? 0.5 : 1,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18.0),
+            ),
+            side: BorderSide(
+                width: 2,
+                color: color != null
+                    ? color!
+                    : CustomColors(dotenv.get('APP_ID')).primaryColor),
           ),
-          side: BorderSide(
-              width: 2,
-              color: color != null
-                  ? color!
-                  : CustomColors(dotenv.get('APP_ID')).primaryColor),
-        ),
-        onPressed: onPressed,
-        child: Text(
-          buttonText,
-          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-              color: color != null
-                  ? color!
-                  : CustomColors(dotenv.get('APP_ID')).primaryColor),
+          onPressed: disabled ? null : onPressed,
+          child: Text(
+            buttonText,
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: color != null
+                    ? color!
+                    : CustomColors(dotenv.get('APP_ID')).primaryColor),
+          ),
         ),
       ),
     );
