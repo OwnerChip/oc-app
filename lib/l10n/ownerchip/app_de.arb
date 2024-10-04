@@ -492,7 +492,20 @@
     "loginWithEmail_Hint": "E-Mail",
     "loginWithEmail_okButton": "Ok",
     "loginWithEmail_cancelButton": "Abbrechen",
-    "loginWithEmail_ValidationError": "Bitte geben Sie eine gültige E-Mail-Adresse ein"
+    "loginWithEmail_ValidationError": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
 
-
+    "@_ACCOUNT_DELETION": {},
+    "accountDeletionButton": "Profil löschen",
+    "accountDeletionPopupTitle": "Profil löschen",
+    "accountDeletionPopupMessage": "Sind Sie sicher, dass Sie Ihr Profil löschen möchten? Dies kann bis zu 10 Werktage dauern. Sie erhalten eine E-Mail-Bestätigung, sobald der Vorgang abgeschlossen ist. Alle Ihre Daten werden gelöscht, und Sie können sie nicht wiederherstellen.",
+    "accountDeletionPopupCancelButton": "Abbrechen",
+    "accountDeletionPopupDeleteButton": "Löschen",
+    "accountDeletionSentNotificationTitle": "Profillöschung",
+    "accountDeletionSentNotificationMessage": "Profillöschung in Bearbeitung. Sie erhalten eine E-Mail-Bestätigung, sobald der Vorgang abgeschlossen ist.",
+    "accountDeletionInProgressPopupTitle": "Profillöschung",
+    "accountDeletionInProgressPopupMessage": "Die Löschung ihres Profils ist in Bearbeitung. Sie erhalten eine E-Mail-Bestätigung, sobald der Vorgang abgeschlossen ist.",
+    "accountDeletionInProgressPopupOkButton": "OK",
+    "accountDeletionInProgressPopupCancelButton": "Abbrechen",
+    "accountDeletionCanceledNotificationTitle": "Profillöschung",
+    "accountDeletionCanceledNotificationMessage": "Löschen abgebrochen."
 }
