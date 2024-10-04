@@ -510,5 +510,8 @@
   "accountDeletionInProgressPopupOkButton": "Ok",
   "accountDeletionInProgressPopupCancelButton": "Cancel",
   "accountDeletionCanceledNotificationTitle": "Account Deletion",
-  "accountDeletionCanceledNotificationMessage": "Account deletion canceled."
+  "accountDeletionCanceledNotificationMessage": "Account deletion canceled.",
+
+  "@_TRANSFER": {},
+  "transferToOwnerCardMessage": "Hold your phone close to the OwnerCard"
 }
