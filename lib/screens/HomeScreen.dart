@@ -85,7 +85,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           initWcClient(ref, context),
           setupWeb3Auth(),
         ],
-        eagerError: true,
       );
     } catch (e, s) {
       await Sentry.captureException(
