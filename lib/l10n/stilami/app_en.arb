@@ -517,5 +517,8 @@
   "accountDeletionCanceledNotificationMessage": "Account deletion canceled.",
 
   "@_TRANSFER": {},
-  "transferToOwnerCardMessage": "Hold your phone close to the OwnerCard"
+  "transferToOwnerCardMessage": "Hold your phone close to the OwnerCard",
+
+  "@_ADMIN_INIT": {},
+  "errorSendingCardInitToBackend": "Error sending card init to backend"
 }

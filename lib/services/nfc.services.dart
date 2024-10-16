@@ -539,6 +539,7 @@ Future<dynamic> importKeyToSlotZero(
   String customerId, {
   required String cardBaseId,
   bool isCertificateCard = false,
+  required String ocInternalPassword,
 }) async {
   String identifier = generateCardIdentifier(
     int.parse(customerId),
@@ -554,11 +555,16 @@ Future<dynamic> importKeyToSlotZero(
       await writeKeyToSlotZero(nfc, seed);
       pubKeyZero = await getPubKeyN(nfc, 0x00);
     }
-    BackendCustomer.sendCardInitToBackend(
+    final res = await BackendCustomer.sendCardInitToBackend(
       customerId,
       createFirstKeyChipResponse[0],
       isCertificateCard,
+      ocInternalPassword,
     );
+
+    if (!res) {
+      throw context.loc.errorSendingCardInitToBackend;
+    }
 
     EthereumAddress cardWalletAddress =
         OwnercardData.fromPubKeyZeros(pubKeyZero);

@@ -20,8 +20,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/credentials.dart';
 
-
-
 class AdminInitCard extends ConsumerStatefulWidget {
   const AdminInitCard({Key? key}) : super(key: key);
 
@@ -36,8 +34,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
   EthereumAddress? chipAddress0;
   List<EthereumAddress> allChipAddresses = [];
   String customerId = '';
-
-
+  String ocInternalPassword = '';
 
   void setChipAddressZero(EthereumAddress chipAddress0) {
     setState(() {
@@ -69,50 +66,93 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
           //text input field for the customer id
           Form(
             key: _formKey,
-            child: TextFormField(
-              style: Theme.of(context).textTheme.bodyMedium,
-              cursorColor:
-                  CustomColors(dotenv.get('APP_ID').toString()).accentColor,
-              decoration: InputDecoration(
-                labelText: 'Customer ID',
-                labelStyle: Theme.of(context).textTheme.bodyMedium,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                      color: CustomColors(dotenv.get('APP_ID').toString())
-                          .primaryColor,
-                      width: 2.0), // normal border color
+            child: Column(
+              children: [
+                TextFormField(
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  cursorColor:
+                      CustomColors(dotenv.get('APP_ID').toString()).accentColor,
+                  decoration: InputDecoration(
+                    labelText: 'Customer ID',
+                    labelStyle: Theme.of(context).textTheme.bodyMedium,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // normal border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // focused border color
+                    ),
+                  ),
+                  keyboardType: TextInputType.text,
+                  obscureText: false,
+                  onChanged: (value) {
+                    setState(() {
+                      customerId = value;
+                    });
+                  },
+                  validator: (value) {
+                    //check if value can be converted to integer
+                    try {
+                      int.parse(value!);
+                    } catch (e) {
+                      return 'Customer ID must be integer';
+                    }
+                    if (int.parse(value) < 100) {
+                      return 'Customer ID cannot be smaller than 100';
+                    }
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a customer id';
+                    }
+                    return null;
+                  },
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                      color: CustomColors(dotenv.get('APP_ID').toString())
-                          .primaryColor,
-                      width: 2.0), // focused border color
+                const SizedBox(
+                  height: 24,
                 ),
-              ),
-              keyboardType: TextInputType.text,
-              obscureText: false,
-              onChanged: (value) {
-                setState(() {
-                  customerId = value;
-                });
-              },
-              validator: (value) {
-                //check if value can be converted to integer
-                try {
-                  int.parse(value!);
-                } catch (e) {
-                  return 'Customer ID must be integer';
-                }
-                if (int.parse(value) < 100) {
-                  return 'Customer ID cannot be smaller than 100';
-                }
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a customer id';
-                }
-                return null;
-              },
+                TextFormField(
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  cursorColor:
+                      CustomColors(dotenv.get('APP_ID').toString()).accentColor,
+                  decoration: InputDecoration(
+                    labelText: 'OC Internal password',
+                    labelStyle: Theme.of(context).textTheme.bodyMedium,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // normal border color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                          color: CustomColors(dotenv.get('APP_ID').toString())
+                              .primaryColor,
+                          width: 2.0), // focused border color
+                    ),
+                  ),
+                  keyboardType: TextInputType.text,
+                  obscureText: false,
+                  onChanged: (value) {
+                    setState(() {
+                      ocInternalPassword = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the OC internal password';
+                    }
+                    return null;
+                  },
+                )
+              ],
             ),
           ),
 
@@ -130,6 +170,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                   setChipAddressZero,
                   customerId,
                   cardBaseId: dotenv.get('OWNERCARD_BASE_ID'),
+                  ocInternalPassword: ocInternalPassword,
                   isCertificateCard: false,
                 );
               }
@@ -150,6 +191,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                   customerId,
                   cardBaseId: dotenv.get('CERTIFICATE_CARD_BASE_ID'),
                   isCertificateCard: true,
+                  ocInternalPassword: ocInternalPassword,
                 );
               }
             },
