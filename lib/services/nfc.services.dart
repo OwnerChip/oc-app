@@ -445,7 +445,7 @@ Future<dynamic> getFirstChipWalletAddressForTransfer(
   }
 
   return await scanClosure(context, ref, callback, "GET_CHIP_ADDR_FOR_TRANSFER",
-      context.loc.holdPhoneToCard);
+      context.loc.transferToOwnerCardMessage);
 }
 
 Future<dynamic> getAllChipWalletAddresses(

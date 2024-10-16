@@ -12,6 +12,7 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
+
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/eip155.dart';
@@ -22,6 +23,7 @@ import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
+
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -674,7 +676,8 @@ Future<String> getGaslessTxHash(request, collectionId) async {
   return hash;
 }
 
-Future<ReownAppKitModal> initWcClient(WidgetRef ref, BuildContext context) async {
+Future<ReownAppKitModal> initWcClient(
+    WidgetRef ref, BuildContext context) async {
   //create Web3Modal service and set provider
   final ReownAppKitModal w3mService = ReownAppKitModal(
     context: context,

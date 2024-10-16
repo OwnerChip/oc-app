@@ -16,6 +16,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwe
 import 'package:ownerchip_whitelabel/services/backend/auth/responses/getMeResponse.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
+import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -27,6 +28,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
+
+import 'responses/userAccountDeletionRequestResponse.dart';
 
 abstract class BackendAuth extends Backend {
   static int nowPlusThreeHours() =>
@@ -150,7 +153,6 @@ abstract class BackendAuth extends Backend {
     });
   }
 
-
   /// save a userSession of a OwnerCard or CertificateCard
   static Future<void> saveUserSession(
     String sessionId,
@@ -200,6 +202,8 @@ abstract class BackendAuth extends Backend {
         : EWalletType.ownerCard];
     ref.read(creationsNotifierProvider.notifier).load();
     ref.read(websocketProvider.notifier).init();
+    ref.read(accountDeletionRequestProvider.notifier).refresh();
+
     //persist session date
     final SharedPreferences storage = await SharedPreferences.getInstance();
     storage.setString(
@@ -274,10 +278,9 @@ abstract class BackendAuth extends Backend {
   }
 
   static Future<GetMeResponse?> getMe(String jwt) async {
-    return BackendAuthService.instance.getMe(
-      authorization: "Bearer $jwt"
-
-    ).catchError((e) {
+    return BackendAuthService.instance
+        .getMe(authorization: "Bearer $jwt")
+        .catchError((e) {
       Sentry.captureException(
         e,
       );
@@ -287,5 +290,54 @@ abstract class BackendAuth extends Backend {
 
       return null;
     });
+  }
+
+  static Future<UserAccountDeletionRequestResponse?>
+      getDeletionRequest() async {
+    return BackendAuthService.instance.getDeletionRequest().catchError((e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+
+      return null;
+    });
+  }
+
+  static Future<UserAccountDeletionRequestResponse?>
+      createDeletionRequest() async {
+    return BackendAuthService.instance.createDeletionRequest().catchError((e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+
+      return null;
+    });
+  }
+
+  static Future<bool> cancelDeletionRequest() async {
+    bool success = true;
+    final res = await BackendAuthService.instance
+        .cancelDeletionRequest()
+        .catchError((e) {
+      Sentry.captureException(
+        e,
+      );
+      talker.error(
+        e,
+      );
+      success = false;
+    });
+
+    if (res.response.statusCode != 200) {
+      success = false;
+    }
+
+    return success;
   }
 }

@@ -6,6 +6,8 @@ import "package:ownerchip_whitelabel/services/backend/auth/responses/getMeRespon
 import "package:ownerchip_whitelabel/services/backend/backend.services.dart";
 import "package:retrofit/retrofit.dart";
 
+import "responses/userAccountDeletionRequestResponse.dart";
+
 part "backendAuthService.g.dart";
 
 @RestApi()
@@ -53,4 +55,13 @@ abstract class BackendAuthService {
   Future<GetMeResponse?> getMe({
     @Header("Authorization") required String authorization,
   });
+
+  @GET("/deletionRequest")
+  Future<UserAccountDeletionRequestResponse?> getDeletionRequest();
+
+  @POST("/deletionRequest")
+  Future<UserAccountDeletionRequestResponse?> createDeletionRequest();
+
+  @DELETE("/deletionRequest")
+  Future<HttpResponse> cancelDeletionRequest();
 }

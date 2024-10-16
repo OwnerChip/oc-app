@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/payloads/updateWeb3AuthDataPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
+import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
@@ -228,6 +229,7 @@ Future<void> onTapAuth(
   ref.read(userSessionProvider.notifier).state = userSession;
   ref.read(websocketProvider.notifier).init();
   ref.read(creationsNotifierProvider.notifier).load();
+  ref.read(accountDeletionRequestProvider.notifier).refresh();
 
   //persist session date
   final SharedPreferences storage = await SharedPreferences.getInstance();
