@@ -9,30 +9,34 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:web3dart/web3dart.dart';
 
 abstract class BackendCustomer extends Backend {
-  static Future<void> sendCardInitToBackend(
+  static Future<bool> sendCardInitToBackend(
     String customerId,
     EthereumAddress chipAddress,
     bool isCertificateCard,
+    String ocInternalPassword,
   ) async {
     final service = isCertificateCard
         ? BackendCustomerService.instance
         : BackendCustomerService.instanceProd;
 
     try {
-      await service.sendCardInitToBackend(
+      final res = await service.sendCardInitToBackend(
         customerId: customerId,
         appId: dotenv.get('BITRISEIO_PACKAGE_NAME'),
         payload: CardInitPayload(
           id: chipAddress.hex,
           isCertificateCard: isCertificateCard,
+          ocInternalPassword: ocInternalPassword,
         ),
       );
+      return (res.response.statusCode ?? 500) <= 201;
     } catch (e, s) {
       Sentry.captureException(
         e,
         stackTrace: s,
       );
       talker.error(e, s);
+      return false;
     }
   }
 

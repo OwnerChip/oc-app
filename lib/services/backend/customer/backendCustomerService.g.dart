@@ -19,7 +19,7 @@ class _BackendCustomerService implements BackendCustomerService {
   String? baseUrl;
 
   @override
-  Future<void> sendCardInitToBackend({
+  Future<HttpResponse<dynamic>> sendCardInitToBackend({
     required String customerId,
     required String appId,
     required CardInitPayload payload,
@@ -33,22 +33,26 @@ class _BackendCustomerService implements BackendCustomerService {
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(payload.toJson());
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _result =
+        await _dio.fetch(_setStreamType<HttpResponse<dynamic>>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
-        .compose(
-          _dio.options,
-          '/${customerId}/ownercard',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        ))));
+            .compose(
+              _dio.options,
+              '/${customerId}/ownercard',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = _result.data;
+    final httpResponse = HttpResponse(value, _result);
+    return httpResponse;
   }
 
   @override

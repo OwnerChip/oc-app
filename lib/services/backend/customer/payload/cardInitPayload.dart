@@ -12,8 +12,11 @@ class CardInitPayload {
   final String id;
   final bool isCertificateCard;
 
+  final String ocInternalPassword;
+
   const CardInitPayload({
     required this.id,
     this.isCertificateCard = false,
+    required this.ocInternalPassword,
   });
 }
