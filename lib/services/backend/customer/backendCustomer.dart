@@ -15,9 +15,7 @@ abstract class BackendCustomer extends Backend {
     bool isCertificateCard,
     String ocInternalPassword,
   ) async {
-    final service = isCertificateCard
-        ? BackendCustomerService.instance
-        : BackendCustomerService.instanceProd;
+    final service = BackendCustomerService.instanceProd;
 
     try {
       final res = await service.sendCardInitToBackend(
