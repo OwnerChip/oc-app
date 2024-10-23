@@ -119,7 +119,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         final me = await BackendAuth.getMe(
           backendSession.jwt.raw,
-        );
+        ).timeout(const Duration(
+          seconds: 8,
+        ));
 
         if (walletType.type == EWalletType.certificateCard ||
             (me != null && me.role != backendSession.jwt.role)) {
@@ -128,7 +130,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           storage.remove('walletType');
           storage.remove('userSession');
           wcService?.disconnect();
-          await BackendAuth.initGuestSession();
+          await BackendAuth.initGuestSession().timeout(const Duration(
+            seconds: 8,
+          ));
           return;
         }
 
@@ -170,7 +174,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession();
+            await BackendAuth.initGuestSession().timeout(const Duration(
+              seconds: 8,
+            ));
           }
         } else {
           final wcSession =
@@ -193,7 +199,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession();
+            await BackendAuth.initGuestSession().timeout(const Duration(
+              seconds: 8,
+            ));
           }
         }
       } else {
@@ -202,7 +210,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('walletType');
         storage.remove('userSession');
         wcService?.disconnect();
-        await BackendAuth.initGuestSession();
+        await BackendAuth.initGuestSession().timeout(const Duration(
+          seconds: 8,
+        ));
       }
 
       if (!shippingPopupIsShown) {
@@ -221,7 +231,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       storage.remove('session');
       storage.remove('walletType');
       storage.remove('userSession');
-      await BackendAuth.initGuestSession();
+      await BackendAuth.initGuestSession().timeout(const Duration(
+        seconds: 8,
+      ));
     } finally {
       FlutterNativeSplash.remove();
     }
