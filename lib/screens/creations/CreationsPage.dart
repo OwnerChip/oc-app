@@ -294,7 +294,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     final res = await scanItem(
       ref,
       context,
-      navigateToResultPage: false,
+      navigateToResultPage: true,
+      navigateToTokenDoesNotExistPage: false,
+      navigateToTokenExistsPage: true,
+      returnOnTokenExists: true,
     );
 
     if (res == null) {
