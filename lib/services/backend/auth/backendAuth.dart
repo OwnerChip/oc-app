@@ -63,7 +63,7 @@ abstract class BackendAuth extends Backend {
         '${iso8601.substring(0, indexOfDot + 4)}Z';
 
     final domain = dotenv.get('BITRISEIO_PACKAGE_NAME');
-    final uri = "${dotenv.get("APP_ID")}://sign-in";
+    final uri = "${domain}://sign-in";
 
     final message =
         "$domain wants you to sign in with your Ethereum account:\n${address.hexEip55}\n\n$statement\n\nURI: $uri\nVersion: $version\nChain ID: $chainId\nNonce: $nonce\nIssued At: $iso8601WithoutMicroseconds";

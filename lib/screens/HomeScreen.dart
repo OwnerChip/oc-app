@@ -11,6 +11,7 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+
 //import screens
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
@@ -20,6 +21,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
+
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
@@ -32,8 +34,10 @@ import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -169,7 +173,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             await BackendAuth.initGuestSession();
           }
         } else {
-          final wcSession = ReownAppKitModalSession.fromMap(jsonDecode(storedWcSession!));
+          final wcSession =
+              ReownAppKitModalSession.fromMap(jsonDecode(storedWcSession!));
 
           //check if the stored session expires in less than three days; if yes, remove it
           //Note: WalletConnect session duration is 7 days
@@ -406,6 +411,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       flexSides: 0,
       padding: const EdgeInsets.only(top: 0, bottom: 15),
       children: [
+        dotenv.get('APP_ID') == 'ownerchip_infineon'
+            ? Column(children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Image.asset(
+                      'assets/images/ownerchip_infineon/infineon_logo.png',
+                      height: 40,
+                    )
+                  ],
+                ),
+              ])
+            : Container(),
         dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
             ? const Text(
                 'INTERNAL',
