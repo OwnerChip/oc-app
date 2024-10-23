@@ -11,6 +11,7 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+
 //import screens
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
@@ -20,6 +21,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
+
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
@@ -32,8 +34,10 @@ import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -115,7 +119,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         final me = await BackendAuth.getMe(
           backendSession.jwt.raw,
-        );
+        ).timeout(const Duration(
+          seconds: 8,
+        ));
 
         if (walletType.type == EWalletType.certificateCard ||
             (me != null && me.role != backendSession.jwt.role)) {
@@ -124,7 +130,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           storage.remove('walletType');
           storage.remove('userSession');
           wcService?.disconnect();
-          await BackendAuth.initGuestSession();
+          await BackendAuth.initGuestSession().timeout(const Duration(
+            seconds: 8,
+          ));
           return;
         }
 
@@ -166,10 +174,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession();
+            await BackendAuth.initGuestSession().timeout(const Duration(
+              seconds: 8,
+            ));
           }
         } else {
-          final wcSession = ReownAppKitModalSession.fromMap(jsonDecode(storedWcSession!));
+          final wcSession =
+              ReownAppKitModalSession.fromMap(jsonDecode(storedWcSession!));
 
           //check if the stored session expires in less than three days; if yes, remove it
           //Note: WalletConnect session duration is 7 days
@@ -188,7 +199,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             storage.remove('walletType');
             storage.remove('userSession');
             wcService?.disconnect();
-            await BackendAuth.initGuestSession();
+            await BackendAuth.initGuestSession().timeout(const Duration(
+              seconds: 8,
+            ));
           }
         }
       } else {
@@ -197,7 +210,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         storage.remove('walletType');
         storage.remove('userSession');
         wcService?.disconnect();
-        await BackendAuth.initGuestSession();
+        await BackendAuth.initGuestSession().timeout(const Duration(
+          seconds: 8,
+        ));
       }
 
       if (!shippingPopupIsShown) {
@@ -216,7 +231,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       storage.remove('session');
       storage.remove('walletType');
       storage.remove('userSession');
-      await BackendAuth.initGuestSession();
+      await BackendAuth.initGuestSession().timeout(const Duration(
+        seconds: 8,
+      ));
     } finally {
       FlutterNativeSplash.remove();
     }
