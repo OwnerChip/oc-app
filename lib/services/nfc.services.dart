@@ -164,6 +164,10 @@ Future<dynamic> scanItem(
   WidgetRef ref,
   BuildContext context, {
   bool navigateToResultPage = true,
+  bool navigateToTokenDoesNotExistPage = true,
+  bool returnOnTokenDoesNotExist = false,
+  bool navigateToTokenExistsPage = true,
+  bool returnOnTokenExists = false,
 }) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
@@ -224,26 +228,38 @@ Future<dynamic> scanItem(
       if (navigateToResultPage) {
         //TOKEN DOES NOT EXIST
         if (config.collectionId == zeroAddress) {
-          BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
-              tags: {"chipWallet": chipWalletAddress});
+          if (navigateToTokenDoesNotExistPage) {
+            BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+                tags: {"chipWallet": chipWalletAddress});
 
-          Navigator.pushNamed(
-            context,
-            UserScanResultsScreen.routeName,
-          );
+            Navigator.pushNamed(
+              context,
+              UserScanResultsScreen.routeName,
+            );
+          }
+
+          if (returnOnTokenDoesNotExist) {
+            return;
+          }
         } else {
           //TOKEN EXISTS
-          await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
-              signature, sessionId, chipWalletAddress, context);
+          if(navigateToTokenExistsPage) {
+            await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+                signature, sessionId, chipWalletAddress, context);
 
-          Navigator.pushNamed(
-            context,
-            UserScanResultsScreen.routeName,
-          ).then((_) {
-            if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
-              restoreDeferredUserSession(ref);
-            }
-          });
+            Navigator.pushNamed(
+              context,
+              UserScanResultsScreen.routeName,
+            ).then((_) {
+              if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
+                restoreDeferredUserSession(ref);
+              }
+            });
+          }
+
+          if(returnOnTokenExists) {
+            return;
+          }
         }
       } else {
         if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
