@@ -118,8 +118,10 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                 ),
                 TextFormField(
                   style: Theme.of(context).textTheme.bodyMedium,
+                  autocorrect: true,
                   cursorColor:
                       CustomColors(dotenv.get('APP_ID').toString()).accentColor,
+                  obscuringCharacter: '*',
                   decoration: InputDecoration(
                     labelText: 'OC Internal password',
                     labelStyle: Theme.of(context).textTheme.bodyMedium,
@@ -139,7 +141,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                     ),
                   ),
                   keyboardType: TextInputType.text,
-                  obscureText: false,
+                  obscureText: true,
                   onChanged: (value) {
                     setState(() {
                       ocInternalPassword = value;
