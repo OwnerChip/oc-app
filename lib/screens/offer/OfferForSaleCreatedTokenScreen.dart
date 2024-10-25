@@ -65,9 +65,7 @@ class OfferForSaleCreatedTokenScreen extends StatelessWidget {
                 CustomRoundedButton(
                   text: context.loc.offerForSaleCreatedTokenButton,
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed(
-                      OfferOnMPScreen.routeName,
-                    );
+                    navigateToOfferOnMPScreen(context);
                   },
                 ),
                 const SizedBox(

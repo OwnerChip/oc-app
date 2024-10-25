@@ -418,6 +418,8 @@
 
 
     "@_OFFER_ON_MP": {},
+    "offerOnMpDiscoverDialogTitle:": "Auf Marktplatz anbieten",
+    "offerOnMpDiscoveryDialogMessage": "Die Funktion “Augf Marktplatz anbieten” ist nicht verfügbar in der app “OwnerChip Discovery”, welche nur für Demozwecke der Infineon NFC chips gedacht ist, aber nicht zum Handeln von Gütern.Verwenden Sie die app “OwnerChip” und registrieren sie sich als Zertifizierer im Menü “Mehr…",
     "offerOnMpEmailHint": "Deine Email Adresse wird verwendet, um dich über den Status des Angebots zu informieren.",
     "offerOnMpPriceHint": "5% Protokollgebühr + Marktplatzgebühr wird vom Verkaufspreis abgezogen. EUR Wert variiert mit Wechselkurs.",
     "offerOnMpEstimatedPriceInEur": "Geschätzter EUR Wert ~{price}",
