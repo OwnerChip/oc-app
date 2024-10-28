@@ -18,6 +18,7 @@ import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
@@ -204,7 +205,8 @@ abstract class BackendAuth extends Backend {
     ref.read(creationsNotifierProvider.notifier).load();
     ref.read(websocketProvider.notifier).init();
     ref.read(accountDeletionRequestProvider.notifier).refresh();
-
+    ref.refresh(ocNFTsForOwnerProvider);
+    ref.refresh(ocNFTsMintedByUserNotifierProvider);
 
     // persist session date if not a certificate card
     if(!isCertificateCard) {
