@@ -289,8 +289,9 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
   Future<bool> _scanItem(
     BuildContext context,
     CreationsData creations,
-    DigitalTwinMetadata metadata,
-  ) async {
+    DigitalTwinMetadata metadata, {
+    VoidCallback? onTokenExist,
+  }) async {
     final res = await scanItem(
       ref,
       context,
@@ -298,6 +299,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       navigateToTokenDoesNotExistPage: false,
       navigateToTokenExistsPage: true,
       returnOnTokenExists: true,
+      onTokenExists: onTokenExist,
     );
 
     if (res == null) {
@@ -349,7 +351,23 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     CreationsData creations,
     DigitalTwinMetadata metadata,
   ) async {
-    if (await _scanItem(context, creations, metadata)) {
+    if (await _scanItem(
+      context,
+      creations,
+      metadata,
+      onTokenExist: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          returnSnackBarWidget(
+            context.loc.warning,
+            context.loc.nftCreationsAlreadyMintedToken,
+            "warning",
+            duration: const Duration(
+              seconds: 6,
+            ),
+          ),
+        );
+      },
+    )) {
       final userSession = ref.read(userSessionProvider)!;
       final wc = ref.read(w3mServiceProvider);
 

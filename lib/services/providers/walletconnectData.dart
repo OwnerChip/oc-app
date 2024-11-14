@@ -10,10 +10,6 @@ final w3mServiceProvider = StateProvider<ReownAppKitModal?>((ref) {
   return null;
 });
 
-//wallet connect 2 client provider
-final wcProvider = StateProvider<IReownAppKit?>((ref) {
-  return null;
-});
 
 final walletTypeProvider = StateProvider<WalletType?>((ref) {
   return null;

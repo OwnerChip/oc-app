@@ -75,7 +75,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if ((storedAppVersion == null) ||
         (storedAppVersion != dotenv.get('VERSION_NUMBER'))) {
       //remove session and wallet type from storage
-      storage.remove('session');
       storage.remove('walletType');
       storage.remove('userSession');
     }
@@ -103,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     try {
       final wcService = ref.read(w3mServiceProvider);
 
-      final storedWcSession = storage.getString('session');
+      ReownAppKitModalSession? storedWcSession = wcService?.session;
       final storedWalletType = storage.getString('walletType');
       final storedUserSession = storage.getString('userSession');
 
@@ -126,13 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         if (walletType.type == EWalletType.certificateCard ||
             (me != null && me.role != backendSession.jwt.role)) {
           //remove session and wallet type from storage
-          storage.remove('session');
-          storage.remove('walletType');
-          storage.remove('userSession');
-          wcService?.disconnect();
-          await BackendAuth.initGuestSession().timeout(const Duration(
-            seconds: 8,
-          ));
+          await _clearSession(storage, wcService);
           return;
         }
 
@@ -170,49 +163,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
-            storage.remove('session');
-            storage.remove('walletType');
-            storage.remove('userSession');
-            wcService?.disconnect();
-            await BackendAuth.initGuestSession().timeout(const Duration(
-              seconds: 8,
-            ));
+            await _clearSession(storage, wcService);
           }
         } else {
-          final wcSession =
-              ReownAppKitModalSession.fromMap(jsonDecode(storedWcSession!));
-
           //check if the stored session expires in less than three days; if yes, remove it
           //Note: WalletConnect session duration is 7 days
 
-          if ((wcSession.expiry ?? 0) > BackendAuth.nowPlusThreeHours() &&
+          if ((storedWcSession?.expiry ?? 0) >
+                  BackendAuth.nowPlusThreeHours() &&
               backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
               backendSession.jwt.raw.isNotEmpty) {
-            ref.read(wcSessionProvider.notifier).state = wcSession;
+            ref.read(wcSessionProvider.notifier).state = storedWcSession;
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
             ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
-            storage.remove('session');
-            storage.remove('walletType');
-            storage.remove('userSession');
-            wcService?.disconnect();
-            await BackendAuth.initGuestSession().timeout(const Duration(
-              seconds: 8,
-            ));
+            await _clearSession(storage, wcService);
           }
         }
       } else {
         //remove session and wallet type from storage
-        storage.remove('session');
-        storage.remove('walletType');
-        storage.remove('userSession');
-        wcService?.disconnect();
-        await BackendAuth.initGuestSession().timeout(const Duration(
-          seconds: 8,
-        ));
+        await _clearSession(storage, wcService);
       }
 
       if (!shippingPopupIsShown) {
@@ -228,15 +201,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       );
       talker.error(
           "Error initializing persisted state: $e \n proceeding with guest session.");
-      storage.remove('session');
-      storage.remove('walletType');
-      storage.remove('userSession');
-      await BackendAuth.initGuestSession().timeout(const Duration(
-        seconds: 8,
-      ));
+      await _clearSession(storage, ref.read(w3mServiceProvider));
     } finally {
       FlutterNativeSplash.remove();
     }
+  }
+
+  Future<void> _clearSession(
+      SharedPreferences storage, ReownAppKitModal? wcService) async {
+    storage.remove('walletType');
+    storage.remove('userSession');
+    wcService?.disconnect();
+    await BackendAuth.initGuestSession().timeout(const Duration(
+      seconds: 8,
+    ));
   }
 
   @override
@@ -376,7 +354,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final app = ref.watch(appNotifierProvider);
     final creations = ref.watch(creationsNotifierProvider);
 
-    final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
 

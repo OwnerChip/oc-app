@@ -37,7 +37,9 @@ dependencies:
   pinput: ^3.0.0
   control_style: ^0.1.0
   country_picker: ^2.0.23
-  reown_appkit: ^1.0.1
+#  reown_appkit:
+#    path: ../reown_flutter/packages/reown_appkit
+  reown_appkit: ^1.2.0-beta01
   web3auth_flutter: ^4.0.0
   info_popup: ^4.3.1
   video_player: ^2.8.6
@@ -71,6 +73,8 @@ dev_dependencies:
   riverpod_generator: ^2.3.9
   retrofit_generator: ^8.1.0
 
+dependency_overrides:
+  package_info_plus: ^7.0.0
 
 flutter_icons:
   android: "launcher_icon"

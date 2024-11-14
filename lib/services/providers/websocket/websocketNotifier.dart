@@ -128,7 +128,6 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             final storage = await SharedPreferences.getInstance();
 
             //remove session and wallet type from storage
-            storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
             ref.read(w3mServiceProvider)?.disconnect();

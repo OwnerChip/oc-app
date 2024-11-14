@@ -352,8 +352,8 @@ SPEC CHECKSUMS:
   video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
   Web3Auth: 98ec9787e52e813c7ee83f73fa10ba5f52187907
   web3auth_flutter: 96419124086e0083994e390b0c7cc86e441c3006
-  webview_flutter_wkwebview: be0f0d33777f1bfd0c9fdcb594786704dbf65f36
+  webview_flutter_wkwebview: 2a23822e9039b7b1bc52e5add778e5d89ad488d1
 
 PODFILE CHECKSUM: 775997f741c536251164e3eacf6e34abf2eb7a17
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

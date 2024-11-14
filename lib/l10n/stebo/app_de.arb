@@ -473,6 +473,7 @@
     "nftCreationsNotLoggedInTitle": "Wallet",
     "nftCreationsNotLoggedInDescription": "Bitte melden Sie sich mit dem Wallet an, mit dem Sie den Digitalen Zwilling erstellt haben.",
     "nftCreationsNotLoggedInButton": "Schließen",
+    "nftCreationsAlreadyMintedToken": "Der gescannte Chip ist bereits mit einem anderen digitalen Zwilling initialisiert",
 
     "@_CERTIFICATE_CARD": {},
     "certificateCardLoginSuccess": "Erfolgreich mit der Zertifikatskarte verbunden.",

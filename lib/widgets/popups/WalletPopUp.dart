@@ -253,9 +253,6 @@ Future<void> _loginWithWeb3Auth(
 
     //store session and wallet type
     final storage = SharedPreferences.getInstance();
-    if (e.sessionId != null) {
-      storage.then((value) => value.setString('session', e.sessionId!));
-    }
     storage.then((value) => value.setString('walletType',
         jsonEncode(walletConfig[EWalletType.web3auth]!.toJson())));
 

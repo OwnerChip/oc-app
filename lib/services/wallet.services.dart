@@ -706,18 +706,9 @@ Future<ReownAppKitModal> initWcClient(
   w3mService.onSessionExpireEvent.subscribe(wrapOnSessionExpire(ref));
 
   await w3mService.init();
+
   ref.read(w3mServiceProvider.notifier).state = w3mService;
-  ref.read(wcProvider.notifier).state = w3mService.appKit! ;
-
-  //set walletconnect client provider
-
-  // Register event handlers
-  final events = EIP155.events.values.toList();
-  // for (int chainId in chainConfig.keys) {
-  //   for (final event in events) {
-  //     wcClient.registerEventHandler(chainId: 'eip155:$chainId', event: event);
-  //   }
-  // }
+  ref.read(wcSessionProvider.notifier).state = w3mService.session;
 
   return w3mService;
 }
@@ -725,19 +716,20 @@ Future<ReownAppKitModal> initWcClient(
 void Function(ModalConnect?) wrapOnSessionConnect(
     WidgetRef ref, BuildContext context) {
   return (ModalConnect? args) {
-    IReownAppKit? wc = ref.read(wcProvider);
-
     //set session and wallet type provider
     ref.read(wcSessionProvider.notifier).state = args?.session;
     ref.read(walletTypeProvider.notifier).state =
         walletConfig[EWalletType.walletConnect];
 
     //store session and wallet type
-    final storage = SharedPreferences.getInstance();
-    final session = jsonEncode(args?.session.toMap());
-    storage.then((value) => value.setString('session', session));
-    storage.then((value) => value.setString('walletType',
-        jsonEncode(walletConfig[EWalletType.walletConnect]!.toJson())));
+    SharedPreferences.getInstance().then((value) {
+      value.setString(
+        'walletType',
+        jsonEncode(
+          walletConfig[EWalletType.walletConnect]!.toJson(),
+        ),
+      );
+    });
   };
 }
 
@@ -768,8 +760,8 @@ void Function(SessionEvent?) wrapOnSessionEvent(WidgetRef ref) {
 
 void onSessionDisconnect(ModalDisconnect? args, WidgetRef ref) {
   //remove session and wallet type
+  print("OnSessionDisconnect");
   final storage = SharedPreferences.getInstance();
-  storage.then((value) => value.remove('session'));
   storage.then((value) => value.remove('walletType'));
   storage.then((value) => value.remove('userSession'));
 

@@ -474,6 +474,7 @@
     "nftCreationsNotLoggedInTitle": "Wallet",
     "nftCreationsNotLoggedInDescription": "Please log in with the wallet you used to create the Digital Twin.",
     "nftCreationsNotLoggedInButton": "Close",
+    "nftCreationsAlreadyMintedToken": "The chip you scanned is already activated with another digital twin",
 
 
 
