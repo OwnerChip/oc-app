@@ -173,28 +173,7 @@ Future<void> onTapAuth(
 
     signature = hexSignatureToRSV(hexSignature);
   } catch (e, st) {
-    String message =
-        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
-
-    String hexSignature = await sendPersonalSignRequest(
-      ref,
-      message,
-      userWalletAddress,
-      walletType,
-    );
-
-    signature = hexSignatureToRSV(hexSignature);
-
-    int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-
-    token = JwtToken(
-      raw: "",
-      walletAddress: userWalletAddress.hex,
-      sessionId: sessionId,
-      role: "user",
-      iat: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      exp: BackendAuth.nowPlusThreeHours(),
-    );
+    throw Exception(context.loc.errorConnectingWallet);
   }
 
   Backend.recreateServices(token.raw);
