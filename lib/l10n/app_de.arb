@@ -489,6 +489,9 @@
     "scanQRCode": "QR-Code scannen",
     "noConnection": "Keine Verbindung",
     "invalidQRCode": "Ungültiger QR-Code",
+    "reconnectWebSocketButtonText": "Neu versuchen",
+    "reconnectWebSocketErrorText": "Fehler beim Verbinden mit dem Server",
+    "reconnectWebSocketSuccessText": "Verbindung wiederhergestellt",
 
 
     "@_LOGIN_WITH_EMAIL": {},

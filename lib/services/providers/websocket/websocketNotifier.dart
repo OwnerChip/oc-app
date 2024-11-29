@@ -50,19 +50,20 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
     }
   }
 
-  Future<void> init() async {
+  Future<bool> init() async {
+    final connectionCompleter = Completer<bool>();
     try {
       final session = ref.read(userSessionProvider);
       talker.info("WebsocketNotifier.init");
 
       if (session == null) {
-        return;
+        talker.error("WebsocketNotifier.init: no session");
+        return false;
       }
 
-      state.socket?.close();
+      state.socket?.dispose();
 
       // wait for socket to disconnect
-      await Future.delayed(const Duration(seconds: 1));
       while (!(state.socket?.disconnected ?? true)) {
         await Future.delayed(const Duration(seconds: 1));
       }
@@ -93,6 +94,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       onConnect(_) {
         state = state.copyWith(connected: true);
         talker.info("WebsocketNotifier.init: connected to $url");
+        connectionCompleter.complete(true);
       }
 
       state.socket?.onConnect(onConnect);
@@ -100,6 +102,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       onConnectError(data) {
         talker
             .error("WebsocketNotifier.init: error connecting to $url \n $data");
+        connectionCompleter.complete(false);
       }
 
       state.socket?.onConnectError(onConnectError);
@@ -154,6 +157,9 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         state.socket?.off('connecting');
         state.socket?.off('disconnect');
         state.socket?.offAny();
+
+        // reconnect
+        init();
       }
 
       state.socket?.onDisconnect(onDisconnect);
@@ -164,20 +170,21 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         (_) {
           _emit(
             WebsocketPingRequest(),
-          );
-        },
+          );        },
       );
 
       state.socket?.connect();
     } catch (e, s) {
       talker.error(e, s);
     }
+
+    return connectionCompleter.future;
   }
 
   void disconnect() {
     if (state.socket != null) {
       state.socket?.disconnect();
-      state = state.copyWith(socket: null, connected: false);
+      state = WebsocketData.initial();
     }
   }
 }

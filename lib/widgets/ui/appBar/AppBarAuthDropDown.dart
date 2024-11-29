@@ -18,6 +18,7 @@ import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomSnackBarContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
@@ -211,10 +212,36 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     if (!socket.connected) {
       messenger.showSnackBar(
         returnSnackBarWidget(
-          context.loc.errorHeadingSnackBar,
-          context.loc.noConnection,
-          'error',
-        ),
+            context.loc.errorHeadingSnackBar, context.loc.noConnection, 'error',
+            duration: const Duration(
+              seconds: 5,
+            ), actionBuilder: (
+          BuildContext context,
+          WidgetRef ref,
+          VoidCallback dismiss,
+        ) {
+          return InkWell(
+            onTap: () {
+              ref.read(websocketProvider.notifier).init().then((res) {
+                messenger.showSnackBar(
+                  returnSnackBarWidget(
+                    res
+                        ? context.loc.successHeadingSnackbar
+                        : context.loc.errorHeadingSnackBar,
+                    res
+                        ? context.loc.reconnectWebSocketSuccessText
+                        : context.loc.reconnectWebSocketErrorText,
+                    res ? "success" : 'error',
+                  ),
+                );
+              });
+              dismiss();
+            },
+            child: Text(
+              context.loc.reconnectWebSocketButtonText,
+            ),
+          );
+        }),
       );
       return;
     }
@@ -292,16 +319,14 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       color: CustomColors(dotenv.get('APP_ID')).boxDecorationColor,
     );
   }
-
-
 }
 
 Future<void> disconnectWallet(
-    WidgetRef ref,
-    BuildContext context,
-  ) async {
-    final wc = ref.read(w3mServiceProvider);
-    ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
+  WidgetRef ref,
+  BuildContext context,
+) async {
+  final wc = ref.read(w3mServiceProvider);
+  ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
 
   final session = ref.read(userSessionProvider);
   final FCMToken? fcmToken = session?.fcmToken;
@@ -327,9 +352,10 @@ Future<void> disconnectWallet(
     talker.error('Error logging out of web3auth', e);
   }
 
-    if (wc != null && wcSession != null) {
-      await wc.disconnect(); //WC disconnect event is triggered and riverpod state is deleted in listener
-    }
+  if (wc != null && wcSession != null) {
+    await wc
+        .disconnect(); //WC disconnect event is triggered and riverpod state is deleted in listener
+  }
 
   final terminated = await BackendAuth.terminateSession();
 

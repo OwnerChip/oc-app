@@ -494,7 +494,9 @@
   "scanQRCode": "Scan QR code",
   "noConnection": "No connection",
   "invalidQRCode": "Invalid QR code",
-
+  "reconnectWebSocketButtonText": "Reconnect",
+  "reconnectWebSocketErrorText": "Error reconnecting",
+  "reconnectWebSocketSuccessText": "Reconnected",
 
   "@_LOGIN_WITH_EMAIL": {},
   "loginWithEmail_EnterEmailText": "Please enter your email address",
