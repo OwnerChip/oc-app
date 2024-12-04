@@ -111,6 +111,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ((storedUserSession != null &&
                   UserSession.fromJson(jsonDecode(storedUserSession))
                       .isOwnerCard) ||
+              (storedUserSession != null &&
+                  WalletType.fromJson(jsonDecode(storedWalletType)).type ==
+                      EWalletType.web3auth) ||
               (storedWcSession != null && storedUserSession != null))) {
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
