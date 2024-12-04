@@ -39,8 +39,16 @@ bool isOwnerChipApp() {
   return dotenv.get('BITRISEIO_PACKAGE_NAME').contains("com.ownerchip");
 }
 
+bool isInternalApp() {
+  return dotenv.get('IS_INTERNAL') == 'true';
+}
+
 String getCertificateUrl(String chipAddress) {
   return "https://certificate.ownerchip.com/$chipAddress";
+}
+
+String getEnvCertificateUrl(String chipAddress) {
+  return "https://${isInternalApp() ? "test" : "certificate"}.ownerchip.com/$chipAddress";
 }
 
 String getCustomerId() {

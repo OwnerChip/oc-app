@@ -541,7 +541,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                               child: CustomRoundedButton(
                                 onPressed: () {
                                   launchUrl(
-                                    Uri.parse(getCertificateUrl(
+                                    Uri.parse(getEnvCertificateUrl(
                                         chipInfo.chipEthereumAddress.hex)),
                                   );
                                 },

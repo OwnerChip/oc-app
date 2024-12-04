@@ -92,7 +92,7 @@ class CreatorDataBoxContent extends StatelessWidget {
             height: 28,
             buttonText: context.loc.scanResultPageShowCertificateButton,
             onPressed: () {
-              launchUrl(Uri.parse(getCertificateUrl(chipAddress)));
+              launchUrl(Uri.parse(getEnvCertificateUrl(chipAddress)));
             })
       ],
     );
