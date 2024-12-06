@@ -1208,18 +1208,20 @@ packages:
   reown_appkit:
     dependency: "direct main"
     description:
-      name: reown_appkit
-      sha256: c075d61f94a18f37aa7f75a19c0feaa7708d2fee847c5747088b8deba71dab3a
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
+      path: "packages/reown_appkit"
+      ref: "fix/session_persistence"
+      resolved-ref: "62ef2df61802bc2498502bed2b6fce278666e30d"
+      url: "https://github.com/AndriiVivcharenko/reown_flutter"
+    source: git
+    version: "1.1.0-beta03"
   reown_core:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: reown_core
-      sha256: e21ad9ca211ecd5221f027a76f978105eaf2335edb0687ddcebda1da53417d20
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/reown_core"
+      ref: "fix/session_persistence"
+      resolved-ref: "62ef2df61802bc2498502bed2b6fce278666e30d"
+      url: "https://github.com/AndriiVivcharenko/reown_flutter"
+    source: git
     version: "1.0.4"
   reown_sign:
     dependency: transitive
