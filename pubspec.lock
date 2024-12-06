@@ -1209,10 +1209,10 @@ packages:
     dependency: "direct main"
     description:
       name: reown_appkit
-      sha256: "0cbdfab2c85a000154dbcab82c8826cfb64db26f116eaf2623d122bb3407f873"
+      sha256: c075d61f94a18f37aa7f75a19c0feaa7708d2fee847c5747088b8deba71dab3a
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0-beta01"
+    version: "1.2.0"
   reown_core:
     dependency: transitive
     description:
