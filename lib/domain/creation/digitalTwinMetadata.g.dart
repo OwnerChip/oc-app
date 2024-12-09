@@ -14,7 +14,6 @@ DigitalTwinMetadata _$DigitalTwinMetadataFromJson(Map<String, dynamic> json) =>
           OCCollection.fromJson(json['collection'] as Map<String, dynamic>),
       creatorId: json['creatorId'] as String,
       twinTokenMetadataCID: json['twinTokenMetadataCID'] as String?,
-      voucherTokenMetadataCID: json['voucherTokenMetadataCID'] as String?,
       imageCID: json['imageCID'] as String?,
       imageLink: json['imageLink'] as String?,
       traits: (json['traits'] as List<dynamic>)
@@ -39,7 +38,6 @@ Map<String, dynamic> _$DigitalTwinMetadataToJson(
       'creatorId': instance.creatorId,
       'imageCID': instance.imageCID,
       'twinTokenMetadataCID': instance.twinTokenMetadataCID,
-      'voucherTokenMetadataCID': instance.voucherTokenMetadataCID,
       'traits': instance.traits.map((e) => e.toJson()).toList(),
       'title': instance.title,
       'description': instance.description,

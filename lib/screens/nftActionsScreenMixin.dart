@@ -3,6 +3,7 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/ownercard.dart';
@@ -37,6 +38,8 @@ import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+
+import '../services/ipfs.services.dart';
 
 mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     implements ConsumerState<T> {
@@ -101,18 +104,17 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       Future<String> normalTx() async {
         return await makeAndSendNormalTx(
-            context,
-            ref,
-            recoverTokenFunctionSignature,
-            config.chainId,
-            controllerContractAddress,
-            signatureData,
-            connectedWallet,
-            wc!,
-            walletType!,
+          context,
+          ref,
+          recoverTokenFunctionSignature,
+          config.chainId,
+          controllerContractAddress,
+          signatureData,
+          connectedWallet,
+          wc!,
+          walletType!,
           getCardSignature: (hash) async {
-            final List<MsgSignature?> chipSignatures =
-            await getChipSignatures(
+            final List<MsgSignature?> chipSignatures = await getChipSignatures(
               ref,
               context,
               [hash],
@@ -129,20 +131,21 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           txnHash = await callFunctionWithFallback(
               function: () {
                 return makeAndSendGaslessTx(
-                    ref,
-                    context,
-                    recoverTokenFunctionSignature,
-                    config.chainId,
-                    config.collectionId,
-                    signatureData,
-                    connectedWallet,
-                    wc,
-                    metaTxAgreementId,
-                    walletType!,
-                    controllerContractId: controllerContractAddress,
-                    toggleLoading: toggleLoading,
+                  ref,
+                  context,
+                  recoverTokenFunctionSignature,
+                  config.chainId,
+                  config.collectionId,
+                  signatureData,
+                  connectedWallet,
+                  wc,
+                  metaTxAgreementId,
+                  walletType!,
+                  controllerContractId: controllerContractAddress,
+                  toggleLoading: toggleLoading,
                   getCardSignature: (hash) async {
-                    final List<MsgSignature?> chipSignatures = await getChipSignatures(
+                    final List<MsgSignature?> chipSignatures =
+                        await getChipSignatures(
                       ref,
                       context,
                       [hash],
@@ -1122,11 +1125,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     SignatureData signatureData,
     DigitalTwinMetadata metadata,
   ) async {
-    setState(() {
-      isLoading = true;
-      loadingText = context.loc.uploadingMetadata;
-    });
-
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
     final walletType = ref.read(walletTypeProvider);
@@ -1134,6 +1132,31 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     final mintProcess = Sentry.startTransaction('initMinting()', 'task');
 
     EthereumAddress connectedWallet = ref.read(userAddressProvider);
+
+    final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
+    BackendApp.sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
+        tags: {'connectedWallet': connectedWallet.hex});
+
+    final chipInfo = ref.read(chipInfoProvider);
+
+    final Map<String, dynamic> metadataIPFS =
+        await downloadMetadataFromIPFS(metadata.twinTokenMetadataCID!);
+
+    /////////// VOUCHER METADATA ///////////
+
+    Map<String, dynamic> voucherMetadata = {...metadataIPFS};
+
+    XFile jsonFileVoucher = await generateVoucherMetadataFile(
+        voucherMetadata, chipInfo.tokenId, context);
+    String voucherTokenMetadataCID =
+        await uploadFileToIPFS(jsonFileVoucher, 'application/json');
+
+    ipfsProcess.finish();
+
+    setState(() {
+      isLoading = true;
+      loadingText = context.loc.uploadingMetadata;
+    });
 
     try {
       final chipInfo = ref.read(chipInfoProvider);
@@ -1207,11 +1230,11 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             metaTxAgreementId,
             walletType!,
             twinTokenMetadataCID: metadata.twinTokenMetadataCID,
-            voucherTokenMetadataCID: metadata.voucherTokenMetadataCID,
+            voucherTokenMetadataCID: voucherTokenMetadataCID,
             toggleLoading: toggleLoading,
             getCardSignature: (hash) async {
               final List<MsgSignature?> chipSignatures =
-              await getChipSignatures(
+                  await getChipSignatures(
                 ref,
                 context,
                 [hash],

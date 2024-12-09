@@ -20,7 +20,6 @@ class DigitalTwinMetadata {
 
   final String? imageCID;
   final String? twinTokenMetadataCID;
-  final String? voucherTokenMetadataCID;
   final List<DigitalTwinTrait> traits;
   final String title;
   final String description;
@@ -40,7 +39,6 @@ class DigitalTwinMetadata {
     required this.collection,
     required this.creatorId,
     required this.twinTokenMetadataCID,
-    required this.voucherTokenMetadataCID,
     required this.imageCID,
     required this.imageLink,
     required this.traits,
