@@ -3,6 +3,7 @@ import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/payloads/offerItemPayload.dart';
 import 'package:retrofit/dio.dart';
 import 'package:retrofit/http.dart';
+import 'package:retrofit/retrofit.dart';
 
 part 'backendOfferService.g.dart';
 

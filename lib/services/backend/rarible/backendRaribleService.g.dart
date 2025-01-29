@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'backendFcmService.dart';
+part of 'backendRaribleService.dart';
 
 // **************************************************************************
 // RetrofitGenerator
@@ -8,8 +8,8 @@ part of 'backendFcmService.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations
 
-class _BackendFcmService implements BackendFcmService {
-  _BackendFcmService(
+class _BackendRaribleService implements BackendRaribleService {
+  _BackendRaribleService(
     this._dio, {
     this.baseUrl,
     this.errorLogger,
@@ -22,20 +22,21 @@ class _BackendFcmService implements BackendFcmService {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<FCMToken> saveFcmToken({required SaveFCMTokenPayload body}) async {
+  Future<HttpResponse<dynamic>> makeRaribleRequest(
+      MakeRaribleRequestPayload data) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
-    _data.addAll(body.toJson());
-    final _options = _setStreamType<FCMToken>(Options(
+    _data.addAll(data.toJson());
+    final _options = _setStreamType<HttpResponse<dynamic>>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
         .compose(
           _dio.options,
-          '',
+          '/request',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -44,40 +45,10 @@ class _BackendFcmService implements BackendFcmService {
           _dio.options.baseUrl,
           baseUrl,
         )));
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late FCMToken _value;
-    try {
-      _value = FCMToken.fromJson(_result.data!);
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
-      rethrow;
-    }
-    return _value;
-  }
-
-  @override
-  Future<void> deleteFcmToken({required int id}) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<void>(Options(
-      method: 'DELETE',
-      headers: _headers,
-      extra: _extra,
-    )
-        .compose(
-          _dio.options,
-          '/${id}',
-          queryParameters: queryParameters,
-          data: _data,
-        )
-        .copyWith(
-            baseUrl: _combineBaseUrls(
-          _dio.options.baseUrl,
-          baseUrl,
-        )));
-    await _dio.fetch<void>(_options);
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
+    final httpResponse = HttpResponse(_value, _result);
+    return httpResponse;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
