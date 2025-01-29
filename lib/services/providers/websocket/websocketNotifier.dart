@@ -63,11 +63,6 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
 
       state.socket?.dispose();
 
-      // wait for socket to disconnect
-      while (!(state.socket?.disconnected ?? true)) {
-        await Future.delayed(const Duration(seconds: 1));
-      }
-
       final url = dotenv
           .get("OC_BACKEND_URL")
           .replaceAll("https", "wss")
@@ -92,7 +87,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       talker.info("WebsocketNotifier.init: connecting to $url");
 
       onConnect(_) {
-        state = state.copyWith(connected: true);
+        state = state.copyWith(connecting: false);
         talker.info("WebsocketNotifier.init: connected to $url");
         connectionCompleter.complete(true);
       }
@@ -102,6 +97,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       onConnectError(data) {
         talker
             .error("WebsocketNotifier.init: error connecting to $url \n $data");
+        state = state.copyWith(connecting: false);
         connectionCompleter.complete(false);
       }
 
@@ -147,7 +143,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       state.socket?.onAny(onAny);
 
       onDisconnect(_) {
-        state = state.copyWith(connected: false);
+        state = state.copyWith(connecting: false);
         talker.info("WebsocketNotifier.init: disconnected from $url");
 
         // remove all listeners
@@ -170,10 +166,16 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         (_) {
           _emit(
             WebsocketPingRequest(),
-          );        },
+          );
+        },
       );
 
       state.socket?.connect();
+      state = state.copyWith(connecting: true);
+
+      Future.delayed(Duration(seconds: 5)).then((_) {
+        disconnect();
+      });
     } catch (e, s) {
       talker.error(e, s);
     }

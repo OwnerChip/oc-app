@@ -25,12 +25,13 @@ class _AppBarAuthState extends ConsumerState<AppBarAuth> {
     _overlayEntry = null;
 
     _overlayEntry = OverlayEntry(
-      builder: (context) {
+      builder: (_) {
         return AppBarAuthDropDown(
           closeOverlay: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
           },
+          parentContext: context,
         );
       },
     );
