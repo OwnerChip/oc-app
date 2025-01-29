@@ -7,8 +7,10 @@ import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
+import 'package:ownerchip_whitelabel/services/backend/rarible/backendRaribleService.dart';
+import 'package:ownerchip_whitelabel/services/backend/rarible/payloads/makeRaribleRequestPayload.dart';
+import 'package:ownerchip_whitelabel/services/backend/rarible/payloads/raribleRequestConfig.dart';
 import 'package:ownerchip_whitelabel/services/marketplace/types.dart';
-import 'package:ownerchip_whitelabel/services/rarible/rarible.dart';
 import 'package:sentry/sentry.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -116,15 +118,23 @@ Future<RaribleHashAndEncodedData> getRaribleOrderTypedDataHash(
 Future<String> prepareRaribleOrderCancellation(
     int chainId, String offchainOrderId) async {
   try {
-
-    if(offchainOrderId.split(":").length < 2) {
+    if (offchainOrderId.split(":").length < 2) {
       offchainOrderId = "${chainConfig[chainId]!.raribleEnum}:$offchainOrderId";
     }
 
-    final Dio dio = Rarible.getRaribleClient(chainId: chainId);
-    Response result = await dio.post(
-      '${Rarible.raribleApiUrls[chainId]}/orders/$offchainOrderId/prepareCancelTx',
+    final result = await BackendRaribleService.instance.makeRaribleRequest(
+      MakeRaribleRequestPayload(
+        config: RaribleRequestConfig(
+          method: "POST",
+          endpoint: "orders/$offchainOrderId/prepareCancelTx",
+          body: {},
+          headers: {},
+        ),
+        chainId: chainId,
+      ),
     );
+
+
     return result.data["data"];
   } catch (e, s) {
     Sentry.captureException(

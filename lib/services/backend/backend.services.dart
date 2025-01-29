@@ -11,6 +11,7 @@ import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomerSe
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcmService.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOfferService.dart';
+import 'package:ownerchip_whitelabel/services/backend/rarible/backendRaribleService.dart';
 import 'package:ownerchip_whitelabel/services/backend/token/backendTokenService.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry/sentry.dart';
@@ -76,6 +77,7 @@ abstract class Backend {
     BackendAttachmentsService.recreate(jwt);
     BackendFcmService.recreate(jwt);
     BackendCreationService.recreate(jwt);
+    BackendRaribleService.recreate(jwt);
   }
 }
 

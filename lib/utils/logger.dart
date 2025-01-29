@@ -1,5 +1,4 @@
 
-import 'package:ansicolor/ansicolor.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 
@@ -17,12 +16,12 @@ final talker = Talker(
     /// You can enable/disable console logs
     useConsoleLogs: true,
     colors: {
-      TalkerLogType.error: AnsiPen()..red(),
-      TalkerLogType.warning: AnsiPen()..yellow(),
-      TalkerLogType.info: AnsiPen()..white(),
-      TalkerLogType.debug: AnsiPen()..gray(),
-      TalkerLogType.exception: AnsiPen()..red(),
-      TalkerLogType.critical: AnsiPen()..red(),
+      'error': AnsiPen()..red(),
+      'critical': AnsiPen()..yellow(),
+      'info': AnsiPen()..white(),
+      'debug': AnsiPen()..gray(),
+      'verbose': AnsiPen()..red(),
+      'warning': AnsiPen()..red(),
     }
   ),
 
