@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
+import 'package:ownerchip_whitelabel/screens/qrCode/websocket_connection_error_popup.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
@@ -17,6 +18,7 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomSnackBarContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
@@ -28,9 +30,11 @@ class AppBarAuthDropDown extends ConsumerStatefulWidget {
   const AppBarAuthDropDown({
     super.key,
     required this.closeOverlay,
+    required this.parentContext,
   });
 
   final Function closeOverlay;
+  final BuildContext parentContext;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -210,39 +214,14 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     final socket = ref.read(websocketProvider);
 
     if (!socket.connected) {
-      messenger.showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.noConnection, 'error',
-            duration: const Duration(
-              seconds: 5,
-            ), actionBuilder: (
-          BuildContext context,
-          WidgetRef ref,
-          VoidCallback dismiss,
-        ) {
-          return InkWell(
-            onTap: () {
-              ref.read(websocketProvider.notifier).init().then((res) {
-                messenger.showSnackBar(
-                  returnSnackBarWidget(
-                    res
-                        ? context.loc.successHeadingSnackbar
-                        : context.loc.errorHeadingSnackBar,
-                    res
-                        ? context.loc.reconnectWebSocketSuccessText
-                        : context.loc.reconnectWebSocketErrorText,
-                    res ? "success" : 'error',
-                  ),
-                );
-              });
-              dismiss();
-            },
-            child: Text(
-              context.loc.reconnectWebSocketButtonText,
-            ),
-          );
-        }),
+      showCustomPopup(
+        context,
+        context.loc.errorHeadingSnackBar,
+         WebsocketConnectionErrorPopup(
+          parentContext: widget.parentContext,
+        ),
       );
+      widget.closeOverlay();
       return;
     }
 
