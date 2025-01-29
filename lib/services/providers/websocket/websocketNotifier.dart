@@ -173,9 +173,6 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       state.socket?.connect();
       state = state.copyWith(connecting: true);
 
-      Future.delayed(Duration(seconds: 5)).then((_) {
-        disconnect();
-      });
     } catch (e, s) {
       talker.error(e, s);
     }
