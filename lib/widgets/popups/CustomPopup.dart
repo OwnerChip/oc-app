@@ -6,7 +6,7 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/confetti/confettiWrapper.dart';
 
-Future<void> showCustomPopup(
+Future<T> showCustomPopup<T>(
   BuildContext context,
   String title,
   Widget content, {
@@ -19,7 +19,7 @@ Future<void> showCustomPopup(
 }) async {
   setShippingPopupIsShownState?.call();
 
-  return showDialog<void>(
+  return showDialog<T>(
     context: context,
     builder: (BuildContext context) {
       final dialog = AlertDialog(
@@ -89,5 +89,6 @@ Future<void> showCustomPopup(
     },
   ).then((value) {
     setShippingPopupIsShownState?.call();
+    return value as T;
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
+import 'package:ownerchip_whitelabel/screens/creations/restoreToken_popup.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -13,6 +14,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
@@ -290,14 +292,14 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     BuildContext context,
     CreationsData creations,
     DigitalTwinMetadata metadata, {
-    VoidCallback? onTokenExist,
+    Function(String)? onTokenExist,
   }) async {
     final res = await scanItem(
       ref,
       context,
       navigateToResultPage: true,
       navigateToTokenDoesNotExistPage: false,
-      navigateToTokenExistsPage: true,
+      navigateToTokenExistsPage: metadata.status != DigitalTwinCreationMetadataStatus.pending,
       returnOnTokenExists: true,
       onTokenExists: onTokenExist,
     );
@@ -355,17 +357,29 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       context,
       creations,
       metadata,
-      onTokenExist: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(
-            context.loc.warning,
-            context.loc.nftCreationsAlreadyMintedToken,
-            "warning",
-            duration: const Duration(
-              seconds: 6,
-            ),
+      onTokenExist: (String tokenId) {
+        showCustomPopup(
+          context,
+          context.loc.nftCreationRestoreTokenPopupTitle,
+          RestoreTokenPopup(
+            metadata: metadata,
+            tokenId: tokenId,
           ),
-        );
+        ).then((res) {
+          if (res != true) {
+            return;
+          }
+        });
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   returnSnackBarWidget(
+        //     context.loc.warning,
+        //     context.loc.nftCreationsAlreadyMintedToken,
+        //     "warning",
+        //     duration: const Duration(
+        //       seconds: 6,
+        //     ),
+        //   ),
+        // );
       },
     )) {
       final userSession = ref.read(userSessionProvider)!;

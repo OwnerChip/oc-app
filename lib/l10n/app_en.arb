@@ -475,7 +475,12 @@
   "nftCreationsNotLoggedInDescription": "Please log in with the wallet you used to create the Digital Twin.",
   "nftCreationsNotLoggedInButton": "Close",
   "nftCreationsAlreadyMintedToken": "The chip you scanned is already activated with another digital twin",
-
+  "nftCreationRestoreTokenPopupTitle": "Restore Digital Twin",
+  "nftCreationRestoreTokenPopupMessage": "The chip you scanned is already activated with another digital twin. Do you want to restore the Digital Twin?",
+  "nftCreationRestoreTokenPopupCancelButton": "Cancel",
+  "nftCreationRestoreTokenPopupRestoreButton": "Restore",
+  "nftCreationRestoreTokenPopupViewTokenButton": "View Digital Twin",
+  "nftCreationRestoreTokenPopupSuccessTitle": "Digital Twin restored",
 
   "@_CERTIFICATE_CARD": {},
   "certificateCardLoginSuccess": "Successfully connected with Certificate Card.",

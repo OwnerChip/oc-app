@@ -168,7 +168,7 @@ Future<dynamic> scanItem(
   bool returnOnTokenDoesNotExist = false,
   bool navigateToTokenExistsPage = true,
   bool returnOnTokenExists = false,
-  VoidCallback? onTokenExists,
+  void Function(String)? onTokenExists,
 }) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
@@ -244,7 +244,9 @@ Future<dynamic> scanItem(
           }
         } else {
           //TOKEN EXISTS
-          onTokenExists?.call();
+          onTokenExists?.call(
+            chipWalletAddress,
+          );
           if (navigateToTokenExistsPage) {
             await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
                 signature, sessionId, chipWalletAddress, context);
