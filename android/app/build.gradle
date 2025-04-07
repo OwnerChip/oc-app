@@ -29,9 +29,10 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-android { 
+android {
+    namespace "com.ownerchip.demo"
     buildToolsVersion "34.0.0"
-    compileSdkVersion 34
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -49,7 +50,7 @@ android {
 
     defaultConfig {
         applicationId "com.ownerchip.demo"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
