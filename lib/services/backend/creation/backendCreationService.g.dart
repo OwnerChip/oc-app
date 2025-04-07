@@ -98,6 +98,31 @@ class _BackendCreationService implements BackendCreationService {
   }
 
   @override
+  Future<void> cancelDigitalTwin(String id) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<void>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '\'/${id}/cancel',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    await _dio.fetch<void>(_options);
+  }
+
+  @override
   Future<UploadDigitalTwinCreationAttachmentResponse?> prepareAttachmentUpload(
     String id,
     UploadDigitalTwinCreationAttachmentPayload payload,
