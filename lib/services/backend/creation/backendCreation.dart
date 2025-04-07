@@ -226,6 +226,29 @@ class BackendCreation extends Backend {
     return true;
   }
 
+  static Future<bool> cancelMintDigitalTwin({
+    required String id,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .cancelDigitalTwin(
+      id,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
+    }
+
+    return true;
+  }
+
   static Future<bool> cancelBurnDigitalTwin({
     required String id,
   }) async {

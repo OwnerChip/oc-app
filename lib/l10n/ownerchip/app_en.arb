@@ -476,6 +476,18 @@
   "nftCreationsNotLoggedInButton": "Close",
   "nftCreationsAlreadyMintedToken": "The chip you scanned is already activated with another digital twin",
 
+  "nft_cancel_confirmation_dialog_title": "Cancel NFT",
+  "nft_cancel_confirmation_dialog_description": "Are you sure you want to cancel \"{title}\"?",
+  "nft_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel",
+  "nft_cancel_confirmation_dialog_cancel_keep_button": "No, keep",
+  "nft_burn_cancel_confirmation_dialog_title": "Cancel Burn",
+  "nft_burn_cancel_confirmation_dialog_description": "Are you sure you want to cancel burning \"{title}\"?",
+  "nft_burn_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel",
+  "nft_burn_cancel_confirmation_dialog_cancel_keep_button": "No, keep",
+  "nft_transfer_cancel_confirmation_dialog_title": "Cancel Transfer",
+  "nft_transfer_cancel_confirmation_dialog_description": "Are you sure you want to cancel transferring \"{title}\"?",
+  "nft_transfer_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel",
+  "nft_transfer_cancel_confirmation_dialog_cancel_keep_button": "No, keep",
 
   "@_CERTIFICATE_CARD": {},
   "certificateCardLoginSuccess": "Successfully connected with Certificate Card.",

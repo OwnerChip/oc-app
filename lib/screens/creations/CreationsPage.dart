@@ -3,8 +3,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
+import 'package:ownerchip_whitelabel/screens/creations/creationCancel_popup.dart';
 import 'package:ownerchip_whitelabel/screens/creations/restoreToken_popup.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/backendCreationService.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
@@ -183,6 +185,90 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                             ],
                           ),
                         ),
+                        Column(
+                          children: [
+                            InkWell(
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Icon(Icons.close, size: 24,),
+                              ),
+                              onTap: () {
+                                String title = "";
+                                String description = "";
+                                String yes = "";
+                                String cancel = "";
+                                VoidCallback onYes = () {};
+
+                                if (metadata.status ==
+                                    DigitalTwinCreationMetadataStatus
+                                        .toBeBurned) {
+                                  onYes = () {
+                                    BackendCreationService.instance
+                                        .cancelBurnDigitalTwin(metadata.id);
+                                  };
+
+                                  title = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_title;
+                                  description = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_description(
+                                          metadata.title);
+                                  yes = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_cancel_cancel_button;
+                                  cancel = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_cancel_keep_button;
+                                } else if (metadata.status ==
+                                    DigitalTwinCreationMetadataStatus
+                                        .pending) {
+                                  onYes = () {
+                                    BackendCreationService.instance
+                                        .cancelDigitalTwin(metadata.id);
+                                  };
+                                  title = context.loc
+                                      .nft_cancel_confirmation_dialog_title;
+                                  description = context.loc
+                                      .nft_cancel_confirmation_dialog_description(
+                                          metadata.title);
+                                  yes = context.loc
+                                      .nft_cancel_confirmation_dialog_cancel_cancel_button;
+                                  cancel = context.loc
+                                      .nft_cancel_confirmation_dialog_cancel_keep_button;
+                                } else if (metadata.status ==
+                                    DigitalTwinCreationMetadataStatus
+                                        .toBeTransferred) {
+                                  onYes = () {
+                                    BackendCreationService.instance
+                                        .cancelTransferDigitalTwin(
+                                            metadata.id);
+                                  };
+
+                                  title = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_title;
+                                  description = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_description(
+                                          metadata.title);
+                                  yes = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+                                  cancel = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+                                }
+
+                                showCustomPopup(
+                                  context,
+                                  title,
+                                  CreationCancelPopup(
+                                    description: description,
+                                    yes: yes,
+                                    cancel: cancel,
+                                  ),
+                                ).then((res) {
+                                  if (res == true) {
+                                    onYes();
+                                  }
+                                });
+                              },
+                            )
+                          ],
+                        )
                       ],
                     ),
                   ),
@@ -299,7 +385,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       context,
       navigateToResultPage: true,
       navigateToTokenDoesNotExistPage: false,
-      navigateToTokenExistsPage: metadata.status != DigitalTwinCreationMetadataStatus.pending,
+      navigateToTokenExistsPage:
+          metadata.status != DigitalTwinCreationMetadataStatus.pending,
       returnOnTokenExists: true,
       onTokenExists: onTokenExist,
     );

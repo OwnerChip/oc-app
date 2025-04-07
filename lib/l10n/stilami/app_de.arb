@@ -478,6 +478,20 @@
     "nftCreationsNotLoggedInButton": "Schließen",
     "nftCreationsAlreadyMintedToken": "Der gescannte Chip ist bereits mit einem anderen digitalen Zwilling initialisiert",
 
+    "nft_cancel_confirmation_dialog_title": "Abbrechen",
+    "nft_cancel_confirmation_dialog_description": "Sind Sie sicher, dass Sie  \"{title}\" abbrechen wollen?",
+    "nft_cancel_confirmation_dialog_cancel_cancel_button": "Ja, abbrechen",
+    "nft_cancel_confirmation_dialog_cancel_keep_button": "Nein, behalten",
+    "nft_burn_cancel_confirmation_dialog_title": "Löschen abbrechen",
+    "nft_burn_cancel_confirmation_dialog_description": "Sind Sie sicher, dass Sie das Löschen von \"{title}\" abbrechen wollen?",
+    "nft_burn_cancel_confirmation_dialog_cancel_cancel_button": "Ja, Abbrechen",
+    "nft_burn_cancel_confirmation_dialog_cancel_keep_button": "Nein, behalten",
+    "nft_transfer_cancel_confirmation_dialog_title": "Transfer abbrechen",
+    "nft_transfer_cancel_confirmation_dialog_description": "Sind Sie sicher, dass der Transfer von \"{title}\" abgebrochen werden soll?",
+    "nft_transfer_cancel_confirmation_dialog_cancel_cancel_button": "Ja, abbrechen",
+    "nft_transfer_cancel_confirmation_dialog_cancel_keep_button": "Nein, behalten",
+
+
     "@_CERTIFICATE_CARD": {},
     "certificateCardLoginSuccess": "Erfolgreich mit der Zertifikatskarte verbunden.",
     "cannotSetPinOnCertificateCard": "PIN kann auf der Zertifikatskarte nicht gesetzt werden.",
