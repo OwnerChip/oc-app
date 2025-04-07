@@ -27,7 +27,8 @@ import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:reown_appkit/reown_appkit.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 import '../../utils/localization.helper.dart';
@@ -173,6 +174,15 @@ Future<void> onTapAuth(
 
     signature = hexSignatureToRSV(hexSignature);
   } catch (e, st) {
+    Sentry.captureException(
+      e,
+      stackTrace: st,
+    );
+    talker .error(
+      'Error signing message',
+      e,
+      st,
+    );
     throw Exception(context.loc.errorConnectingWallet);
   }
 

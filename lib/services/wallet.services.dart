@@ -36,7 +36,6 @@ import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walletconnect_flutter_v2/apis/sign_api/utils/sign_api_validator_utils.dart';
 import 'package:web3auth_flutter/enums.dart';
 import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
@@ -158,7 +157,8 @@ Future<String> makeAndSendGaslessTx(
         signature = await wc!
             .request(
           topic: wc.session?.topic,
-          chainId: 'eip155:${w3mService.selectedChain?.chainId ?? chainId}',
+          chainId:
+              w3mService.selectedChain?.chainId ?? "eip155:$chainId",
           request: SessionRequestParams(
             method: 'eth_signTypedData_v4',
             params: [walletAddress.toString(), json.encode(typedData)],
@@ -500,7 +500,7 @@ Future<String> makeAndSendNormalTx(
 
       txnFuture = wc.request(
         topic: wc.session?.topic!,
-        chainId: 'eip155:$chainId',
+        chainId: w3mService?.selectedChain?.chainId ?? "eip155:$chainId",
         request: SessionRequestParams(
           method: 'eth_sendTransaction',
           params: txParams,
@@ -561,10 +561,7 @@ Future<Transaction> buildTransactionObject({
 
 Future<void> wcSwitchToChainConditionally(
     ReownAppKitModal? w3mService, int chainId) async {
-  final wallet = w3mService?.selectedWallet;
-
-  if (wallet != null &&
-      !wallet.listing.name.toLowerCase().contains("metamask")) {
+  if (w3mService?.isConnected == false) {
     return;
   }
 
@@ -598,12 +595,8 @@ Future<void> wcSwitchToChainConditionally(
     int tries = 0;
 
     await Future.delayed(const Duration(seconds: 3));
-    while (!SignApiValidatorUtils.isValidNamespacesChainId(
-      chainId: "eip155:$chainId",
-      namespaces: w3mService.appKit
-              ?.getActiveSessions()[w3mService.session!.topic!]
-              ?.namespaces ??
-          {} as dynamic,
+    while (!NamespaceUtils.isValidChainId(
+      "eip155:${w3mService.selectedChain?.chainId}",
     )) {
       await Future.delayed(const Duration(seconds: 5));
       if (tries++ > 10) {
@@ -660,7 +653,7 @@ Future<String> sendPersonalSignRequest(
     try {
       String signature = await w3mService.request(
         topic: w3mService.session!.topic!,
-        chainId: "eip155:${w3mService.selectedChain?.chainId ?? chainId}",
+        chainId: w3mService.selectedChain?.chainId ?? "eip155:$chainId",
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,

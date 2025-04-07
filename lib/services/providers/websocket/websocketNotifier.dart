@@ -11,8 +11,8 @@ import 'package:ownerchip_whitelabel/services/providers/websocket/types/websocke
 import 'package:ownerchip_whitelabel/services/providers/websocket/types/websocketRequest.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import "package:collection/collection.dart";
 
 class WebsocketNotifier extends Notifier<WebsocketData> {

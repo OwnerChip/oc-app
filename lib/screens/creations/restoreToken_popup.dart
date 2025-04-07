@@ -44,70 +44,79 @@ class _RestoreTokenPopupState extends ConsumerState<RestoreTokenPopup> {
                 height: 16,
               ),
               ...[
-                CustomOutlinedButton(
-                  disabled: _isRestoring,
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  buttonText:
-                      context.loc.nftCreationRestoreTokenPopupCancelButton,
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                CustomRoundedButton(
-                  isLoading: _isRestoring,
-                  onPressed: () async {
-                    _isRestoring = true;
-                    if (mounted) {
-                      setState(() {});
-                    }
-                    final messenger = ScaffoldMessenger.of(
-                      context,
-                    );
-                    final error =
-                        await BackendCreation.restoreDigitalTwinCreation(
-                      id: widget.metadata.id,
-                      tokenId: widget.tokenId,
-                    );
-                    _isRestoring = false;
-                    if (mounted) {
-                      setState(() {});
-                    }
-
-                    if (error != null) {
-                      messenger.showSnackBar(
-                        returnSnackBarWidget(
-                          context.loc.errorHeadingSnackBar,
-                          error,
-                          'error',
-                        ),
-                      );
-                      Navigator.of(context).pop();
-                    } else {
-                      messenger.showSnackBar(
-                        returnSnackBarWidget(
-                          context.loc.successHeadingSnackbar,
-                          context.loc.nftCreationRestoreTokenPopupSuccessTitle,
-                          'success',
-                        ),
-                      );
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  text: context.loc.nftCreationRestoreTokenPopupRestoreButton,
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                CustomRoundedButton(
-                    text: context.loc.nftCreationRestoreTokenPopupViewTokenButton,
+                SizedBox(
+                  width: double.maxFinite,
+                  child: CustomOutlinedButton(
+                    disabled: _isRestoring,
                     onPressed: () {
-                      Navigator.pushNamed(
+                      Navigator.of(context).pop();
+                    },
+                    buttonText:
+                        context.loc.nftCreationRestoreTokenPopupCancelButton,
+                  ),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                SizedBox(
+                  width: double.maxFinite,
+                  child: CustomRoundedButton(
+                    isLoading: _isRestoring,
+                    onPressed: () async {
+                      _isRestoring = true;
+                      if (mounted) {
+                        setState(() {});
+                      }
+                      final messenger = ScaffoldMessenger.of(
                         context,
-                        UserScanResultsScreen.routeName,
                       );
-                    })
+                      final error =
+                          await BackendCreation.restoreDigitalTwinCreation(
+                        id: widget.metadata.id,
+                        tokenId: widget.tokenId,
+                      );
+                      _isRestoring = false;
+                      if (mounted) {
+                        setState(() {});
+                      }
+
+                      if (error != null) {
+                        messenger.showSnackBar(
+                          returnSnackBarWidget(
+                            context.loc.errorHeadingSnackBar,
+                            error,
+                            'error',
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      } else {
+                        messenger.showSnackBar(
+                          returnSnackBarWidget(
+                            context.loc.successHeadingSnackbar,
+                            context.loc.nftCreationRestoreTokenPopupSuccessTitle,
+                            'success',
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    text: context.loc.nftCreationRestoreTokenPopupRestoreButton,
+                  ),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                SizedBox(
+                  width: double.maxFinite,
+                  child: CustomRoundedButton(
+                      text: context.loc.nftCreationRestoreTokenPopupViewTokenButton,
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          UserScanResultsScreen.routeName,
+                        );
+                      }),
+                )
               ],
             ],
           ),
