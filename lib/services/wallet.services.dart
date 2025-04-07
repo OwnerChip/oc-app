@@ -157,12 +157,12 @@ Future<String> makeAndSendGaslessTx(
         signature = await wc!
             .request(
           topic: wc.session?.topic,
-          chainId:
-              w3mService.selectedChain?.chainId ?? "eip155:$chainId",
+          chainId: "eip155:$chainId",
           request: SessionRequestParams(
             method: 'eth_signTypedData_v4',
             params: [walletAddress.toString(), json.encode(typedData)],
           ),
+          switchToChainId: "eip155:$chainId",
         )
             .onError((error, stackTrace) {
           talker.error(
@@ -493,18 +493,16 @@ Future<String> makeAndSendNormalTx(
 
     await preventRepeatedNFCScan(() async {
       // await Future.delayed(const Duration(seconds: 3));
-      await wcSwitchToChainConditionally(w3mService, chainId).catchError((e) {
-        talker.error('Failed to switch to chain: $e');
-      });
       await Future.delayed(const Duration(seconds: 3));
 
       txnFuture = wc.request(
         topic: wc.session?.topic!,
-        chainId: w3mService?.selectedChain?.chainId ?? "eip155:$chainId",
+        chainId: "eip155:$chainId",
         request: SessionRequestParams(
           method: 'eth_sendTransaction',
           params: txParams,
         ),
+        switchToChainId: "eip155:$chainId",
       );
 
       w3mService!.launchConnectedWallet();
@@ -559,55 +557,6 @@ Future<Transaction> buildTransactionObject({
   );
 }
 
-Future<void> wcSwitchToChainConditionally(
-    ReownAppKitModal? w3mService, int chainId) async {
-  if (w3mService?.isConnected == false) {
-    return;
-  }
-
-  final selectedChain = w3mService?.selectedChain;
-
-  if (selectedChain?.chainId.replaceAll("eip155:", "") == chainId.toString()) {
-    // Chain is already selected
-    return;
-  }
-
-  await (() async {
-    final chain = chainConfig[chainId]!;
-
-    w3mService!.launchConnectedWallet();
-
-    await w3mService.requestSwitchToChain(
-      ReownAppKitModalNetworkInfo(
-        name: chain.networkName,
-        chainId: "$chainId",
-        currency: chain.nativeTokenSymbol,
-        rpcUrl: chain.rpcUrl,
-        explorerUrl: chain.blockchainExplorerUrl,
-      ),
-    );
-
-    // Wait for the network to change
-    // so that we can redirect the user to the wallet app again
-    // because <launchConnectedWallet> does not work after switching the chain
-    // (because the application is still in the background)
-
-    int tries = 0;
-
-    await Future.delayed(const Duration(seconds: 3));
-    while (!NamespaceUtils.isValidChainId(
-      "eip155:${w3mService.selectedChain?.chainId}",
-    )) {
-      await Future.delayed(const Duration(seconds: 5));
-      if (tries++ > 10) {
-        break;
-      }
-    }
-  })();
-
-  await Future.delayed(const Duration(seconds: 5));
-}
-
 //personal sign
 Future<String> sendPersonalSignRequest(
   WidgetRef ref,
@@ -653,11 +602,12 @@ Future<String> sendPersonalSignRequest(
     try {
       String signature = await w3mService.request(
         topic: w3mService.session!.topic!,
-        chainId: w3mService.selectedChain?.chainId ?? "eip155:$chainId",
+        chainId: "eip155:$chainId",
         request: SessionRequestParams(
           method: 'personal_sign',
           params: requestParams,
         ),
+        switchToChainId: "eip155:$chainId",
       );
       return signature;
     } catch (e, st) {
