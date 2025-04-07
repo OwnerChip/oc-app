@@ -14,6 +14,7 @@ import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
+import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AuthPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
@@ -265,8 +266,9 @@ Future<void> _loginWithWeb3Auth(
       w3mService!,
       walletConfig[EWalletType.web3auth]!.name,
     );
-  }).catchError((e) {
+  }).catchError((e, st) {
     // ignore
+    talker.error(e, st);
   });
 }
 

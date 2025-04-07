@@ -10,7 +10,7 @@ PODS:
     - CoinbaseWalletSDK/Client
   - connectivity_plus (0.0.1):
     - Flutter
-  - curvelib.swift (1.0.1)
+  - curvelib.swift (2.0.0)
   - DKImagePickerController/Core (4.3.9):
     - DKImagePickerController/ImageDataManager
     - DKImagePickerController/Resource
@@ -173,22 +173,22 @@ PODS:
     - Flutter
     - FlutterMacOS
   - SwiftyGif (5.4.5)
-  - TorusSessionManager (4.0.2):
-    - curvelib.swift (~> 1.0.1)
+  - TorusSessionManager (6.0.2):
+    - curvelib.swift (~> 2.0.0)
     - KeychainSwift (~> 20.0.0)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - Web3Auth (8.3.0):
+  - Web3Auth (11.0.5):
     - BigInt (~> 5.2.0)
-    - curvelib.swift (~> 1.0.1)
+    - curvelib.swift (~> 2.0.0)
     - KeychainSwift (~> 20.0.0)
-    - TorusSessionManager (~> 4.0.2)
+    - TorusSessionManager (~> 6.0.2)
   - web3auth_flutter (2.0.1):
     - Flutter
-    - Web3Auth (~> 8.3.0)
+    - Web3Auth (~> 11.0.5)
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -299,7 +299,7 @@ SPEC CHECKSUMS:
   coinbase_wallet_sdk: c776890d90183e736a597e3b768ea7b7251985ce
   CoinbaseWalletSDK: bd6aa4f5a6460d4279e09e115969868e134126fb
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
-  curvelib.swift: d0746ae82bee34016c06da3567a97e493b3c979f
+  curvelib.swift: b9223e5cac801effed8a5fe8968e952b3fe427a5
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
@@ -337,11 +337,11 @@ SPEC CHECKSUMS:
   smart_auth: 33668081c5f646af84f10492a067d25fdcd16951
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
-  TorusSessionManager: 05a1a8f3265d0949a1a342c4ba2c52882445b614
+  TorusSessionManager: 3c47c2a4c4d6173a10006eb0af4b86317ee45ff8
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
-  Web3Auth: 98ec9787e52e813c7ee83f73fa10ba5f52187907
-  web3auth_flutter: 5979cf3a458cdcd6f051538c2964811d419b1af6
+  Web3Auth: cf501e2bccf63d7a9746c0e53eb98cf143841a5c
+  web3auth_flutter: 16143eb089f719cc7629d82dedefe5b1a534e52d
   webview_flutter_wkwebview: 44d4dee7d7056d5ad185d25b38404436d56c547c
 
 PODFILE CHECKSUM: f2a1ebd07796ee082cb4d8e8fa742449f698c4f1
