@@ -50,6 +50,17 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
   @override
   Widget build(BuildContext context) {
     final creations = ref.watch(creationsNotifierProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (creations.initialized &&
+          creations.data != null &&
+          creations.data!.isEmpty) {
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      }
+    });
+
     return CustomOverlay(
       show: isLoading,
       content: SpinningLoadingSvg(
@@ -190,7 +201,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                             InkWell(
                               child: const Padding(
                                 padding: EdgeInsets.all(16.0),
-                                child: Icon(Icons.close, size: 24,),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 24,
+                                ),
                               ),
                               onTap: () {
                                 String title = "";
@@ -217,14 +231,13 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                                   cancel = context.loc
                                       .nft_burn_cancel_confirmation_dialog_cancel_keep_button;
                                 } else if (metadata.status ==
-                                    DigitalTwinCreationMetadataStatus
-                                        .pending) {
+                                    DigitalTwinCreationMetadataStatus.pending) {
                                   onYes = () {
                                     BackendCreationService.instance
                                         .cancelDigitalTwin(metadata.id);
                                   };
-                                  title = context.loc
-                                      .nft_cancel_confirmation_dialog_title;
+                                  title = context
+                                      .loc.nft_cancel_confirmation_dialog_title;
                                   description = context.loc
                                       .nft_cancel_confirmation_dialog_description(
                                           metadata.title);
@@ -237,8 +250,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                                         .toBeTransferred) {
                                   onYes = () {
                                     BackendCreationService.instance
-                                        .cancelTransferDigitalTwin(
-                                            metadata.id);
+                                        .cancelTransferDigitalTwin(metadata.id);
                                   };
 
                                   title = context.loc

@@ -110,7 +110,7 @@ class _BackendCreationService implements BackendCreationService {
     )
         .compose(
           _dio.options,
-          '\'/${id}/cancel',
+          '/${id}/cancel',
           queryParameters: queryParameters,
           data: _data,
         )

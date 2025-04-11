@@ -46,7 +46,7 @@ abstract class BackendCreationService {
     @Query("chipId") String chipId,
   );
 
-  @POST("'/{id}/cancel")
+  @POST("/{id}/cancel")
   Future<void> cancelDigitalTwin(
     @Path('id') String id,
   );
