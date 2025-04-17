@@ -63,8 +63,9 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
 
       state.socket?.dispose();
 
-      final url = dotenv
-          .get("OC_BACKEND_URL")
+      final url = (dotenv.get('IS_INTERNAL') == 'true'
+              ? dotenv.get('OC_BACKEND_URL_TEST')
+              : dotenv.get('OC_BACKEND_URL'))
           .replaceAll("https", "wss")
           .replaceAll("http", "ws");
       state = state.copyWith(
@@ -172,7 +173,6 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
 
       state.socket?.connect();
       state = state.copyWith(connecting: true);
-
     } catch (e, s) {
       talker.error(e, s);
     }
