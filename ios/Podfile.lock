@@ -3,10 +3,10 @@ PODS:
     - Flutter
   - BigInt (5.2.0)
   - coinbase_wallet_sdk (0.0.1):
-    - CoinbaseWalletSDK/CrossPlatform (= 1.1.0)
+    - CoinbaseWalletSDK/CrossPlatform (= 1.0.4)
     - Flutter
-  - CoinbaseWalletSDK/Client (1.1.0)
-  - CoinbaseWalletSDK/CrossPlatform (1.1.0):
+  - CoinbaseWalletSDK/Client (1.0.4)
+  - CoinbaseWalletSDK/CrossPlatform (1.0.4):
     - CoinbaseWalletSDK/Client
   - connectivity_plus (0.0.1):
     - Flutter
@@ -296,8 +296,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   appcheck: 3c94d0ffc94bd639938cac7427d5b13df2795404
   BigInt: f668a80089607f521586bbe29513d708491ef2f7
-  coinbase_wallet_sdk: c776890d90183e736a597e3b768ea7b7251985ce
-  CoinbaseWalletSDK: bd6aa4f5a6460d4279e09e115969868e134126fb
+  coinbase_wallet_sdk: c893738400ef78bd20e7f4195cbb38266f7d15e8
+  CoinbaseWalletSDK: ea1f37512bbc69ebe07416e3b29bf840f5cc3152
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   curvelib.swift: b9223e5cac801effed8a5fe8968e952b3fe427a5
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c

@@ -271,13 +271,12 @@ packages:
     source: hosted
     version: "4.10.1"
   coinbase_wallet_sdk:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: flutter
-      ref: "2.0"
-      resolved-ref: "8092cb0b40671405754e1515d2770708a82b5bc8"
-      url: "https://github.com/WalletConnect/wallet-mobile-sdk.git"
-    source: git
+      name: coinbase_wallet_sdk
+      sha256: c51f3c54c728a6bdaec346de2ce4a3b6498f099a030772b7df22b058a1bad884
+      url: "https://pub.dev"
+    source: hosted
     version: "1.0.10"
   collection:
     dependency: transitive
@@ -483,10 +482,10 @@ packages:
     dependency: transitive
     description:
       name: event
-      sha256: "5809a742e6274146a23d9cba63c24caf2f4c87a9a781fdf16ef07f052becaf72"
+      sha256: eb4814de94cbf6a10da9c4f652bc654087d7066e33566b5036822e6c0b24befb
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.0"
+    version: "2.1.2"
   fake_async:
     dependency: transitive
     description:
@@ -1147,14 +1146,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.2"
-  pinenacl:
-    dependency: transitive
-    description:
-      name: pinenacl
-      sha256: "57e907beaacbc3c024a098910b6240758e899674de07d6949a67b52fd984cbdf"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.0"
   pinput:
     dependency: "direct main"
     description:
@@ -1254,27 +1245,29 @@ packages:
   reown_appkit:
     dependency: "direct main"
     description:
-      name: reown_appkit
-      sha256: "27e9aa070aab880539676e4128585d587ff44299eb2f4c0052f9aa9d70998699"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.2+1"
+      path: "packages/reown_appkit"
+      ref: "fix/session_persistence"
+      resolved-ref: "62ef2df61802bc2498502bed2b6fce278666e30d"
+      url: "https://github.com/AndriiVivcharenko/reown_flutter"
+    source: git
+    version: "1.1.0-beta03"
   reown_core:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: reown_core
-      sha256: "44a0c5c21cab524eb3a9ab92527d4714836ae39a8d747d4a4924c0a001474ccc"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.4"
+      path: "packages/reown_core"
+      ref: "fix/session_persistence"
+      resolved-ref: "62ef2df61802bc2498502bed2b6fce278666e30d"
+      url: "https://github.com/AndriiVivcharenko/reown_flutter"
+    source: git
+    version: "1.0.4"
   reown_sign:
     dependency: transitive
     description:
       name: reown_sign
-      sha256: "042990cdbd1c9ec4aee572106b70193ef21b39b572f7e1791237fee6b47c5075"
+      sha256: ef2493a3992772d9495b9232b4ece7e7be0e0893f88d34f80aa6eda2e49b3e6e
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.0.4"
   retrofit:
     dependency: "direct main"
     description:
@@ -1940,18 +1933,18 @@ packages:
     dependency: transitive
     description:
       name: webview_flutter
-      sha256: "889a0a678e7c793c308c68739996227c9661590605e70b1f6cf6b9a6634f7aec"
+      sha256: ec81f57aa1611f8ebecf1d2259da4ef052281cb5ad624131c93546c79ccc7736
       url: "https://pub.dev"
     source: hosted
-    version: "4.10.0"
+    version: "4.9.0"
   webview_flutter_android:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: "3d535126f7244871542b2f0b0fcf94629c9a14883250461f9abe1a6644c1c379"
+      sha256: "47a8da40d02befda5b151a26dba71f47df471cddd91dfdb7802d0a87c5442558"
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.0"
+    version: "3.16.9"
   webview_flutter_platform_interface:
     dependency: transitive
     description:

@@ -36,12 +36,12 @@ dependencies:
   country_picker: ^2.0.23
 #  reown_appkit:
 #    path: ../reown_flutter/packages/reown_appkit
-  reown_appkit: ^1.4.2+1
-#  reown_appkit:
-#    git:
-#      url: https://github.com/AndriiVivcharenko/reown_flutter
-#      path: packages/reown_appkit
-#      ref: fix/session_persistence
+#  reown_appkit: ^1.4.2+1
+  reown_appkit:
+    git:
+      url: https://github.com/AndriiVivcharenko/reown_flutter
+      path: packages/reown_appkit
+      ref: fix/session_persistence
 
   web3auth_flutter: ^6.1.2
   info_popup: ^4.3.1
@@ -80,16 +80,12 @@ dependency_overrides:
   package_info_plus: ^8.1.4
   web_socket_channel: ^3.0.2
   intl: 0.19.0
-#  reown_core:
-#    git:
-#      url: https://github.com/AndriiVivcharenko/reown_flutter
-#      path: packages/reown_core
-#      ref: fix/session_persistence
-  coinbase_wallet_sdk:
+  reown_core:
     git:
-      url: https://github.com/WalletConnect/wallet-mobile-sdk.git
-      ref: "2.0"
-      path: flutter
+      url: https://github.com/AndriiVivcharenko/reown_flutter
+      path: packages/reown_core
+      ref: fix/session_persistence
+
 flutter_icons:
   android: "launcher_icon"
   ios: true
