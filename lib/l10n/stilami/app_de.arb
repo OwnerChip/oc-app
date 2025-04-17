@@ -479,9 +479,9 @@
     "nftCreationsAlreadyMintedToken": "Der gescannte Chip ist bereits mit einem anderen digitalen Zwilling initialisiert",
 
     "nft_cancel_confirmation_dialog_title": "Abbrechen",
-    "nft_cancel_confirmation_dialog_description": "Sind Sie sicher, dass Sie  \"{title}\" abbrechen wollen?",
-    "nft_cancel_confirmation_dialog_cancel_cancel_button": "Ja, abbrechen",
-    "nft_cancel_confirmation_dialog_cancel_keep_button": "Nein, behalten",
+    "nft_cancel_confirmation_dialog_description": "Möchtest du die Aktivierung für \"{title}\" wirklich abbrechen?",
+    "nft_cancel_confirmation_dialog_cancel_cancel_button": "Ja, Aktivierung abbrechen",
+    "nft_cancel_confirmation_dialog_cancel_keep_button": "Nein, fortfahren",
     "nft_burn_cancel_confirmation_dialog_title": "Löschen abbrechen",
     "nft_burn_cancel_confirmation_dialog_description": "Sind Sie sicher, dass Sie das Löschen von \"{title}\" abbrechen wollen?",
     "nft_burn_cancel_confirmation_dialog_cancel_cancel_button": "Ja, Abbrechen",

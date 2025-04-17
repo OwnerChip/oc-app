@@ -483,9 +483,9 @@
     "nftCreationRestoreTokenPopupSuccessTitle": "Digital Twin restored",
 
     "nft_cancel_confirmation_dialog_title": "Cancel NFT",
-    "nft_cancel_confirmation_dialog_description": "Are you sure you want to cancel \"{title}\"?",
-    "nft_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel",
-    "nft_cancel_confirmation_dialog_cancel_keep_button": "No, keep",
+    "nft_cancel_confirmation_dialog_description": "Are you sure you want to cancel activation for \"{title}\"?",
+    "nft_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel activation",
+    "nft_cancel_confirmation_dialog_cancel_keep_button": "No, continue",
     "nft_burn_cancel_confirmation_dialog_title": "Cancel Burn",
     "nft_burn_cancel_confirmation_dialog_description": "Are you sure you want to cancel burning \"{title}\"?",
     "nft_burn_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel",
