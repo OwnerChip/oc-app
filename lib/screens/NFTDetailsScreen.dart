@@ -31,6 +31,7 @@ import 'package:ownerchip_whitelabel/utils/globals.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/urls.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -84,6 +85,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final wc = ref.watch(w3mServiceProvider);
+    final  weblinkUrl = ref.watch(webLinkUrlProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
@@ -558,6 +560,11 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                 DropdownContainer(
                   title: context.loc.externalLinks,
                   content: Column(children: [
+                    CustomRoundedButton(text: context.loc.openWebLink, onPressed: () {
+                      launchUrl(weblinkUrl);
+                    }),
+                    const SizedBox(height: 15),
+
                     CustomRoundedButton(
                       text: context.loc.showOnOpenSea,
                       onPressed: () => {
@@ -575,6 +582,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                   mode: LaunchMode.externalApplication)
                             },
                           ),
+
                   ]),
                 ),
                 const SizedBox(height: 20),

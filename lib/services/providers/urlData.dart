@@ -4,6 +4,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
+import 'package:ownerchip_whitelabel/utils/urls.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -16,6 +17,11 @@ final blockchainExplorerUrlProvider =
   final String contractAddress = tokenInfo.collectionId.toString();
   String explorerUrl = "$baseUrl/$contractAddress?a=${chipInfo.tokenId}";
   return Uri.parse(explorerUrl);
+});
+
+final webLinkUrlProvider = Provider.autoDispose<Uri>((ref) {
+  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
+  return Uri.parse(getItemOwnerChipUrl(chipInfo.chipEthereumAddress));
 });
 
 final openseaUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
