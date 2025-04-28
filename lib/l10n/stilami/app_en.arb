@@ -447,7 +447,7 @@
   "scanResultPage_ownershipNotOwnerNotOffered": "Your are not the owner of this item.",
   "scanResultPage_buttonOwnerOffered": "Show Offer",
   "scanResultPage_buttonNotOwnerOffered": "Show Offer",
-  "scanResultPage_chipHasNotYetBeenInitialized": "The NFC chip has not yet been initialized.",
+  "scanResultPage_chipHasNotYetBeenInitialized": "The NFC chip has not yet been activated.",
 
 
   "@_NFT_DETAILS_PAGE": {},

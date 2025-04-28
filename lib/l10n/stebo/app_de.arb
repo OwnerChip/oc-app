@@ -126,7 +126,7 @@
     "ownership": "Eigentum",
     "unconfirmed": "Nicht bestätigt",
     "confirmed": "Bestätigt",
-    "externalLinks": "Web Links",
+    "externalLinks": "Weblinks",
     "transferToken": "Transferieren",
     "transferInProgress": "Token wird transferiert",
     "transferSuccess":  "Token transferiert",
@@ -444,6 +444,7 @@
     "scanResultPage_ownershipNotOwnerNotOffered": "Sie sind nicht der Eigentümer dieses Gegenstands.",
     "scanResultPage_buttonOwnerOffered": "Angebot anzeigen",
     "scanResultPage_buttonNotOwnerOffered": "Angebot anzeigen",
+    "scanResultPage_chipHasNotYetBeenInitialized": "Dieser NFC Chip wurde noch nicht aktiviert.",
 
 
     "@_NFT_DETAILS_PAGE": {},
