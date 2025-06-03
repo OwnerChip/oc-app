@@ -1274,7 +1274,11 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
           await BackendCreation.markDigitalTwinAsMinted(
-              id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex);
+              id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex)
+          .catchError((e, st) {
+            Sentry.captureException(e, stackTrace: st);
+            talker.error('Error marking digital twin as minted: $e', st);
+          });
           ref.refresh(digitalTwinAttachmentsProvider);
           ref.refresh(digitalTwinCreationMetadataProvider);
 
@@ -1294,6 +1298,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           isLoading = false;
           setState(() {});
         }
+
+        if(!mounted) return;
 
         Navigator.of(context).pushNamedAndRemoveUntil(
           OfferForSaleCreatedTokenScreen.routeName,
