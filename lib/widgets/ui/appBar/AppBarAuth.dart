@@ -25,12 +25,13 @@ class _AppBarAuthState extends ConsumerState<AppBarAuth> {
     _overlayEntry = null;
 
     _overlayEntry = OverlayEntry(
-      builder: (context) {
+      builder: (_) {
         return AppBarAuthDropDown(
           closeOverlay: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
           },
+          parentContext: context,
         );
       },
     );
@@ -42,6 +43,12 @@ class _AppBarAuthState extends ConsumerState<AppBarAuth> {
     ReownAppKitModal? wc = ref.watch(w3mServiceProvider);
     ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
     UserSession? userSession = ref.watch(userSessionProvider);
+
+    // If the user is using a certificate card,
+    // we don't want to show the profile icon.
+    if(userSession?.isCertificateCard ?? false) {
+      return const SizedBox();
+    }
 
     return Stack(
       alignment: Alignment.topCenter,

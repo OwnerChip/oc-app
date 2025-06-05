@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
@@ -7,7 +8,6 @@ import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter/services.dart';
 import 'package:web3dart/crypto.dart';
@@ -97,28 +97,37 @@ class TokenChainAndCollection {
   final EthereumAddress collectionId;
   final BigInt tokenId;
 
+  bool get minted => chainId != 0 && collectionId != zeroAddress;
+
   TokenChainAndCollection(this.chainId, this.collectionId, this.tokenId);
 }
 
 class ChipInfoModel {
-  ChipInfoModel(
-      {required this.chipEthereumAddress,
-      required this.tokenId,
-      this.chipIsInitialized = false});
+  ChipInfoModel({
+    required this.chipEthereumAddress,
+    required this.tokenId,
+    required this.firstSlotKey,
+    this.chipIsInitialized = false,
+  });
 
   EthereumAddress chipEthereumAddress;
   BigInt tokenId;
+  EthereumAddress firstSlotKey;
   bool chipIsInitialized;
 }
 
 class SignatureData {
   Uint8List hashedMsg;
   MsgSignature signature;
+
+  BigInt tokenId;
+
   bool hasBeenUsedInSmartContract;
 
   SignatureData(
       {required this.hashedMsg,
       required this.signature,
+      required this.tokenId ,
       this.hasBeenUsedInSmartContract = false});
 }
 
@@ -163,6 +172,8 @@ class UserSession {
   final EthereumAddress userWalletAddress;
   final bool isOwnerCard;
 
+  final bool isCertificateCard;
+
   int get expiryDate => jwt.exp;
 
   late final JwtToken jwt;
@@ -173,6 +184,7 @@ class UserSession {
     this.signatureData,
     this.userWalletAddress,
     this.isOwnerCard,
+    this.isCertificateCard,
     this.jwt,
     this.fcmToken,
   );
@@ -182,6 +194,7 @@ class UserSession {
         'signatureData': msgSignatureToJson(signatureData),
         'userWalletAddress': userWalletAddress.hex,
         'isOwnerCard': isOwnerCard,
+        'isCertificateCard': isCertificateCard,
         'expiryDate': expiryDate.toString(),
         'jwt': jwt.toJson(),
         'fcmToken': fcmToken?.toJson() ?? null,
@@ -192,6 +205,7 @@ class UserSession {
         signatureData = msgSignatureFromJson(json['signatureData']),
         userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
         isOwnerCard = json['isOwnerCard'],
+        isCertificateCard = json['isCertificateCard'],
         jwt = JwtToken.fromJson(json['jwt']),
         fcmToken = json['fcmToken'] != null
             ? FCMToken.fromJson(json['fcmToken'])

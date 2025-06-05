@@ -28,8 +28,10 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/themes/fontSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
+import 'package:ownerchip_whitelabel/utils/urls.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -43,10 +45,13 @@ import 'package:ownerchip_whitelabel/widgets/ui/DropdownContainer.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/InfoKeyValues.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
+
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../widgets/popups/CustomPopup.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -80,6 +85,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     final AsyncValue<TokenChainAndCollection> tokenInfo =
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final wc = ref.watch(w3mServiceProvider);
+    final  weblinkUrl = ref.watch(webLinkUrlProvider);
     final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
@@ -282,9 +288,10 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                         title: context.loc.loading, content: null)),
                 //if attachments are not empty --> show dropdown container
                 //if attachments are empty, but the connected wallet is the owner --> show dropdown container (so NFT owner can add documents)
-                (attachments.isNotEmpty ||
-                        (nftOwner.hasValue &&
-                            connectedWallet == nftOwner.value))
+                ((attachments.isNotEmpty ||
+                            (nftOwner.hasValue &&
+                                connectedWallet == nftOwner.value)) &&
+                        dotenv.get('APP_ID') != 'ownerchip_infineon')
                     ? DropdownContainer(
                         title: 'Digital Content ' +
                             '(' +
@@ -536,7 +543,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                               child: CustomRoundedButton(
                                 onPressed: () {
                                   launchUrl(
-                                    Uri.parse(getCertificateUrl(
+                                    Uri.parse(getEnvCertificateUrl(
                                         chipInfo.chipEthereumAddress.hex)),
                                   );
                                 },
@@ -553,6 +560,11 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                 DropdownContainer(
                   title: context.loc.externalLinks,
                   content: Column(children: [
+                    CustomRoundedButton(text: context.loc.openWebLink, onPressed: () {
+                      launchUrl(weblinkUrl);
+                    }),
+                    const SizedBox(height: 15),
+
                     CustomRoundedButton(
                       text: context.loc.showOnOpenSea,
                       onPressed: () => {
@@ -570,6 +582,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                   mode: LaunchMode.externalApplication)
                             },
                           ),
+
                   ]),
                 ),
                 const SizedBox(height: 20),
@@ -621,8 +634,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                       data[1] == connectedWallet
                                   ? BigIconButton(
                                       text: context.loc.offerForSale,
-                                      onPressed: () => Navigator.pushNamed(
-                                          context, OfferOnMPScreen.routeName),
+                                      onPressed: () {
+                                        navigateToOfferOnMPScreen(context);
+                                      },
                                       icon: Icon(
                                         Icons.euro,
                                         size: 35,
@@ -719,23 +733,32 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                 BigIconButton(
                                                   text: context.loc.burnToken,
                                                   onPressed: () async {
-                                                    final res = await scanItem(
-                                                      ref,
-                                                      context,
-                                                      navigateToResultPage:
-                                                          false,
-                                                    );
-                                                    if (res != null) {
-                                                      fromCancelable(burnToken(
-                                                        wc,
-                                                        chipInfo.tokenId,
-                                                        ref.read(
-                                                            chipSignatureDataProvider),
-                                                        connectedWallet,
-                                                        digitalTwinMetadata:
-                                                            digitalTwinMetadata,
-                                                      ));
+                                                    final sig = ref.read(
+                                                        chipSignatureDataProvider);
+                                                    if (sig.tokenId !=
+                                                        chipInfo.tokenId) {
+                                                      final res =
+                                                          await scanItem(
+                                                        ref,
+                                                        context,
+                                                        navigateToResultPage:
+                                                            false,
+                                                      );
+
+                                                      if (res == null) {
+                                                        return;
+                                                      }
                                                     }
+
+                                                    fromCancelable(burnToken(
+                                                      wc,
+                                                      chipInfo.tokenId,
+                                                      ref.read(
+                                                          chipSignatureDataProvider),
+                                                      connectedWallet,
+                                                      digitalTwinMetadata:
+                                                          digitalTwinMetadata,
+                                                    ));
                                                   },
                                                   icon: Icon(
                                                     Icons.delete_outline,
@@ -783,23 +806,30 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                       text: context
                                                           .loc.redeemToken,
                                                       onPressed: () async {
-                                                        final res =
-                                                            await scanItem(
-                                                          ref,
-                                                          context,
-                                                          navigateToResultPage:
-                                                              false,
-                                                        );
-                                                        if (res != null) {
-                                                          fromCancelable(
-                                                              redeemTwinToken(
-                                                                  wc,
-                                                                  chipInfo
-                                                                      .tokenId,
-                                                                  ref.read(
-                                                                      chipSignatureDataProvider),
-                                                                  connectedWallet));
+                                                        final sig = ref.read(
+                                                            chipSignatureDataProvider);
+                                                        if (sig.tokenId !=
+                                                            chipInfo.tokenId) {
+                                                          final res =
+                                                              await scanItem(
+                                                            ref,
+                                                            context,
+                                                            navigateToResultPage:
+                                                                false,
+                                                          );
+
+                                                          if (res == null) {
+                                                            return;
+                                                          }
                                                         }
+                                                        fromCancelable(
+                                                            redeemTwinToken(
+                                                                wc,
+                                                                chipInfo
+                                                                    .tokenId,
+                                                                ref.read(
+                                                                    chipSignatureDataProvider),
+                                                                connectedWallet));
                                                       },
                                                       icon: Icon(
                                                         Icons.call_received,
@@ -915,20 +945,26 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                             ),
                             text: context.loc.cancelOffer,
                             onPressed: () async {
-                              final res = await scanItem(
-                                ref,
-                                context,
-                                navigateToResultPage: false,
-                              );
-                              if (res != null) {
-                                fromCancelable(
-                                  cancelOffer(
-                                      wc,
-                                      chipInfo.tokenId,
-                                      ref.read(chipSignatureDataProvider),
-                                      connectedWallet),
+                              final sig = ref.read(chipSignatureDataProvider);
+                              if (sig.tokenId != chipInfo.tokenId) {
+                                final res = await scanItem(
+                                  ref,
+                                  context,
+                                  navigateToResultPage: false,
                                 );
+
+                                if (res == null) {
+                                  return;
+                                }
                               }
+
+                              fromCancelable(
+                                cancelOffer(
+                                    wc,
+                                    chipInfo.tokenId,
+                                    ref.read(chipSignatureDataProvider),
+                                    connectedWallet),
+                              );
                             })
                     ];
                   }
@@ -939,5 +975,22 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
               .where((e) => e != null)
               .cast<Widget>(),
         ]);
+  }
+}
+
+void navigateToOfferOnMPScreen(BuildContext context) {
+  if (dotenv.get('APP_ID') == 'ownerchip_infineon') {
+    showCustomPopup(
+        context,
+        context.loc.offerOnMpDiscoverDialogTitle,
+        Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+            context.loc.offerOnMpDiscoveryDialogMessage,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ]));
+  } else {
+    Navigator.pushNamed(context, OfferOnMPScreen.routeName);
   }
 }

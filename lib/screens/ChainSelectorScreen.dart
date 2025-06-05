@@ -32,7 +32,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //import svg
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:walletconnect_flutter_v2/apis/web3app/web3app.dart';
 import 'package:web3dart/web3dart.dart';
 
 class ChainSelectorScreen extends ConsumerStatefulWidget {

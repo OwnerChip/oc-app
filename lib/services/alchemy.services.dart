@@ -34,9 +34,10 @@ Future<AlchemyPaginationResponse<OcOwnedNft>> fetchNFTsForOwner(
       queryParameters: {
         'owner': owner.hex,
         'withMetadata': 'true',
+        'orderBy': "transferTime",
         'pageSize': pageSize.toString(),
         'excludeFilters[]': ['SPAM', 'AIRDROPS'],
-        'pageKey': pageKey,
+        if (pageKey != null) 'pageKey': pageKey,
         'contractAddresses[]': contractAddresses != null
             ? contractAddresses.map((e) => e.hex).toList()
             : [],
@@ -88,6 +89,7 @@ Future<AlchemyPaginationResponse<AlchemyNftTokenIdCollectionChainId>>
             "contractAddresses": contractAddresses != null
                 ? contractAddresses.map((e) => e.hex).toList()
                 : [],
+            "order": "desc"
           }
         ]
       },

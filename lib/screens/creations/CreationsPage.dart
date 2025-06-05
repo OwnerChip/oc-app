@@ -3,7 +3,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
+import 'package:ownerchip_whitelabel/screens/creations/creationCancel_popup.dart';
+import 'package:ownerchip_whitelabel/screens/creations/restoreToken_popup.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/backendCreationService.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
@@ -13,6 +16,7 @@ import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
@@ -46,6 +50,17 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
   @override
   Widget build(BuildContext context) {
     final creations = ref.watch(creationsNotifierProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (creations.initialized &&
+          creations.data != null &&
+          creations.data!.isEmpty) {
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      }
+    });
+
     return CustomOverlay(
       show: isLoading,
       content: SpinningLoadingSvg(
@@ -90,7 +105,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
               builder: (context, mode) => _buildFooter(context, mode),
             ),
             child: ListView.builder(
-              itemCount: creations.data!.length,
+              itemCount: creations.data?.length ?? 0,
               itemBuilder: (context, index) {
                 final metadata = creations.data![index];
                 return InkWell(
@@ -181,6 +196,91 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                             ],
                           ),
                         ),
+                        Column(
+                          children: [
+                            InkWell(
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 24,
+                                ),
+                              ),
+                              onTap: () {
+                                String title = "";
+                                String description = "";
+                                String yes = "";
+                                String cancel = "";
+                                VoidCallback onYes = () {};
+
+                                if (metadata.status ==
+                                    DigitalTwinCreationMetadataStatus
+                                        .toBeBurned) {
+                                  onYes = () {
+                                    BackendCreationService.instance
+                                        .cancelBurnDigitalTwin(metadata.id);
+                                  };
+
+                                  title = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_title;
+                                  description = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_description(
+                                          metadata.title);
+                                  yes = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_cancel_cancel_button;
+                                  cancel = context.loc
+                                      .nft_burn_cancel_confirmation_dialog_cancel_keep_button;
+                                } else if (metadata.status ==
+                                    DigitalTwinCreationMetadataStatus.pending) {
+                                  onYes = () {
+                                    BackendCreationService.instance
+                                        .cancelDigitalTwin(metadata.id);
+                                  };
+                                  title = context
+                                      .loc.nft_cancel_confirmation_dialog_title;
+                                  description = context.loc
+                                      .nft_cancel_confirmation_dialog_description(
+                                          metadata.title);
+                                  yes = context.loc
+                                      .nft_cancel_confirmation_dialog_cancel_cancel_button;
+                                  cancel = context.loc
+                                      .nft_cancel_confirmation_dialog_cancel_keep_button;
+                                } else if (metadata.status ==
+                                    DigitalTwinCreationMetadataStatus
+                                        .toBeTransferred) {
+                                  onYes = () {
+                                    BackendCreationService.instance
+                                        .cancelTransferDigitalTwin(metadata.id);
+                                  };
+
+                                  title = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_title;
+                                  description = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_description(
+                                          metadata.title);
+                                  yes = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+                                  cancel = context.loc
+                                      .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+                                }
+
+                                showCustomPopup(
+                                  context,
+                                  title,
+                                  CreationCancelPopup(
+                                    description: description,
+                                    yes: yes,
+                                    cancel: cancel,
+                                  ),
+                                ).then((res) {
+                                  if (res == true) {
+                                    onYes();
+                                  }
+                                });
+                              },
+                            )
+                          ],
+                        )
                       ],
                     ),
                   ),
@@ -289,12 +389,18 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
   Future<bool> _scanItem(
     BuildContext context,
     CreationsData creations,
-    DigitalTwinMetadata metadata,
-  ) async {
+    DigitalTwinMetadata metadata, {
+    Function(String)? onTokenExist,
+  }) async {
     final res = await scanItem(
       ref,
       context,
-      navigateToResultPage: false,
+      navigateToResultPage: true,
+      navigateToTokenDoesNotExistPage: false,
+      navigateToTokenExistsPage:
+          metadata.status != DigitalTwinCreationMetadataStatus.pending,
+      returnOnTokenExists: true,
+      onTokenExists: onTokenExist,
     );
 
     if (res == null) {
@@ -346,7 +452,35 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     CreationsData creations,
     DigitalTwinMetadata metadata,
   ) async {
-    if (await _scanItem(context, creations, metadata)) {
+    if (await _scanItem(
+      context,
+      creations,
+      metadata,
+      onTokenExist: (String tokenId) {
+        showCustomPopup(
+          context,
+          context.loc.nftCreationRestoreTokenPopupTitle,
+          RestoreTokenPopup(
+            metadata: metadata,
+            tokenId: tokenId,
+          ),
+        ).then((res) {
+          if (res != true) {
+            return;
+          }
+        });
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   returnSnackBarWidget(
+        //     context.loc.warning,
+        //     context.loc.nftCreationsAlreadyMintedToken,
+        //     "warning",
+        //     duration: const Duration(
+        //       seconds: 6,
+        //     ),
+        //   ),
+        // );
+      },
+    )) {
       final userSession = ref.read(userSessionProvider)!;
       final wc = ref.read(w3mServiceProvider);
 

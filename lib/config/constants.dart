@@ -6,6 +6,8 @@ final EthereumAddress zeroAddress =
 //mint function signatures
 const String mintFunctionSignature = '0xcb5a7173';
 const String mintVoucherFunctionSignature = '0xa4bf45e8';
+const String mintVoucherToCertificateCardFunctionSignature = '0x9b550cac';
+
 
 //burn function signatures
 const String burnFunctionSignature = '0x469fd767';

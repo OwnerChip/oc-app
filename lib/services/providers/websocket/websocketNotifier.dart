@@ -11,8 +11,8 @@ import 'package:ownerchip_whitelabel/services/providers/websocket/types/websocke
 import 'package:ownerchip_whitelabel/services/providers/websocket/types/websocketRequest.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import "package:collection/collection.dart";
 
 class WebsocketNotifier extends Notifier<WebsocketData> {
@@ -50,21 +50,22 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
     }
   }
 
-  void init() {
+  Future<bool> init() async {
+    final connectionCompleter = Completer<bool>();
     try {
       final session = ref.read(userSessionProvider);
       talker.info("WebsocketNotifier.init");
 
       if (session == null) {
-        return;
+        talker.error("WebsocketNotifier.init: no session");
+        return false;
       }
 
-      if (state.socket != null) {
-        state.socket?.disconnect();
-      }
+      state.socket?.dispose();
 
-      final url = dotenv
-          .get("OC_BACKEND_URL")
+      final url = (dotenv.get('IS_INTERNAL') == 'true'
+              ? dotenv.get('OC_BACKEND_URL_TEST')
+              : dotenv.get('OC_BACKEND_URL'))
           .replaceAll("https", "wss")
           .replaceAll("http", "ws");
       state = state.copyWith(
@@ -87,8 +88,9 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       talker.info("WebsocketNotifier.init: connecting to $url");
 
       onConnect(_) {
-        state = state.copyWith(connected: true);
+        state = state.copyWith(connecting: false);
         talker.info("WebsocketNotifier.init: connected to $url");
+        connectionCompleter.complete(true);
       }
 
       state.socket?.onConnect(onConnect);
@@ -96,6 +98,8 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       onConnectError(data) {
         talker
             .error("WebsocketNotifier.init: error connecting to $url \n $data");
+        state = state.copyWith(connecting: false);
+        connectionCompleter.complete(false);
       }
 
       state.socket?.onConnectError(onConnectError);
@@ -107,7 +111,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             .firstWhereOrNull((element) => element.value == event)
             ?.key;
 
-        if(eventEnum == null) {
+        if (eventEnum == null) {
           talker.error("WebsocketNotifier.init: received unknown event $event");
           return;
         }
@@ -124,7 +128,6 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
             final storage = await SharedPreferences.getInstance();
 
             //remove session and wallet type from storage
-            storage.remove('session');
             storage.remove('walletType');
             storage.remove('userSession');
             ref.read(w3mServiceProvider)?.disconnect();
@@ -141,7 +144,7 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       state.socket?.onAny(onAny);
 
       onDisconnect(_) {
-        state = state.copyWith(connected: false);
+        state = state.copyWith(connecting: false);
         talker.info("WebsocketNotifier.init: disconnected from $url");
 
         // remove all listeners
@@ -151,6 +154,9 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
         state.socket?.off('connecting');
         state.socket?.off('disconnect');
         state.socket?.offAny();
+
+        // reconnect
+        init();
       }
 
       state.socket?.onDisconnect(onDisconnect);
@@ -166,15 +172,18 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
       );
 
       state.socket?.connect();
+      state = state.copyWith(connecting: true);
     } catch (e, s) {
       talker.error(e, s);
     }
+
+    return connectionCompleter.future;
   }
 
   void disconnect() {
     if (state.socket != null) {
       state.socket?.disconnect();
-      state = state.copyWith(socket: null, connected: false);
+      state = WebsocketData.initial();
     }
   }
 }

@@ -44,7 +44,7 @@ abstract class BackendCustomerService {
   @Headers({
     "lang": "en",
   })
-  Future<void> sendCardInitToBackend({
+  Future<HttpResponse> sendCardInitToBackend({
     @Path("customerId") required String customerId,
     @Header("app_id") required String appId,
     @Body() required CardInitPayload payload,

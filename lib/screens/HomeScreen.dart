@@ -11,6 +11,7 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
+
 //import screens
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
@@ -20,6 +21,7 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
+
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
@@ -32,8 +34,10 @@ import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+
 //import misc
 import 'package:ownerchip_whitelabel/utils/utils.dart';
+
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
@@ -43,8 +47,8 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry/sentry.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -71,7 +75,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if ((storedAppVersion == null) ||
         (storedAppVersion != dotenv.get('VERSION_NUMBER'))) {
       //remove session and wallet type from storage
-      storage.remove('session');
       storage.remove('walletType');
       storage.remove('userSession');
     }
@@ -99,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     try {
       final wcService = ref.read(w3mServiceProvider);
 
-      final storedWcSession = storage.getString('session');
+      ReownAppKitModalSession? storedWcSession = wcService?.session;
       final storedWalletType = storage.getString('walletType');
       final storedUserSession = storage.getString('userSession');
 
@@ -108,6 +111,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ((storedUserSession != null &&
                   UserSession.fromJson(jsonDecode(storedUserSession))
                       .isOwnerCard) ||
+              (storedUserSession != null &&
+                  WalletType.fromJson(jsonDecode(storedWalletType)).type ==
+                      EWalletType.web3auth) ||
               (storedWcSession != null && storedUserSession != null))) {
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
@@ -115,15 +121,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         final me = await BackendAuth.getMe(
           backendSession.jwt.raw,
-        );
+        ).timeout(const Duration(
+          seconds: 8,
+        ));
 
-        if (me != null && me.role != backendSession.jwt.role) {
+        if (walletType.type == EWalletType.certificateCard ||
+            (me != null && me.role != backendSession.jwt.role)) {
           //remove session and wallet type from storage
-          storage.remove('session');
-          storage.remove('walletType');
-          storage.remove('userSession');
-          wcService?.disconnect();
-          await BackendAuth.initGuestSession();
+          await _clearSession(storage, wcService);
           return;
         }
 
@@ -150,8 +155,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           } else {
             if (privKey == null) {}
           }
-        } else if (walletType.type == EWalletType.ownerCard ||
-            walletType.type == EWalletType.certificateCard) {
+        } else if (walletType.type == EWalletType.ownerCard) {
           if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
               backendSession.jwt.raw.isNotEmpty) {
             ref.read(userAddressProvider.notifier).state =
@@ -162,42 +166,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
-            storage.remove('session');
-            storage.remove('walletType');
-            storage.remove('userSession');
-            wcService?.disconnect();
-            await BackendAuth.initGuestSession();
+            await _clearSession(storage, wcService);
           }
         } else {
-          final wcSession = ReownAppKitModalSession.fromMap(jsonDecode(storedWcSession!));
-
           //check if the stored session expires in less than three days; if yes, remove it
           //Note: WalletConnect session duration is 7 days
 
-          if ((wcSession.expiry ?? 0) > BackendAuth.nowPlusThreeHours() &&
+          if ((storedWcSession?.expiry ?? 0) >
+                  BackendAuth.nowPlusThreeHours() &&
               backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
               backendSession.jwt.raw.isNotEmpty) {
-            ref.read(wcSessionProvider.notifier).state = wcSession;
+            ref.read(wcSessionProvider.notifier).state = storedWcSession;
             ref.read(walletTypeProvider.notifier).state = walletType;
             ref.read(userSessionProvider.notifier).state = backendSession;
             Backend.recreateServices(backendSession.jwt.raw);
             ref.read(websocketProvider.notifier).init();
           } else {
             //remove session and wallet type from storage
-            storage.remove('session');
-            storage.remove('walletType');
-            storage.remove('userSession');
-            wcService?.disconnect();
-            await BackendAuth.initGuestSession();
+            await _clearSession(storage, wcService);
           }
         }
       } else {
         //remove session and wallet type from storage
-        storage.remove('session');
-        storage.remove('walletType');
-        storage.remove('userSession');
-        wcService?.disconnect();
-        await BackendAuth.initGuestSession();
+        await _clearSession(storage, wcService);
       }
 
       if (!shippingPopupIsShown) {
@@ -213,13 +204,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       );
       talker.error(
           "Error initializing persisted state: $e \n proceeding with guest session.");
-      storage.remove('session');
-      storage.remove('walletType');
-      storage.remove('userSession');
-      await BackendAuth.initGuestSession();
+      await _clearSession(storage, ref.read(w3mServiceProvider));
     } finally {
       FlutterNativeSplash.remove();
     }
+  }
+
+  Future<void> _clearSession(
+      SharedPreferences storage, ReownAppKitModal? wcService) async {
+    storage.remove('walletType');
+    storage.remove('userSession');
+    wcService?.disconnect();
+    await BackendAuth.initGuestSession().timeout(const Duration(
+      seconds: 8,
+    ));
   }
 
   @override
@@ -359,7 +357,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final app = ref.watch(appNotifierProvider);
     final creations = ref.watch(creationsNotifierProvider);
 
-    final wc = ref.watch(wcProvider);
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
 
@@ -406,6 +403,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       flexSides: 0,
       padding: const EdgeInsets.only(top: 0, bottom: 15),
       children: [
+        dotenv.get('APP_ID') == 'ownerchip_infineon'
+            ? Column(children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Image.asset(
+                      'assets/images/ownerchip_infineon/infineon_logo.png',
+                      height: 40,
+                    )
+                  ],
+                ),
+              ])
+            : Container(),
         dotenv.get('BITRISEIO_PACKAGE_NAME') == 'com.ownerchip.internal'
             ? const Text(
                 'INTERNAL',

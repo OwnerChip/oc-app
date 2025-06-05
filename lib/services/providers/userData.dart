@@ -20,6 +20,27 @@ final userSessionProvider = StateProvider<UserSession?>((ref) {
   return null;
 });
 
+class DeferredUserSessionData {
+  final UserSession? userSession;
+  final WalletType? walletType;
+
+  factory DeferredUserSessionData.empty() {
+    return DeferredUserSessionData(
+      userSession: null,
+      walletType: null,
+    );
+  }
+
+  DeferredUserSessionData({
+    this.userSession,
+    this.walletType,
+  });
+}
+
+final deferredUserSessionProvider = StateProvider<DeferredUserSessionData?>((ref) {
+  return null;
+});
+
 //**** USER HAS MINTER ROLE OR NOT */
 
 final hasMinterRoleProvider = FutureProvider.autoDispose<bool>((ref) async {

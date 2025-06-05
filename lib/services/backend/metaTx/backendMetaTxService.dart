@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/metaTx/payloads/sendGaslessRequestPayload.dart';
+import 'package:retrofit/dio.dart';
 import 'package:retrofit/http.dart';
+import 'package:retrofit/retrofit.dart';
 
 part 'backendMetaTxService.g.dart';
 
@@ -27,7 +29,7 @@ abstract class BackendMetaTxService {
   }
 
   @GET("/collection/{collectionId}/metaTx/{functionSignatureHash}")
-  Future<String> checkMetaTx({
+  Future<HttpResponse> checkMetaTx({
     @Path("collectionId") required String collectionId,
     @Path("functionSignatureHash") required String functionSignatureHash,
   });

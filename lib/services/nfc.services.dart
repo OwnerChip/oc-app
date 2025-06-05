@@ -2,6 +2,7 @@
 
 //import packages
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/config/ownercard.dart';
+import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 
@@ -21,13 +23,16 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/UserScanResultsScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
+import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
+import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/secora.services.dart';
@@ -41,7 +46,9 @@ import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/AndroidNfcPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/appBar/AppBarAuthDropDown.dart';
 import 'package:sentry/sentry.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/crypto.dart';
 
@@ -67,8 +74,22 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
           sessionId, chipWalletAddress, "CHIP_INITIALIZED");
     }
 
+    EthereumAddress? firstPubKeyAddress;
+
+    try {
+      final firstPubKey = await getPubKeyN(nfc, 0x00);
+      firstPubKeyAddress = OwnercardData.fromPubKeyZeros(firstPubKey);
+    } catch (e) {
+      // ignore as slot 0 is not initialized for chip or not supported
+    }
+
     //set chip info data in provider
-    setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
+    setChipInfoProvider(
+      ref,
+      chipEthereumAddress,
+      chipTokenId,
+      firstPubKeyAddress: firstPubKeyAddress,
+    );
 
     TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipTokenId).future);
@@ -80,8 +101,11 @@ Future<void> initializeItem(WidgetRef ref, BuildContext context) async {
         nfc, sessionId, chipEthereumAddress, chipTokenId);
     Uint8List hashedMsg = verificationResult[0];
     MsgSignature signature = verificationResult[1];
-    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-        SignatureData(hashedMsg: hashedMsg, signature: signature));
+    ref.read(chipSignatureDataProvider.notifier).setSignatureData(SignatureData(
+          hashedMsg: hashedMsg,
+          signature: signature,
+          tokenId: chipTokenId,
+        ));
 
     //TOKEN DOES NOT EXIST
     if (config.collectionId == zeroAddress) {
@@ -140,6 +164,11 @@ Future<dynamic> scanItem(
   WidgetRef ref,
   BuildContext context, {
   bool navigateToResultPage = true,
+  bool navigateToTokenDoesNotExistPage = true,
+  bool returnOnTokenDoesNotExist = false,
+  bool navigateToTokenExistsPage = true,
+  bool returnOnTokenExists = false,
+  void Function(String)? onTokenExists,
 }) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
@@ -147,11 +176,41 @@ Future<dynamic> scanItem(
     String chipWalletAddress = chipEthereumAddress.toString();
     BigInt chipTokenId = createFirstKeyChipResponse[1];
 
-    //set chip info data in provider
-    setChipInfoProvider(ref, chipEthereumAddress, chipTokenId);
-
     TokenChainAndCollection config =
         await ref.watch(findTokenProvider(chipTokenId).future);
+
+    EthereumAddress? firstPubKeyAddress;
+
+    try {
+      final firstPubKey = await getPubKeyN(nfc, 0x00);
+      firstPubKeyAddress = OwnercardData.fromPubKeyZeros(firstPubKey);
+
+      // if the card is a certificate card,
+      // and its a minted token,
+      // we authenticate it before proceeding
+      if (config.minted &&
+          OwnercardData.isCertificateCard(firstPubKeyAddress)) {
+        setDeferredUserSession(ref);
+        await authCardCallback(
+          ref,
+          context,
+          nfc,
+          await BackendAuth.getSessionId(),
+          createFirstKeyChipResponse,
+          pin: null,
+        );
+      }
+    } catch (e) {
+      // ignore as slot 0 is not initialized for chip or not supported
+    }
+
+    //set chip info data in provider
+    setChipInfoProvider(
+      ref,
+      chipEthereumAddress,
+      chipTokenId,
+      firstPubKeyAddress: firstPubKeyAddress,
+    );
 
     //verify signature
     try {
@@ -159,33 +218,64 @@ Future<dynamic> scanItem(
           nfc, sessionId, chipEthereumAddress, chipTokenId);
       Uint8List hashedMsg = verificationResult[0];
       MsgSignature signature = verificationResult[1];
-      ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-          SignatureData(hashedMsg: hashedMsg, signature: signature));
+      ref
+          .read(chipSignatureDataProvider.notifier)
+          .setSignatureData(SignatureData(
+            hashedMsg: hashedMsg,
+            signature: signature,
+            tokenId: chipTokenId,
+          ));
 
       if (navigateToResultPage) {
         //TOKEN DOES NOT EXIST
         if (config.collectionId == zeroAddress) {
-          BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
-              tags: {"chipWallet": chipWalletAddress});
+          if (navigateToTokenDoesNotExistPage) {
+            BackendApp.sendAnalyticsTrace(sessionId, "", "SCAN_RESULT_NEGATIVE",
+                tags: {"chipWallet": chipWalletAddress});
 
-          Navigator.pushNamed(
-            context,
-            UserScanResultsScreen.routeName,
-          );
+            Navigator.pushNamed(
+              context,
+              UserScanResultsScreen.routeName,
+            );
+          }
+
+          if (returnOnTokenDoesNotExist) {
+            return;
+          }
         } else {
           //TOKEN EXISTS
-          await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
-              signature, sessionId, chipWalletAddress, context);
-
-          Navigator.pushNamed(
-            context,
-            UserScanResultsScreen.routeName,
+          onTokenExists?.call(
+            chipWalletAddress,
           );
+          if (navigateToTokenExistsPage) {
+            await verifyAuthenticity(config, chipEthereumAddress, hashedMsg,
+                signature, sessionId, chipWalletAddress, context);
+
+            Navigator.pushNamed(
+              context,
+              UserScanResultsScreen.routeName,
+            ).then((_) {
+              if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
+                restoreDeferredUserSession(ref);
+              }
+            });
+          }
+
+          if (returnOnTokenExists) {
+            return;
+          }
+        }
+      } else {
+        if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
+          restoreDeferredUserSession(ref);
         }
       }
       return signature;
     } catch (e) {
       // check if wallet is connected
+      if (ref.read(userSessionProvider)?.isCertificateCard ?? false) {
+        restoreDeferredUserSession(ref);
+      }
 
       if (navigateToResultPage &&
           ref.read(wcSessionProvider) == null &&
@@ -208,13 +298,63 @@ Future<dynamic> scanItem(
       context, ref, callback, "SCAN_ITEM", context.loc.holdPhoneToNfcChip);
 }
 
+void setDeferredUserSession(WidgetRef ref) {
+  final userSession = ref.read(userSessionProvider);
+  final walletType = ref.read(walletTypeProvider);
+
+  ref.read(deferredUserSessionProvider.notifier).state =
+      DeferredUserSessionData(
+    userSession: userSession,
+    walletType: walletType,
+  );
+}
+
+Future<void> restoreDeferredUserSession(WidgetRef ref) async {
+  final DeferredUserSessionData? deferredUserSession =
+      ref.read(deferredUserSessionProvider);
+  if (deferredUserSession != null &&
+      deferredUserSession.walletType?.type != EWalletType.certificateCard &&
+      deferredUserSession.userSession != null) {
+    ref.read(userAddressProvider.notifier).state =
+        deferredUserSession.userSession?.userWalletAddress ?? zeroAddress;
+    ref.read(userSessionProvider.notifier).state =
+        deferredUserSession.userSession;
+    ref.read(walletTypeProvider.notifier).state =
+        deferredUserSession.walletType;
+    Backend.recreateServices(deferredUserSession.userSession!.jwt.raw);
+    ref.read(creationsNotifierProvider.notifier).load();
+    ref.read(websocketProvider.notifier).init();
+    //persist session date
+    final SharedPreferences storage = await SharedPreferences.getInstance();
+    storage.setString(
+      'userSession',
+      jsonEncode(deferredUserSession.userSession!.toJson()),
+    );
+    storage.setString(
+      'walletType',
+      jsonEncode(
+        deferredUserSession.walletType!.toJson() ?? '{}',
+      ),
+    );
+  } else {
+    disconnectWallet(
+      ref,
+      ref.context,
+    );
+  }
+}
+
 void setChipInfoProvider(
-    WidgetRef ref, EthereumAddress chipEthereumAddress, BigInt chipTokenId) {
+    WidgetRef ref, EthereumAddress chipEthereumAddress, BigInt chipTokenId,
+    {EthereumAddress? firstPubKeyAddress}) {
   ref
       .read(chipInfoProvider.notifier)
       .setChipEthereumAddress(chipEthereumAddress);
   ref.read(chipInfoProvider.notifier).setTokenId(chipTokenId);
   ref.read(chipInfoProvider.notifier).setChipToInitialized();
+  ref.read(chipInfoProvider.notifier).setFirstSlotKey(
+        firstPubKeyAddress,
+      );
 }
 
 //TODO: Check if this function should actually return a bool? What happens if verifyTokenAuthenticity returns false?
@@ -244,14 +384,24 @@ Future<void> verifyAuthenticity(
 }
 
 /*GET SIGNATURE OF A MESSAGE/HASH FROM A CHIP WHICH IS NOT PIN LOCKED*/
-Future<MsgSignature?> getChipSignature(WidgetRef ref, BuildContext context,
-    msgHashToSign, Function toggleLoading) async {
+Future<List<MsgSignature?>> getChipSignatures(
+    WidgetRef ref,
+    BuildContext context,
+    List<dynamic> msgHashToSign,
+    Function toggleLoading) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
     EthereumAddress chipWalletAddress = createFirstKeyChipResponse[0];
-    MsgSignature signature = await signHash(
-        nfc, 0x01, chipWalletAddress, hexToBytes(msgHashToSign), true);
-    return signature;
+
+    final List<MsgSignature?> signatures = [];
+
+    for (final msgHash in msgHashToSign) {
+      MsgSignature signature = await signHash(nfc, 0x01, chipWalletAddress,
+          msgHash is Uint8List ? msgHash : hexToBytes(msgHash), true);
+      signatures.add(signature);
+    }
+
+    return signatures;
   }
 
   return await scanClosure(context, ref, callback, "MAKE_CHIP_SIGNATURE",
@@ -288,6 +438,86 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
           : context.loc.holdPhoneToCard);
 }
 
+Future authCardCallback(
+  WidgetRef ref,
+  BuildContext context,
+  NFCPlatform nfc,
+  String sessionId,
+  List createFirstKeyChipResponse, {
+  String? pin,
+}) async {
+  final firstPubKey = await getPubKeyN(nfc, 0x00);
+  final address = OwnercardData.fromPubKeyZeros(firstPubKey);
+
+  final bool isCertificateCard = OwnercardData.isCertificateCard(address);
+
+  if (pin == null) {
+    // check if the card is a certificate card
+    if (!OwnercardData.isCertificateCard(address)) {
+      throw context.loc.cardIsNotCertificateCard;
+    }
+  } else {
+    // check if the card is an owner card
+    if (!OwnercardData.isOwnerCard(address)) {
+      throw context.loc.cardIsNotOwnerCard;
+    }
+  }
+
+  final String message =
+      "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+
+  final siweMessage = BackendAuth.createSiweMessage(
+    address: createFirstKeyChipResponse[0],
+    statement: message,
+    nonce: sessionId,
+  );
+
+  final prefixedMessage =
+      "\x19Ethereum Signed Message:\n${siweMessage[1].length}${siweMessage[1]}";
+  Uint8List msgHashToSign = keccakUtf8(prefixedMessage);
+  if (pin != null) {
+    await verifyPin(nfc, pin);
+  }
+  final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
+  MsgSignature signature = await signHash(
+    nfc,
+    0x01,
+    cardWalletAddress,
+    msgHashToSign,
+    false,
+  );
+
+  final rHex = signature.r.toRadixString(16).padLeft(64, '0');
+  final sHex = signature.s.toRadixString(16).padLeft(64, '0');
+  final vHex = signature.v.toRadixString(16).padLeft(2, '0');
+
+  String? jwt = await BackendAuth.validateSiwe(
+    message: siweMessage[0],
+    signature: "0x$rHex$sHex$vHex",
+  );
+
+  try {
+    JwtToken.decode(jwt);
+  } catch (_) {
+    talker.info("Invalid JWT, using old method to create session");
+    // if the JWT is invalid, we use the old method to create session
+    String message =
+        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
+    Uint8List msgHashToSign = keccakUtf8(message);
+    signature =
+        await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign, false);
+    jwt = null;
+  }
+  await BackendAuth.saveUserSession(
+    sessionId,
+    cardWalletAddress,
+    signature,
+    ref,
+    jwt,
+    isCertificateCard,
+  );
+}
+
 Future<void> authenticateCard(
   WidgetRef ref,
   BuildContext context, {
@@ -295,75 +525,13 @@ Future<void> authenticateCard(
 }) async {
   Future callback(NFCPlatform nfc, String sessionId,
       List createFirstKeyChipResponse) async {
-    final firstPubKey = await getPubKeyN(nfc, 0x00);
-    final address = OwnercardData.fromPubKeyZeros(firstPubKey);
-
-    final bool isCertificateCard = OwnercardData.isCertificateCard(address);
-
-    if (pin == null) {
-      // check if the card is a certificate card
-      if (!OwnercardData.isCertificateCard(address)) {
-        throw context.loc.cardIsNotCertificateCard;
-      }
-    } else {
-      // check if the card is an owner card
-      if (!OwnercardData.isOwnerCard(address)) {
-        throw context.loc.cardIsNotOwnerCard;
-      }
-    }
-
-    final String message =
-        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
-
-    final siweMessage = BackendAuth.createSiweMessage(
-      address: createFirstKeyChipResponse[0],
-      statement: message,
-      nonce: sessionId,
-    );
-
-    final prefixedMessage =
-        "\x19Ethereum Signed Message:\n${siweMessage[1].length}${siweMessage[1]}";
-    Uint8List msgHashToSign = keccakUtf8(prefixedMessage);
-    if (pin != null) {
-      await verifyPin(nfc, pin);
-    }
-    final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
-    MsgSignature signature = await signHash(
-      nfc,
-      0x01,
-      cardWalletAddress,
-      msgHashToSign,
-      false,
-    );
-
-    final rHex = signature.r.toRadixString(16).padLeft(64, '0');
-    final sHex = signature.s.toRadixString(16).padLeft(64, '0');
-    final vHex = signature.v.toRadixString(16).padLeft(2, '0');
-
-    String? jwt = await BackendAuth.validateSiwe(
-      message: siweMessage[0],
-      signature: "0x$rHex$sHex$vHex",
-    );
-
-    try {
-      JwtToken.decode(jwt);
-    } catch (_) {
-      talker.info("Invalid JWT, using old method to create session");
-      // if the JWT is invalid, we use the old method to create session
-      String message =
-          "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
-      Uint8List msgHashToSign = keccakUtf8(message);
-      signature =
-          await signHash(nfc, 0x01, cardWalletAddress, msgHashToSign, false);
-      jwt = null;
-    }
-    await BackendAuth.saveUserSession(
-      sessionId,
-      cardWalletAddress,
-      signature,
+    return await authCardCallback(
       ref,
-      jwt,
-      isCertificateCard,
+      context,
+      nfc,
+      sessionId,
+      createFirstKeyChipResponse,
+      pin: pin,
     );
   }
 
@@ -495,8 +663,11 @@ Future<bool> triggerCardLost(BuildContext context, WidgetRef ref, String email,
         nfc, sessionId, chipEthereumAddress, chipTokenId);
     Uint8List hashedMsg = verificationResult[0];
     MsgSignature signature = verificationResult[1];
-    ref.read(chipSignatureDataProvider.notifier).setSignatureData(
-        SignatureData(hashedMsg: hashedMsg, signature: signature));
+    ref.read(chipSignatureDataProvider.notifier).setSignatureData(SignatureData(
+          hashedMsg: hashedMsg,
+          signature: signature,
+          tokenId: chipTokenId,
+        ));
 
     final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
     final TokenChainAndCollection tokenInfo =
@@ -539,6 +710,7 @@ Future<dynamic> importKeyToSlotZero(
   String customerId, {
   required String cardBaseId,
   bool isCertificateCard = false,
+  required String ocInternalPassword,
 }) async {
   String identifier = generateCardIdentifier(
     int.parse(customerId),
@@ -554,11 +726,16 @@ Future<dynamic> importKeyToSlotZero(
       await writeKeyToSlotZero(nfc, seed);
       pubKeyZero = await getPubKeyN(nfc, 0x00);
     }
-    BackendCustomer.sendCardInitToBackend(
+    final res = await BackendCustomer.sendCardInitToBackend(
       customerId,
       createFirstKeyChipResponse[0],
       isCertificateCard,
+      ocInternalPassword,
     );
+
+    if (!res) {
+      throw context.loc.errorSendingCardInitToBackend;
+    }
 
     EthereumAddress cardWalletAddress =
         OwnercardData.fromPubKeyZeros(pubKeyZero);

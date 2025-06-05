@@ -30,7 +30,7 @@ import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:web3dart/web3dart.dart';
 
 class MetadataScreen extends ConsumerStatefulWidget {
   const MetadataScreen({super.key});
@@ -202,11 +202,15 @@ class _MetadataScreenState extends ConsumerState<MetadataScreen>
                             ],
                           )),
                       const SizedBox(height: 20),
+                      dotenv.get('APP_ID') == 'ownerchip_infineon'
+                          ? Container()
+                          : Column(children: [
+                              AttachmentUploadButton(
+                                  text: context.loc.uploadDigitalContent,
+                                  icon: Icons.add),
+                              const SizedBox(height: 20),
+                            ]),
 
-                      AttachmentUploadButton(
-                          text: context.loc.uploadDigitalContent,
-                          icon: Icons.add),
-                      const SizedBox(height: 20),
                       //map over attachmentList to display all attachments as FileBox
                       if (attachmentList != null)
                         for (var i = 0; i < attachmentList.length; i++)

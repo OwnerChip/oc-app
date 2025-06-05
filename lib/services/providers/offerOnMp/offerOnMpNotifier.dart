@@ -4,6 +4,7 @@ import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.d
 import 'package:ownerchip_whitelabel/services/providers/offerOnMp/offerOnMpData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:web3dart/web3dart.dart';
 
 class OfferOnMpNotifier extends Notifier<OfferOnMpData> {
   @override
@@ -16,6 +17,18 @@ class OfferOnMpNotifier extends Notifier<OfferOnMpData> {
     if (session == null) {
       return;
     }
+
+    EthereumAddress address = session.userWalletAddress;
+
+    if (session.isCertificateCard) {
+      final deferredUserSession = ref.read(deferredUserSessionProvider);
+
+      if (deferredUserSession != null &&
+          deferredUserSession.userSession?.userWalletAddress != null) {
+        address = deferredUserSession.userSession!.userWalletAddress;
+      }
+    }
+
     state = state.copyWith(
       loading: true,
       error: false,
@@ -24,7 +37,7 @@ class OfferOnMpNotifier extends Notifier<OfferOnMpData> {
     CreatorDto? creator;
 
     try {
-      creator = await BackendCustomer.getCreator(session.userWalletAddress);
+      creator = await BackendCustomer.getCreator(address);
     } catch (e, s) {
       talker.info('Could not get creator');
     }

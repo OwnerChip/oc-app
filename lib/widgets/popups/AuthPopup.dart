@@ -27,7 +27,8 @@ import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:reown_appkit/reown_appkit.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 import '../../utils/localization.helper.dart';
@@ -141,7 +142,8 @@ Future<void> onTapAuth(
   final oldUserSession = ref.read(userSessionProvider);
   String sessionId =
       oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
-  bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
+  final bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
+  final bool isCertificateCard = oldUserSession?.isCertificateCard ?? false;
 
   late final JwtToken token;
   late final MsgSignature signature;
@@ -172,28 +174,16 @@ Future<void> onTapAuth(
 
     signature = hexSignatureToRSV(hexSignature);
   } catch (e, st) {
-    String message =
-        "Sign this message to confirm that you are the owner of your wallet (SessionId: $sessionId)";
-
-    String hexSignature = await sendPersonalSignRequest(
-      ref,
-      message,
-      userWalletAddress,
-      walletType,
+    Sentry.captureException(
+      e,
+      stackTrace: st,
     );
-
-    signature = hexSignatureToRSV(hexSignature);
-
-    int sevenDaysInSeconds = 60 * 60 * 24 * 7;
-
-    token = JwtToken(
-      raw: "",
-      walletAddress: userWalletAddress.hex,
-      sessionId: sessionId,
-      role: "user",
-      iat: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      exp: BackendAuth.nowPlusThreeHours(),
+    talker .error(
+      'Error signing message',
+      e,
+      st,
     );
+    throw Exception(context.loc.errorConnectingWallet);
   }
 
   Backend.recreateServices(token.raw);
@@ -222,6 +212,7 @@ Future<void> onTapAuth(
     signature,
     ref.read(userAddressProvider),
     isOwnerCard,
+    isCertificateCard,
     token,
     await BackendFCM.getAndSaveFCMToken(sessionId),
   );

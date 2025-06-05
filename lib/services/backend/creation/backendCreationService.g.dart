@@ -6,17 +6,20 @@ part of 'backendCreationService.dart';
 // RetrofitGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers
+// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations
 
 class _BackendCreationService implements BackendCreationService {
   _BackendCreationService(
     this._dio, {
     this.baseUrl,
+    this.errorLogger,
   });
 
   final Dio _dio;
 
   String? baseUrl;
+
+  final ParseErrorLogger? errorLogger;
 
   @override
   Future<BackendPaginationResponse<DigitalTwinMetadata>?> getMyDigitalTwins(
@@ -32,7 +35,7 @@ class _BackendCreationService implements BackendCreationService {
     };
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>?>(
+    final _options =
         _setStreamType<BackendPaginationResponse<DigitalTwinMetadata>>(Options(
       method: 'GET',
       headers: _headers,
@@ -48,15 +51,22 @@ class _BackendCreationService implements BackendCreationService {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final value = _result.data == null
-        ? null
-        : BackendPaginationResponse<DigitalTwinMetadata>.fromJson(
-            _result.data!,
-            (json) =>
-                DigitalTwinMetadata.fromJson(json as Map<String, dynamic>),
-          );
-    return value;
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>?>(_options);
+    late BackendPaginationResponse<DigitalTwinMetadata>? _value;
+    try {
+      _value = _result.data == null
+          ? null
+          : BackendPaginationResponse<DigitalTwinMetadata>.fromJson(
+              _result.data!,
+              (json) =>
+                  DigitalTwinMetadata.fromJson(json as Map<String, dynamic>),
+            );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
@@ -68,7 +78,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{r'chipId': chipId};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -83,7 +93,33 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
+  }
+
+  @override
+  Future<void> cancelDigitalTwin(String id) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<void>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/${id}/cancel',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -96,7 +132,7 @@ class _BackendCreationService implements BackendCreationService {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(payload.toJson());
-    final _result = await _dio.fetch<Map<String, dynamic>?>(
+    final _options =
         _setStreamType<UploadDigitalTwinCreationAttachmentResponse>(Options(
       method: 'POST',
       headers: _headers,
@@ -112,11 +148,18 @@ class _BackendCreationService implements BackendCreationService {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final value = _result.data == null
-        ? null
-        : UploadDigitalTwinCreationAttachmentResponse.fromJson(_result.data!);
-    return value;
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>?>(_options);
+    late UploadDigitalTwinCreationAttachmentResponse? _value;
+    try {
+      _value = _result.data == null
+          ? null
+          : UploadDigitalTwinCreationAttachmentResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
@@ -128,7 +171,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'PUT',
       headers: _headers,
       extra: _extra,
@@ -143,7 +186,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -152,27 +196,33 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>?>(
-        _setStreamType<DigitalTwinMetadata>(Options(
+    final _options = _setStreamType<DigitalTwinMetadata>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/token/${tokenId}',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final value = _result.data == null
-        ? null
-        : DigitalTwinMetadata.fromJson(_result.data!);
-    return value;
+        .compose(
+          _dio.options,
+          '/token/${tokenId}',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>?>(_options);
+    late DigitalTwinMetadata? _value;
+    try {
+      _value = _result.data == null
+          ? null
+          : DigitalTwinMetadata.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
@@ -182,28 +232,34 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<List<dynamic>>(
-        _setStreamType<List<DigitalTwinAttachment>>(Options(
+    final _options = _setStreamType<List<DigitalTwinAttachment>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/${id}/attachment',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    var value = _result.data
-        ?.map((dynamic i) =>
-            DigitalTwinAttachment.fromJson(i as Map<String, dynamic>))
-        .toList();
-    return value;
+        .compose(
+          _dio.options,
+          '/${id}/attachment',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<DigitalTwinAttachment>? _value;
+    try {
+      _value = _result.data
+          ?.map((dynamic i) =>
+              DigitalTwinAttachment.fromJson(i as Map<String, dynamic>))
+          .toList();
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
@@ -215,7 +271,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'DELETE',
       headers: _headers,
       extra: _extra,
@@ -230,7 +286,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -244,7 +301,7 @@ class _BackendCreationService implements BackendCreationService {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(payload.toJson());
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -259,7 +316,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -271,7 +329,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{r'notify': notify};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -286,7 +344,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -295,7 +354,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -310,7 +369,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -322,7 +382,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{r'notify': notify};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -337,7 +397,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -346,7 +407,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -361,7 +422,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -370,7 +432,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -385,7 +447,8 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   @override
@@ -397,7 +460,7 @@ class _BackendCreationService implements BackendCreationService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -412,7 +475,40 @@ class _BackendCreationService implements BackendCreationService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
+  }
+
+  @override
+  Future<HttpResponse<dynamic>?> restoreDigitalTwin(
+    String id,
+    RestoreDigitalTwinCreationPayload payload,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(payload.toJson());
+    final _options = _setStreamType<HttpResponse<dynamic>>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/${id}/restore',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
+    final httpResponse = HttpResponse(_value, _result);
+    return httpResponse;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

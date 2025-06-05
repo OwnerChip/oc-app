@@ -37,6 +37,7 @@
   "showOnExplorer": "Show Blockchain Details",
   "showOnOpenSea": "Show on OpenSea",
   "showOnRarible": "Show on Rarible",
+  "openWebLink": "Open Web Link",
   "itemName": "Item name",
   "itemDescription": "Item description",
   "nftDetails": "Digital Twin Details",
@@ -126,7 +127,7 @@
   "ownership": "Ownership",
   "unconfirmed": "Not confirmed",
   "confirmed": "Confirmed",
-  "externalLinks": "External Links",
+  "externalLinks": "Web Links",
   "transferToken": "Transfer",
   "transferInProgress": "Transferring Digital Twin",
   "transferSuccess": "Digital Twin transferred",
@@ -418,6 +419,8 @@
 
 
   "@_OFFER_ON_MP": {},
+  "offerOnMpDiscoverDialogTitle": "Offer on Marketplace",
+  "offerOnMpDiscoveryDialogMessage": "The function “Offer on Marketplace” is not available in this “OwnerChip Discovery” app which is designed for NFC chip demo purposes only, not for real trading of goods. Use the app “OwnerChip” instead and request whitelisting in the “More…” menu.",
   "offerOnMpEmailHint": "We will use this email address to notify you about the status of the offer.",
   "offerOnMpPriceHint": "5% protocol fees + marketplace fees will be deducted from payout amount. Please check the support section for more details.",
   "offerOnMpEstimatedPriceInEur": "Estimated EUR value as of today ~{price}",
@@ -442,6 +445,7 @@
   "scanResultPage_ownershipNotOwnerNotOffered": "Your are not the owner of this item.",
   "scanResultPage_buttonOwnerOffered": "Show Offer",
   "scanResultPage_buttonNotOwnerOffered": "Show Offer",
+  "scanResultPage_chipHasNotYetBeenInitialized": "The NFC chip has not yet been activated.",
 
 
   "@_NFT_DETAILS_PAGE": {},
@@ -472,7 +476,26 @@
   "nftCreationsNotLoggedInTitle": "Wallet",
   "nftCreationsNotLoggedInDescription": "Please log in with the wallet you used to create the Digital Twin.",
   "nftCreationsNotLoggedInButton": "Close",
+  "nftCreationsAlreadyMintedToken": "The chip you scanned is already activated with another digital twin",
+  "nftCreationRestoreTokenPopupTitle": "Restore Digital Twin",
+  "nftCreationRestoreTokenPopupMessage": "The chip you scanned is already activated with another digital twin. Do you want to restore the Digital Twin?",
+  "nftCreationRestoreTokenPopupCancelButton": "Cancel",
+  "nftCreationRestoreTokenPopupRestoreButton": "Restore",
+  "nftCreationRestoreTokenPopupViewTokenButton": "View Digital Twin",
+  "nftCreationRestoreTokenPopupSuccessTitle": "Digital Twin restored",
 
+  "nft_cancel_confirmation_dialog_title": "Cancel NFT",
+  "nft_cancel_confirmation_dialog_description": "Are you sure you want to cancel activation for \"{title}\"?",
+  "nft_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel activation",
+  "nft_cancel_confirmation_dialog_cancel_keep_button": "No, continue",
+  "nft_burn_cancel_confirmation_dialog_title": "Cancel Burn",
+  "nft_burn_cancel_confirmation_dialog_description": "Are you sure you want to cancel burning \"{title}\"?",
+  "nft_burn_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel",
+  "nft_burn_cancel_confirmation_dialog_cancel_keep_button": "No, keep",
+  "nft_transfer_cancel_confirmation_dialog_title": "Cancel Transfer",
+  "nft_transfer_cancel_confirmation_dialog_description": "Are you sure you want to cancel transferring \"{title}\"?",
+  "nft_transfer_cancel_confirmation_dialog_cancel_cancel_button": "Yes, cancel",
+  "nft_transfer_cancel_confirmation_dialog_cancel_keep_button": "No, keep",
 
   "@_CERTIFICATE_CARD": {},
   "certificateCardLoginSuccess": "Successfully connected with Certificate Card.",
@@ -488,7 +511,9 @@
   "scanQRCode": "Scan QR code",
   "noConnection": "No connection",
   "invalidQRCode": "Invalid QR code",
-
+  "reconnectWebSocketButtonText": "Reconnect",
+  "reconnectWebSocketErrorText": "Error reconnecting",
+  "reconnectWebSocketSuccessText": "Reconnected",
 
   "@_LOGIN_WITH_EMAIL": {},
   "loginWithEmail_EnterEmailText": "Please enter your email address",
@@ -513,5 +538,8 @@
   "accountDeletionCanceledNotificationMessage": "Account deletion canceled.",
 
   "@_TRANSFER": {},
-  "transferToOwnerCardMessage": "Hold your phone close to the OwnerCard"
+  "transferToOwnerCardMessage": "Hold your phone close to the OwnerCard",
+
+  "@_ADMIN_INIT": {},
+  "errorSendingCardInitToBackend": "Error sending card init to backend"
 }

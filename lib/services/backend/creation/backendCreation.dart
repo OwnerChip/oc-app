@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/domain/common/backendPaginationResponse.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinAttachment.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/backendCreationService.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/payloads/restoreDigitalTwinCreationPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/payloads/uploadDigitalTwinCreationAttachmentPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/responses/uploadDigitalTwinCreationAttachmentResponse.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -224,6 +226,29 @@ class BackendCreation extends Backend {
     return true;
   }
 
+  static Future<bool> cancelMintDigitalTwin({
+    required String id,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    bool success = true;
+    await service
+        .cancelDigitalTwin(
+      id,
+    )
+        .catchError((error) {
+      success = false;
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+    });
+
+    if (!success) {
+      throw Exception('Failed to update digital twin metadata status');
+    }
+
+    return true;
+  }
+
   static Future<bool> cancelBurnDigitalTwin({
     required String id,
   }) async {
@@ -339,5 +364,39 @@ class BackendCreation extends Backend {
     }
 
     return true;
+  }
+
+  static Future<String?> restoreDigitalTwinCreation({
+    required String id,
+    required String tokenId,
+  }) async {
+    final service = BackendCreationService.instance;
+    bool success = true;
+    String? error;
+    final res = await service
+        .restoreDigitalTwin(
+      id,
+      RestoreDigitalTwinCreationPayload(
+        tokenId: tokenId,
+      ),
+    )
+        .catchError((e) {
+      success = false;
+      if (e is DioException) {
+        error = e.response?.data["detail"];
+      }
+      talker.error(error);
+      Sentry.captureException(e, stackTrace: StackTrace.current);
+      return null;
+    });
+
+    if (res?.response.statusCode != 200) {
+      success = false;
+      if (res != null && res.data is Map && res.data.containsKey("detail")) {
+        error = res.data["detail"];
+      }
+    }
+
+    return error;
   }
 }

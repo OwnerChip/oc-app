@@ -18,6 +18,7 @@ import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
@@ -63,7 +64,7 @@ abstract class BackendAuth extends Backend {
         '${iso8601.substring(0, indexOfDot + 4)}Z';
 
     final domain = dotenv.get('BITRISEIO_PACKAGE_NAME');
-    final uri = "${dotenv.get("APP_ID")}://sign-in";
+    final uri = "${domain}://sign-in";
 
     final message =
         "$domain wants you to sign in with your Ethereum account:\n${address.hexEip55}\n\n$statement\n\nURI: $uri\nVersion: $version\nChain ID: $chainId\nNonce: $nonce\nIssued At: $iso8601WithoutMicroseconds";
@@ -192,7 +193,8 @@ abstract class BackendAuth extends Backend {
         sessionId,
         signature,
         ref.read(userAddressProvider),
-        isOwnerCard,
+        !isCertificateCard,
+        isCertificateCard,
         jwtToken,
         await BackendFCM.getAndSaveFCMToken(sessionId));
 
@@ -203,20 +205,24 @@ abstract class BackendAuth extends Backend {
     ref.read(creationsNotifierProvider.notifier).load();
     ref.read(websocketProvider.notifier).init();
     ref.read(accountDeletionRequestProvider.notifier).refresh();
+    ref.refresh(ocNFTsForOwnerProvider);
+    ref.refresh(ocNFTsMintedByUserNotifierProvider);
 
-    //persist session date
-    final SharedPreferences storage = await SharedPreferences.getInstance();
-    storage.setString(
-      'userSession',
-      jsonEncode(userSession.toJson()),
-    );
-    storage.setString(
-      'walletType',
-      jsonEncode(walletConfig[isCertificateCard
-              ? EWalletType.certificateCard
-              : EWalletType.ownerCard]!
-          .toJson()),
-    );
+    // persist session date if not a certificate card
+    if(!isCertificateCard) {
+      final SharedPreferences storage = await SharedPreferences.getInstance();
+      storage.setString(
+        'userSession',
+        jsonEncode(userSession.toJson()),
+      );
+      storage.setString(
+        'walletType',
+        jsonEncode(walletConfig[isCertificateCard
+            ? EWalletType.certificateCard
+            : EWalletType.ownerCard]!
+            .toJson()),
+      );
+    }
   }
 
   static Future<bool> terminateSession() async {

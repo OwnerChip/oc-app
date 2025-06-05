@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:reown_appkit/reown_appkit.dart';
+import 'package:web3dart/crypto.dart';
+import 'package:web3dart/web3dart.dart';
+
 
 class OwnercardData {
   final String name;

@@ -13,13 +13,11 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl: ^0.19.0
-  package_info_plus: ^7.0.0
   nfc_manager: ^3.2.0
   web3dart: ^2.4.1
   eth_sig_util: ^0.0.9
   http: ^1.1.2
-  url_launcher: ^6.1.6
+  url_launcher: ^6.3.1
   flutter_dotenv: ^5.0.2
   dio: ^5.0.0
   image_picker: ^1.0.7
@@ -29,24 +27,31 @@ dependencies:
   riverpod_annotation: ^2.3.3
   shared_preferences: ^2.1.2
   async: ^2.9.0
-  sentry_flutter: ^7.8.0
-  sentry_dio: ^7.8.0
+  sentry_flutter: ^8.14.1
+  sentry_dio: ^8.14.1
   flutter_linkify: ^6.0.0
-  walletconnect_flutter_v2: ^2.0.8
-  file_picker: ^6.1.1
+  file_picker: ^8.0.7
   pinput: ^3.0.0
   control_style: ^0.1.0
   country_picker: ^2.0.23
-  reown_appkit: ^1.0.1
-  web3auth_flutter: ^4.0.0
+#  reown_appkit:
+#    path: ../reown_flutter/packages/reown_appkit
+#  reown_appkit: ^1.4.2+1
+  reown_appkit:
+    git:
+      url: https://github.com/AndriiVivcharenko/reown_flutter
+      path: packages/reown_appkit
+      ref: fix/session_persistence
+
+  web3auth_flutter: ^6.1.2
   info_popup: ^4.3.1
   video_player: ^2.8.6
   json_annotation: ^4.9.0
   pull_to_refresh_flutter3: ^2.0.2
   retrofit: ^4.1.0
   native_ios_dialog: ^0.2.1
-  mobile_scanner: ^5.1.1
-  socket_io_client: ^2.0.3+1
+  mobile_scanner: ^6.0.5
+  socket_io_client: ^3.1.1
 
   #  Logger
   ansicolor: ^2.0.2
@@ -69,8 +74,17 @@ dev_dependencies:
   test: ^1.21.4
   flutter_launcher_icons: ^0.13.1
   riverpod_generator: ^2.3.9
-  retrofit_generator: ^8.1.0
+  retrofit_generator: ^9.1.7
 
+dependency_overrides:
+  package_info_plus: ^8.1.4
+  web_socket_channel: ^3.0.2
+  intl: 0.19.0
+  reown_core:
+    git:
+      url: https://github.com/AndriiVivcharenko/reown_flutter
+      path: packages/reown_core
+      ref: fix/session_persistence
 
 flutter_icons:
   android: "launcher_icon"

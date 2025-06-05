@@ -6,22 +6,27 @@ class WebsocketData {
 
   bool get connected => socket?.connected ?? false;
 
+  final bool connecting;
+
   const WebsocketData({
     required this.socket,
+    required this.connecting
   });
 
   factory WebsocketData.initial() {
     return const WebsocketData(
       socket: null,
+      connecting: false
     );
   }
 
   WebsocketData copyWith({
     Socket? socket,
-    bool? connected,
+    bool? connecting
   }) {
     return WebsocketData(
       socket: socket ?? this.socket,
+      connecting: connecting ?? this.connecting
     );
   }
 }

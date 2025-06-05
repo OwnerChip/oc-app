@@ -6,6 +6,7 @@ import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
+import 'package:ownerchip_whitelabel/screens/qrCode/websocket_connection_error_popup.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
@@ -17,19 +18,23 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomSnackBarContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:reown_appkit/reown_appkit.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 class AppBarAuthDropDown extends ConsumerStatefulWidget {
   const AppBarAuthDropDown({
     super.key,
     required this.closeOverlay,
+    required this.parentContext,
   });
 
   final Function closeOverlay;
+  final BuildContext parentContext;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -189,7 +194,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   }
 
   void _onLogoutClicked(BuildContext context) async {
-    await _disconnect(context);
+    await disconnectWallet(ref, context);
     Navigator.of(context).popUntil((route) => route.isFirst);
     widget.closeOverlay();
   }
@@ -209,13 +214,14 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
     final socket = ref.read(websocketProvider);
 
     if (!socket.connected) {
-      messenger.showSnackBar(
-        returnSnackBarWidget(
-          context.loc.errorHeadingSnackBar,
-          context.loc.noConnection,
-          'error',
+      showCustomPopup(
+        context,
+        context.loc.errorHeadingSnackBar,
+         WebsocketConnectionErrorPopup(
+          parentContext: widget.parentContext,
         ),
       );
+      widget.closeOverlay();
       return;
     }
 
@@ -292,57 +298,58 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
       color: CustomColors(dotenv.get('APP_ID')).boxDecorationColor,
     );
   }
+}
 
-  Future<void> _disconnect(
-    BuildContext context,
-  ) async {
-    final wc = ref.read(w3mServiceProvider);
-    ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
+Future<void> disconnectWallet(
+  WidgetRef ref,
+  BuildContext context,
+) async {
+  final wc = ref.read(w3mServiceProvider);
+  ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
 
-    final session = ref.read(userSessionProvider);
-    final FCMToken? fcmToken = session?.fcmToken;
+  final session = ref.read(userSessionProvider);
+  final FCMToken? fcmToken = session?.fcmToken;
 
-    //reset providers
-    ref.read(userAddressProvider.notifier).state = zeroAddress;
-    ref.read(walletTypeProvider.notifier).state = null;
-    ref.read(userSessionProvider.notifier).state = null;
-    ref.read(websocketProvider.notifier).disconnect();
-    ref.read(creationsNotifierProvider.notifier).onLogout();
+  //reset providers
+  ref.read(userAddressProvider.notifier).state = zeroAddress;
+  ref.read(walletTypeProvider.notifier).state = null;
+  ref.read(userSessionProvider.notifier).state = null;
+  ref.read(websocketProvider.notifier).disconnect();
+  ref.read(creationsNotifierProvider.notifier).onLogout();
 
-    final storage = await SharedPreferences.getInstance();
+  final storage = await SharedPreferences.getInstance();
 
-    //remove session and wallet type from storage
-    storage.remove('session');
-    storage.remove('walletType');
-    storage.remove('userSession');
+  //remove session and wallet type from storage
+  storage.remove('walletType');
+  storage.remove('userSession');
 
-    ref.refresh(web3AuthNotifierProvider);
+  ref.refresh(web3AuthNotifierProvider);
 
-    try {
-      await Web3AuthFlutter.logout().catchError((_) {});
-    } catch (e) {
-      talker.error('Error logging out of web3auth', e);
-    }
-
-    if (wc != null && wcSession != null) {
-      await wc.disconnect(); //WC disconnect event is triggered and riverpod state is deleted in listener
-    }
-
-    final terminated = await BackendAuth.terminateSession();
-
-    // fallback to delete fcm token if session termination failed
-    if (!terminated && fcmToken != null) {
-      await BackendFCM.deleteFCMToken(fcmToken);
-    }
-
-    try {
-      // clean up services
-      await BackendAuth.initGuestSession();
-    } catch (e) {
-      talker.error('Error cleaning up services', e);
-    }
-
-    //navigate back until homescreen
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  try {
+    await Web3AuthFlutter.logout().catchError((_) {});
+  } catch (e) {
+    talker.error('Error logging out of web3auth', e);
   }
+
+  if (wc != null && wcSession != null) {
+    await wc
+        .disconnect(); //WC disconnect event is triggered and riverpod state is deleted in listener
+  }
+
+  final terminated = await BackendAuth.terminateSession();
+
+  // fallback to delete fcm token if session termination failed
+  if (!terminated && fcmToken != null) {
+    await BackendFCM.deleteFCMToken(fcmToken);
+  }
+
+  try {
+    // clean up services
+    await BackendAuth.initGuestSession();
+  } catch (e) {
+    talker.error('Error cleaning up services', e);
+  }
+
+  //navigate back until homescreen
+  Navigator.of(context).popUntil((route) => route.isFirst);
 }

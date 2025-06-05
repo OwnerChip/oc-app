@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:ownerchip_whitelabel/services/rarible/orders/raribleOrdersService.dart';
+import 'package:ownerchip_whitelabel/services/backend/rarible/backendRaribleService.dart';
+import 'package:ownerchip_whitelabel/services/backend/rarible/payloads/makeRaribleRequestPayload.dart';
+import 'package:ownerchip_whitelabel/services/backend/rarible/payloads/raribleRequestConfig.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -11,13 +13,23 @@ abstract class RaribleOrders {
     required RaribleV2Order order,
   }) async {
     try {
-      final result = await RaribleOrdersService.instance(
-        chainId,
-      ).prepareOrderTx(
-        payload: order,
+      final result = await BackendRaribleService.instance.makeRaribleRequest(
+        MakeRaribleRequestPayload(
+          config: RaribleRequestConfig(
+            method: "POST",
+            endpoint: "/encode/order",
+            body: order.toJson(),
+            headers: {},
+          ),
+          chainId: chainId,
+        ),
       );
 
       talker.debug(result.data);
+
+      if (result.data is String) {
+        return jsonDecode(result.data);
+      }
 
       return result.data;
     } catch (e, s) {
@@ -36,9 +48,16 @@ abstract class RaribleOrders {
     required RaribleV2Order order,
   }) async {
     try {
-      final service = RaribleOrdersService.instance(chainId);
-      final result = await service.createOrder(
-        payload: order,
+      final result = await BackendRaribleService.instance.makeRaribleRequest(
+        MakeRaribleRequestPayload(
+          config: RaribleRequestConfig(
+            method: "POST",
+            endpoint: "/orders/",
+            body: order.toJson(),
+            headers: {},
+          ),
+          chainId: chainId,
+        ),
       );
 
       final map = order.toJson();

@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
+import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:walletconnect_flutter_v2/walletconnect_flutter_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -39,8 +39,16 @@ bool isOwnerChipApp() {
   return dotenv.get('BITRISEIO_PACKAGE_NAME').contains("com.ownerchip");
 }
 
+bool isInternalApp() {
+  return dotenv.get('IS_INTERNAL') == 'true';
+}
+
 String getCertificateUrl(String chipAddress) {
   return "https://certificate.ownerchip.com/$chipAddress";
+}
+
+String getEnvCertificateUrl(String chipAddress) {
+  return "https://${isInternalApp() ? "test" : "certificate"}.ownerchip.com/$chipAddress";
 }
 
 String getCustomerId() {

@@ -74,7 +74,6 @@ final voucherContractProvider =
 /// CHECK ALL COLLECTIONS IF USER HAS MINTER ROLE
 final findAllMinterRolesProvider =
     FutureProvider.autoDispose<BlockchainCollectionList>((ref) async {
-  final wc = ref.watch(wcProvider);
   final wcSession = ref.watch(wcSessionProvider);
   EthereumAddress userWalletAddress = ref.watch(userAddressProvider);
   final unfilteredCollectionsList =

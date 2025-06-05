@@ -6,17 +6,20 @@ part of 'backendFcmService.dart';
 // RetrofitGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers
+// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations
 
 class _BackendFcmService implements BackendFcmService {
   _BackendFcmService(
     this._dio, {
     this.baseUrl,
+    this.errorLogger,
   });
 
   final Dio _dio;
 
   String? baseUrl;
+
+  final ParseErrorLogger? errorLogger;
 
   @override
   Future<FCMToken> saveFcmToken({required SaveFCMTokenPayload body}) async {
@@ -25,25 +28,31 @@ class _BackendFcmService implements BackendFcmService {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body.toJson());
-    final _result =
-        await _dio.fetch<Map<String, dynamic>>(_setStreamType<FCMToken>(Options(
+    final _options = _setStreamType<FCMToken>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final value = FCMToken.fromJson(_result.data!);
-    return value;
+        .compose(
+          _dio.options,
+          '',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late FCMToken _value;
+    try {
+      _value = FCMToken.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
@@ -52,7 +61,7 @@ class _BackendFcmService implements BackendFcmService {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    await _dio.fetch<void>(_setStreamType<void>(Options(
+    final _options = _setStreamType<void>(Options(
       method: 'DELETE',
       headers: _headers,
       extra: _extra,
@@ -67,7 +76,8 @@ class _BackendFcmService implements BackendFcmService {
             baseUrl: _combineBaseUrls(
           _dio.options.baseUrl,
           baseUrl,
-        ))));
+        )));
+    await _dio.fetch<void>(_options);
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

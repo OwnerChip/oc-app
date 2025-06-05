@@ -3,6 +3,7 @@ import 'package:ownerchip_whitelabel/domain/common/backendPaginationResponse.dar
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinAttachment.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
+import 'package:ownerchip_whitelabel/services/backend/creation/payloads/restoreDigitalTwinCreationPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/creation/payloads/uploadDigitalTwinCreationAttachmentPayload.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -43,6 +44,11 @@ abstract class BackendCreationService {
   Future<void> mintDigitalTwin(
     @Path('id') String id,
     @Query("chipId") String chipId,
+  );
+
+  @POST("/{id}/cancel")
+  Future<void> cancelDigitalTwin(
+    @Path('id') String id,
   );
 
   @POST("/{id}/attachment")
@@ -110,4 +116,10 @@ abstract class BackendCreationService {
   @POST("/{id}/transferred/{to}")
   Future<void> transferDigitalTwin(
       @Path('id') String id, @Path('to') String to);
+
+  @POST("/{id}/restore")
+  Future<HttpResponse?> restoreDigitalTwin(
+    @Path('id') String id,
+    @Body() RestoreDigitalTwinCreationPayload payload,
+  );
 }
