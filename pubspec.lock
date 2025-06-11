@@ -482,10 +482,10 @@ packages:
     dependency: transitive
     description:
       name: event
-      sha256: eb4814de94cbf6a10da9c4f652bc654087d7066e33566b5036822e6c0b24befb
+      sha256: "5809a742e6274146a23d9cba63c24caf2f4c87a9a781fdf16ef07f052becaf72"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "3.1.0"
   fake_async:
     dependency: transitive
     description:
@@ -1002,6 +1002,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.7"
+  msgpack_dart:
+    dependency: transitive
+    description:
+      name: msgpack_dart
+      sha256: c2d235ed01f364719b5296aecf43ac330f0d7bc865fa134d0d7910a40454dffb
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   native_ios_dialog:
     dependency: "direct main"
     description:
@@ -1146,6 +1154,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.2"
+  pinenacl:
+    dependency: transitive
+    description:
+      name: pinenacl
+      sha256: "57e907beaacbc3c024a098910b6240758e899674de07d6949a67b52fd984cbdf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   pinput:
     dependency: "direct main"
     description:
@@ -1247,27 +1263,27 @@ packages:
     description:
       path: "packages/reown_appkit"
       ref: "fix/session_persistence"
-      resolved-ref: "62ef2df61802bc2498502bed2b6fce278666e30d"
+      resolved-ref: "29d1bb61d2e2a48491b12a9a066bb7e6feb00b9f"
       url: "https://github.com/AndriiVivcharenko/reown_flutter"
     source: git
-    version: "1.1.0-beta03"
+    version: "1.4.5"
   reown_core:
     dependency: "direct overridden"
     description:
       path: "packages/reown_core"
       ref: "fix/session_persistence"
-      resolved-ref: "62ef2df61802bc2498502bed2b6fce278666e30d"
+      resolved-ref: "29d1bb61d2e2a48491b12a9a066bb7e6feb00b9f"
       url: "https://github.com/AndriiVivcharenko/reown_flutter"
     source: git
-    version: "1.0.4"
+    version: "1.1.6"
   reown_sign:
     dependency: transitive
     description:
       name: reown_sign
-      sha256: ef2493a3992772d9495b9232b4ece7e7be0e0893f88d34f80aa6eda2e49b3e6e
+      sha256: "9401c7c74f29b35b65b47113bbb95e653276a122dc685f1aa07c3150a8dad6fd"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.4"
+    version: "1.1.7"
   retrofit:
     dependency: "direct main"
     description:
@@ -1933,18 +1949,18 @@ packages:
     dependency: transitive
     description:
       name: webview_flutter
-      sha256: ec81f57aa1611f8ebecf1d2259da4ef052281cb5ad624131c93546c79ccc7736
+      sha256: "889a0a678e7c793c308c68739996227c9661590605e70b1f6cf6b9a6634f7aec"
       url: "https://pub.dev"
     source: hosted
-    version: "4.9.0"
+    version: "4.10.0"
   webview_flutter_android:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: "47a8da40d02befda5b151a26dba71f47df471cddd91dfdb7802d0a87c5442558"
+      sha256: "34ee3954f28ab3c8b5f96608d75125736643b3c239c969cd50d9476d5f90559a"
       url: "https://pub.dev"
     source: hosted
-    version: "3.16.9"
+    version: "4.3.5"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
