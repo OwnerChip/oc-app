@@ -27,7 +27,7 @@ class Token {
     required this.collectionSymbol,
     required this.hasVoucherToken,
     required this.voucherCollection,
-    required this.voucherTokenUri,
+    this.voucherTokenUri,
     required this.hasActiveOffer,
     required this.activeOffers,
   });
@@ -39,7 +39,7 @@ class Token {
   String collectionSymbol;
   bool hasVoucherToken;
   String voucherCollection;
-  String voucherTokenUri;
+  String? voucherTokenUri;
   bool hasActiveOffer;
   List<ActiveOffer> activeOffers;
 
