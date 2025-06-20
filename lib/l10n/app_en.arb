@@ -541,5 +541,11 @@
   "transferToOwnerCardMessage": "Hold your phone close to the OwnerCard",
 
   "@_ADMIN_INIT": {},
-  "errorSendingCardInitToBackend": "Error sending card init to backend"
+  "errorSendingCardInitToBackend": "Error sending card init to backend",
+
+  "@_ATTACHMENTS": {},
+  "unsaved_attachments_popup_title": "Unsaved Attachments",
+  "unsaved_attachments_popup_message": "You have unsaved attachments. If you leave this page, your attachments will be lost. Are you sure you want to leave?",
+  "unsaved_attachments_popup_cancel_button": "Cancel",
+  "unsaved_attachments_popup_leave_button": "Leave"
 }

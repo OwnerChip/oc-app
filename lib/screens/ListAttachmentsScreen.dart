@@ -18,6 +18,9 @@ import 'package:ownerchip_whitelabel/utils/logger.dart';
 
 //import widgets
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
+import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
+import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 
 //import misc
@@ -72,6 +75,49 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
         a.type == b.type &&
         a.url == b.url &&
         a.isPrivate == b.isPrivate;
+  }
+
+  Future<bool> _onWillPop() async {
+    if (!hasUnsavedChanges) {
+      return true;
+    }
+
+    return await showCustomPopup(
+        context,
+        context.loc.unsaved_attachments_popup_title,
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Text(context.loc.unsaved_attachments_popup_message),
+              const SizedBox(height: 12),
+              Builder(builder: (context) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomRoundedButton(
+                      text:
+                          context.loc.unsaved_attachments_popup_leave_button,
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                      },
+                      width: MediaQuery.of(context).size.width * 0.3,
+                    ),
+                    const SizedBox(width: 10),
+                    CustomOutlinedButton(
+                        buttonText: context.loc.unsaved_attachments_popup_cancel_button,
+                        onPressed: () {
+                          Navigator.of(context).pop(false);
+                        },
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    )
+                  ],
+                );
+              })
+            ],
+          ),
+        ));
   }
 
   Future<void> saveAllChanges(BuildContext context, WidgetRef ref) async {
@@ -207,6 +253,19 @@ class _ListAttachmentsScreenState extends ConsumerState<ListAttachmentsScreen> {
       appBar: CustomAppBar(
         text: context.loc.editAttachment,
         showBackButton: true,
+        overrideBackButton: () {
+          _onWillPop().then((shouldPop) {
+            if (shouldPop) {
+              // restore original attachments if user decides to leave without saving
+              if (_originalAttachments != null) {
+                ref.read(localAttachmentsProvider.notifier).state =
+                    List<LocalAttachment>.from(
+                        _originalAttachments!.map((a) => a.copyWith()));
+              }
+              Navigator.of(context).pop();
+            }
+          });
+        },
       ),
       body: ScreenBodyLayout(
           mainAxisAlignment: MainAxisAlignment.center,
