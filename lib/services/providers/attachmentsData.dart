@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/local_attachment.dart';
 import 'package:ownerchip_whitelabel/services/attachments.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -73,44 +74,47 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
   }
   //create list of attachments
   List<Attachment> attachments = [];
-  //create list of attachments
+  List<LocalAttachment> localAttachments = [];
   for (var attachment in response.data) {
-    attachments.add(Attachment(
-      attachment['title'],
-      attachment['name'],
-      attachment['is_file'] ? AttachmentType.other : AttachmentType.url,
-      attachment['url'],
-      attachment['uuid'],
+    final att = Attachment(
+      title: attachment['title'],
+      fileName: attachment['name'],
+      type: attachment['is_file'] ? AttachmentType.other : AttachmentType.url,
+      url: attachment['url'],
+      backendUuid: attachment['uuid'],
       isFromCreator: attachment['isFromCreator'],
       isPrivate: attachment['is_private'],
-    ));
+    );
+    attachments.add(att);
+    localAttachments.add(LocalAttachment.fromAttachment(att));
   }
 
   //set state of attachmentListProvider
-  ref.read(localAttachmentsProvider.notifier).state = attachments;
+  ref.read(localAttachmentsProvider.notifier).state = localAttachments;
 
-  return attachments;
+  return localAttachments;
 });
 
 //This provider is used to display attachment data in the UI and to edit attachment data locally (which is then posted to backend)
 final localAttachmentsProvider =
-    StateProvider.autoDispose<List<Attachment>>((ref) {
+    StateProvider.autoDispose<List<LocalAttachment>>((ref) {
   return [];
 });
 
 //provider with attachments only where isFromCreator == true
 final creatorAttachmentsProvider =
-    Provider.autoDispose<List<Attachment>>((ref) {
-  final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+    Provider.autoDispose<List<LocalAttachment>>((ref) {
+  final List<LocalAttachment> attachments = ref.watch(localAttachmentsProvider);
   return attachments
       .where((e) => e.isFromCreator != null && e.isFromCreator!)
       .toList();
 });
 
 //provider with attachments only where isFromCreator == false
-final ownerAttachmentsProvider = Provider.autoDispose<List<Attachment>>((ref) {
-  final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
+final ownerAttachmentsProvider = Provider.autoDispose<List<LocalAttachment>>((ref) {
+  final List<LocalAttachment> attachments = ref.watch(localAttachmentsProvider);
   return attachments
       .where((e) => e.isFromCreator != null && !e.isFromCreator!)
       .toList();
 });
+

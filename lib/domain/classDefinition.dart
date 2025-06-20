@@ -162,8 +162,47 @@ class Attachment {
   final String backendUuid;
   final bool? isFromCreator;
 
-  Attachment(this.title, this.fileName, this.type, this.url, this.backendUuid,
-      {this.isPrivate = false, this.isFromCreator});
+
+
+  bool isContentEqual(Attachment orig) {
+    return title == orig.title &&
+        fileName == orig.fileName &&
+        type == orig.type &&
+        isPrivate == orig.isPrivate &&
+        url == orig.url &&
+        backendUuid == orig.backendUuid &&
+        isFromCreator == orig.isFromCreator;
+  }
+
+  Attachment copyWith({
+    String? title,
+    String? fileName,
+    AttachmentType? type,
+    bool? isPrivate,
+    String? url,
+    String? backendUuid,
+    bool? isFromCreator,
+  }) {
+    return Attachment(
+      title: title ?? this.title,
+      fileName: fileName ?? this.fileName,
+      type: type ?? this.type,
+      isPrivate: isPrivate ?? this.isPrivate,
+      url: url ?? this.url,
+      backendUuid: backendUuid ?? this.backendUuid,
+      isFromCreator: isFromCreator ?? this.isFromCreator,
+    );
+  }
+
+  const Attachment({
+    required this.title,
+    required this.fileName,
+    required this.type,
+    required this.isPrivate,
+    required this.url,
+    required this.backendUuid,
+    this.isFromCreator,
+  });
 }
 
 class UserSession {

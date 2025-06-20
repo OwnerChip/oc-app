@@ -9,6 +9,7 @@ import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
+import 'package:ownerchip_whitelabel/domain/local_attachment.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
@@ -95,11 +96,11 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     final AsyncValue<String> contractName = ref.watch(contractNameProvider);
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
-    final AsyncValue<List<Attachment>> fetchedAttachments = ref.watch(
+    final AsyncValue<List<LocalAttachment>> fetchedAttachments = ref.watch(
         fetchAttachmentsProvider); //Trigger loading of attachments, which are saved to localAttachmentsProvider
-    List<Attachment> attachments = ref.watch(localAttachmentsProvider);
-    List<Attachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
-    List<Attachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
+    List<LocalAttachment> attachments = ref.watch(localAttachmentsProvider);
+    List<LocalAttachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
+    List<LocalAttachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
     // creator data
     final creatorData = ref.watch(creatorDataProvider);
     final AsyncValue<List?> voucherContractAndTwinNftOwner =
