@@ -13,7 +13,9 @@ class CustomImage extends StatelessWidget {
       this.loading = true,
       this.tokenId,
       this.boxFit = BoxFit.contain,
-      this.aspectRatio = 0.75});
+      this.aspectRatio = null,
+      this.decoration,
+      this.imageBorderRadius = 19.0});
 
   final dynamic imagePath;
   final dynamic imageFile;
@@ -22,29 +24,31 @@ class CustomImage extends StatelessWidget {
   final bool loading;
   final BigInt? tokenId;
   final BoxFit boxFit;
-  final double aspectRatio;
+  final double? aspectRatio;
+  final BoxDecoration? decoration;
+  final double imageBorderRadius;
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: width,
         height: height,
-        decoration: BoxDecoration(
-            color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
-            borderRadius: BorderRadius.circular(19),
-            boxShadow: [
-              BoxShadow(
-                  color:
-                      CustomColors(dotenv.get('APP_ID')).secondaryShadowColor,
-                  blurRadius: 5,
-                  offset: const Offset(3, 2)),
-            ]),
+        decoration: decoration ??
+            BoxDecoration(
+                color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
+                borderRadius: BorderRadius.circular(19),
+                boxShadow: [
+                  BoxShadow(
+                      color: CustomColors(dotenv.get('APP_ID'))
+                          .secondaryShadowColor,
+                      blurRadius: 5,
+                      offset: const Offset(3, 2)),
+                ]),
         child: Stack(children: [
           ClipRRect(
-              borderRadius: BorderRadius.circular(19),
-              child: AspectRatio(
-                aspectRatio: aspectRatio,
-                child: loading || imagePath == null || imagePath == ""
+              borderRadius: BorderRadius.circular(imageBorderRadius),
+              child: Builder(builder: (context) {
+                final child = loading || imagePath == null || imagePath == ""
                     ? Image.asset(
                         '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg',
                         fit: BoxFit.cover,
@@ -66,8 +70,15 @@ class CustomImage extends StatelessWidget {
                                             const Duration(milliseconds: 700),
                                         curve: Curves.easeOut,
                                         child: child,
-                                      )),
-              )),
+                                      ));
+
+                return aspectRatio != null
+                    ? AspectRatio(
+                        aspectRatio: aspectRatio!,
+                        child: child,
+                      )
+                    : child;
+              })),
         ]));
   }
 }

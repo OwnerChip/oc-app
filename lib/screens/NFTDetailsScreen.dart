@@ -164,17 +164,25 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                   loading: () => CustomImage(
                     loading: true,
                     tokenId: chipInfo.tokenId,
+                    decoration: BoxDecoration(),
+                    imageBorderRadius: 5,
                   ),
                   error: (e, s) {
                     return CustomImage(
                       loading: true,
                       tokenId: chipInfo.tokenId,
+                      decoration: BoxDecoration(),
+                      imageBorderRadius: 5,
                     );
                   },
                   data: (data) => CustomImage(
                     loading: false,
                     imagePath: data,
                     tokenId: chipInfo.tokenId,
+                    boxFit: BoxFit.fitWidth,
+                    decoration: BoxDecoration(),
+                    imageBorderRadius: 5,
+
                   ),
                 ),
                 const SizedBox(height: 20),
