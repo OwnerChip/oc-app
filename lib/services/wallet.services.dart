@@ -6,6 +6,7 @@ import 'package:convert/convert.dart';
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
@@ -862,7 +863,7 @@ Future<void> setupWeb3Auth() async {
   Uri redirectUrl;
   if (Platform.isAndroid) {
     redirectUrl = Uri.parse(
-        'torusapp://org.torusresearch.${dotenv.get("BITRISEIO_PACKAGE_NAME")}/auth');
+        'torusapp://org.torusresearch.${dotenv.get("BITRISEIO_PACKAGE_NAME")}');
   } else if (Platform.isIOS) {
     redirectUrl = Uri.parse('${dotenv.get("BITRISEIO_PACKAGE_NAME")}://auth');
   } else {
@@ -871,8 +872,9 @@ Future<void> setupWeb3Auth() async {
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
-      clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
-      network: Network.sapphire_mainnet,
+      clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),      //     "BCGuB4TOrWXvmJKbZB2V1u0R-iyo1jJxsVKwTheUBSyQ850lquUtJO6YHALOtY6cbd_ZbmCIInHbrwlTy2wxYRI",
+      network: Network.sapphire_devnet,
+      // buildEnv: BuildEnv.production,
       redirectUrl: redirectUrl,
       whiteLabel: WhiteLabelData(
         mode: ThemeModes.dark,
@@ -881,7 +883,9 @@ Future<void> setupWeb3Auth() async {
     ),
   );
 
-  await Web3AuthFlutter.initialize();
+  await Web3AuthFlutter.initialize().catchError((e) {
+    talker.error('Failed to initialize Web3Auth: $e');
+  });
 
   _initializedWeb3Auth = true;
 }

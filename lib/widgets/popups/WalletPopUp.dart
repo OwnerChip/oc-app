@@ -244,6 +244,7 @@ Future<void> _loginWithWeb3Auth(
       ),
     ),
   ).then((e) async {
+    talker.log("Web3Auth login successful: $e");
     final Web3AuthNotifier web3AuthNotifier =
         ref.read(web3AuthNotifierProvider.notifier);
 
