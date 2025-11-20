@@ -136,7 +136,7 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                         await w3mService?.disconnect();
                         await Future.delayed(const Duration(seconds: 1));
                       }
-
+                      
                       await w3mService?.openModalView();
                       if (ref.read(wcSessionProvider) != null) {
                         authPopupBuilder(

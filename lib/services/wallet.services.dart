@@ -685,21 +685,28 @@ Future<String> getGaslessTxHash(request, collectionId) async {
 
 Future<ReownAppKitModal> initWcClient(
     WidgetRef ref, BuildContext context) async {
-  //create Web3Modal service and set provider
-  final ReownAppKitModal w3mService = ReownAppKitModal(
-    context: context,
-    projectId: dotenv.env['WC_PROJECT_ID']!,
+  final appkit = ReownAppKit(
+    core: ReownCore(
+      projectId: dotenv.env['WC_PROJECT_ID']!,
+      relayUrl: ReownConstants.DEFAULT_RELAY_URL,
+      pushUrl: ReownConstants.DEFAULT_PUSH_URL,
+      logLevel: LogLevel.all
+    ),
     metadata: PairingMetadata(
       name: 'OwnerChip',
       description: 'OwnerChip - Connecting physical objects to the blockchain',
       url: 'https://www.ownerchip.com',
       icons: ['https://avatars.githubusercontent.com/u/116345848'],
       redirect: Redirect(
-        native: '${dotenv.get("APP_ID")}://',
+        native: '${dotenv.get("BITRISEIO_PACKAGE_NAME")}://',
         universal: 'https://www.ownerchip.com',
       ),
     ),
   );
+
+  //create Web3Modal service and set provider
+  final ReownAppKitModal w3mService =
+      ReownAppKitModal(context: context, appKit: appkit);
 
   w3mService.onSessionEventEvent.subscribe(wrapOnSessionEvent(ref));
   w3mService.onModalConnect.subscribe(wrapOnSessionConnect(ref, context));
@@ -872,7 +879,8 @@ Future<void> setupWeb3Auth() async {
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
-      clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),      //     "BCGuB4TOrWXvmJKbZB2V1u0R-iyo1jJxsVKwTheUBSyQ850lquUtJO6YHALOtY6cbd_ZbmCIInHbrwlTy2wxYRI",
+      clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
+      //     "BCGuB4TOrWXvmJKbZB2V1u0R-iyo1jJxsVKwTheUBSyQ850lquUtJO6YHALOtY6cbd_ZbmCIInHbrwlTy2wxYRI",
       network: Network.sapphire_devnet,
       // buildEnv: BuildEnv.production,
       redirectUrl: redirectUrl,
