@@ -882,12 +882,13 @@ Future<void> setupWeb3Auth() async {
       clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
       //     "BCGuB4TOrWXvmJKbZB2V1u0R-iyo1jJxsVKwTheUBSyQ850lquUtJO6YHALOtY6cbd_ZbmCIInHbrwlTy2wxYRI",
       network: Network.sapphire_mainnet,
-      // buildEnv: BuildEnv.production,
+      buildEnv: BuildEnv.production,
       redirectUrl: redirectUrl,
       whiteLabel: WhiteLabelData(
         mode: ThemeModes.dark,
         defaultLanguage: Language.en,
       ),
+      sessionTime: 86400
     ),
   );
 
