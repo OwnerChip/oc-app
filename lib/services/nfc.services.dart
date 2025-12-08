@@ -778,7 +778,8 @@ Future<dynamic> scanClosure(
   }
 
   NfcManager.instance.startSession(
-      onError: (error) async {
+      pollingOptions: NfcPollingOption.values.toSet(),
+      onSessionErrorIos: (error) async {
         try {
           //check if future is already completed
           if (error.message.contains('Session invalidated by user')) {
@@ -791,7 +792,7 @@ Future<dynamic> scanClosure(
           //
         }
       },
-      alertMessage: alertMessage,
+      alertMessageIos: alertMessage,
       onDiscovered: (NfcTag tag) async {
         try {
           NFCPlatform nfc = NFCPlatform(tag);
@@ -827,7 +828,8 @@ Future<dynamic> scanClosure(
             errorMessage = context.loc.unableToReadChip;
           }
           NfcManager.instance.stopSession(
-              errorMessage: errorMessage); //the error is passed to onError here
+              errorMessageIos:
+                  errorMessage); //the error is passed to onError here
           stopNfcOniOSAndAndroid(nfcOverlay);
           if (Platform.isAndroid) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -892,8 +894,9 @@ Future<void> preventRepeatedNFCScan(
   }
 
   await NfcManager.instance.startSession(
-      invalidateAfterFirstRead: false,
-      onError: (error) async {
+      pollingOptions: NfcPollingOption.values.toSet(),
+      invalidateAfterFirstReadIos: false,
+      onSessionErrorIos: (error) async {
         talker.info("NFC Error: $error");
       },
       onDiscovered: (NfcTag tag) async {

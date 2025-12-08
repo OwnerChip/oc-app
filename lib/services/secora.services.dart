@@ -5,7 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/platform_tags.dart';
+import 'package:nfc_manager/nfc_manager_android.dart';
+import 'package:nfc_manager/nfc_manager_ios.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/secora.commands.dart';
@@ -22,16 +23,16 @@ class NFCPlatform {
   late final nfc;
   NFCPlatform(this.tag) {
     if (Platform.isIOS) {
-      nfc = Iso7816.from(tag);
+      nfc = Iso7816Ios.from(tag);
     } else if (Platform.isAndroid) {
-      nfc = IsoDep.from(tag);
+      nfc = IsoDepAndroid.from(tag);
     }
   }
 
   /// sends an APDU commands and returns the response List<Uint8List, int, int>
   Future<List<dynamic>> sendCommand(Uint8List data) async {
     if (Platform.isIOS) {
-      Iso7816ResponseApdu res = await nfc.sendCommandRaw(data);
+      Iso7816ResponseApduIos res = await nfc.sendCommandRaw(data);
       return [res.payload, res.statusWord1, res.statusWord2];
     } else if (Platform.isAndroid) {
       Uint8List res = await nfc.transceive(data: data);
