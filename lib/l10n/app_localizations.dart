@@ -2822,6 +2822,36 @@ abstract class AppLocalizations {
   /// **'Digital Twin restored'**
   String get nftCreationRestoreTokenPopupSuccessTitle;
 
+  /// No description provided for @nftCreationMultiSeriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Series Activation'**
+  String get nftCreationMultiSeriesTitle;
+
+  /// No description provided for @nftCreationMultiSeriesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Series - {number} twins'**
+  String nftCreationMultiSeriesDescription(Object number);
+
+  /// No description provided for @nftCreationMultiSeriesStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total} activated'**
+  String nftCreationMultiSeriesStatus(Object current, Object total);
+
+  /// No description provided for @nftCreationMultiSeriesActivateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan next NFC chip'**
+  String get nftCreationMultiSeriesActivateButton;
+
+  /// No description provided for @nftCreationMultiSeriesPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause and continue later'**
+  String get nftCreationMultiSeriesPause;
+
   /// No description provided for @nft_cancel_confirmation_dialog_title.
   ///
   /// In en, this message translates to:

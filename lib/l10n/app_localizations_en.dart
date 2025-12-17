@@ -1457,6 +1457,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Digital Twin restored';
 
   @override
+  String get nftCreationMultiSeriesTitle => 'Series Activation';
+
+  @override
+  String nftCreationMultiSeriesDescription(Object number) {
+    return 'Series - $number twins';
+  }
+
+  @override
+  String nftCreationMultiSeriesStatus(Object current, Object total) {
+    return '$current of $total activated';
+  }
+
+  @override
+  String get nftCreationMultiSeriesActivateButton => 'Scan next NFC chip';
+
+  @override
+  String get nftCreationMultiSeriesPause => 'Pause and continue later';
+
+  @override
   String get nft_cancel_confirmation_dialog_title => 'Cancel NFT';
 
   @override

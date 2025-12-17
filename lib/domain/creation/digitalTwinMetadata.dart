@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:ownerchip_whitelabel/domain/collection/ocCollection.dart';
 import 'package:ownerchip_whitelabel/domain/converters/dateTimeJsonConverter.dart';
+import 'package:ownerchip_whitelabel/domain/creation/digitalTwinSeriesItem.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinTrait.dart';
 
 part 'digitalTwinMetadata.g.dart';
@@ -32,7 +33,16 @@ class DigitalTwinMetadata {
   final DateTime createdAt;
 
   final String? tokenId;
+  
+  @JsonKey(unknownEnumValue: DigitalTwinCreationMetadataTypeEnum.single)
+  final DigitalTwinCreationMetadataTypeEnum type;
+  
+  final int? serialStartNumber;
+  
+  final int? quantity;
 
+  final List<DigitalTwinSeriesItem>? seriesItems;
+  
   const DigitalTwinMetadata({
     required this.id,
     required this.collectionId,
@@ -47,6 +57,10 @@ class DigitalTwinMetadata {
     required this.status,
     required this.createdAt,
     required this.tokenId,
+    required this.type,
+    this.serialStartNumber,
+    this.quantity,
+    this.seriesItems,
   });
 }
 
@@ -67,6 +81,8 @@ enum DigitalTwinCreationMetadataStatus {
   unknown,
 }
 
+
+
 const DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.pending: 'PENDING',
   DigitalTwinCreationMetadataStatus.toBeBurned: 'TO_BE_BURNED',
@@ -74,4 +90,17 @@ const DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.toBeTransferred: 'TO_BE_TRANSFERRED',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
   DigitalTwinCreationMetadataStatus.burned: 'BURNED',
+};
+
+
+enum DigitalTwinCreationMetadataTypeEnum {
+  @JsonValue("SINGLE")
+  single,
+  @JsonValue("MULTIPLE")
+  multiple,
+}
+
+const DigitalTwinCreationMetadataTypeEnumMap = {
+  DigitalTwinCreationMetadataTypeEnum.single: 'SINGLE',
+  DigitalTwinCreationMetadataTypeEnum.multiple: 'MULTIPLE',
 };

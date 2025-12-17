@@ -27,6 +27,15 @@ DigitalTwinMetadata _$DigitalTwinMetadataFromJson(Map<String, dynamic> json) =>
       createdAt:
           const DateTimeJsonConverter().fromJson(json['createdAt'] as String),
       tokenId: json['tokenId'] as String?,
+      type: $enumDecode(
+          _$DigitalTwinCreationMetadataTypeEnumEnumMap, json['type'],
+          unknownValue: DigitalTwinCreationMetadataTypeEnum.single),
+      serialStartNumber: (json['serialStartNumber'] as num?)?.toInt(),
+      quantity: (json['quantity'] as num?)?.toInt(),
+      seriesItems: (json['seriesItems'] as List<dynamic>?)
+          ?.map(
+              (e) => DigitalTwinSeriesItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$DigitalTwinMetadataToJson(
@@ -45,6 +54,10 @@ Map<String, dynamic> _$DigitalTwinMetadataToJson(
       'status': _$DigitalTwinCreationMetadataStatusEnumMap[instance.status]!,
       'createdAt': const DateTimeJsonConverter().toJson(instance.createdAt),
       'tokenId': instance.tokenId,
+      'type': _$DigitalTwinCreationMetadataTypeEnumEnumMap[instance.type]!,
+      'serialStartNumber': instance.serialStartNumber,
+      'quantity': instance.quantity,
+      'seriesItems': instance.seriesItems?.map((e) => e.toJson()).toList(),
     };
 
 const _$DigitalTwinCreationMetadataStatusEnumMap = {
@@ -55,4 +68,9 @@ const _$DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.toBeTransferred: 'TO_BE_TRANSFERRED',
   DigitalTwinCreationMetadataStatus.burned: 'BURNED',
   DigitalTwinCreationMetadataStatus.unknown: 'UNKNOWN',
+};
+
+const _$DigitalTwinCreationMetadataTypeEnumEnumMap = {
+  DigitalTwinCreationMetadataTypeEnum.single: 'SINGLE',
+  DigitalTwinCreationMetadataTypeEnum.multiple: 'MULTIPLE',
 };
