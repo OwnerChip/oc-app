@@ -189,15 +189,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          metadata.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        _buildTitleWithSerialRange(context, metadata),
                         const SizedBox(height: 6),
                           Row(
                           children: [
@@ -379,6 +371,55 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       default:
         return context.loc.nftCreationSeriesStatusActive;
     }
+  }
+
+  Widget _buildTitleWithSerialRange(BuildContext context, DigitalTwinMetadata metadata) {
+    final title = metadata.title;
+    final serialStart = metadata.serialStartNumber;
+    final quantity = metadata.quantity ?? 0;
+
+    // Check if title contains the template placeholder
+    if (title.contains('#[{SERIAL}]') && serialStart != null && quantity > 0) {
+      final serialEnd = serialStart + quantity - 1;
+      final serialRange = '$serialStart-$serialEnd';
+      
+      // Split the title by the template
+      final parts = title.split('#[{SERIAL}]');
+      
+      return RichText(
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        text: TextSpan(
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: Colors.black,
+              ),
+          children: [
+            if (parts.isNotEmpty) TextSpan(text: parts[0]),
+            TextSpan(
+              text: serialRange,
+              style: TextStyle(
+                color: CustomColors(dotenv.get("APP_ID")).primaryColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (parts.length > 1) TextSpan(text: parts[1]),
+          ],
+        ),
+      );
+    }
+
+    // Fallback to regular text if no template found
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   String _getSeriesActionText(

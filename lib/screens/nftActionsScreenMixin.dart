@@ -1292,9 +1292,9 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
-          // Handle MULTI_SERIAL_ITEM type differently
-          if (metadata.type == DigitalTwinCreationType.multiSerialItem) {
-            // For MULTI_SERIAL_ITEM, call the special endpoint with the CID we already uploaded
+          // Handle MULTIPLE type differently
+          if (metadata.type == DigitalTwinCreationType.multiple) {
+            // For MULTIPLE, call the special endpoint with the CID we already uploaded
             final response = await BackendCreation.markMultiSerialItemDigitalTwinAsMinted(
               parentId: metadata.parentUid ?? metadata.id,
               chipId: chipInfo.chipEthereumAddress.hex,
