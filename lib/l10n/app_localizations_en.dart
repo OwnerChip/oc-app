@@ -1476,6 +1476,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nftCreationMultiSeriesPause => 'Pause and continue later';
 
   @override
+  String get nftCreationMultiSeriesBadge => 'Series';
+
+  @override
+  String nftCreationMultiSeriesItemsCount(String count) {
+    return '$count items';
+  }
+
+  @override
+  String nftCreationMultiSeriesItemsActivated(String current, String total) {
+    return '$current of $total items activated';
+  }
+
+  @override
+  String get nftCreationSeriesStatusActivationPending => 'Activation pending';
+
+  @override
+  String get nftCreationSeriesStatusDraft => 'Draft';
+
+  @override
+  String get nftCreationSeriesStatusActive => 'Active';
+
+  @override
+  String get nftCreationSeriesStatusToBeBurned => 'To be burned';
+
+  @override
+  String get nftCreationSeriesStatusToBeTransferred => 'To be transferred';
+
+  @override
+  String get nftCreationSeriesActionStartScanning => 'Tap to start scanning';
+
+  @override
+  String get nftCreationSeriesActionConnectNFC =>
+      'Tap to connect with NFC chip';
+
+  @override
+  String get nftCreationSingleItemBadge => 'Single item';
+
+  @override
+  String get nftCreationSingleActionConnectNFC =>
+      'Tap to connect with NFC chip';
+
+  @override
+  String get nftCreationSingleActionBurnToken => 'Tap to burn token';
+
+  @override
+  String get nftCreationSingleActionTransferToken => 'Tap to transfer token';
+
+  @override
   String get nft_cancel_confirmation_dialog_title => 'Cancel NFT';
 
   @override

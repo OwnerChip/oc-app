@@ -23,7 +23,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
-import 'package:reown_appkit/solana/solana_web3/solana_web3.dart';
 
 class CreationsPage extends ConsumerStatefulWidget {
   const CreationsPage({super.key});
@@ -200,7 +199,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 6),
-                        Row(
+                          Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -212,7 +211,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Series',
+                                context.loc.nftCreationMultiSeriesBadge,
                                 style: TextStyle(
                                   color: Colors.blue[700],
                                   fontSize: 12,
@@ -231,7 +230,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '$numberOfTokens items',
+                                context.loc.nftCreationMultiSeriesItemsCount(numberOfTokens.toString()),
                                 style: TextStyle(
                                   color: Colors.grey[700],
                                   fontSize: 12,
@@ -271,7 +270,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                         if (numberOfTokens > 0 && numberOfTokens < quantity) ...[
                           const SizedBox(height: 6),
                           Text(
-                            '$numberOfTokens of $quantity items activated',
+                            context.loc.nftCreationMultiSeriesItemsActivated(
+                              numberOfTokens.toString(),
+                              quantity.toString(),
+                            ),
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 12,
@@ -365,17 +367,17 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       BuildContext context, DigitalTwinCreationMetadataStatus status) {
     switch (status) {
       case DigitalTwinCreationMetadataStatus.pending:
-        return 'Activation pending';
+        return context.loc.nftCreationSeriesStatusActivationPending;
       case DigitalTwinCreationMetadataStatus.draft:
-        return 'Draft';
+        return context.loc.nftCreationSeriesStatusDraft;
       case DigitalTwinCreationMetadataStatus.minted:
-        return 'Active';
+        return context.loc.nftCreationSeriesStatusActive;
       case DigitalTwinCreationMetadataStatus.toBeBurned:
-        return 'To be burned';
+        return context.loc.nftCreationSeriesStatusToBeBurned;
       case DigitalTwinCreationMetadataStatus.toBeTransferred:
-        return 'To be transferred';
+        return context.loc.nftCreationSeriesStatusToBeTransferred;
       default:
-        return 'Active';
+        return context.loc.nftCreationSeriesStatusActive;
     }
   }
 
@@ -383,9 +385,9 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       BuildContext context, DigitalTwinCreationMetadataStatus status) {
     switch (status) {
       case DigitalTwinCreationMetadataStatus.pending:
-        return 'Tap to start scanning';
+        return context.loc.nftCreationSeriesActionStartScanning;
       default:
-        return 'Tap to connect with NFC chip';
+        return context.loc.nftCreationSeriesActionConnectNFC;
     }
   }
 
@@ -518,7 +520,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            'Single item',
+                            context.loc.nftCreationSingleItemBadge,
                             style: TextStyle(
                               color: Colors.blue[700],
                               fontSize: 12,
@@ -619,13 +621,13 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       BuildContext context, DigitalTwinCreationMetadataStatus status) {
     switch (status) {
       case DigitalTwinCreationMetadataStatus.pending:
-        return 'Tap to connect with NFC chip';
+        return context.loc.nftCreationSingleActionConnectNFC;
       case DigitalTwinCreationMetadataStatus.toBeBurned:
-        return 'Tap to burn token';
+        return context.loc.nftCreationSingleActionBurnToken;
       case DigitalTwinCreationMetadataStatus.toBeTransferred:
-        return 'Tap to transfer token';
+        return context.loc.nftCreationSingleActionTransferToken;
       default:
-        return 'Tap to connect with NFC chip';
+        return context.loc.nftCreationSingleActionConnectNFC;
     }
   }
 
