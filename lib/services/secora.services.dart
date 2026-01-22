@@ -18,24 +18,30 @@ import 'package:web3dart/web3dart.dart';
 class NFCPlatform {
   var platform = defaultTargetPlatform;
   final NfcTag tag;
-  // cannot assign type to nfc because type depends on platform
-  // ignore: prefer_typing_uninitialized_variables
-  late final nfc;
+  
+  late final Iso7816Ios? nfciOS;
+  late final IsoDepAndroid? nfcAndroid;
+  
   NFCPlatform(this.tag) {
     if (Platform.isIOS) {
-      nfc = Iso7816Ios.from(tag);
+      nfciOS = Iso7816Ios.from(tag);
+      nfcAndroid = null;
     } else if (Platform.isAndroid) {
-      nfc = IsoDepAndroid.from(tag);
+      nfcAndroid = IsoDepAndroid.from(tag);
+      nfciOS = null;
+    } else {
+      nfciOS = null;
+      nfcAndroid = null;
     }
   }
 
   /// sends an APDU commands and returns the response List<Uint8List, int, int>
   Future<List<dynamic>> sendCommand(Uint8List data) async {
-    if (Platform.isIOS) {
-      Iso7816ResponseApduIos res = await nfc.sendCommandRaw(data);
+    if (Platform.isIOS && nfciOS != null) {
+      Iso7816ResponseApduIos res = await nfciOS!.sendCommandRaw(data: data);
       return [res.payload, res.statusWord1, res.statusWord2];
-    } else if (Platform.isAndroid) {
-      Uint8List res = await nfc.transceive(data: data);
+    } else if (Platform.isAndroid && nfcAndroid != null) {
+      Uint8List res = await nfcAndroid!.transceive(data);
       return [
         res.sublist(0, res.length - 2),
         res[res.length - 2],

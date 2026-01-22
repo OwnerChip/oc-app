@@ -114,10 +114,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
               itemBuilder: (context, index) {
                 final metadata = creations.data![index];
                 if (metadata.type ==
-                    DigitalTwinCreationMetadataTypeEnum.single) {
+                    DigitalTwinCreationType.single) {
                   return _buildSingleTwin(metadata, context, creations);
                 } else if (metadata.type ==
-                    DigitalTwinCreationMetadataTypeEnum.multiple) {
+                    DigitalTwinCreationType.multiple) {
                   return _buildMultiTwin(metadata, context, creations);
                 }
 
@@ -130,17 +130,15 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
 
   Widget _buildMultiTwin(DigitalTwinMetadata metadata, BuildContext context,
       CreationsData creations) {
-    final numberOfTokens = metadata.seriesItems?.length ?? 0;
+    final numberOfTokens = metadata.totalActiveSeriesItems ?? 0;
     final quantity = metadata.quantity ?? 0;
 
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: InkWell(
-            borderRadius: BorderRadius.circular(
-              16.0,
-            ),
+            borderRadius: BorderRadius.circular(12.0),
             onTap: () {
               setState(() {
                 if (_selectedCreationId == metadata.id) {
@@ -152,26 +150,26 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
             },
             child: Container(
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    16.0,
+                borderRadius: BorderRadius.circular(12.0),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  color: _selectedCreationId == metadata.id
-                      ? Colors.grey[300]
-                      : Colors.transparent),
-              padding: const EdgeInsets.all(8.0),
+                ],
+              ),
+              padding: const EdgeInsets.all(12.0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(
-                    width: 16,
-                  ),
                   if (metadata.imageLink != null)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        8.0,
-                      ),
+                      borderRadius: BorderRadius.circular(8.0),
                       child: SizedBox(
-                        width: 72,
-                        height: 72,
+                        width: 56,
+                        height: 56,
                         child: Image.network(
                           metadata.imageLink!,
                           fit: BoxFit.cover,
@@ -180,39 +178,106 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                     )
                   else
                     Container(
-                      width: 72,
-                      height: 72,
+                      width: 56,
+                      height: 56,
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  const SizedBox(
-                    width: 32,
-                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           metadata.title,
-                          style: Theme.of(context).textTheme.headlineMedium,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Series',
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '$numberOfTokens items',
+                                style: TextStyle(
+                                  color: Colors.grey[700],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _getSeriesStatusText(context, metadata.status),
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
                         Text(
-                          metadata.description,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                          _getSeriesActionText(context, metadata.status),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                          ),
                         ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        Text(context.loc.nftCreationMultiSeriesDescription(
-                          quantity.toString(),
-                        ))
+                        if (numberOfTokens > 0 && numberOfTokens < quantity) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            '$numberOfTokens of $quantity items activated',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -222,9 +287,6 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
           ),
         ),
         if (metadata.id == _selectedCreationId) ...[
-          const SizedBox(
-            height: 8,
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Card(
@@ -234,21 +296,15 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(context.loc.nftCreationMultiSeriesTitle),
-                    const SizedBox(
-                      height: 8,
-                    ),
+                    const SizedBox(height: 8),
                     Text(context.loc.nftCreationMultiSeriesStatus(
                         numberOfTokens.toString(), quantity.toString())),
-                    const SizedBox(
-                      height: 8,
-                    ),
+                    const SizedBox(height: 8),
                     Builder(
                       builder: (context) {
                         final width = MediaQuery.of(context).size.width - 64;
-
                         final progress =
                             quantity > 0 ? numberOfTokens / quantity : 0.0;
-                        // final progress = 0.5;
 
                         return Stack(
                           children: [
@@ -273,22 +329,26 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                         );
                       },
                     ),
-                    const SizedBox(
-                      height: 16,
-                    ),
+                    const SizedBox(height: 16),
                     SizedBox(
                         width: double.maxFinite,
                         child: CustomRoundedButton(
                             text: context
                                 .loc.nftCreationMultiSeriesActivateButton,
-                            onPressed: () {})),
-                    const SizedBox(
-                      height: 8,
-                    ),
+                            onPressed: () => _mintNextSeriesItem(
+                              context,
+                              creations,
+                              metadata,
+                            ))),
+                    const SizedBox(height: 8),
                     SizedBox(
                       width: double.maxFinite,
                       child: CustomOutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              _selectedCreationId = null;
+                            });
+                          },
                           buttonText: context.loc.nftCreationMultiSeriesPause),
                     ),
                   ],
@@ -301,160 +361,272 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     );
   }
 
-  InkWell _buildSingleTwin(DigitalTwinMetadata metadata, BuildContext context,
+  String _getSeriesStatusText(
+      BuildContext context, DigitalTwinCreationMetadataStatus status) {
+    switch (status) {
+      case DigitalTwinCreationMetadataStatus.pending:
+        return 'Activation pending';
+      case DigitalTwinCreationMetadataStatus.draft:
+        return 'Draft';
+      case DigitalTwinCreationMetadataStatus.minted:
+        return 'Active';
+      case DigitalTwinCreationMetadataStatus.toBeBurned:
+        return 'To be burned';
+      case DigitalTwinCreationMetadataStatus.toBeTransferred:
+        return 'To be transferred';
+      default:
+        return 'Active';
+    }
+  }
+
+  String _getSeriesActionText(
+      BuildContext context, DigitalTwinCreationMetadataStatus status) {
+    switch (status) {
+      case DigitalTwinCreationMetadataStatus.pending:
+        return 'Tap to start scanning';
+      default:
+        return 'Tap to connect with NFC chip';
+    }
+  }
+
+  void _showCancelDialog(BuildContext context, DigitalTwinMetadata metadata) {
+    String title = "";
+    String description = "";
+    String yes = "";
+    String cancel = "";
+    VoidCallback onYes = () {};
+
+    if (metadata.status == DigitalTwinCreationMetadataStatus.toBeBurned) {
+      onYes = () {
+        BackendCreationService.instance.cancelBurnDigitalTwin(metadata.id);
+      };
+      title = context.loc.nft_burn_cancel_confirmation_dialog_title;
+      description = context.loc
+          .nft_burn_cancel_confirmation_dialog_description(metadata.title);
+      yes = context.loc
+          .nft_burn_cancel_confirmation_dialog_cancel_cancel_button;
+      cancel =
+          context.loc.nft_burn_cancel_confirmation_dialog_cancel_keep_button;
+    } else if (metadata.status == DigitalTwinCreationMetadataStatus.pending) {
+      onYes = () {
+        BackendCreationService.instance.cancelDigitalTwin(metadata.id);
+      };
+      title = context.loc.nft_cancel_confirmation_dialog_title;
+      description =
+          context.loc.nft_cancel_confirmation_dialog_description(metadata.title);
+      yes = context.loc.nft_cancel_confirmation_dialog_cancel_cancel_button;
+      cancel = context.loc.nft_cancel_confirmation_dialog_cancel_keep_button;
+    } else if (metadata.status ==
+        DigitalTwinCreationMetadataStatus.toBeTransferred) {
+      onYes = () {
+        BackendCreationService.instance.cancelTransferDigitalTwin(metadata.id);
+      };
+      title = context.loc.nft_transfer_cancel_confirmation_dialog_title;
+      description = context.loc
+          .nft_transfer_cancel_confirmation_dialog_description(metadata.title);
+      yes = context.loc
+          .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+      cancel = context.loc
+          .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+    }
+
+    showCustomPopup(
+      context,
+      title,
+      CreationCancelPopup(
+        description: description,
+        yes: yes,
+        cancel: cancel,
+      ),
+    ).then((res) {
+      if (res == true) {
+        onYes();
+      }
+    });
+  }
+
+  Widget _buildSingleTwin(DigitalTwinMetadata metadata, BuildContext context,
       CreationsData creations) {
-    return InkWell(
-      onTap: () {
-        _onTapSingle(metadata, context, creations);
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            const SizedBox(
-              width: 16,
-            ),
-            if (metadata.imageLink != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  8.0,
-                ),
-                child: SizedBox(
-                  width: 96,
-                  height: 96,
-                  child: Image.network(
-                    metadata.imageLink!,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              )
-            else
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(8),
-                ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: InkWell(
+        onTap: () {
+          _onTapSingle(metadata, context, creations);
+        },
+        borderRadius: BorderRadius.circular(12.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12.0),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-            const SizedBox(
-              width: 32,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    metadata.title,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    metadata.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  Container(
-                    child: Text(
-                      _getTextByStatus(context, metadata.status),
-                      style: Theme.of(context).textTheme.bodySmall,
+            ],
+          ),
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (metadata.imageLink != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Image.network(
+                      metadata.imageLink!,
+                      fit: BoxFit.cover,
                     ),
-                  )
-                ],
+                  ),
+                )
+              else
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      metadata.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Single item',
+                            style: TextStyle(
+                              color: Colors.blue[700],
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (_getTextByStatus(context, metadata.status).isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(metadata.status),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              _getTextByStatus(context, metadata.status),
+                              style: TextStyle(
+                                color: _getStatusTextColor(metadata.status),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _getSingleActionText(context, metadata.status),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Column(
-              children: [
+              const SizedBox(width: 8),
+              if (_shouldShowCancelButton(metadata.status))
                 InkWell(
-                  child: const Padding(
-                    padding: EdgeInsets.all(16.0),
+                  onTap: () {
+                    _showCancelDialog(context, metadata);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
                     child: Icon(
                       Icons.close,
-                      size: 24,
+                      size: 20,
+                      color: Colors.grey[600],
                     ),
                   ),
-                  onTap: () {
-                    String title = "";
-                    String description = "";
-                    String yes = "";
-                    String cancel = "";
-                    VoidCallback onYes = () {};
-
-                    if (metadata.status ==
-                        DigitalTwinCreationMetadataStatus.toBeBurned) {
-                      onYes = () {
-                        BackendCreationService.instance
-                            .cancelBurnDigitalTwin(metadata.id);
-                      };
-
-                      title =
-                          context.loc.nft_burn_cancel_confirmation_dialog_title;
-                      description = context.loc
-                          .nft_burn_cancel_confirmation_dialog_description(
-                              metadata.title);
-                      yes = context.loc
-                          .nft_burn_cancel_confirmation_dialog_cancel_cancel_button;
-                      cancel = context.loc
-                          .nft_burn_cancel_confirmation_dialog_cancel_keep_button;
-                    } else if (metadata.status ==
-                        DigitalTwinCreationMetadataStatus.pending) {
-                      onYes = () {
-                        BackendCreationService.instance
-                            .cancelDigitalTwin(metadata.id);
-                      };
-                      title = context.loc.nft_cancel_confirmation_dialog_title;
-                      description = context.loc
-                          .nft_cancel_confirmation_dialog_description(
-                              metadata.title);
-                      yes = context.loc
-                          .nft_cancel_confirmation_dialog_cancel_cancel_button;
-                      cancel = context.loc
-                          .nft_cancel_confirmation_dialog_cancel_keep_button;
-                    } else if (metadata.status ==
-                        DigitalTwinCreationMetadataStatus.toBeTransferred) {
-                      onYes = () {
-                        BackendCreationService.instance
-                            .cancelTransferDigitalTwin(metadata.id);
-                      };
-
-                      title = context
-                          .loc.nft_transfer_cancel_confirmation_dialog_title;
-                      description = context.loc
-                          .nft_transfer_cancel_confirmation_dialog_description(
-                              metadata.title);
-                      yes = context.loc
-                          .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
-                      cancel = context.loc
-                          .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
-                    }
-
-                    showCustomPopup(
-                      context,
-                      title,
-                      CreationCancelPopup(
-                        description: description,
-                        yes: yes,
-                        cancel: cancel,
-                      ),
-                    ).then((res) {
-                      if (res == true) {
-                        onYes();
-                      }
-                    });
-                  },
-                )
-              ],
-            )
-          ],
+                ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  bool _shouldShowCancelButton(DigitalTwinCreationMetadataStatus status) {
+    return [
+      DigitalTwinCreationMetadataStatus.pending,
+      DigitalTwinCreationMetadataStatus.toBeBurned,
+      DigitalTwinCreationMetadataStatus.toBeTransferred,
+    ].contains(status);
+  }
+
+  Color _getStatusColor(DigitalTwinCreationMetadataStatus status) {
+    switch (status) {
+      case DigitalTwinCreationMetadataStatus.pending:
+        return Colors.blue.withOpacity(0.1);
+      case DigitalTwinCreationMetadataStatus.toBeBurned:
+        return Colors.red.withOpacity(0.1);
+      case DigitalTwinCreationMetadataStatus.toBeTransferred:
+        return Colors.orange.withOpacity(0.1);
+      default:
+        return Colors.grey.withOpacity(0.1);
+    }
+  }
+
+  Color _getStatusTextColor(DigitalTwinCreationMetadataStatus status) {
+    switch (status) {
+      case DigitalTwinCreationMetadataStatus.pending:
+        return Colors.blue[700]!;
+      case DigitalTwinCreationMetadataStatus.toBeBurned:
+        return Colors.red[700]!;
+      case DigitalTwinCreationMetadataStatus.toBeTransferred:
+        return Colors.orange[700]!;
+      default:
+        return Colors.grey[700]!;
+    }
+  }
+
+  String _getSingleActionText(
+      BuildContext context, DigitalTwinCreationMetadataStatus status) {
+    switch (status) {
+      case DigitalTwinCreationMetadataStatus.pending:
+        return 'Tap to connect with NFC chip';
+      case DigitalTwinCreationMetadataStatus.toBeBurned:
+        return 'Tap to burn token';
+      case DigitalTwinCreationMetadataStatus.toBeTransferred:
+        return 'Tap to transfer token';
+      default:
+        return 'Tap to connect with NFC chip';
+    }
   }
 
   void _onTapSingle(DigitalTwinMetadata metadata, BuildContext context,
@@ -659,21 +831,35 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
             return;
           }
         });
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   returnSnackBarWidget(
-        //     context.loc.warning,
-        //     context.loc.nftCreationsAlreadyMintedToken,
-        //     "warning",
-        //     duration: const Duration(
-        //       seconds: 6,
-        //     ),
-        //   ),
-        // );
       },
     )) {
       final userSession = ref.read(userSessionProvider)!;
       final wc = ref.read(w3mServiceProvider);
 
+      await createToken(
+        userSession.sessionId,
+        wc!,
+        ref.read(chipSignatureDataProvider),
+        metadata,
+      );
+    }
+  }
+
+  Future<void> _mintNextSeriesItem(
+    BuildContext context,
+    CreationsData creations,
+    DigitalTwinMetadata metadata,
+  ) async {
+    if (await _scanItem(
+      context,
+      creations,
+      metadata,
+      onTokenExist: (String tokenId) {},
+    )) {
+      final userSession = ref.read(userSessionProvider)!;
+      final wc = ref.read(w3mServiceProvider);
+
+      // Use the parent metadata for MULTI_SERIAL_ITEM minting
       await createToken(
         userSession.sessionId,
         wc!,

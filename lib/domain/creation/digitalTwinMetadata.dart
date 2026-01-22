@@ -1,7 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:ownerchip_whitelabel/domain/collection/ocCollection.dart';
 import 'package:ownerchip_whitelabel/domain/converters/dateTimeJsonConverter.dart';
-import 'package:ownerchip_whitelabel/domain/creation/digitalTwinSeriesItem.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinTrait.dart';
 
 part 'digitalTwinMetadata.g.dart';
@@ -34,14 +33,18 @@ class DigitalTwinMetadata {
 
   final String? tokenId;
   
-  @JsonKey(unknownEnumValue: DigitalTwinCreationMetadataTypeEnum.single)
-  final DigitalTwinCreationMetadataTypeEnum type;
+  @JsonKey(unknownEnumValue: DigitalTwinCreationType.single)
+  final DigitalTwinCreationType type;
   
   final int? serialStartNumber;
   
   final int? quantity;
 
-  final List<DigitalTwinSeriesItem>? seriesItems;
+  final int? totalActiveSeriesItems;
+
+  final String? parentUid;
+
+  final List<DigitalTwinMetadata>? children;
   
   const DigitalTwinMetadata({
     required this.id,
@@ -60,7 +63,9 @@ class DigitalTwinMetadata {
     required this.type,
     this.serialStartNumber,
     this.quantity,
-    this.seriesItems,
+    this.totalActiveSeriesItems,
+    this.parentUid,
+    this.children,
   });
 }
 
@@ -93,14 +98,17 @@ const DigitalTwinCreationMetadataStatusEnumMap = {
 };
 
 
-enum DigitalTwinCreationMetadataTypeEnum {
+enum DigitalTwinCreationType {
   @JsonValue("SINGLE")
   single,
   @JsonValue("MULTIPLE")
   multiple,
+  @JsonValue("MULTI_SERIAL_ITEM")
+  multiSerialItem,
 }
 
-const DigitalTwinCreationMetadataTypeEnumMap = {
-  DigitalTwinCreationMetadataTypeEnum.single: 'SINGLE',
-  DigitalTwinCreationMetadataTypeEnum.multiple: 'MULTIPLE',
+const DigitalTwinCreationTypeEnumMap = {
+  DigitalTwinCreationType.single: 'SINGLE',
+  DigitalTwinCreationType.multiple: 'MULTIPLE',
+  DigitalTwinCreationType.multiSerialItem: 'MULTI_SERIAL_ITEM',
 };

@@ -27,14 +27,14 @@ DigitalTwinMetadata _$DigitalTwinMetadataFromJson(Map<String, dynamic> json) =>
       createdAt:
           const DateTimeJsonConverter().fromJson(json['createdAt'] as String),
       tokenId: json['tokenId'] as String?,
-      type: $enumDecode(
-          _$DigitalTwinCreationMetadataTypeEnumEnumMap, json['type'],
-          unknownValue: DigitalTwinCreationMetadataTypeEnum.single),
+      type: $enumDecode(_$DigitalTwinCreationTypeEnumMap, json['type'],
+          unknownValue: DigitalTwinCreationType.single),
       serialStartNumber: (json['serialStartNumber'] as num?)?.toInt(),
       quantity: (json['quantity'] as num?)?.toInt(),
-      seriesItems: (json['seriesItems'] as List<dynamic>?)
-          ?.map(
-              (e) => DigitalTwinSeriesItem.fromJson(e as Map<String, dynamic>))
+      totalActiveSeriesItems: (json['totalActiveSeriesItems'] as num?)?.toInt(),
+      parentUid: json['parentUid'] as String?,
+      children: (json['children'] as List<dynamic>?)
+          ?.map((e) => DigitalTwinMetadata.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
@@ -54,10 +54,12 @@ Map<String, dynamic> _$DigitalTwinMetadataToJson(
       'status': _$DigitalTwinCreationMetadataStatusEnumMap[instance.status]!,
       'createdAt': const DateTimeJsonConverter().toJson(instance.createdAt),
       'tokenId': instance.tokenId,
-      'type': _$DigitalTwinCreationMetadataTypeEnumEnumMap[instance.type]!,
+      'type': _$DigitalTwinCreationTypeEnumMap[instance.type]!,
       'serialStartNumber': instance.serialStartNumber,
       'quantity': instance.quantity,
-      'seriesItems': instance.seriesItems?.map((e) => e.toJson()).toList(),
+      'totalActiveSeriesItems': instance.totalActiveSeriesItems,
+      'parentUid': instance.parentUid,
+      'children': instance.children?.map((e) => e.toJson()).toList(),
     };
 
 const _$DigitalTwinCreationMetadataStatusEnumMap = {
@@ -70,7 +72,8 @@ const _$DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.unknown: 'UNKNOWN',
 };
 
-const _$DigitalTwinCreationMetadataTypeEnumEnumMap = {
-  DigitalTwinCreationMetadataTypeEnum.single: 'SINGLE',
-  DigitalTwinCreationMetadataTypeEnum.multiple: 'MULTIPLE',
+const _$DigitalTwinCreationTypeEnumMap = {
+  DigitalTwinCreationType.single: 'SINGLE',
+  DigitalTwinCreationType.multiple: 'MULTIPLE',
+  DigitalTwinCreationType.multiSerialItem: 'MULTI_SERIAL_ITEM',
 };

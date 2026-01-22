@@ -150,6 +150,7 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
       await getCardSignature!(await getGaslessTxHash(request, toAddress));
       signature = msgSignatureToHex(sig!);
     } else if (walletType.type == EWalletType.walletConnect) {
+      // TODO: EIP712 signature
       final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
 
       await preventRepeatedNFCScan(() async {

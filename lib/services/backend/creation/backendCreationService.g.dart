@@ -81,6 +81,35 @@ class _BackendCreationService implements BackendCreationService {
   }
 
   @override
+  Future<HttpResponse<dynamic>> mintMultiSerialItemDigitalTwin(
+    String parentId,
+    String chipId,
+    String twinTokenMetadataCID,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'chipId': chipId,
+      r'twinTokenMetadataCID': twinTokenMetadataCID,
+    };
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<HttpResponse<dynamic>>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/${parentId}/mintedMultiSerialItem',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
+    final httpResponse = HttpResponse(_value, _result);
+    return httpResponse;
+  }
+
+  @override
   Future<void> cancelDigitalTwin(String id) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -389,6 +418,35 @@ class _BackendCreationService implements BackendCreationService {
           .compose(
             _dio.options,
             '/${id}/restore',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
+    final httpResponse = HttpResponse(_value, _result);
+    return httpResponse;
+  }
+
+  @override
+  Future<HttpResponse<dynamic>> getMultiSerialItemIpfsMetadata(
+    String itemId,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<HttpResponse<dynamic>>(
+      Options(
+        method: 'GET',
+        headers: _headers,
+        extra: _extra,
+        responseType: ResponseType.json,
+      )
+          .compose(
+            _dio.options,
+            '/${itemId}/multi-serial-ipfs-metadata',
             queryParameters: queryParameters,
             data: _data,
           )

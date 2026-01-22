@@ -513,6 +513,7 @@ String makeTransferFromData(String functionSignatureHash, Uint8List hash,
   return data;
 }
 
+// TODO:
 String makeApproveData(
     String functionSignatureHash, BigInt tokenId, EthereumAddress to) {
   String data = functionSignatureHash +
@@ -665,11 +666,32 @@ Future<EthereumAddress> getCollectionId(
   try {
     List collectionId = await queryRegistryContract(
         chainRpcUrl, registryAddress, "tokenRegistry", [tokenId]);
-    return collectionId[0];
+    
+    // Check if result is empty or null
+    if (collectionId.isEmpty || collectionId[0] == null) {
+      return zeroAddress;
+    }
+    
+    // Check if the result is already an EthereumAddress
+    if (collectionId[0] is EthereumAddress) {
+      return collectionId[0];
+    }
+    
+    // Try to parse as string if it's not already an EthereumAddress
+    try {
+      if (collectionId[0] is String) {
+        return EthereumAddress.fromHex(collectionId[0]);
+      }
+      return collectionId[0];
+    } catch (parseError) {
+      // If parsing fails, return zero address (token not registered)
+      print('Could not parse collection address for tokenId $tokenId: $parseError');
+      return zeroAddress;
+    }
   } catch (e) {
     print('Error while fetching registry entry of tokenId $tokenId: $e');
-    throw Exception(
-        'Error while fetching registry entry of tokenId $tokenId: $e');
+    // Return szero address instead of throwing, so the code can continue checking other chains
+    return zeroAddress;
   }
 }
 

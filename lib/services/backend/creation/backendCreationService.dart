@@ -46,6 +46,13 @@ abstract class BackendCreationService {
     @Query("chipId") String chipId,
   );
 
+  @POST("/{parentId}/mintedMultiSerialItem")
+  Future<HttpResponse<dynamic>> mintMultiSerialItemDigitalTwin(
+    @Path('parentId') String parentId,
+    @Query("chipId") String chipId,
+    @Query("twinTokenMetadataCID") String twinTokenMetadataCID,
+  );
+
   @POST("/{id}/cancel")
   Future<void> cancelDigitalTwin(
     @Path('id') String id,
@@ -121,5 +128,11 @@ abstract class BackendCreationService {
   Future<HttpResponse?> restoreDigitalTwin(
     @Path('id') String id,
     @Body() RestoreDigitalTwinCreationPayload payload,
+  );
+
+  @GET("/{itemId}/multi-serial-ipfs-metadata")
+  @DioResponseType(ResponseType.json)
+  Future<HttpResponse<dynamic>> getMultiSerialItemIpfsMetadata(
+    @Path('itemId') String itemId,
   );
 }

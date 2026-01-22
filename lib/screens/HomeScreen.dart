@@ -315,6 +315,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         e,
         stackTrace: s,
       );
+      print(e);
+      print(s.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorNoNfcReader, 'error'),
@@ -374,9 +376,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     if (!app.upgradeShown && app.upgradeRequired) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(appNotifierProvider.notifier).showUpgrade(context);
-      });
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   ref.read(appNotifierProvider.notifier).showUpgrade(context);
+      // });
     }
 
     return Scaffold(

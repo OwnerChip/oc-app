@@ -38,38 +38,38 @@ class DefaultFirebaseOptions {
   }
 
   /// USE THIS FOR PRODUCTION BUILDS
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: '${API_KEY_ANDROID}',
-    appId: '${APP_ID_ANDROID}',
-    messagingSenderId: '345142381734',
-    projectId: 'ownerchip-staging',
-    storageBucket: 'ownerchip-staging.appspot.com',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: '${API_KEY_IOS}',
-    appId: '${APP_ID_IOS}',
-    messagingSenderId: '345142381734',
-    projectId: 'ownerchip-staging',
-    storageBucket: 'ownerchip-staging.appspot.com',
-    iosBundleId: 'com.ownerchip.user',
-  );
-
-  /// USE THIS FOR LOCAL DEVELOPMENT
   // static const FirebaseOptions android = FirebaseOptions(
-  //   apiKey: 'AIzaSyBwDIYxctT2ZjYHkcja7mve8nz9AYh73tA',
-  //   appId: '1:345142381734:android:7c8033f5a26de8f8333867',
+  //   apiKey: '${API_KEY_ANDROID}',
+  //   appId: '${APP_ID_ANDROID}',
   //   messagingSenderId: '345142381734',
   //   projectId: 'ownerchip-staging',
   //   storageBucket: 'ownerchip-staging.appspot.com',
   // );
   //
   // static const FirebaseOptions ios = FirebaseOptions(
-  //   apiKey: 'AIzaSyAEVprxfs0HfmArxF3EI-zHFqnG4gMAMa8',
-  //   appId: '1:345142381734:ios:6745bca1f226191d333867',
+  //   apiKey: '${API_KEY_IOS}',
+  //   appId: '${APP_ID_IOS}',
   //   messagingSenderId: '345142381734',
   //   projectId: 'ownerchip-staging',
   //   storageBucket: 'ownerchip-staging.appspot.com',
   //   iosBundleId: 'com.ownerchip.user',
   // );
+
+  /// USE THIS FOR LOCAL DEVELOPMENT
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyBwDIYxctT2ZjYHkcja7mve8nz9AYh73tA',
+    appId: '1:345142381734:android:7c8033f5a26de8f8333867',
+    messagingSenderId: '345142381734',
+    projectId: 'ownerchip-staging',
+    storageBucket: 'ownerchip-staging.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAEVprxfs0HfmArxF3EI-zHFqnG4gMAMa8',
+    appId: '1:345142381734:ios:6745bca1f226191d333867',
+    messagingSenderId: '345142381734',
+    projectId: 'ownerchip-staging',
+    storageBucket: 'ownerchip-staging.appspot.com',
+    iosBundleId: 'com.ownerchip.user',
+  );
 }
