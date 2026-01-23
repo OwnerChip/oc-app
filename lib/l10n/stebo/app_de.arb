@@ -410,7 +410,7 @@
 
 
     "@_OFFER_FOR_SALE": {},
-    "offerForSaleCreatedTokenAppBarTitle": "Zum Verkauf anbieten",
+    "offerForSaleCreatedTokenAppBarTitle": "",
     "offerForSaleCreatedTokenTitle" : "Digital Twin erstellt",
     "offerForSaleCreatedTokenSubtitle" : "Du hast erfolgreich einen Digital Twin für dein Objekt erstellt.",
     "offerForSaleCreatedTokenButton" : "Jetzt anbieten",
@@ -492,6 +492,26 @@
     "nft_transfer_cancel_confirmation_dialog_cancel_keep_button": "Nein, behalten",
 
 
+  "nftCreationMultiSeriesTitle": "Serien-Aktivierung",
+  "nftCreationMultiSeriesDescription": "Serie - {number} Zwillinge",
+  "nftCreationMultiSeriesStatus": "{current} von {total} aktiviert",
+  "nftCreationMultiSeriesActivateButton": "Nächsten NFC-Chip scannen",
+  "nftCreationMultiSeriesPause": "Pause und später fortfahren",
+  "nftCreationMultiSeriesBadge": "Serie",
+  "nftCreationMultiSeriesItemsCount": "{count} Artikel",
+  "nftCreationMultiSeriesItemsActivated": "{current} von {total} Artikeln aktiviert",
+  "nftCreationSeriesStatusActivationPending": "Aktivierung ausstehend",
+  "nftCreationSeriesStatusDraft": "Entwurf",
+  "nftCreationSeriesStatusActive": "Aktiv",
+  "nftCreationSeriesStatusToBeBurned": "Zu löschen",
+  "nftCreationSeriesStatusToBeTransferred": "Zu übertragen",
+  "nftCreationSeriesActionStartScanning": "Tippen um zu scannen",
+  "nftCreationSeriesActionConnectNFC": "Tippen um NFC-Chip zu verbinden",
+  "nftCreationSingleItemBadge": "Einzelartikel",
+  "nftCreationSingleActionConnectNFC": "Tippen um NFC-Chip zu verbinden",
+  "nftCreationSingleActionBurnToken": "Tippen um Token zu löschen",
+  "nftCreationSingleActionTransferToken": "Tippen um Token zu übertragen",
+  
     "@_CERTIFICATE_CARD": {},
     "certificateCardLoginSuccess": "Erfolgreich mit der Zertifikatskarte verbunden.",
     "cannotSetPinOnCertificateCard": "PIN kann auf der Zertifikatskarte nicht gesetzt werden.",

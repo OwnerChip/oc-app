@@ -60,15 +60,6 @@ class OfferForSaleCreatedTokenScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(
-                  height: 48,
-                ),
-                CustomRoundedButton(
-                  text: context.loc.offerForSaleCreatedTokenButton,
-                  onPressed: () {
-                    navigateToOfferOnMPScreen(context);
-                  },
-                ),
-                const SizedBox(
                   height: 12,
                 ),
                 SizedBox(

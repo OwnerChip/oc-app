@@ -411,7 +411,7 @@
 
 
     "@_OFFER_FOR_SALE": {},
-    "offerForSaleCreatedTokenAppBarTitle": "Zum Verkauf anbieten",
+    "offerForSaleCreatedTokenAppBarTitle": "",
     "offerForSaleCreatedTokenTitle" : "Digital Twin erstellt",
     "offerForSaleCreatedTokenSubtitle" : "Du hast erfolgreich einen Digital Twin für dein Objekt erstellt.",
     "offerForSaleCreatedTokenButton" : "Jetzt anbieten",
