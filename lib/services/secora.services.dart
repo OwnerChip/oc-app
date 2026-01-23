@@ -219,7 +219,11 @@ Future<void> nfcPlatformCheck(
   // null comparison below is NOT unnecessary!
   // ignore: unnecessary_null_comparison
   if (nfc == null) {
-    NfcManager.instance.stopSession();
+    try {
+      NfcManager.instance.stopSession();
+    } catch (_) {
+      // Ignore if no active session
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(
           context.loc.errorHeadingSnackBar, context.loc.noNfc, 'error'),

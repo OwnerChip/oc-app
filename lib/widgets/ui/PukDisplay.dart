@@ -60,7 +60,11 @@ class PukDisplay extends ConsumerWidget {
                               'success'));
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     } catch (e) {
-                      NfcManager.instance.stopSession();
+                      try {
+                        NfcManager.instance.stopSession();
+                      } catch (_) {
+                        // Ignore if no active session
+                      }
                       ScaffoldMessenger.of(context).showSnackBar(
                           returnSnackBarWidget(context.loc.errorHeadingSnackBar,
                               context.loc.errorAuthenticatingCard, 'error'));

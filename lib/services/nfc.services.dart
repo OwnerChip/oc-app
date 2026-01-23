@@ -280,7 +280,11 @@ Future<dynamic> scanItem(
       if (navigateToResultPage &&
           ref.read(wcSessionProvider) == null &&
           e == "Error: Chip is PIN code locked.") {
-        await NfcManager.instance.stopSession();
+        try {
+          await NfcManager.instance.stopSession();
+        } catch (_) {
+          // Ignore if no active session
+        }
         //navigate to PinScreen
         Navigator.pushNamed(context, PinScreen.routeName,
             arguments: PinScreenArguments(
@@ -754,7 +758,12 @@ Future<dynamic> scanClosure(
     Future<dynamic> Function(NFCPlatform, String, List) callback,
     String analyticsType,
     String alertMessage) async {
-  await NfcManager.instance.stopSession();
+  // Stop any existing session, ignore errors if no session is active
+  try {
+    await NfcManager.instance.stopSession();
+  } catch (e) {
+    // Ignore errors when stopping session (e.g., no active session on iOS)
+  }
 
   if (!await checkInternetConnection()) {
     throw "No internet connection";
@@ -866,7 +875,11 @@ Future<dynamic> scanClosure(
 //function template
 Future<void> stopNfcOniOSAndAndroid(NFCOverlay nfcOverlay) async {
   if (Platform.isIOS) {
-    NfcManager.instance.stopSession();
+    try {
+      NfcManager.instance.stopSession();
+    } catch (_) {
+      // Ignore if no active session
+    }
   }
   if (Platform.isAndroid) {
     nfcOverlay.removeNfcOverlay();
@@ -875,7 +888,11 @@ Future<void> stopNfcOniOSAndAndroid(NFCOverlay nfcOverlay) async {
   //delay stopping nfc session, to avoid reading the same tag twice
   if (Platform.isAndroid) {
     await Future.delayed(const Duration(seconds: 2));
-    NfcManager.instance.stopSession();
+    try {
+      NfcManager.instance.stopSession();
+    } catch (_) {
+      // Ignore if no active session
+    }
   }
 }
 
@@ -909,7 +926,11 @@ Future<void> preventRepeatedNFCScan(
   if (Platform.isAndroid) {
     await Future.delayed(const Duration(seconds: 2));
   }
-  await NfcManager.instance.stopSession();
+  try {
+    await NfcManager.instance.stopSession();
+  } catch (_) {
+    // Ignore if no active session
+  }
 
   return res;
 }

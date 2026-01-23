@@ -346,7 +346,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         }
       }
     } catch (e) {
-      NfcManager.instance.stopSession();
+      try {
+        NfcManager.instance.stopSession();
+      } catch (_) {
+        // Ignore if no active session
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
             context.loc.errorHeadingSnackBar, 'Error reading chip.', 'error'),
