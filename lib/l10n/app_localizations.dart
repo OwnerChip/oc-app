@@ -2483,7 +2483,7 @@ abstract class AppLocalizations {
   /// No description provided for @offerForSaleCreatedTokenAppBarTitle.
   ///
   /// In en, this message translates to:
-  /// **'Offer for sale'**
+  /// **''**
   String get offerForSaleCreatedTokenAppBarTitle;
 
   /// No description provided for @offerForSaleCreatedTokenTitle.
@@ -2821,6 +2821,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Digital Twin restored'**
   String get nftCreationRestoreTokenPopupSuccessTitle;
+
+  /// No description provided for @nftCreationMultiSeriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Series Activation'**
+  String get nftCreationMultiSeriesTitle;
+
+  /// No description provided for @nftCreationMultiSeriesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Series - {number} twins'**
+  String nftCreationMultiSeriesDescription(Object number);
+
+  /// No description provided for @nftCreationMultiSeriesStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total} activated'**
+  String nftCreationMultiSeriesStatus(Object current, Object total);
+
+  /// No description provided for @nftCreationMultiSeriesActivateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan next NFC chip'**
+  String get nftCreationMultiSeriesActivateButton;
+
+  /// No description provided for @nftCreationMultiSeriesPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause and continue later'**
+  String get nftCreationMultiSeriesPause;
+
+  /// No description provided for @nftCreationMultiSeriesBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get nftCreationMultiSeriesBadge;
+
+  /// No description provided for @nftCreationMultiSeriesItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String nftCreationMultiSeriesItemsCount(String count);
+
+  /// No description provided for @nftCreationMultiSeriesItemsActivated.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total} items activated'**
+  String nftCreationMultiSeriesItemsActivated(String current, String total);
+
+  /// No description provided for @nftCreationSeriesStatusActivationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Activation pending'**
+  String get nftCreationSeriesStatusActivationPending;
+
+  /// No description provided for @nftCreationSeriesStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get nftCreationSeriesStatusDraft;
+
+  /// No description provided for @nftCreationSeriesStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get nftCreationSeriesStatusActive;
+
+  /// No description provided for @nftCreationSeriesStatusToBeBurned.
+  ///
+  /// In en, this message translates to:
+  /// **'To be burned'**
+  String get nftCreationSeriesStatusToBeBurned;
+
+  /// No description provided for @nftCreationSeriesStatusToBeTransferred.
+  ///
+  /// In en, this message translates to:
+  /// **'To be transferred'**
+  String get nftCreationSeriesStatusToBeTransferred;
+
+  /// No description provided for @nftCreationSeriesActionStartScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to start scanning'**
+  String get nftCreationSeriesActionStartScanning;
+
+  /// No description provided for @nftCreationSeriesActionConnectNFC.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to connect with NFC chip'**
+  String get nftCreationSeriesActionConnectNFC;
+
+  /// No description provided for @nftCreationSingleItemBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Single item'**
+  String get nftCreationSingleItemBadge;
+
+  /// No description provided for @nftCreationSingleActionConnectNFC.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to connect with NFC chip'**
+  String get nftCreationSingleActionConnectNFC;
+
+  /// No description provided for @nftCreationSingleActionBurnToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to burn token'**
+  String get nftCreationSingleActionBurnToken;
+
+  /// No description provided for @nftCreationSingleActionTransferToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to transfer token'**
+  String get nftCreationSingleActionTransferToken;
 
   /// No description provided for @nft_cancel_confirmation_dialog_title.
   ///

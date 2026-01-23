@@ -315,6 +315,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         e,
         stackTrace: s,
       );
+      print(e);
+      print(s.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(context.loc.errorHeadingSnackBar,
             context.loc.errorNoNfcReader, 'error'),

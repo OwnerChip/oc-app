@@ -71,6 +71,54 @@ class BackendCreation extends Backend {
     return true;
   }
 
+  ///
+  /// Mark a MULTI_SERIAL_ITEM digital twin as minted
+  /// param [parentId] the id of the parent digital twin
+  /// param [chipId] the chip id of the digital twin
+  /// param [twinTokenMetadataCID] the CID of the twin token metadata
+  /// returns a [Map] with success status and activatedItemUid
+  ///
+  static Future<Map<String, dynamic>> markMultiSerialItemDigitalTwinAsMinted({
+    required String parentId,
+    required String chipId,
+    required String twinTokenMetadataCID,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    try {
+      final response = await service.mintMultiSerialItemDigitalTwin(
+        parentId,
+        chipId,
+        twinTokenMetadataCID,
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (error) {
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+      throw Exception('Failed to update MULTI_SERIAL_ITEM digital twin metadata status');
+    }
+  }
+
+  ///
+  /// Get IPFS metadata for MULTI_SERIAL_ITEM
+  /// param [itemId] the id of the item
+  /// returns a [Map] with IPFS metadata (traits, name, description, image)
+  ///
+  static Future<Map<String, dynamic>> getMultiSerialItemIpfsMetadata({
+    required String itemId,
+  }) async {
+    final service = BackendCreationService.instance;
+
+    try {
+      final response = await service.getMultiSerialItemIpfsMetadata(itemId);
+      return response.data as Map<String, dynamic>;
+    } catch (error) {
+      talker.error(error);
+      Sentry.captureException(error, stackTrace: StackTrace.current);
+      throw Exception('Failed to get IPFS metadata for MULTI_SERIAL_ITEM');
+    }
+  }
+
   static Future<DigitalTwinMetadata?> getDigitalTwinByTokenId({
     required String tokenId,
   }) async {

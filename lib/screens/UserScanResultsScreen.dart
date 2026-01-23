@@ -724,14 +724,17 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                       child: nftImageUri.when(
                         loading: () => const CustomImage(
                           width: 130,
+                          height: 130,
                           loading: true,
                         ),
                         error: (e, s) => const CustomImage(
                           width: 130,
+                          height: 130,
                           loading: false,
                         ),
                         data: (nftImageUriData) => CustomImage(
                           width: 130,
+                          height: 130,
                           loading: false,
                           imagePath: nftImageUriData,
                         ),

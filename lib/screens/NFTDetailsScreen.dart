@@ -636,29 +636,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                     data: (approvalData) => approval.value == zeroAddress ||
                             approval.value == null
                         ? [
-                            voucherContractAndTwinNftOwner.when<Widget?>(
-                              data: (data) => data != null &&
-                                      data[0] != null &&
-                                      data[0] != zeroAddress &&
-                                      data[1] == connectedWallet
-                                  ? BigIconButton(
-                                      text: context.loc.offerForSale,
-                                      onPressed: () {
-                                        navigateToOfferOnMPScreen(context);
-                                      },
-                                      icon: Icon(
-                                        Icons.euro,
-                                        size: 35,
-                                        color:
-                                            CustomColors(dotenv.get('APP_ID'))
-                                                .primaryColor,
-                                      ),
-                                      height: 85,
-                                    )
-                                  : null,
-                              error: (e, s) => null,
-                              loading: () => null,
-                            ),
                             BigIconButton(
                               text: context.loc.transfer,
                               onPressed: () => Navigator.pushNamed(

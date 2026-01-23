@@ -1275,7 +1275,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get galleryErrorLoadingMore => 'Fehler beim Laden der Digital Twins';
 
   @override
-  String get offerForSaleCreatedTokenAppBarTitle => 'Zum Verkauf anbieten';
+  String get offerForSaleCreatedTokenAppBarTitle => '';
 
   @override
   String get offerForSaleCreatedTokenTitle => 'Digital Twin erstellt';
@@ -1446,24 +1446,96 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der gescannte Chip ist bereits mit einem anderen digitalen Zwilling initialisiert';
 
   @override
-  String get nftCreationRestoreTokenPopupTitle => 'Restore Digital Twin';
+  String get nftCreationRestoreTokenPopupTitle =>
+      'Digitalen Zwilling wiederherstellen';
 
   @override
   String get nftCreationRestoreTokenPopupMessage =>
-      'The chip you scanned is already activated with another digital twin. Do you want to restore the Digital Twin?';
+      'Der gescannte Chip ist bereits mit einem anderen digitalen Zwilling aktiviert. Möchten Sie den digitalen Zwilling wiederherstellen?';
 
   @override
-  String get nftCreationRestoreTokenPopupCancelButton => 'Cancel';
+  String get nftCreationRestoreTokenPopupCancelButton => 'Abbrechen';
 
   @override
-  String get nftCreationRestoreTokenPopupRestoreButton => 'Restore';
+  String get nftCreationRestoreTokenPopupRestoreButton => 'Wiederherstellen';
 
   @override
-  String get nftCreationRestoreTokenPopupViewTokenButton => 'View Digital Twin';
+  String get nftCreationRestoreTokenPopupViewTokenButton =>
+      'Digitalen Zwilling anzeigen';
 
   @override
   String get nftCreationRestoreTokenPopupSuccessTitle =>
-      'Digital Twin restored';
+      'Digitaler Zwilling wiederhergestellt';
+
+  @override
+  String get nftCreationMultiSeriesTitle => 'Serien-Aktivierung';
+
+  @override
+  String nftCreationMultiSeriesDescription(Object number) {
+    return 'Serie - $number Zwillinge';
+  }
+
+  @override
+  String nftCreationMultiSeriesStatus(Object current, Object total) {
+    return '$current von $total aktiviert';
+  }
+
+  @override
+  String get nftCreationMultiSeriesActivateButton =>
+      'Nächsten NFC-Chip scannen';
+
+  @override
+  String get nftCreationMultiSeriesPause => 'Pause und später fortfahren';
+
+  @override
+  String get nftCreationMultiSeriesBadge => 'Serie';
+
+  @override
+  String nftCreationMultiSeriesItemsCount(String count) {
+    return '$count Artikel';
+  }
+
+  @override
+  String nftCreationMultiSeriesItemsActivated(String current, String total) {
+    return '$current von $total Artikeln aktiviert';
+  }
+
+  @override
+  String get nftCreationSeriesStatusActivationPending =>
+      'Aktivierung ausstehend';
+
+  @override
+  String get nftCreationSeriesStatusDraft => 'Entwurf';
+
+  @override
+  String get nftCreationSeriesStatusActive => 'Aktiv';
+
+  @override
+  String get nftCreationSeriesStatusToBeBurned => 'Zu löschen';
+
+  @override
+  String get nftCreationSeriesStatusToBeTransferred => 'Zu übertragen';
+
+  @override
+  String get nftCreationSeriesActionStartScanning => 'Tippen um zu scannen';
+
+  @override
+  String get nftCreationSeriesActionConnectNFC =>
+      'Tippen um NFC-Chip zu verbinden';
+
+  @override
+  String get nftCreationSingleItemBadge => 'Einzelartikel';
+
+  @override
+  String get nftCreationSingleActionConnectNFC =>
+      'Tippen um NFC-Chip zu verbinden';
+
+  @override
+  String get nftCreationSingleActionBurnToken => 'Tippen um Token zu löschen';
+
+  @override
+  String get nftCreationSingleActionTransferToken =>
+      'Tippen um Token zu übertragen';
 
   @override
   String get nft_cancel_confirmation_dialog_title => 'Abbrechen';

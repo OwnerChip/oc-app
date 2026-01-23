@@ -1268,7 +1268,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryErrorLoadingMore => 'Error loading more Digital Twins';
 
   @override
-  String get offerForSaleCreatedTokenAppBarTitle => 'Offer for sale';
+  String get offerForSaleCreatedTokenAppBarTitle => '';
 
   @override
   String get offerForSaleCreatedTokenTitle => 'Token created';
@@ -1455,6 +1455,73 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get nftCreationRestoreTokenPopupSuccessTitle =>
       'Digital Twin restored';
+
+  @override
+  String get nftCreationMultiSeriesTitle => 'Series Activation';
+
+  @override
+  String nftCreationMultiSeriesDescription(Object number) {
+    return 'Series - $number twins';
+  }
+
+  @override
+  String nftCreationMultiSeriesStatus(Object current, Object total) {
+    return '$current of $total activated';
+  }
+
+  @override
+  String get nftCreationMultiSeriesActivateButton => 'Scan next NFC chip';
+
+  @override
+  String get nftCreationMultiSeriesPause => 'Pause and continue later';
+
+  @override
+  String get nftCreationMultiSeriesBadge => 'Series';
+
+  @override
+  String nftCreationMultiSeriesItemsCount(String count) {
+    return '$count items';
+  }
+
+  @override
+  String nftCreationMultiSeriesItemsActivated(String current, String total) {
+    return '$current of $total items activated';
+  }
+
+  @override
+  String get nftCreationSeriesStatusActivationPending => 'Activation pending';
+
+  @override
+  String get nftCreationSeriesStatusDraft => 'Draft';
+
+  @override
+  String get nftCreationSeriesStatusActive => 'Active';
+
+  @override
+  String get nftCreationSeriesStatusToBeBurned => 'To be burned';
+
+  @override
+  String get nftCreationSeriesStatusToBeTransferred => 'To be transferred';
+
+  @override
+  String get nftCreationSeriesActionStartScanning => 'Tap to start scanning';
+
+  @override
+  String get nftCreationSeriesActionConnectNFC =>
+      'Tap to connect with NFC chip';
+
+  @override
+  String get nftCreationSingleItemBadge => 'Single item';
+
+  @override
+  String get nftCreationSingleActionConnectNFC =>
+      'Tap to connect with NFC chip';
+
+  @override
+  String get nftCreationSingleActionBurnToken => 'Tap to burn token';
+
+  @override
+  String get nftCreationSingleActionTransferToken => 'Tap to transfer token';
 
   @override
   String get nft_cancel_confirmation_dialog_title => 'Cancel NFT';

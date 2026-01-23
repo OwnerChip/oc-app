@@ -3,6 +3,7 @@
 
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -62,9 +63,18 @@
         <package android:name="kh.com.sabay.sabaywallet" />
         <package android:name="com.tokoin.wallet" />
         <package android:name="com.walletconnect.flutterwallet" />
+        <package android:name="com.walletconnect.flutterwallet.internal" />
         <package android:name="com.walletconnect.web3wallet.rnsample" />
+        <package android:name="com.walletconnect.web3wallet.rnsample.internal" />
         <package android:name="com.walletconnect.sample.wallet" />
         <package android:name="com.walletconnect.sample.wallet.internal" />
+        <package android:name="com.reown.sample.wallet" />
+        <package android:name="com.reown.sample.wallet.internal" />
+
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
     </queries>
 
     <application
@@ -95,6 +105,14 @@
                 <!-- your own custom scheme. Be mind of removing :// for this step -->
                 <data android:scheme="${redirectScheme}" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- your own custom scheme. Be mind of removing :// for this step -->
+                <data android:scheme="${redirectScheme}" android:host="wc" />
+            </intent-filter>
             <!-- <intent-filter android:label="init chip">
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -122,8 +140,7 @@
 
                 <data
                         android:scheme="torusapp"
-                        android:host="org.torusresearch.${bitriseioPackageName}" 
-                        />
+                        android:host="org.torusresearch.${bitriseioPackageName}" />
                 <!-- Accept URIs: w3a://com.example.w3aflutter -->
             </intent-filter>
         </activity>
