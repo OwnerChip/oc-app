@@ -112,11 +112,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
               itemCount: creations.data?.length ?? 0,
               itemBuilder: (context, index) {
                 final metadata = creations.data![index];
-                if (metadata.type ==
-                    DigitalTwinCreationType.single) {
+                if (metadata.type == DigitalTwinCreationType.single ||
+                    metadata.type == DigitalTwinCreationType.multiSerialItem) {
                   return _buildSingleTwin(metadata, context, creations);
-                } else if (metadata.type ==
-                    DigitalTwinCreationType.multiple) {
+                } else if (metadata.type == DigitalTwinCreationType.multiple) {
                   return _buildMultiTwin(metadata, context, creations);
                 }
 
@@ -191,7 +190,7 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                       children: [
                         _buildTitleWithSerialRange(context, metadata),
                         const SizedBox(height: 6),
-                          Row(
+                        Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -222,7 +221,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                context.loc.nftCreationMultiSeriesItemsCount(numberOfTokens.toString()),
+                                context.loc.nftCreationMultiSeriesItemsCount(
+                                    numberOfTokens.toString()),
                                 style: TextStyle(
                                   color: Colors.grey[700],
                                   fontSize: 12,
@@ -259,7 +259,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                             fontSize: 13,
                           ),
                         ),
-                        if (numberOfTokens > 0 && numberOfTokens < quantity) ...[
+                        if (numberOfTokens > 0 &&
+                            numberOfTokens < quantity) ...[
                           const SizedBox(height: 6),
                           Text(
                             context.loc.nftCreationMultiSeriesItemsActivated(
@@ -330,10 +331,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                             text: context
                                 .loc.nftCreationMultiSeriesActivateButton,
                             onPressed: () => _mintNextSeriesItem(
-                              context,
-                              creations,
-                              metadata,
-                            ))),
+                                  context,
+                                  creations,
+                                  metadata,
+                                ))),
                     const SizedBox(height: 8),
                     SizedBox(
                       width: double.maxFinite,
@@ -373,7 +374,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     }
   }
 
-  Widget _buildTitleWithSerialRange(BuildContext context, DigitalTwinMetadata metadata) {
+  Widget _buildTitleWithSerialRange(
+      BuildContext context, DigitalTwinMetadata metadata) {
     final title = metadata.title;
     final serialStart = metadata.serialStartNumber;
     final quantity = metadata.quantity ?? 0;
@@ -382,10 +384,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
     if (title.contains('#[{SERIAL}]') && serialStart != null && quantity > 0) {
       final serialEnd = serialStart + quantity - 1;
       final serialRange = '$serialStart-$serialEnd';
-      
+
       // Split the title by the template
       final parts = title.split('#[{SERIAL}]');
-      
+
       return RichText(
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -446,8 +448,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       title = context.loc.nft_burn_cancel_confirmation_dialog_title;
       description = context.loc
           .nft_burn_cancel_confirmation_dialog_description(metadata.title);
-      yes = context.loc
-          .nft_burn_cancel_confirmation_dialog_cancel_cancel_button;
+      yes =
+          context.loc.nft_burn_cancel_confirmation_dialog_cancel_cancel_button;
       cancel =
           context.loc.nft_burn_cancel_confirmation_dialog_cancel_keep_button;
     } else if (metadata.status == DigitalTwinCreationMetadataStatus.pending) {
@@ -455,8 +457,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
         BackendCreationService.instance.cancelDigitalTwin(metadata.id);
       };
       title = context.loc.nft_cancel_confirmation_dialog_title;
-      description =
-          context.loc.nft_cancel_confirmation_dialog_description(metadata.title);
+      description = context.loc
+          .nft_cancel_confirmation_dialog_description(metadata.title);
       yes = context.loc.nft_cancel_confirmation_dialog_cancel_cancel_button;
       cancel = context.loc.nft_cancel_confirmation_dialog_cancel_keep_button;
     } else if (metadata.status ==
@@ -467,10 +469,10 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       title = context.loc.nft_transfer_cancel_confirmation_dialog_title;
       description = context.loc
           .nft_transfer_cancel_confirmation_dialog_description(metadata.title);
-      yes = context.loc
-          .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
-      cancel = context.loc
-          .nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+      yes = context
+          .loc.nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
+      cancel = context
+          .loc.nft_transfer_cancel_confirmation_dialog_cancel_cancel_button;
     }
 
     showCustomPopup(
@@ -570,7 +572,8 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
                           ),
                         ),
                         const SizedBox(width: 8),
-                        if (_getTextByStatus(context, metadata.status).isNotEmpty)
+                        if (_getTextByStatus(context, metadata.status)
+                            .isNotEmpty)
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
