@@ -2483,7 +2483,7 @@ abstract class AppLocalizations {
   /// No description provided for @offerForSaleCreatedTokenAppBarTitle.
   ///
   /// In en, this message translates to:
-  /// **'Offer for sale'**
+  /// **''**
   String get offerForSaleCreatedTokenAppBarTitle;
 
   /// No description provided for @offerForSaleCreatedTokenTitle.

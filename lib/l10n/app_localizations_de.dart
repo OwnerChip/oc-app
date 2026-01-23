@@ -1275,7 +1275,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get galleryErrorLoadingMore => 'Fehler beim Laden der Digital Twins';
 
   @override
-  String get offerForSaleCreatedTokenAppBarTitle => 'Zum Verkauf anbieten';
+  String get offerForSaleCreatedTokenAppBarTitle => '';
 
   @override
   String get offerForSaleCreatedTokenTitle => 'Digital Twin erstellt';

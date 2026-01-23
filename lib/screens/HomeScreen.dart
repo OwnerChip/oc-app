@@ -376,9 +376,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     if (!app.upgradeShown && app.upgradeRequired) {
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   ref.read(appNotifierProvider.notifier).showUpgrade(context);
-      // });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(appNotifierProvider.notifier).showUpgrade(context);
+      });
     }
 
     return Scaffold(

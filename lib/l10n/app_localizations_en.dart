@@ -1268,7 +1268,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryErrorLoadingMore => 'Error loading more Digital Twins';
 
   @override
-  String get offerForSaleCreatedTokenAppBarTitle => 'Offer for sale';
+  String get offerForSaleCreatedTokenAppBarTitle => '';
 
   @override
   String get offerForSaleCreatedTokenTitle => 'Token created';
