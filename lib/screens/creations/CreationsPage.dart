@@ -900,7 +900,13 @@ class _CreationsPageState extends ConsumerState<CreationsPage>
       context,
       creations,
       metadata,
-      onTokenExist: (String tokenId) {},
+      onTokenExist: (String tokenId) {
+        // Show snackbar that token already exists
+        ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
+            context.loc.nftCreationsPageError,
+            context.loc.alreadyLinked,
+            'error'));
+      },
     )) {
       final userSession = ref.read(userSessionProvider)!;
       final wc = ref.read(w3mServiceProvider);
