@@ -1207,7 +1207,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       String txnHash = "";
 
-      int chainId = 137;
+      int chainId = metadata.collection.chainId;
 
       // Future<String> normalTx() async {
       //   return await makeAndSendNormalTx(
