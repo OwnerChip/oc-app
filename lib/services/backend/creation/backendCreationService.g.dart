@@ -347,9 +347,12 @@ class _BackendCreationService implements BackendCreationService {
   }
 
   @override
-  Future<void> prepareTransferDigitalTwin(String id) async {
+  Future<void> prepareTransferDigitalTwin(
+    String id, {
+    bool notify = false,
+  }) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'notify': notify};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<void>(

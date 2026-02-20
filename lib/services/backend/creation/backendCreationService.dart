@@ -112,8 +112,9 @@ abstract class BackendCreationService {
 
   @POST("/{id}/prepareTransfer")
   Future<void> prepareTransferDigitalTwin(
-    @Path('id') String id,
-  );
+    @Path('id') String id, {
+    @Query("notify") bool notify = false,
+  });
 
   @POST("/{id}/cancelTransfer")
   Future<void> cancelTransferDigitalTwin(
