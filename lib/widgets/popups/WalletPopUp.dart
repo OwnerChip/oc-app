@@ -254,9 +254,13 @@ Future<void> _loginWithWeb3Auth(
         walletConfig[EWalletType.web3auth];
 
     //store session and wallet type
-    final storage = SharedPreferences.getInstance();
-    storage.then((value) => value.setString('walletType',
-        jsonEncode(walletConfig[EWalletType.web3auth]!.toJson())));
+    final storage = await SharedPreferences.getInstance();
+    await storage.setString('walletType',
+        jsonEncode(walletConfig[EWalletType.web3auth]!.toJson()));
+    
+    // Store web3auth login timestamp for session expiration check
+    final loginTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    await storage.setInt('web3authLoginTime', loginTime);
 
     ref.read(userAddressProvider.notifier).state =
         EthPrivateKey.fromHex(e.privKey!).address;
