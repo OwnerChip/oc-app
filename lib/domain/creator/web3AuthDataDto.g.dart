@@ -15,6 +15,7 @@ Web3AuthDataDto _$Web3AuthDataDtoFromJson(Map<String, dynamic> json) =>
       providerType: json['providerType'] as String,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
+      isWhitelisted: json['isWhitelisted'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$Web3AuthDataDtoToJson(Web3AuthDataDto instance) =>
@@ -26,4 +27,5 @@ Map<String, dynamic> _$Web3AuthDataDtoToJson(Web3AuthDataDto instance) =>
       'providerType': instance.providerType,
       'createdAt': instance.createdAt,
       'updatedAt': instance.updatedAt,
+      'isWhitelisted': instance.isWhitelisted,
     };

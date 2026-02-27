@@ -1711,4 +1711,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get unsaved_attachments_popup_leave_button => 'Leave';
+
+  @override
+  String get web3authExistingAccountTitle => 'Konto existiert bereits';
+
+  @override
+  String get web3authExistingAccountDescription =>
+      'Ein Konto mit dieser E-Mail-Adresse existiert bereits.\nBitte melde dich mit der gleichen Anmeldemethode an, die du bei der Erstellung deines Kontos verwendet hast.';
+
+  @override
+  String get web3authExistingAccountLogout => 'Abmelden';
 }

@@ -561,5 +561,10 @@
 
 
     "@_TRANSFER": {},
-    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard."
+    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard.",
+
+  "@_WEB3AUTH_EXISTING_ACCOUNT": {},
+  "web3authExistingAccountTitle": "Konto existiert bereits",
+  "web3authExistingAccountDescription": "Ein Konto mit dieser E-Mail-Adresse existiert bereits.\nBitte melde dich mit der gleichen Anmeldemethode an, die du bei der Erstellung deines Kontos verwendet hast.",
+  "web3authExistingAccountLogout": "Abmelden"
 }

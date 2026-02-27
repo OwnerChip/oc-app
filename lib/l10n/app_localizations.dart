@@ -3229,6 +3229,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leave'**
   String get unsaved_attachments_popup_leave_button;
+
+  /// No description provided for @web3authExistingAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account already exists'**
+  String get web3authExistingAccountTitle;
+
+  /// No description provided for @web3authExistingAccountDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists.\nPlease log in using the same sign-in method you used when creating your account.'**
+  String get web3authExistingAccountDescription;
+
+  /// No description provided for @web3authExistingAccountLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get web3authExistingAccountLogout;
 }
 
 class _AppLocalizationsDelegate

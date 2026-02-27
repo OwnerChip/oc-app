@@ -551,5 +551,10 @@
     "accountDeletionCanceledNotificationMessage": "Löschen abgebrochen.",
 
     "@_TRANSFER": {},
-    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard."
+    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard.",
+
+  "@_WEB3AUTH_EXISTING_ACCOUNT": {},
+  "web3authExistingAccountTitle": "Account already exists",
+  "web3authExistingAccountDescription": "An account with this email already exists.\nPlease log in using the same sign-in method you used when creating your account.",
+  "web3authExistingAccountLogout": "Logout"
 }

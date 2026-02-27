@@ -584,5 +584,10 @@
   "unsaved_attachments_popup_title": "Unsaved Attachments",
   "unsaved_attachments_popup_message": "You have unsaved attachments. If you leave this page, your attachments will be lost. Are you sure you want to leave?",
   "unsaved_attachments_popup_cancel_button": "Cancel",
-  "unsaved_attachments_popup_leave_button": "Leave"
+  "unsaved_attachments_popup_leave_button": "Leave",
+
+  "@_WEB3AUTH_EXISTING_ACCOUNT": {},
+  "web3authExistingAccountTitle": "Account already exists",
+  "web3authExistingAccountDescription": "An account with this email already exists.\nPlease log in using the same sign-in method you used when creating your account.",
+  "web3authExistingAccountLogout": "Logout"
 }

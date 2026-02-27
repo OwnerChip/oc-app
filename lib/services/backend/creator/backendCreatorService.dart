@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:ownerchip_whitelabel/domain/creator/web3AuthDataDto.dart';
+import 'package:ownerchip_whitelabel/domain/creator/web3AuthProvidersDto.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/payloads/updateWeb3AuthDataPayload.dart';
 import 'package:retrofit/retrofit.dart';
@@ -36,4 +37,7 @@ abstract class BackendCreatorService {
   Future<Web3AuthDataDto?> updateWeb3AuthData({
     @Body() required UpdateWeb3AuthDataPayload payload,
   });
+
+  @GET("/web3auth/providers")
+  Future<Web3AuthProvidersDto> getWeb3AuthProviders();
 }

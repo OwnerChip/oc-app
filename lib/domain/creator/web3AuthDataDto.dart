@@ -24,6 +24,8 @@ class Web3AuthDataDto {
 
   final String updatedAt;
 
+  final bool isWhitelisted;
+
   const Web3AuthDataDto({
     required this.address,
     this.name,
@@ -32,6 +34,7 @@ class Web3AuthDataDto {
     required this.providerType,
     required this.createdAt,
     required this.updatedAt,
+    this.isWhitelisted = false,
   });
 
 }

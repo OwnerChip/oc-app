@@ -1694,4 +1694,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unsaved_attachments_popup_leave_button => 'Leave';
+
+  @override
+  String get web3authExistingAccountTitle => 'Account already exists';
+
+  @override
+  String get web3authExistingAccountDescription =>
+      'An account with this email already exists.\nPlease log in using the same sign-in method you used when creating your account.';
+
+  @override
+  String get web3authExistingAccountLogout => 'Logout';
 }
