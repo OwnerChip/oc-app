@@ -83,7 +83,11 @@ Future<void> checkInternetAndHandleUI(BuildContext context) async {
     }
   } catch (e) {
     //error reading chip
-    NfcManager.instance.stopSession();
+    try {
+      NfcManager.instance.stopSession();
+    } catch (_) {
+      // Ignore if no active session
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.errorNoInternetConnection, 'error'),

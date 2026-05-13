@@ -322,6 +322,7 @@ Future<void> disconnectWallet(
   //remove session and wallet type from storage
   storage.remove('walletType');
   storage.remove('userSession');
+  storage.remove('web3authLoginTime');
 
   ref.refresh(web3AuthNotifierProvider);
 

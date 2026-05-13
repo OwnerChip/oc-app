@@ -1,5 +1,6 @@
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/creator/web3AuthDataDto.dart';
+import 'package:ownerchip_whitelabel/domain/creator/web3AuthProvidersDto.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/backendCreatorService.dart';
@@ -50,5 +51,17 @@ abstract class BackendCreator extends Backend {
     });
 
     return response;
+  }
+
+  //get web3auth providers for the current user
+  static Future<Web3AuthProvidersDto?> getWeb3AuthProviders() async {
+    final service = BackendCreatorService.instance;
+    try {
+      return await service.getWeb3AuthProviders();
+    } catch (e, st) {
+      Sentry.captureException(e, stackTrace: st);
+      talker.error('Error fetching web3auth providers', e, st);
+      return null;
+    }
   }
 }

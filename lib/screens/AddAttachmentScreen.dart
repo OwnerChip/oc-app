@@ -10,6 +10,7 @@ import 'package:mime/mime.dart';
 import 'package:async/async.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+import 'package:ownerchip_whitelabel/domain/local_attachment.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
@@ -105,9 +106,9 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
 
         //if edit mode, set title and url
         if (navArgs.isEditMode && navArgs.index != null) {
-          final List<Attachment> attachments =
-              ref.watch(localAttachmentsProvider);
-          Attachment attachment = attachments[navArgs.index!];
+          final List<LocalAttachment> attachments =
+              ref.read(localAttachmentsProvider.notifier).state;
+          LocalAttachment attachment = attachments[navArgs.index!];
 
           setState(() {
             _titleInputController.text = attachment.title;
@@ -125,7 +126,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         //IF FILE TYPE IS NOT URL (video, image, text, etc.)
         //if edit mode, set title and file and button text
         if (navArgs != null && navArgs.isEditMode && navArgs.index != null) {
-          Attachment attachment =
+          LocalAttachment attachment =
               ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
 
           setState(() {
@@ -183,304 +184,43 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
     }
   }
 
-  Future<void> editAttachment(AttachmentType type) async {
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as AttachmentScreensArguments;
-
-    ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-
-    List chainAndCollectionId = await returnChainAndCollectionId();
-    int chainId = chainAndCollectionId[0];
-    EthereumAddress collectionId = chainAndCollectionId[1];
-
-    Attachment attachmentBeingEdited =
-        ref.read(localAttachmentsProvider.notifier).state[navArgs.index!];
-    UserSession? userSession = ref.read(userSessionProvider);
-
-    try {
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.uploadingAttachment;
-      });
-      await BackendAttachments.putAttachmentMetadataToBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          chipInfo.tokenId,
-          attachmentBeingEdited.backendUuid,
-          attachmentBeingEdited.fileName,
-          titleTextInput,
-          isPrivate,
-          attachmentUrl: attachmentBeingEdited.type == AttachmentType.url
-              ? urlTextInput
-              : null);
-
-      await ref.refresh(fetchAttachmentsProvider.future);
-
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-
-      BackendApp.sendAnalyticsTrace(userSession.sessionId,
-          attachmentBeingEdited.backendUuid, "ATTACHMENT_EDITED",
-          tags: {
-            'connectedWallet': ref.read(userAddressProvider).hex,
-            'chipWallet': convertTokenIdToEthereumAddress(chipInfo.tokenId)
-          });
-
-      Navigator.pop(context);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.successHeadingSnackbar,
-            context.loc.fileEdited, 'success'),
-      );
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorUpdatingData, 'error'),
-      );
-      print(e);
-      Sentry.captureException(e);
-    }
-  }
-
-  void uploadFile() async {
-    try {
-      setState(() {
-        isLoading = true;
-        loadingText = 'Uploading...';
-      });
-
-      //get sha256_hash of file
-      String fileHash = await getSha256HashOfFile(File(file!.path!));
-      int fileSize = file!.size;
-      String contentType = lookupMimeType(file!.path!)!;
-
-      UserSession? userSession = ref.read(userSessionProvider);
-      EthereumAddress walletAddress = await ref.read(userAddressProvider);
-      List chainAndCollectionId = await returnChainAndCollectionId();
-      int chainId = chainAndCollectionId[0];
-      EthereumAddress collectionId = chainAndCollectionId[1];
-
-      List response = await BackendAttachments.postAttachmentMetadataToBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          ref.read(chipInfoProvider).tokenId,
-          fileName!,
-          _titleInputController.text,
-          isPrivate,
-          fileHash: fileHash,
-          contentType: contentType,
-          fileSize: fileSize);
-
-      String fileUuid = response[0];
-      String awsUrl = response[1];
-
-      //upload file to aws presigned url
-      var awsResponse =
-          await BackendAttachments.uploadFileToAWS(File(file!.path!), awsUrl, contentType);
-
-      var _ = await ref.refresh(fetchAttachmentsProvider.future);
-
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-      if (file != null) {
-        BackendApp.sendAnalyticsTrace(
-            userSession.sessionId, fileUuid, "ATTACHMENT_FILE_UPLOADED",
-            tags: {
-              'connectedWallet': ref.read(userAddressProvider).hex,
-              'chipWallet': convertTokenIdToEthereumAddress(
-                  ref.read(chipInfoProvider).tokenId),
-            });
-
-        Navigator.pop(context, file);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(context.loc.successHeadingSnackbar,
-              context.loc.fileAttached, 'success'),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorUploadingFile, 'error'),
-      );
-      print(e);
-      Sentry.captureException(e);
-    }
-  }
-
-  void saveUrl() async {
-    setState(() {
-      isLoading = true;
-      loadingText = context.loc.savingUrl;
-    });
-
-    List chainAndCollectionId = await returnChainAndCollectionId();
-    int chainId = chainAndCollectionId[0];
-    EthereumAddress collectionId = chainAndCollectionId[1];
-
-    UserSession? userSession = ref.read(userSessionProvider);
-
-    try {
-      List result = await BackendAttachments.postAttachmentMetadataToBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          ref.read(chipInfoProvider).tokenId,
-          _titleInputController.text,
-          _titleInputController.text,
-          isPrivate,
-          attachmentLink: _urlInputController.text);
-
-      String fileUuid = result[0];
-      String status = result[1];
-
-      await ref.refresh(fetchAttachmentsProvider.future);
-
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-
-      if (status == 'OK') {
-        BackendApp.sendAnalyticsTrace(
-            userSession.sessionId, fileUuid, "ATTACHMENT_URL_UPLOADED",
-            tags: {
-              'connectedWallet': ref.read(userAddressProvider).hex,
-              'chipWallet': convertTokenIdToEthereumAddress(
-                  ref.read(chipInfoProvider).tokenId),
-            });
-
-        Navigator.pop(context);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(context.loc.successHeadingSnackbar,
-              context.loc.urlAttached, 'success'),
-        );
-      } else {
-        throw Exception(context.loc.errorSavingUrl);
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-      //show error snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorSavingUrl, 'error'),
-      );
-    }
-  }
-
   //remove attachment
   void removeAttachment() async {
-    //get navigation arguments
-    final navArgs = ModalRoute.of(context)!.settings.arguments
-        as AttachmentScreensArguments;
-    final List<Attachment> attachments = ref.watch(localAttachmentsProvider);
-    Attachment attachment = attachments[navArgs.index!];
-
-    List chainAndCollectionId = await returnChainAndCollectionId();
-    int chainId = chainAndCollectionId[0];
-    EthereumAddress collectionId = chainAndCollectionId[1];
-
-    UserSession? userSession = ref.read(userSessionProvider);
-
-    try {
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.deletingAttachment;
-      });
-      var result = await BackendAttachments.deleteAttachmentFromBackend(
-          userSession!,
-          ref.read(userAddressProvider),
-          chainId,
-          collectionId,
-          ref.read(chipInfoProvider).tokenId,
-          attachment.backendUuid);
-
-      var _ = await ref.refresh(fetchAttachmentsProvider.future);
-
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        loadingText = '';
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-            context.loc.errorDeletingAttachment, 'error'),
-      );
-
-      throw Exception(context.loc.errorDeletingAttachment);
+    final navArgs = ModalRoute.of(context)!.settings.arguments as AttachmentScreensArguments;
+    if (navArgs != null && navArgs.isEditMode && navArgs.index != null) {
+      final notifier = ref.read(localAttachmentsProvider.notifier);
+      final attachments = List<LocalAttachment>.from(notifier.state);
+      attachments.removeAt(navArgs.index!);
+      notifier.state = attachments;
+      Navigator.pop(context);
     }
-
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      returnSnackBarWidget(context.loc.successHeadingSnackbar,
-          context.loc.attachmentDeleted, 'success'),
-    );
-    setState(() {
-      file = null;
-      buttonText = context.loc.chooseFile;
-      file = null;
-    });
-
-    BackendApp.sendAnalyticsTrace(
-        userSession.sessionId, attachment.backendUuid, "ATTACHMENT_DELETED",
-        tags: {
-          'connectedWallet': ref.read(userAddressProvider).hex,
-          'chipWallet': convertTokenIdToEthereumAddress(
-              ref.read(chipInfoProvider).tokenId),
-        });
   }
 
-  Future<List> returnChainAndCollectionId() async {
-    ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-
-    //get correct chain and collection
-    TokenChainAndCollection tokenInfo =
-        await ref.read(findTokenProvider(chipInfo.tokenId).future);
-    int chainId = tokenInfo.chainId;
-    EthereumAddress collectionId = tokenInfo.collectionId;
-    //if token does *not* exits AND chain AND collectionId has been selected by user
-    // --> set chain and collectionId from dropdown state
-    if (tokenInfo.collectionId == zeroAddress &&
-        ref.read(selectedChainIdProvider.notifier).state != null &&
-        ref.read(selectedCollectionIdProvider.notifier).state != null) {
-      chainId = ref.read(selectedChainIdProvider.notifier).state!;
-      collectionId = ref.read(selectedCollectionIdProvider.notifier).state!.id;
+  // Helper to update local attachment in edit mode
+  void updateLocalAttachment({String? title, String? url, bool? isPrivate, String? fileName, PlatformFile? file}) {
+    final navArgs = ModalRoute.of(context)!.settings.arguments as AttachmentScreensArguments?;
+    if (navArgs != null && navArgs.isEditMode && navArgs.index != null) {
+      final notifier = ref.read(localAttachmentsProvider.notifier);
+      final attachments = List<LocalAttachment>.from(notifier.state);
+      final idx = navArgs.index!;
+      final old = attachments[idx];
+      attachments[idx] = old.copyWith(
+        title: title,
+        fileName: fileName,
+        url: url,
+        isPrivate: isPrivate,
+        file: file,
+        isUpdated: true,
+      );
+      notifier.state = attachments;
     }
-    return [chainId, collectionId];
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Attachment> attachmentList = ref.watch(localAttachmentsProvider);
+    List<LocalAttachment> attachmentList = ref.watch(localAttachmentsProvider);
     final navArgs = ModalRoute.of(context)!.settings.arguments != null
-        ? ModalRoute.of(context)!.settings.arguments
-            as AttachmentScreensArguments
+        ? ModalRoute.of(context)!.settings.arguments as AttachmentScreensArguments
         : null;
     return CustomOverlay(
         show: isLoading,
@@ -510,9 +250,12 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                           TextFormField(
                               style: Theme.of(context).textTheme.bodyMedium,
                               controller: _titleInputController,
-                              onChanged: (text) => setState(() {
-                                    titleTextInput = text;
-                                  }),
+                              onChanged: (text) {
+                                setState(() {
+                                  titleTextInput = text;
+                                });
+                                updateLocalAttachment(title: text);
+                              },
                               validator: (value) {
                                 //if value is too long return error
                                 if (value!.length > 42) {
@@ -546,9 +289,12 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                               ? TextFormField(
                                   style: Theme.of(context).textTheme.bodyMedium,
                                   controller: _urlInputController,
-                                  onChanged: (text) => setState(() {
-                                        urlTextInput = text;
-                                      }),
+                                  onChanged: (text) {
+                                    setState(() {
+                                      urlTextInput = text;
+                                    });
+                                    updateLocalAttachment(url: text);
+                                  },
                                   validator: (value) {
                                     //check if url starts with http and add it if not
                                     if (value != null &&
@@ -611,6 +357,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                       _visibility = value;
                                       isPrivate = false;
                                     });
+                                    updateLocalAttachment(isPrivate: false);
                                   },
                                 ),
                               ),
@@ -637,6 +384,7 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                                       _visibility = value;
                                       isPrivate = true;
                                     });
+                                    updateLocalAttachment(isPrivate: true);
                                   },
                                 ),
                               ),
@@ -675,28 +423,32 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
                           else
                             CustomRoundedButton(
                                 text: buttonText,
-                                onPressed: (() => {
-                                      FocusScope.of(context).unfocus(),
-                                      //save edit attachment
-                                      if (navArgs != null && navArgs.isEditMode)
-                                        {
-                                          if (_formKey.currentState!.validate())
-                                            editAttachment(navArgs.type)
-                                        }
-                                      //save URL
-                                      else if (navArgs != null &&
-                                          navArgs.type == AttachmentType.url)
-                                        {
-                                          if (_formKey.currentState!.validate())
-                                            saveUrl()
-                                        }
-                                      //upload file
-                                      else
-                                        {
-                                          if (_formKey.currentState!.validate())
-                                            uploadFile()
-                                        }
-                                    })),
+                                onPressed: (() {
+                                  FocusScope.of(context).unfocus();
+                                  if (_formKey.currentState!.validate()) {
+                                    if (navArgs != null && navArgs.isEditMode) {
+                                      Navigator.pop(context);
+                                    } else {
+                                      // Add new attachment to local state
+                                      final notifier = ref.read(localAttachmentsProvider.notifier);
+                                      final attachments = List<LocalAttachment>.from(notifier.state);
+                                      final uuid = UniqueKey().toString();
+                                      attachments.add(LocalAttachment(
+                                        title: _titleInputController.text,
+                                        fileName: fileName ?? '',
+                                        type: navArgs?.type ?? AttachmentType.other,
+                                        url: navArgs?.type == AttachmentType.url ? _urlInputController.text : '',
+                                        backendUuid: uuid,
+                                        isFromCreator: true,
+                                        isPrivate: isPrivate,
+                                        file: file,
+                                        isNew: true,
+                                      ));
+                                      notifier.state = attachments;
+                                      Navigator.pop(context);
+                                    }
+                                  }
+                                })),
 
                           const SizedBox(height: 10),
                           navArgs != null && navArgs.isEditMode
@@ -716,3 +468,4 @@ class _AddAttachmentScreenState extends ConsumerState<AddAttachmentScreen> {
         ));
   }
 }
+

@@ -78,7 +78,11 @@ class NFCOverlay {
                               onPressed: () {
                                 // Dismiss the snackbar when the user taps the button
                                 removeNfcOverlay();
-                                NfcManager.instance.stopSession();
+                                try {
+                                  NfcManager.instance.stopSession();
+                                } catch (_) {
+                                  // Ignore if no active session
+                                }
                                 onExit?.call();
                               }))
                     ],

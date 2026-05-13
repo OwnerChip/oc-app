@@ -9,6 +9,7 @@ import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
+import 'package:ownerchip_whitelabel/domain/local_attachment.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
@@ -95,11 +96,11 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     final AsyncValue<String> contractName = ref.watch(contractNameProvider);
     final AsyncValue<EthereumAddress> nftOwner = ref.watch(nftOwnerProvider);
     final EthereumAddress connectedWallet = ref.watch(userAddressProvider);
-    final AsyncValue<List<Attachment>> fetchedAttachments = ref.watch(
+    final AsyncValue<List<LocalAttachment>> fetchedAttachments = ref.watch(
         fetchAttachmentsProvider); //Trigger loading of attachments, which are saved to localAttachmentsProvider
-    List<Attachment> attachments = ref.watch(localAttachmentsProvider);
-    List<Attachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
-    List<Attachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
+    List<LocalAttachment> attachments = ref.watch(localAttachmentsProvider);
+    List<LocalAttachment> ownerAttachments = ref.watch(ownerAttachmentsProvider);
+    List<LocalAttachment> creatorAttachments = ref.watch(creatorAttachmentsProvider);
     // creator data
     final creatorData = ref.watch(creatorDataProvider);
     final AsyncValue<List?> voucherContractAndTwinNftOwner =
@@ -163,17 +164,25 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                   loading: () => CustomImage(
                     loading: true,
                     tokenId: chipInfo.tokenId,
+                    decoration: BoxDecoration(),
+                    imageBorderRadius: 5,
                   ),
                   error: (e, s) {
                     return CustomImage(
                       loading: true,
                       tokenId: chipInfo.tokenId,
+                      decoration: BoxDecoration(),
+                      imageBorderRadius: 5,
                     );
                   },
                   data: (data) => CustomImage(
                     loading: false,
                     imagePath: data,
                     tokenId: chipInfo.tokenId,
+                    boxFit: BoxFit.fitWidth,
+                    decoration: BoxDecoration(),
+                    imageBorderRadius: 5,
+
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -627,29 +636,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                     data: (approvalData) => approval.value == zeroAddress ||
                             approval.value == null
                         ? [
-                            voucherContractAndTwinNftOwner.when<Widget?>(
-                              data: (data) => data != null &&
-                                      data[0] != null &&
-                                      data[0] != zeroAddress &&
-                                      data[1] == connectedWallet
-                                  ? BigIconButton(
-                                      text: context.loc.offerForSale,
-                                      onPressed: () {
-                                        navigateToOfferOnMPScreen(context);
-                                      },
-                                      icon: Icon(
-                                        Icons.euro,
-                                        size: 35,
-                                        color:
-                                            CustomColors(dotenv.get('APP_ID'))
-                                                .primaryColor,
-                                      ),
-                                      height: 85,
-                                    )
-                                  : null,
-                              error: (e, s) => null,
-                              loading: () => null,
-                            ),
                             BigIconButton(
                               text: context.loc.transfer,
                               onPressed: () => Navigator.pushNamed(

@@ -1139,8 +1139,27 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
     final chipInfo = ref.read(chipInfoProvider);
 
-    final Map<String, dynamic> metadataIPFS =
-        await downloadMetadataFromIPFS(metadata.twinTokenMetadataCID!);
+    // For MULTIPLE, get metadata from backend and upload to IPFS
+    // This CID will be used in the minting transaction
+    String twinTokenMetadataCID;
+    Map<String, dynamic> metadataIPFS;
+    
+    if (metadata.type == DigitalTwinCreationType.multiple) {
+      // Get IPFS metadata from backend endpoint
+      metadataIPFS = await BackendCreation.getMultiSerialItemIpfsMetadata(
+        itemId: metadata.id,
+      );
+      
+      // Generate twin metadata JSON file from the backend metadata
+      XFile jsonFileTwin = await saveMetadataAsJSONFile(metadataIPFS);
+      
+      // Upload twin metadata JSON to IPFS
+      twinTokenMetadataCID = await uploadFileToIPFS(jsonFileTwin, 'application/json');
+    } else {
+      // For regular tokens, download existing metadata from IPFS
+      metadataIPFS = await downloadMetadataFromIPFS(metadata.twinTokenMetadataCID!);
+      twinTokenMetadataCID = metadata.twinTokenMetadataCID!;
+    }
 
     /////////// VOUCHER METADATA ///////////
 
@@ -1188,7 +1207,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       String txnHash = "";
 
-      int chainId = 137;
+      int chainId = metadata.collection.chainId;
 
       // Future<String> normalTx() async {
       //   return await makeAndSendNormalTx(
@@ -1229,7 +1248,7 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             wc,
             metaTxAgreementId,
             walletType!,
-            twinTokenMetadataCID: metadata.twinTokenMetadataCID,
+            twinTokenMetadataCID: twinTokenMetadataCID,
             voucherTokenMetadataCID: voucherTokenMetadataCID,
             toggleLoading: toggleLoading,
             getCardSignature: (hash) async {
@@ -1273,12 +1292,34 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
           await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
 
-          await BackendCreation.markDigitalTwinAsMinted(
-              id: metadata.id, chipId: chipInfo.chipEthereumAddress.hex)
-          .catchError((e, st) {
-            Sentry.captureException(e, stackTrace: st);
-            talker.error('Error marking digital twin as minted: $e', st);
-          });
+          // Handle MULTIPLE type differently
+          if (metadata.type == DigitalTwinCreationType.multiple) {
+            // For MULTIPLE, call the special endpoint with the CID we already uploaded
+            final response = await BackendCreation.markMultiSerialItemDigitalTwinAsMinted(
+              parentId: metadata.parentUid ?? metadata.id,
+              chipId: chipInfo.chipEthereumAddress.hex,
+              twinTokenMetadataCID: twinTokenMetadataCID,
+            ).catchError((e, st) {
+              Sentry.captureException(e, stackTrace: st);
+              talker.error('Error marking MULTI_SERIAL_ITEM digital twin as minted: $e', st);
+              return {'success': false};
+            });
+            
+            if (response['success'] == true) {
+              talker.info('MULTI_SERIAL_ITEM activated with UID: ${response['activatedItemUid']}');
+            }
+          } else {
+            // For regular tokens, use the existing endpoint
+            await BackendCreation.markDigitalTwinAsMinted(
+              id: metadata.id,
+              chipId: chipInfo.chipEthereumAddress.hex,
+            ).catchError((e, st) {
+              Sentry.captureException(e, stackTrace: st);
+              talker.error('Error marking digital twin as minted: $e', st);
+              return false;
+            });
+          }
+          
           ref.refresh(digitalTwinAttachmentsProvider);
           ref.refresh(digitalTwinCreationMetadataProvider);
 

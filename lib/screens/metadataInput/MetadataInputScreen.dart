@@ -3,15 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+
 //misc imports
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
+
 //screen imports
 import 'package:ownerchip_whitelabel/screens/AddAttachmentScreen.dart';
 import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputController.dart';
 import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
+
 //service imports
+import 'package:ownerchip_whitelabel/services/attachments.services.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+
+import '../../domain/local_attachment.dart';
 
 //theme imports
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
@@ -22,6 +30,7 @@ import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/AttachmentUploadButton.dart';
+
 //widget imports
 import 'package:ownerchip_whitelabel/widgets/ui/CustomCard.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
@@ -31,6 +40,8 @@ import 'package:ownerchip_whitelabel/widgets/ui/StyledTextInputBox.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/TraitsForm.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:web3dart/web3dart.dart';
+
+import '../../services/images.services.dart';
 
 class MetadataScreen extends ConsumerStatefulWidget {
   const MetadataScreen({super.key});
@@ -47,12 +58,37 @@ class _MetadataScreenState extends ConsumerState<MetadataScreen>
   void initState() {
     super.initState();
     init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(localAttachmentsProvider.notifier).state = [];
+    });
   }
 
   @override
   void dispose() {
     close();
     super.dispose();
+  }
+
+  Future<void> uploadAllLocalAttachments(
+      BuildContext context, WidgetRef ref) async {
+    final localAttachments = ref.read(localAttachmentsProvider);
+    if (localAttachments.isEmpty) return;
+
+    for (final att in localAttachments) {
+      if (att.type == AttachmentType.url) {
+        await saveUrl(context, ref, (_) {}, att.title, att.isPrivate, att.url);
+      } else if (att.file != null) {
+        await uploadFile(
+          context,
+          ref,
+          (_) {},
+          att.file!,
+          att.fileName,
+          att.isPrivate,
+          att.title,
+        );
+      }
+    }
   }
 
   @override
@@ -64,14 +100,11 @@ class _MetadataScreenState extends ConsumerState<MetadataScreen>
     EthereumAddress collectionId = navArgs.collectionId;
     EthereumAddress? voucherCollectionId = navArgs.voucherAddress;
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
-    final AsyncValue<List<Attachment>> fetchedAttachments =
-        ref.watch(fetchAttachmentsProvider);
-    final List<Attachment>? attachmentList =
-        ref.watch(localAttachmentsProvider);
+    final localAttachments = ref.watch(localAttachmentsProvider);
 
     return CustomOverlay(
       show: isLoading,
-      content: overlayContentType == 'loading'
+      content: isLoading
           ? SpinningLoadingSvg(
               onPressed: loadingText == context.loc.mintingToken
                   ? () {
@@ -206,35 +239,35 @@ class _MetadataScreenState extends ConsumerState<MetadataScreen>
                           ? Container()
                           : Column(children: [
                               AttachmentUploadButton(
-                                  text: context.loc.uploadDigitalContent,
-                                  icon: Icons.add),
+                                text: context.loc.uploadDigitalContent,
+                                icon: Icons.add,
+                              ),
                               const SizedBox(height: 20),
                             ]),
 
                       //map over attachmentList to display all attachments as FileBox
-                      if (attachmentList != null)
-                        for (var i = 0; i < attachmentList.length; i++)
-                          Column(
-                            children: [
-                              AttachmentBox(
-                                text: attachmentList[i].title,
-                                icon:
-                                    attachmentList[i].type == AttachmentType.url
-                                        ? Icons.link
-                                        : Icons.attach_file,
-                                isPrivate: attachmentList[i].isPrivate,
-                                onTap: () {
-                                  //navigate to AddFileScreen with navigation args
-                                  Navigator.pushNamed(
-                                      context, AddAttachmentScreen.routeName,
-                                      arguments: AttachmentScreensArguments(
-                                          true, attachmentList[i].type,
-                                          index: i));
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                            ],
-                          ),
+                      for (var i = 0; i < localAttachments.length; i++)
+                        Column(
+                          children: [
+                            AttachmentBox(
+                              text: localAttachments[i].title,
+                              icon:
+                                  localAttachments[i].type == AttachmentType.url
+                                      ? Icons.link
+                                      : Icons.attach_file,
+                              isPrivate: localAttachments[i].isPrivate,
+                              onTap: () {
+                                //navigate to AddFileScreen with navigation args
+                                Navigator.pushNamed(
+                                    context, AddAttachmentScreen.routeName,
+                                    arguments: AttachmentScreensArguments(
+                                        true, localAttachments[i].type,
+                                        index: i));
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
 
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -242,17 +275,27 @@ class _MetadataScreenState extends ConsumerState<MetadataScreen>
                             text: context.loc.mintNft,
                             onPressed: () async {
                               FocusManager.instance.primaryFocus?.unfocus();
-                              if (formKey.currentState!.validate()) {
-                                setTraits(traitsStateArray);
-                                fromCancelable(createToken(
-                                    wc,
-                                    signatureData,
-                                    metadata,
-                                    chainId,
-                                    collectionId,
-                                    voucherCollectionId,
-                                    image: image));
+
+                              if (!formKey.currentState!.validate()) {
+                                return;
                               }
+
+                              isLoading = true;
+                              if (mounted) {
+                                setState(() {});
+                              }
+
+                              await uploadAllLocalAttachments(context, ref);
+
+                              setTraits(traitsStateArray);
+                              fromCancelable(createToken(
+                                  wc,
+                                  signatureData,
+                                  metadata,
+                                  chainId,
+                                  collectionId,
+                                  voucherCollectionId,
+                                  image: image));
                             },
                           )),
                       // const SizedBox(height: 60),

@@ -12,8 +12,10 @@ class CustomImage extends StatelessWidget {
       this.height,
       this.loading = true,
       this.tokenId,
-      this.boxFit = BoxFit.contain,
-      this.aspectRatio = 0.75});
+      this.boxFit = BoxFit.fitWidth,
+      this.aspectRatio,
+      this.decoration,
+      this.imageBorderRadius = 19.0});
 
   final dynamic imagePath;
   final dynamic imageFile;
@@ -22,52 +24,73 @@ class CustomImage extends StatelessWidget {
   final bool loading;
   final BigInt? tokenId;
   final BoxFit boxFit;
-  final double aspectRatio;
+  final double? aspectRatio;
+  final BoxDecoration? decoration;
+  final double imageBorderRadius;
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: width,
         height: height,
-        decoration: BoxDecoration(
-            color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
-            borderRadius: BorderRadius.circular(19),
-            boxShadow: [
-              BoxShadow(
-                  color:
-                      CustomColors(dotenv.get('APP_ID')).secondaryShadowColor,
-                  blurRadius: 5,
-                  offset: const Offset(3, 2)),
-            ]),
-        child: Stack(children: [
-          ClipRRect(
-              borderRadius: BorderRadius.circular(19),
-              child: AspectRatio(
-                aspectRatio: aspectRatio,
-                child: loading || imagePath == null || imagePath == ""
-                    ? Image.asset(
-                        '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg',
-                        fit: BoxFit.cover,
+        decoration: decoration ??
+            BoxDecoration(
+                color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
+                borderRadius: BorderRadius.circular(19),
+                boxShadow: [
+                  BoxShadow(
+                      color: CustomColors(dotenv.get('APP_ID'))
+                          .secondaryShadowColor,
+                      blurRadius: 5,
+                      offset: const Offset(3, 2)),
+                ]),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(imageBorderRadius),
+          child: Builder(builder: (context) {
+            final imageWidget = loading || imagePath == null || imagePath == ""
+                ? Image.asset(
+                    '${dotenv.get('IMAGE_ASSETS_BASE_URL')}/placeholder.jpg',
+                    fit: BoxFit.cover,
+                    width: width,
+                    height: height,
+                  )
+                : imageFile != null
+                    ? Image.file(
+                        File(imagePath),
+                        fit: boxFit,
+                        width: width,
+                        height: height,
                       )
-                    : imageFile != null
-                        ? Image.file(
-                            File(imagePath),
-                            fit: boxFit,
-                          )
-                        : Image.network(imagePath,
-                            fit: boxFit,
-                            frameBuilder: (context, child, frame,
-                                    wasSynchronouslyLoaded) =>
-                                wasSynchronouslyLoaded
-                                    ? child
-                                    : AnimatedOpacity(
-                                        opacity: frame == null ? 0 : 1,
-                                        duration:
-                                            const Duration(milliseconds: 700),
-                                        curve: Curves.easeOut,
-                                        child: child,
-                                      )),
-              )),
-        ]));
+                    : Image.network(imagePath,
+                        fit: boxFit,
+                        width: width,
+                        height: height,
+                        frameBuilder: (context, child, frame,
+                                wasSynchronouslyLoaded) =>
+                            wasSynchronouslyLoaded
+                                ? child
+                                : AnimatedOpacity(
+                                    opacity: frame == null ? 0 : 1,
+                                    duration: const Duration(milliseconds: 700),
+                                    curve: Curves.easeOut,
+                                    child: child,
+                                  ));
+
+            return aspectRatio != null
+                ? AspectRatio(
+                    aspectRatio: aspectRatio!,
+                    child: SizedBox(
+                      width: width,
+                      height: height,
+                      child: imageWidget,
+                    ),
+                  )
+                : SizedBox(
+                    width: width,
+                    height: height,
+                    child: imageWidget,
+                  );
+          }),
+        ));
   }
 }

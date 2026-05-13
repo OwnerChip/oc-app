@@ -411,7 +411,7 @@
 
 
     "@_OFFER_FOR_SALE": {},
-    "offerForSaleCreatedTokenAppBarTitle": "Zum Verkauf anbieten",
+    "offerForSaleCreatedTokenAppBarTitle": "",
     "offerForSaleCreatedTokenTitle" : "Digital Twin erstellt",
     "offerForSaleCreatedTokenSubtitle" : "Du hast erfolgreich einen Digital Twin für dein Objekt erstellt.",
     "offerForSaleCreatedTokenButton" : "Jetzt anbieten",
@@ -479,6 +479,33 @@
     "nftCreationsNotLoggedInButton": "Schließen",
     "nftCreationsAlreadyMintedToken": "Der gescannte Chip ist bereits mit einem anderen digitalen Zwilling initialisiert",
 
+    "nftCreationRestoreTokenPopupTitle": "Digitalen Zwilling wiederherstellen",
+    "nftCreationRestoreTokenPopupMessage": "Der gescannte Chip ist bereits mit einem anderen digitalen Zwilling aktiviert. Möchten Sie den digitalen Zwilling wiederherstellen?",
+    "nftCreationRestoreTokenPopupCancelButton": "Abbrechen",
+    "nftCreationRestoreTokenPopupRestoreButton": "Wiederherstellen",
+    "nftCreationRestoreTokenPopupViewTokenButton": "Digitalen Zwilling anzeigen",
+    "nftCreationRestoreTokenPopupSuccessTitle": "Digitaler Zwilling wiederhergestellt",
+
+    "nftCreationMultiSeriesTitle": "Serien-Aktivierung",
+    "nftCreationMultiSeriesDescription": "Serie - {number} Zwillinge",
+    "nftCreationMultiSeriesStatus": "{current} von {total} aktiviert",
+    "nftCreationMultiSeriesActivateButton": "Nächsten NFC-Chip scannen",
+    "nftCreationMultiSeriesPause": "Pause und später fortfahren",
+    "nftCreationMultiSeriesBadge": "Serie",
+    "nftCreationMultiSeriesItemsCount": "{count} Artikel",
+    "nftCreationMultiSeriesItemsActivated": "{current} von {total} Artikeln aktiviert",
+    "nftCreationSeriesStatusActivationPending": "Aktivierung ausstehend",
+    "nftCreationSeriesStatusDraft": "Entwurf",
+    "nftCreationSeriesStatusActive": "Aktiv",
+    "nftCreationSeriesStatusToBeBurned": "Zu löschen",
+    "nftCreationSeriesStatusToBeTransferred": "Zu übertragen",
+    "nftCreationSeriesActionStartScanning": "Tippen um zu scannen",
+    "nftCreationSeriesActionConnectNFC": "Tippen um NFC-Chip zu verbinden",
+    "nftCreationSingleItemBadge": "Einzelartikel",
+    "nftCreationSingleActionConnectNFC": "Tippen um NFC-Chip zu verbinden",
+    "nftCreationSingleActionBurnToken": "Tippen um Token zu löschen",
+    "nftCreationSingleActionTransferToken": "Tippen um Token zu übertragen",
+
     "nft_cancel_confirmation_dialog_title": "Abbrechen",
     "nft_cancel_confirmation_dialog_description": "Möchtest du die Aktivierung für \"{title}\" wirklich abbrechen?",
     "nft_cancel_confirmation_dialog_cancel_cancel_button": "Ja, Aktivierung abbrechen",
@@ -534,5 +561,10 @@
 
 
     "@_TRANSFER": {},
-    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard."
+    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard.",
+
+  "@_WEB3AUTH_EXISTING_ACCOUNT": {},
+  "web3authExistingAccountTitle": "Konto existiert bereits",
+  "web3authExistingAccountDescription": "Ein Konto mit dieser E-Mail-Adresse existiert bereits.\nBitte melde dich mit der gleichen Anmeldemethode an, die du bei der Erstellung deines Kontos verwendet hast.",
+  "web3authExistingAccountLogout": "Abmelden"
 }

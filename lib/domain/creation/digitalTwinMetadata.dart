@@ -32,7 +32,20 @@ class DigitalTwinMetadata {
   final DateTime createdAt;
 
   final String? tokenId;
+  
+  @JsonKey(unknownEnumValue: DigitalTwinCreationType.single)
+  final DigitalTwinCreationType type;
+  
+  final int? serialStartNumber;
+  
+  final int? quantity;
 
+  final int? totalActiveSeriesItems;
+
+  final String? parentUid;
+
+  final List<DigitalTwinMetadata>? children;
+  
   const DigitalTwinMetadata({
     required this.id,
     required this.collectionId,
@@ -47,6 +60,12 @@ class DigitalTwinMetadata {
     required this.status,
     required this.createdAt,
     required this.tokenId,
+    required this.type,
+    this.serialStartNumber,
+    this.quantity,
+    this.totalActiveSeriesItems,
+    this.parentUid,
+    this.children,
   });
 }
 
@@ -67,6 +86,8 @@ enum DigitalTwinCreationMetadataStatus {
   unknown,
 }
 
+
+
 const DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.pending: 'PENDING',
   DigitalTwinCreationMetadataStatus.toBeBurned: 'TO_BE_BURNED',
@@ -74,4 +95,20 @@ const DigitalTwinCreationMetadataStatusEnumMap = {
   DigitalTwinCreationMetadataStatus.toBeTransferred: 'TO_BE_TRANSFERRED',
   DigitalTwinCreationMetadataStatus.minted: 'MINTED',
   DigitalTwinCreationMetadataStatus.burned: 'BURNED',
+};
+
+
+enum DigitalTwinCreationType {
+  @JsonValue("SINGLE")
+  single,
+  @JsonValue("MULTIPLE")
+  multiple,
+  @JsonValue("MULTI_SERIAL_ITEM")
+  multiSerialItem,
+}
+
+const DigitalTwinCreationTypeEnumMap = {
+  DigitalTwinCreationType.single: 'SINGLE',
+  DigitalTwinCreationType.multiple: 'MULTIPLE',
+  DigitalTwinCreationType.multiSerialItem: 'MULTI_SERIAL_ITEM',
 };
