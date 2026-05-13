@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-02-04",
+  "root": "lib/screens",
+  "notes": [
+    "List derived from Dart files under lib/screens.",
+    "Category inferred from filename/subfolder (screen/page/popup/dialog/widget/mixin/controller)."
+  ],
+  "items": [
+    {"path": "lib/screens/HomeScreen.dart", "name": "HomeScreen", "category": "screen", "feature": "core"},
+    {"path": "lib/screens/NFTDetailsScreen.dart", "name": "NFTDetailsScreen", "category": "screen", "feature": "core"},
+    {"path": "lib/screens/GalleryScreen.dart", "name": "GalleryScreen", "category": "screen", "feature": "core"},
+    {"path": "lib/screens/MoreInfoScreen.dart", "name": "MoreInfoScreen", "category": "screen", "feature": "core"},
+    {"path": "lib/screens/TransferScreen.dart", "name": "TransferScreen", "category": "screen", "feature": "core"},
+    {"path": "lib/screens/UserScanResultsScreen.dart", "name": "UserScanResultsScreen", "category": "screen", "feature": "core"},
+    {"path": "lib/screens/ChainSelectorScreen.dart", "name": "ChainSelectorScreen", "category": "screen", "feature": "core"},
+    {"path": "lib/screens/PinScreen.dart", "name": "PinScreen", "category": "screen", "feature": "security"},
+    {"path": "lib/screens/EnterPukScreen.dart", "name": "EnterPukScreen", "category": "screen", "feature": "security"},
+    {"path": "lib/screens/AdminInitCard.dart", "name": "AdminInitCard", "category": "screen", "feature": "admin"},
+    {"path": "lib/screens/CardLostScreen.dart", "name": "CardLostScreen", "category": "screen", "feature": "security"},
+    {"path": "lib/screens/AddAttachmentScreen.dart", "name": "AddAttachmentScreen", "category": "screen", "feature": "attachments"},
+    {"path": "lib/screens/ListAttachmentsScreen.dart", "name": "ListAttachmentsScreen", "category": "screen", "feature": "attachments"},
+    {"path": "lib/screens/EnterShippingAddressScreen.dart", "name": "EnterShippingAddressScreen", "category": "screen", "feature": "commerce"},
+
+    {"path": "lib/screens/creations/CreationsPage.dart", "name": "CreationsPage", "category": "screen", "feature": "creations"},
+    {"path": "lib/screens/creations/creationCancel_popup.dart", "name": "creationCancel_popup", "category": "popup", "feature": "creations"},
+    {"path": "lib/screens/creations/restoreToken_popup.dart", "name": "restoreToken_popup", "category": "popup", "feature": "creations"},
+
+    {"path": "lib/screens/metadataInput/MetadataInputScreen.dart", "name": "MetadataInputScreen", "category": "screen", "feature": "metadata"},
+    {"path": "lib/screens/metadataInput/MetadataInputController.dart", "name": "MetadataInputController", "category": "controller", "feature": "metadata"},
+
+    {"path": "lib/screens/myBalance/MyBalanceScreen.dart", "name": "MyBalanceScreen", "category": "screen", "feature": "wallet"},
+    {"path": "lib/screens/myBalance/myBalanceWithdrawPage.dart", "name": "myBalanceWithdrawPage", "category": "screen", "feature": "wallet"},
+    {"path": "lib/screens/myBalance/myBalanceWithdrawConfirmationDialog.dart", "name": "myBalanceWithdrawConfirmationDialog", "category": "dialog", "feature": "wallet"},
+
+    {"path": "lib/screens/offer/OfferOnMPScreen.dart", "name": "OfferOnMPScreen", "category": "screen", "feature": "marketplace"},
+    {"path": "lib/screens/offer/OfferForSaleCreatedTokenScreen.dart", "name": "OfferForSaleCreatedTokenScreen", "category": "screen", "feature": "marketplace"},
+
+    {"path": "lib/screens/onboarding/OnboardingScreen.dart", "name": "OnboardingScreen", "category": "screen", "feature": "onboarding"},
+    {"path": "lib/screens/onboarding/OnboardingScreenWithSteps.dart", "name": "OnboardingScreenWithSteps", "category": "screen", "feature": "onboarding"},
+    {"path": "lib/screens/onboarding/OnboardingScreenUserComplete.dart", "name": "OnboardingScreenUserComplete", "category": "screen", "feature": "onboarding"},
+    {"path": "lib/screens/onboarding/widgets/OnboardingCreatorCompleteButton.dart", "name": "OnboardingCreatorCompleteButton", "category": "widget", "feature": "onboarding"},
+    {"path": "lib/screens/onboarding/widgets/OnboardingScreenUserStep.dart", "name": "OnboardingScreenUserStep", "category": "widget", "feature": "onboarding"},
+    {"path": "lib/screens/onboarding/widgets/OnboardingVideoPlayer.dart", "name": "OnboardingVideoPlayer", "category": "widget", "feature": "onboarding"},
+    {"path": "lib/screens/onboarding/widgets/OnboardingYoutubeCover.dart", "name": "OnboardingYoutubeCover", "category": "widget", "feature": "onboarding"},
+
+    {"path": "lib/screens/qrCode/QRCodeScannerScreen.dart", "name": "QRCodeScannerScreen", "category": "screen", "feature": "qr"},
+    {"path": "lib/screens/qrCode/websocket_connection_error_popup.dart", "name": "websocket_connection_error_popup", "category": "popup", "feature": "qr"},
+
+    {"path": "lib/screens/nftActionsScreenMixin.dart", "name": "nftActionsScreenMixin", "category": "mixin", "feature": "core"}
+  ]
+}
