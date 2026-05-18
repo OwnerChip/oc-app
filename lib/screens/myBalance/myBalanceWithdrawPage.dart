@@ -322,7 +322,7 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
       }
       final walletType = ref.read(walletTypeProvider);
 
-      if (walletType?.type == EWalletType.web3auth) {
+      if (walletType?.type == EWalletType.privy) {
         final confirmation =
             await _web3AuthTransactionConfirmation(context, item);
 

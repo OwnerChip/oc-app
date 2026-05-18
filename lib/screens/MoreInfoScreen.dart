@@ -124,7 +124,7 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                         width: 250))
                 : Container(),
             const SizedBox(height: 60),
-            if (session != null && walletType?.type == EWalletType.web3auth)
+            if (session != null && walletType?.type == EWalletType.privy)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: CustomOutlinedButton(

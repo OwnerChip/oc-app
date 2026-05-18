@@ -31,6 +31,8 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
+import 'package:ownerchip_whitelabel/services/privyService.dart';
+import 'package:privy_flutter/privy_flutter.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
@@ -49,7 +51,6 @@ import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry/sentry.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -86,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       await Future.wait(
         [
           initWcClient(ref, context),
-          setupWeb3Auth(),
+          setupPrivy(),
         ],
       );
     } catch (e, s) {
@@ -113,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       .isOwnerCard) ||
               (storedUserSession != null &&
                   WalletType.fromJson(jsonDecode(storedWalletType)).type ==
-                      EWalletType.web3auth) ||
+                      EWalletType.privy) ||
               (storedWcSession != null && storedUserSession != null))) {
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
@@ -132,44 +133,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           return;
         }
 
-        if (walletType.type == EWalletType.web3auth) {
-          // Check if web3auth session has expired (24 hours)
-          final web3authLoginTime = storage.getInt('web3authLoginTime');
-          final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-          final sessionDuration = 86400; // 24 hours in seconds
-          
-          bool isWeb3AuthSessionExpired = web3authLoginTime == null ||
-              (currentTime - web3authLoginTime) > sessionDuration;
+        if (walletType.type == EWalletType.privy) {
+          // Privy handles token refresh internally; just check auth state
+          final authState = await privyInstance.getAuthState();
+          final isAuthenticated = authState is Authenticated;
+          final privyUser = await privyInstance.getUser();
+          final wallets = privyUser?.embeddedEthereumWallets ?? [];
 
-          if (isWeb3AuthSessionExpired) {
-            talker.info('Web3Auth session expired, clearing session');
-            await _clearSession(storage, wcService);
+          if (isAuthenticated &&
+              wallets.isNotEmpty &&
+              backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
+              backendSession.jwt.raw.isNotEmpty) {
+            ref.read(userAddressProvider.notifier).state =
+                EthereumAddress.fromHex(wallets.first.address);
+            ref.read(walletTypeProvider.notifier).state = walletType;
+            ref.read(userSessionProvider.notifier).state = backendSession;
+            Backend.recreateServices(backendSession.jwt.raw);
+            ref.read(websocketProvider.notifier).init();
           } else {
-            String? privKey;
-            try {
-              privKey = await Web3AuthFlutter.getPrivKey();
-            } catch (e) {
-              await Sentry.captureException(
-                e,
-              );
-            }
-
-            if (privKey != null &&
-                backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
-                backendSession.jwt.raw.isNotEmpty) {
-              ref.read(userAddressProvider.notifier).state =
-                  EthPrivateKey.fromHex(privKey).address;
-
-              ref.read(walletTypeProvider.notifier).state = walletType;
-              ref.read(userSessionProvider.notifier).state = backendSession;
-              Backend.recreateServices(backendSession.jwt.raw);
-              ref.read(websocketProvider.notifier).init();
-            } else {
-              if (privKey == null) {
-                talker.info('Web3Auth privKey is null, clearing session');
-              }
-              await _clearSession(storage, wcService);
-            }
+            await _clearSession(storage, wcService);
           }
         } else if (walletType.type == EWalletType.ownerCard) {
           if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
@@ -230,7 +212,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       SharedPreferences storage, ReownAppKitModal? wcService) async {
     storage.remove('walletType');
     storage.remove('userSession');
-    storage.remove('web3authLoginTime');
     wcService?.disconnect();
     await BackendAuth.initGuestSession().timeout(const Duration(
       seconds: 8,
@@ -241,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     super.initState();
-
+    
     //check if persisted session is from previous app version; has to be called before _setProviderStatesFromPersistedState()
     _checkAndRemovePersistedStorageDependingOnPreviousAppVersion();
     //read persisted session
@@ -397,9 +378,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     if (!app.upgradeShown && app.upgradeRequired) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(appNotifierProvider.notifier).showUpgrade(context);
-      });
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   ref.read(appNotifierProvider.notifier).showUpgrade(context);
+      // });
     }
 
     return Scaffold(

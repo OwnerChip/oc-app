@@ -12,7 +12,8 @@ import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
+import 'package:ownerchip_whitelabel/services/providers/privy/privyNotifier.dart';
+import 'package:ownerchip_whitelabel/services/privyService.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
@@ -24,7 +25,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomSnackBarContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 class AppBarAuthDropDown extends ConsumerStatefulWidget {
   const AppBarAuthDropDown({
@@ -322,14 +322,13 @@ Future<void> disconnectWallet(
   //remove session and wallet type from storage
   storage.remove('walletType');
   storage.remove('userSession');
-  storage.remove('web3authLoginTime');
 
-  ref.refresh(web3AuthNotifierProvider);
+  ref.refresh(privyNotifierProvider);
 
   try {
-    await Web3AuthFlutter.logout().catchError((_) {});
+    await privyInstance.logout();
   } catch (e) {
-    talker.error('Error logging out of web3auth', e);
+    talker.error('Error logging out of Privy', e);
   }
 
   if (wc != null && wcSession != null) {

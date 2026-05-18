@@ -8,8 +8,6 @@ import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/creator/backendCreator.dart';
-import 'package:ownerchip_whitelabel/services/backend/creator/payloads/updateWeb3AuthDataPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -18,8 +16,6 @@ import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotif
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifier.dart';
-import 'package:ownerchip_whitelabel/services/providers/web3auth/web3authNotifierData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/services/signature.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -29,7 +25,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 import '../../utils/localization.helper.dart';
 
@@ -44,7 +39,6 @@ Future<dynamic> authPopupBuilder(
     builder: (BuildContext context) {
       return AlertDialog(
           backgroundColor: Theme.of(context).cardColor,
-          //border radius
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20.0))),
           title: Padding(
@@ -63,47 +57,27 @@ Future<dynamic> authPopupBuilder(
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(
-                height: 15,
-              ),
+              const SizedBox(height: 15),
               Row(
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: Colors.green,
-                    size: 36,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    context.loc.walletConnected,
-                    style: Theme.of(context).textTheme.displaySmall,
-                  )
+                  const Icon(Icons.check_circle_outline_rounded,
+                      color: Colors.green, size: 36),
+                  const SizedBox(width: 10),
+                  Text(context.loc.walletConnected,
+                      style: Theme.of(context).textTheme.displaySmall),
                 ],
               ),
-              const SizedBox(
-                height: 15,
-              ),
+              const SizedBox(height: 15),
               Row(
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: Colors.grey,
-                    size: 36,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    context.loc.walletAuthenticated,
-                    style: Theme.of(context).textTheme.displaySmall,
-                  )
+                  const Icon(Icons.check_circle_outline_rounded,
+                      color: Colors.grey, size: 36),
+                  const SizedBox(width: 10),
+                  Text(context.loc.walletAuthenticated,
+                      style: Theme.of(context).textTheme.displaySmall),
                 ],
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               CustomRoundedButton(
                   text: context.loc.authenticate,
                   onPressed: () {
@@ -122,23 +96,19 @@ Future<void> onTapAuth(
 ) async {
   EthereumAddress userWalletAddress = ref.read(userAddressProvider);
   ReownAppKitModalSession? session = ref.read(wcSessionProvider);
-  Web3AuthNotifierData web3AuthData = ref.read(web3AuthNotifierProvider);
   WalletType? walletType = ref.read(walletTypeProvider);
 
-  if ((session == null && web3AuthData.web3AuthResponse == null) ||
-      walletType == null) {
+  if (session == null || walletType == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       returnSnackBarWidget(context.loc.errorHeadingSnackBar,
           context.loc.pleaseTryAgainLater, 'error'),
     );
-    //remove auth popup
     if (Navigator.of(context).canPop()) {
       Navigator.pop(context, false);
     }
     return;
   }
 
-  //get sessionid from backend (only if not already set)
   final oldUserSession = ref.read(userSessionProvider);
   String sessionId =
       oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
@@ -171,41 +141,14 @@ Future<void> onTapAuth(
     );
 
     token = JwtToken.decode(jwt);
-
     signature = hexSignatureToRSV(hexSignature);
   } catch (e, st) {
-    Sentry.captureException(
-      e,
-      stackTrace: st,
-    );
-    talker .error(
-      'Error signing message',
-      e,
-      st,
-    );
+    Sentry.captureException(e, stackTrace: st);
+    talker.error('Error signing message', e, st);
     throw Exception(context.loc.errorConnectingWallet);
   }
 
   Backend.recreateServices(token.raw);
-
-  if (walletType.type == EWalletType.web3auth) {
-    try {
-      final data = await Web3AuthFlutter.getUserInfo();
-      final payload = UpdateWeb3AuthDataPayload(
-        name: data.name,
-        email: data.email,
-        picture: data.profileImage,
-        providerType: data.typeOfLogin ?? "",
-      );
-      await BackendCreator.updateWeb3AuthData(payload);
-    } catch (e, st) {
-      talker.error(
-        'Error updating web3auth data',
-        e,
-        st,
-      );
-    }
-  }
 
   UserSession userSession = UserSession(
     sessionId,
@@ -222,7 +165,6 @@ Future<void> onTapAuth(
   ref.read(creationsNotifierProvider.notifier).load();
   ref.read(accountDeletionRequestProvider.notifier).refresh();
 
-  //persist session date
   final SharedPreferences storage = await SharedPreferences.getInstance();
   final String jsonUserSession = jsonEncode(userSession.toJson());
   storage.setString('userSession', jsonUserSession);
@@ -238,7 +180,6 @@ Future<void> onTapAuth(
     'walletType': walletType.name,
   });
 
-  //success snackbar
   ScaffoldMessenger.of(context).showSnackBar(
     returnSnackBarWidget(context.loc.successHeadingSnackbar,
         context.loc.walletIsConnected, 'success'),

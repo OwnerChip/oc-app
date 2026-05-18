@@ -1,9 +1,7 @@
 //package imports
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:convert/convert.dart';
-import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,9 +36,8 @@ import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web3auth_flutter/enums.dart';
-import 'package:web3auth_flutter/input.dart';
-import 'package:web3auth_flutter/web3auth_flutter.dart';
+import 'package:ownerchip_whitelabel/services/privyService.dart';
+import 'package:privy_flutter/privy_flutter.dart';
 import 'package:web3dart/src/utils/rlp.dart' as rlp;
 
 import 'providers/websocket/websocketNotifier.dart';
@@ -180,12 +177,24 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
       toggleLoading();
     } else {
       try {
-        final priv = await Web3AuthFlutter.getPrivKey();
-        signature = EthSigUtil.signTypedData(
-          privateKey: priv,
-          jsonData: json.encode(typedData),
-          version: TypedDataVersion.V4,
+        final privyUser = await privyInstance.getUser();
+        if (privyUser == null || privyUser.embeddedEthereumWallets.isEmpty) {
+          throw Exception('No Privy embedded wallet');
+        }
+        final wallet = privyUser.embeddedEthereumWallets.first;
+        String privySignature = '';
+        final rpcResponse = await wallet.provider.request(
+          EthereumRpcRequest(
+            method: 'eth_signTypedData_v4',
+            params: [walletAddress.toString(), json.encode(typedData)],
+          ),
         );
+        rpcResponse.fold(
+          onSuccess: (response) => privySignature = response.data,
+          onFailure: (error) =>
+              throw Exception('Privy sign failed: ${error.message}'),
+        );
+        signature = privySignature;
       } catch (e, st) {
         Sentry.captureException(e, stackTrace: st);
         debugPrint(e.toString());
@@ -401,7 +410,7 @@ Future<String> makeAndSendNormalTx(BuildContext context,
   if ([
     EWalletType.ownerCard,
     EWalletType.certificateCard,
-    EWalletType.web3auth,
+    EWalletType.privy,
   ].contains(walletType.type)) {
     final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
     final params = txParams[0];
@@ -459,14 +468,28 @@ Future<String> makeAndSendNormalTx(BuildContext context,
 
       signature = MsgSignature(sig!.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
     } else {
-      final priv = await Web3AuthFlutter.getPrivKey();
+      final privyUser = await privyInstance.getUser();
+      if (privyUser == null || privyUser.embeddedEthereumWallets.isEmpty) {
+        throw Exception('No Privy embedded wallet');
+      }
+      final wallet = privyUser.embeddedEthereumWallets.first;
 
-      final Credentials creds = EthPrivateKey.fromHex(priv);
-
-      signature = creds.signToEcSignature(
-        rawTx,
-        chainId: chainId,
+      EthereumRpcResponse? rpcResult;
+      final rpcResponse = await wallet.provider.request(
+        EthereumRpcRequest(
+          method: 'eth_sendTransaction',
+          params: [txParams[0]],
+        ),
       );
+      rpcResponse.fold(
+        onSuccess: (response) => rpcResult = response,
+        onFailure: (error) =>
+            throw Exception('Privy tx failed: ${error.message}'),
+      );
+      // For privy eth_sendTransaction, the result is the tx hash
+      txnHash = rpcResult!.data;
+      talker.log('Privy transaction sent: $txnHash');
+      return txnHash;
     }
 
     final signedTx = rlp.encode(
@@ -628,25 +651,33 @@ Future<String> sendPersonalSignRequest(WidgetRef ref,
     walletAddress.toString()
   ];
 
-  if (walletType.type == EWalletType.web3auth) {
-    Future<String> signWithPrivateKey() async {
-      final priv = await Web3AuthFlutter.getPrivKey();
-      final credentials = EthPrivateKey.fromHex(priv);
-
-      final res = credentials.signPersonalMessageToUint8List(
-        Uint8List.fromList(utf8CodeUnits),
-        chainId: chainId,
+  if (walletType.type == EWalletType.privy) {
+    Future<String> signWithPrivy() async {
+      final privyUser = await privyInstance.getUser();
+      if (privyUser == null || privyUser.embeddedEthereumWallets.isEmpty) {
+        throw Exception('No Privy embedded wallet');
+      }
+      final wallet = privyUser.embeddedEthereumWallets.first;
+      String result = '';
+      final rpcResponse = await wallet.provider.request(
+        EthereumRpcRequest(
+          method: 'personal_sign',
+          params: [siweMessage ? message : hexUtf8EncodedMessage, walletAddress.toString()],
+        ),
       );
-
-      return '0x${hex.encode(res)}';
+      rpcResponse.fold(
+        onSuccess: (response) => result = response.data,
+        onFailure: (error) =>
+            throw Exception('Privy personal_sign failed: ${error.message}'),
+      );
+      return result;
     }
 
     try {
-      return await signWithPrivateKey();
+      return await signWithPrivy();
     } catch (e, st) {
       Sentry.captureException(e, stackTrace: st);
-
-      throw Exception('Failed to sign message with Web3Auth');
+      throw Exception('Failed to sign message with Privy');
     }
   } else {
     final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
@@ -904,38 +935,12 @@ Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
   }
 }
 
-bool _initializedWeb3Auth = false;
+bool _initializedPrivy = false;
 
-Future<void> setupWeb3Auth() async {
-  if (_initializedWeb3Auth) return;
-
-  Uri redirectUrl;
-  if (Platform.isAndroid) {
-    redirectUrl = Uri.parse(
-        'torusapp://org.torusresearch.${dotenv.get("BITRISEIO_PACKAGE_NAME")}');
-  } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('${dotenv.get("BITRISEIO_PACKAGE_NAME")}://auth');
-  } else {
-    throw UnKnownException('Unknown platform');
-  }
-
-  await Web3AuthFlutter.init(
-    Web3AuthOptions(
-        clientId: dotenv.get('WEB3_AUTH_CLIENT_ID'),
-        //     "BCGuB4TOrWXvmJKbZB2V1u0R-iyo1jJxsVKwTheUBSyQ850lquUtJO6YHALOtY6cbd_ZbmCIInHbrwlTy2wxYRI",
-        network: Network.sapphire_mainnet,
-        buildEnv: BuildEnv.production,
-        redirectUrl: redirectUrl,
-        whiteLabel: WhiteLabelData(
-          mode: ThemeModes.dark,
-          defaultLanguage: Language.en,
-        ),
-        sessionTime: 86400),
-  );
-
-  await Web3AuthFlutter.initialize().catchError((e) {
-    talker.error('Failed to initialize Web3Auth: $e');
+Future<void> setupPrivy() async {
+  if (_initializedPrivy) return;
+  await initPrivy().catchError((e) {
+    talker.error('Failed to initialize Privy: $e');
   });
-
-  _initializedWeb3Auth = true;
+  _initializedPrivy = true;
 }

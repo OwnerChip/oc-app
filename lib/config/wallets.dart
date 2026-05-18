@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 enum EWalletType {
   ownerCard,
   walletConnect,
-  web3auth,
+  privy,
 
   certificateCard,
 }
@@ -21,10 +21,10 @@ final WalletType _walletConnect = WalletType(
   EWalletType.walletConnect,
 );
 
-final WalletType _web3auth = WalletType(
-  "web3auth",
+final WalletType _privy = WalletType(
+  "privy",
   "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/metamask.png",
-  EWalletType.web3auth,
+  EWalletType.privy,
 );
 
 final WalletType _certificateCard = WalletType(
@@ -36,6 +36,6 @@ final WalletType _certificateCard = WalletType(
 final Map<EWalletType, WalletType> walletConfig = {
   EWalletType.ownerCard: _ownerCard,
   EWalletType.walletConnect: _walletConnect,
-  EWalletType.web3auth: _web3auth,
+  EWalletType.privy: _privy,
   EWalletType.certificateCard: _certificateCard,
 };
