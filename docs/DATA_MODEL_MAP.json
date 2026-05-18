@@ -1,0 +1,782 @@
+{
+  "generated_at": "2026-02-04",
+  "source_root": "lib/domain",
+  "notes": [
+    "Map derived from classes in lib/domain (excluding generated *.g.dart).",
+    "Types like EthereumAddress, MsgSignature, PlatformFile are external/library types."
+  ],
+  "enums": [
+    {
+      "name": "AttachmentType",
+      "file": "lib/domain/classDefinition.dart",
+      "values": ["text", "audio", "image", "video", "url", "other"]
+    },
+    {
+      "name": "WCSignType",
+      "file": "lib/domain/classDefinition.dart",
+      "values": ["message", "personalMessage", "typedMessageV2", "typedMessageV3", "typedMessageV4"]
+    },
+    {
+      "name": "DigitalTwinCreationMetadataStatus",
+      "file": "lib/domain/creation/digitalTwinMetadata.dart",
+      "values": ["pending", "draft", "minted", "toBeBurned", "toBeTransferred", "burned", "unknown"]
+    },
+    {
+      "name": "EIP155Methods",
+      "file": "lib/domain/eip155.dart",
+      "values": ["personalSign", "ethSign", "ethSignTransaction", "ethSignTypedData", "ethSendTransaction"]
+    },
+    {
+      "name": "EIP155Events",
+      "file": "lib/domain/eip155.dart",
+      "values": ["chainChanged", "accountsChanged"]
+    }
+  ],
+  "models": [
+    {
+      "name": "AppDto",
+      "file": "lib/domain/app/appDto.dart",
+      "fields": [
+        {"name": "appStoreLink", "type": "String"},
+        {"name": "googlePlayLink", "type": "String"},
+        {"name": "minRequiredVersion", "type": "AppVersion", "optional": true}
+      ],
+      "references": ["AppVersion"]
+    },
+    {
+      "name": "AppVersion",
+      "file": "lib/domain/appVersion/appVersion.dart",
+      "fields": [
+        {"name": "major", "type": "int"},
+        {"name": "minor", "type": "int"},
+        {"name": "patch", "type": "int"}
+      ]
+    },
+    {
+      "name": "JwtToken",
+      "file": "lib/domain/jwt/jwt_token.dart",
+      "fields": [
+        {"name": "raw", "type": "String"},
+        {"name": "walletAddress", "type": "String", "optional": true},
+        {"name": "sessionId", "type": "String"},
+        {"name": "role", "type": "String"},
+        {"name": "iat", "type": "int"},
+        {"name": "exp", "type": "int"}
+      ]
+    },
+    {
+      "name": "FCMToken",
+      "file": "lib/domain/fcm/fcm_token.dart",
+      "fields": [
+        {"name": "id", "type": "int"},
+        {"name": "token", "type": "String"},
+        {"name": "address", "type": "String"},
+        {"name": "timestamp", "type": "DateTime"}
+      ]
+    },
+    {
+      "name": "FCMNotificationData",
+      "file": "lib/domain/common/fcmNotificationData.dart",
+      "fields": [
+        {"name": "type", "type": "String"},
+        {"name": "json", "type": "String"},
+        {"name": "params", "type": "Map<String,dynamic>", "optional": true}
+      ],
+      "references": ["FcmNotificationDigitalTwinCreationData"]
+    },
+    {
+      "name": "FcmNotificationDigitalTwinCreationData",
+      "file": "lib/domain/common/fcmNotificationDigitalTwinCreationData.dart",
+      "fields": [
+        {"name": "userWalletAddress", "type": "String"},
+        {"name": "metadataId", "type": "String"},
+        {"name": "title", "type": "String"},
+        {"name": "imageUri", "type": "String"}
+      ]
+    },
+    {
+      "name": "BackendPaginationResponse<T>",
+      "file": "lib/domain/common/backendPaginationResponse.dart",
+      "fields": [
+        {"name": "data", "type": "List<T>"},
+        {"name": "page", "type": "int"},
+        {"name": "limit", "type": "int"},
+        {"name": "total", "type": "int"},
+        {"name": "totalPages", "type": "int"}
+      ]
+    },
+    {
+      "name": "DigitalTwinMetadata",
+      "file": "lib/domain/creation/digitalTwinMetadata.dart",
+      "fields": [
+        {"name": "id", "type": "String"},
+        {"name": "collectionId", "type": "String"},
+        {"name": "collection", "type": "OCCollection"},
+        {"name": "creatorId", "type": "String"},
+        {"name": "imageCID", "type": "String", "optional": true},
+        {"name": "twinTokenMetadataCID", "type": "String", "optional": true},
+        {"name": "traits", "type": "List<DigitalTwinTrait>"},
+        {"name": "title", "type": "String"},
+        {"name": "description", "type": "String"},
+        {"name": "imageLink", "type": "String", "optional": true},
+        {"name": "status", "type": "DigitalTwinCreationMetadataStatus"},
+        {"name": "createdAt", "type": "DateTime"},
+        {"name": "tokenId", "type": "String", "optional": true}
+      ],
+      "references": ["OCCollection", "DigitalTwinTrait", "DigitalTwinCreationMetadataStatus"]
+    },
+    {
+      "name": "DigitalTwinTrait",
+      "file": "lib/domain/creation/digitalTwinTrait.dart",
+      "fields": [
+        {"name": "traitType", "type": "String"},
+        {"name": "value", "type": "String"}
+      ]
+    },
+    {
+      "name": "DigitalTwinAttachment",
+      "file": "lib/domain/creation/digitalTwinAttachment.dart",
+      "fields": [
+        {"name": "uid", "type": "String"},
+        {"name": "title", "type": "String"},
+        {"name": "link", "type": "String", "optional": true},
+        {"name": "contentType", "type": "String", "optional": true},
+        {"name": "fileName", "type": "String", "optional": true},
+        {"name": "fileSize", "type": "int", "optional": true},
+        {"name": "fileHash", "type": "String", "optional": true},
+        {"name": "uploadedAt", "type": "String"},
+        {"name": "creatorId", "type": "String"},
+        {"name": "metadataId", "type": "String"},
+        {"name": "isPrivate", "type": "bool"},
+        {"name": "downloadLink", "type": "String", "optional": true},
+        {"name": "attachmentUuid", "type": "String", "optional": true}
+      ],
+      "references": ["DigitalTwinMetadata"]
+    },
+    {
+      "name": "OCCollection",
+      "file": "lib/domain/collection/ocCollection.dart",
+      "fields": [
+        {"name": "address", "type": "String"},
+        {"name": "voucherAddress", "type": "String"},
+        {"name": "name", "type": "String"},
+        {"name": "symbol", "type": "String"},
+        {"name": "chainId", "type": "int"}
+      ]
+    },
+    {
+      "name": "Token",
+      "file": "lib/domain/tokenTypes.dart",
+      "fields": [
+        {"name": "tokenId", "type": "String"},
+        {"name": "mintedAt", "type": "DateTime"},
+        {"name": "collectionAddress", "type": "String"},
+        {"name": "collectionName", "type": "String"},
+        {"name": "collectionSymbol", "type": "String"},
+        {"name": "hasVoucherToken", "type": "bool"},
+        {"name": "voucherCollection", "type": "String"},
+        {"name": "voucherTokenUri", "type": "String", "optional": true},
+        {"name": "hasActiveOffer", "type": "bool"},
+        {"name": "activeOffers", "type": "List<ActiveOffer>"}
+      ],
+      "references": ["ActiveOffer"]
+    },
+    {
+      "name": "ActiveOffer",
+      "file": "lib/domain/tokenTypes.dart",
+      "fields": [
+        {"name": "offerHash", "type": "String"},
+        {"name": "offerPrice", "type": "String"},
+        {"name": "offerCurrency", "type": "String"},
+        {"name": "sellerEmail", "type": "String"},
+        {"name": "sellerAddress", "type": "String"},
+        {"name": "sellerPayoutAddress", "type": "String"},
+        {"name": "createdAt", "type": "DateTime"},
+        {"name": "validUntil", "type": "int"},
+        {"name": "encodedData", "type": "String"},
+        {"name": "marketplaceContract", "type": "String"},
+        {"name": "isCancelled", "type": "bool"},
+        {"name": "offchainOfferId", "type": "String"}
+      ]
+    },
+    {
+      "name": "Purchase",
+      "file": "lib/domain/phygitalTradeTypes.dart",
+      "fields": [
+        {"name": "purchaseTxHash", "type": "String"},
+        {"name": "createdAt", "type": "DateTime"},
+        {"name": "isRedeemed", "type": "bool"},
+        {"name": "redeemedAt", "type": "DateTime", "optional": true},
+        {"name": "buyer", "type": "Buyer"},
+        {"name": "token", "type": "PurchaseTokenData"},
+        {"name": "offer", "type": "Offer"},
+        {"name": "shippingInfo", "type": "ShippingInfo", "optional": true},
+        {"name": "manualHandover", "type": "bool"}
+      ],
+      "references": ["Buyer", "PurchaseTokenData", "Offer", "ShippingInfo"]
+    },
+    {
+      "name": "Buyer",
+      "file": "lib/domain/phygitalTradeTypes.dart",
+      "fields": [
+        {"name": "walletAddress", "type": "EthereumAddress", "optional": true},
+        {"name": "firstName", "type": "String", "optional": true},
+        {"name": "lastName", "type": "String", "optional": true},
+        {"name": "email", "type": "String", "optional": true},
+        {"name": "phoneNumber", "type": "String", "optional": true},
+        {"name": "createdAt", "type": "DateTime", "optional": true},
+        {"name": "companyName", "type": "String", "optional": true}
+      ]
+    },
+    {
+      "name": "PurchaseTokenData",
+      "file": "lib/domain/phygitalTradeTypes.dart",
+      "fields": [
+        {"name": "id", "type": "BigInt"},
+        {"name": "createdAt", "type": "DateTime"},
+        {"name": "recoverySignature", "type": "dynamic", "optional": true},
+        {"name": "voucherTokenUri", "type": "String"},
+        {"name": "hasVoucherToken", "type": "bool"}
+      ]
+    },
+    {
+      "name": "Offer",
+      "file": "lib/domain/phygitalTradeTypes.dart",
+      "fields": [
+        {"name": "offerHash", "type": "String"},
+        {"name": "offerPrice", "type": "String"},
+        {"name": "offerCurrency", "type": "String"},
+        {"name": "sellerEmail", "type": "String"},
+        {"name": "sellerAddress", "type": "String"},
+        {"name": "sellerPayoutAddress", "type": "String"},
+        {"name": "createdAt", "type": "DateTime"},
+        {"name": "validUntil", "type": "int"},
+        {"name": "encodedData", "type": "String"},
+        {"name": "marketplaceContract", "type": "String"},
+        {"name": "isCancelled", "type": "bool"},
+        {"name": "isFilled", "type": "bool"}
+      ]
+    },
+    {
+      "name": "ShippingInfo",
+      "file": "lib/domain/phygitalTradeTypes.dart",
+      "fields": [
+        {"name": "firstName", "type": "String"},
+        {"name": "lastName", "type": "String"},
+        {"name": "email", "type": "String"},
+        {"name": "phoneNumber", "type": "String"},
+        {"name": "companyName", "type": "String"},
+        {"name": "streetAddress", "type": "String"},
+        {"name": "streetAddress1", "type": "String"},
+        {"name": "city", "type": "String"},
+        {"name": "postalCode", "type": "String"},
+        {"name": "stateOrProvince", "type": "String"},
+        {"name": "countryCode", "type": "String"}
+      ]
+    },
+    {
+      "name": "BlockchainToken",
+      "file": "lib/domain/blockchain_token.dart",
+      "fields": [
+        {"name": "symbol", "type": "String"},
+        {"name": "abiAssetPath", "type": "String"},
+        {"name": "contractAddress", "type": "EthereumAddress"},
+        {"name": "iconPath", "type": "String"},
+        {"name": "decimals", "type": "int"}
+      ]
+    },
+    {
+      "name": "WalletSignature",
+      "file": "lib/domain/walletSignature/walletSignature.dart",
+      "fields": [
+        {"name": "r", "type": "String"},
+        {"name": "s", "type": "String"},
+        {"name": "v", "type": "int"}
+      ]
+    },
+    {
+      "name": "EthereumTransaction",
+      "file": "lib/domain/ethereum_transaction.dart",
+      "fields": [
+        {"name": "from", "type": "String"},
+        {"name": "to", "type": "String"},
+        {"name": "value", "type": "String"},
+        {"name": "nonce", "type": "String", "optional": true},
+        {"name": "gasPrice", "type": "String", "optional": true},
+        {"name": "maxFeePerGas", "type": "String", "optional": true},
+        {"name": "maxPriorityFeePerGas", "type": "String", "optional": true},
+        {"name": "gas", "type": "String", "optional": true},
+        {"name": "gasLimit", "type": "String", "optional": true},
+        {"name": "data", "type": "String", "optional": true}
+      ]
+    },
+    {
+      "name": "MyBalanceListItem",
+      "file": "lib/domain/myBalance/myBalanceListItem.dart",
+      "fields": [
+        {"name": "name", "type": "String"},
+        {"name": "symbol", "type": "String"},
+        {"name": "chain", "type": "int"},
+        {"name": "balance", "type": "BigInt"},
+        {"name": "balanceEur", "type": "double"},
+        {"name": "iconPath", "type": "String"},
+        {"name": "decimals", "type": "int"},
+        {"name": "sendMaxTransferBufferDecimals", "type": "int"},
+        {"name": "token", "type": "int", "optional": true}
+      ]
+    },
+    {
+      "name": "Web3AuthDataDto",
+      "file": "lib/domain/creator/web3AuthDataDto.dart",
+      "fields": [
+        {"name": "address", "type": "String"},
+        {"name": "name", "type": "String", "optional": true},
+        {"name": "email", "type": "String", "optional": true},
+        {"name": "picture", "type": "String", "optional": true},
+        {"name": "providerType", "type": "String"},
+        {"name": "createdAt", "type": "String"},
+        {"name": "updatedAt", "type": "String"}
+      ]
+    },
+    {
+      "name": "AlchemyNFTAsset",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "contract", "type": "AlchemyContract"},
+        {"name": "tokenId", "type": "String"},
+        {"name": "tokenType", "type": "String"},
+        {"name": "name", "type": "String"},
+        {"name": "description", "type": "String", "optional": true},
+        {"name": "tokenUri", "type": "String"},
+        {"name": "image", "type": "AlchemyNftAssetImage"},
+        {"name": "raw", "type": "AlchemyRaw", "optional": true},
+        {"name": "collection", "type": "dynamic", "optional": true},
+        {"name": "mint", "type": "Mint"},
+        {"name": "owners", "type": "dynamic", "optional": true},
+        {"name": "timeLastUpdated", "type": "DateTime"},
+        {"name": "balance", "type": "int"},
+        {"name": "acquiredAt", "type": "AcquiredAt"}
+      ],
+      "references": [
+        "AlchemyContract",
+        "AlchemyNftAssetImage",
+        "AlchemyRaw",
+        "Mint",
+        "AcquiredAt"
+      ]
+    },
+    {
+      "name": "AlchemyContract",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "address", "type": "String"},
+        {"name": "name", "type": "String"},
+        {"name": "symbol", "type": "String"},
+        {"name": "totalSupply", "type": "dynamic", "optional": true},
+        {"name": "tokenType", "type": "String"},
+        {"name": "contractDeployer", "type": "String"},
+        {"name": "deployedBlockNumber", "type": "int"},
+        {"name": "openSeaMetadata", "type": "OpenSeaMetadata"},
+        {"name": "isSpam", "type": "dynamic", "optional": true},
+        {"name": "spamClassifications", "type": "List<dynamic>"}
+      ],
+      "references": ["OpenSeaMetadata"]
+    },
+    {
+      "name": "AlchemyNftAssetImage",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "cachedUrl", "type": "String"},
+        {"name": "thumbnailUrl", "type": "String", "optional": true},
+        {"name": "pngUrl", "type": "String"},
+        {"name": "contentType", "type": "String"},
+        {"name": "size", "type": "dynamic", "optional": true},
+        {"name": "originalUrl", "type": "String"}
+      ]
+    },
+    {
+      "name": "AlchemyRaw",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "tokenUri", "type": "String"},
+        {"name": "metadata", "type": "Metadata"},
+        {"name": "error", "type": "dynamic", "optional": true}
+      ],
+      "references": ["Metadata"]
+    },
+    {
+      "name": "Metadata",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "name", "type": "String"},
+        {"name": "image", "type": "String"},
+        {"name": "traits", "type": "List<dynamic>"}
+      ]
+    },
+    {
+      "name": "OpenSeaMetadata",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "floorPrice", "type": "dynamic", "optional": true},
+        {"name": "collectionName", "type": "dynamic", "optional": true},
+        {"name": "collectionSlug", "type": "dynamic", "optional": true},
+        {"name": "safelistRequestStatus", "type": "dynamic", "optional": true},
+        {"name": "imageUrl", "type": "dynamic", "optional": true},
+        {"name": "description", "type": "dynamic", "optional": true},
+        {"name": "externalUrl", "type": "dynamic", "optional": true},
+        {"name": "twitterUsername", "type": "dynamic", "optional": true},
+        {"name": "discordUrl", "type": "dynamic", "optional": true},
+        {"name": "bannerImageUrl", "type": "dynamic", "optional": true},
+        {"name": "lastIngestedAt", "type": "DateTime", "optional": true}
+      ]
+    },
+    {
+      "name": "AcquiredAt",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "blockTimestamp", "type": "DateTime", "optional": true},
+        {"name": "blockNumber", "type": "int", "optional": true}
+      ]
+    },
+    {
+      "name": "Mint",
+      "file": "lib/domain/alchemyTypes.dart",
+      "fields": [
+        {"name": "mintAddress", "type": "String", "optional": true},
+        {"name": "blockNumber", "type": "int", "optional": true},
+        {"name": "timestamp", "type": "DateTime", "optional": true},
+        {"name": "transactionHash", "type": "String", "optional": true}
+      ]
+    },
+    {
+      "name": "OcOwnedNft",
+      "file": "lib/domain/oc/oc_owned_nft.dart",
+      "fields": [
+        {"name": "contract", "type": "AlchemyContract"},
+        {"name": "tokenId", "type": "String"},
+        {"name": "tokenType", "type": "String"},
+        {"name": "name", "type": "String", "optional": true},
+        {"name": "description", "type": "String", "optional": true},
+        {"name": "tokenUri", "type": "String"},
+        {"name": "image", "type": "OcNftImage"}
+      ],
+      "references": ["AlchemyContract", "OcNftImage"]
+    },
+    {
+      "name": "OcNftImage",
+      "file": "lib/domain/oc/oc_nft_image.dart",
+      "fields": [
+        {"name": "cachedUrl", "type": "String", "optional": true},
+        {"name": "thumbnailUrl", "type": "String", "optional": true},
+        {"name": "pngUrl", "type": "String", "optional": true},
+        {"name": "contentType", "type": "String", "optional": true},
+        {"name": "size", "type": "int", "optional": true},
+        {"name": "originalUrl", "type": "String"}
+      ]
+    },
+    {
+      "name": "CreatorDto",
+      "file": "lib/domain/oc/creatorDto.dart",
+      "fields": [
+        {"name": "address", "type": "String"},
+        {"name": "name", "type": "String"},
+        {"name": "affiliation", "type": "String"},
+        {"name": "email", "type": "String"},
+        {"name": "isOwnercard", "type": "bool"}
+      ]
+    },
+    {
+      "name": "LocalAttachment",
+      "file": "lib/domain/local_attachment.dart",
+      "fields": [
+        {"name": "title", "type": "String"},
+        {"name": "fileName", "type": "String"},
+        {"name": "type", "type": "AttachmentType"},
+        {"name": "url", "type": "String"},
+        {"name": "backendUuid", "type": "String"},
+        {"name": "isFromCreator", "type": "bool", "optional": true},
+        {"name": "isPrivate", "type": "bool"},
+        {"name": "file", "type": "PlatformFile", "optional": true},
+        {"name": "isNew", "type": "bool"},
+        {"name": "isUpdated", "type": "bool"},
+        {"name": "isDeleted", "type": "bool"}
+      ],
+      "references": ["Attachment", "AttachmentType"]
+    },
+    {
+      "name": "CustomException",
+      "file": "lib/domain/errorDefinitions.dart",
+      "fields": [
+        {"name": "cause", "type": "String"}
+      ]
+    },
+    {
+      "name": "MoreInfoButton",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "text", "type": "String"},
+        {"name": "url", "type": "String"}
+      ]
+    },
+    {
+      "name": "WalletType",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "name", "type": "String"},
+        {"name": "iconUri", "type": "String"},
+        {"name": "type", "type": "EWalletType"}
+      ]
+    },
+    {
+      "name": "Collection",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "id", "type": "EthereumAddress"},
+        {"name": "name", "type": "String"},
+        {"name": "voucherAddress", "type": "EthereumAddress", "optional": true},
+        {"name": "symbol", "type": "String", "optional": true},
+        {"name": "chainId", "type": "int", "optional": true},
+        {"name": "hasMinterRole", "type": "bool", "optional": true}
+      ]
+    },
+    {
+      "name": "BlockchainCollectionList",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "collections", "type": "Map<int, List<Collection>>"},
+        {"name": "hasAnyMinterRole", "type": "bool", "optional": true}
+      ],
+      "references": ["Collection"]
+    },
+    {
+      "name": "BlockchainConfig",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "networkName", "type": "String"},
+        {"name": "nativeTokenSymbol", "type": "String"},
+        {"name": "rpcUrl", "type": "String"},
+        {"name": "registryContract", "type": "String"},
+        {"name": "controllerContract", "type": "String"},
+        {"name": "openseaUrl", "type": "String"},
+        {"name": "raribleUrl", "type": "String"},
+        {"name": "raribleEnum", "type": "String"},
+        {"name": "blockchainExplorerUrl", "type": "String"},
+        {"name": "alchemyBaseUrl", "type": "String"},
+        {"name": "forwarderContract", "type": "String", "optional": true},
+        {"name": "internal", "type": "bool"}
+      ]
+    },
+    {
+      "name": "TokenChainAndCollection",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "chainId", "type": "int"},
+        {"name": "collectionId", "type": "EthereumAddress"},
+        {"name": "tokenId", "type": "BigInt"}
+      ]
+    },
+    {
+      "name": "ChipInfoModel",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "chipEthereumAddress", "type": "EthereumAddress"},
+        {"name": "tokenId", "type": "BigInt"},
+        {"name": "firstSlotKey", "type": "EthereumAddress"},
+        {"name": "chipIsInitialized", "type": "bool"}
+      ]
+    },
+    {
+      "name": "SignatureData",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "hashedMsg", "type": "Uint8List"},
+        {"name": "signature", "type": "MsgSignature"},
+        {"name": "tokenId", "type": "BigInt"},
+        {"name": "hasBeenUsedInSmartContract", "type": "bool"}
+      ]
+    },
+    {
+      "name": "EthereumSignMessage",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "data", "type": "String"},
+        {"name": "address", "type": "String"},
+        {"name": "type", "type": "WCSignType"}
+      ]
+    },
+    {
+      "name": "Attachment",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "title", "type": "String"},
+        {"name": "fileName", "type": "String"},
+        {"name": "type", "type": "AttachmentType"},
+        {"name": "isPrivate", "type": "bool"},
+        {"name": "url", "type": "String"},
+        {"name": "backendUuid", "type": "String"},
+        {"name": "isFromCreator", "type": "bool", "optional": true}
+      ],
+      "references": ["AttachmentType"]
+    },
+    {
+      "name": "UserSession",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "sessionId", "type": "String"},
+        {"name": "signatureData", "type": "MsgSignature"},
+        {"name": "userWalletAddress", "type": "EthereumAddress"},
+        {"name": "isOwnerCard", "type": "bool"},
+        {"name": "isCertificateCard", "type": "bool"},
+        {"name": "jwt", "type": "JwtToken"},
+        {"name": "fcmToken", "type": "FCMToken", "optional": true}
+      ],
+      "references": ["JwtToken", "FCMToken", "SignatureData"]
+    },
+    {
+      "name": "CreatorData",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "name", "type": "String"},
+        {"name": "affiliation", "type": "String"},
+        {"name": "email", "type": "String"},
+        {"name": "walletAddress", "type": "EthereumAddress"},
+        {"name": "createdAt", "type": "DateTime"},
+        {"name": "hasActiveOffer", "type": "bool"},
+        {"name": "tokenForWhichCreatorDataWasRequested", "type": "Token"}
+      ],
+      "references": ["Token"]
+    },
+    {
+      "name": "RaribleHashAndEncodedData",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "typedDataHash", "type": "String"},
+        {"name": "encodedData", "type": "String"}
+      ]
+    },
+    {
+      "name": "InputFieldModel",
+      "file": "lib/domain/classDefinition.dart",
+      "fields": [
+        {"name": "placeholder", "type": "String", "optional": true},
+        {"name": "keyboardType", "type": "TextInputType", "optional": true},
+        {"name": "setStateCallback", "type": "VoidStringCallback"},
+        {"name": "validator", "type": "StringCallback"}
+      ]
+    },
+    {
+      "name": "RaribleV2Order",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "data", "type": "RaribleDataObject"},
+        {"name": "maker", "type": "EthereumAddress"},
+        {"name": "make", "type": "RaribleOrderFormAsset"},
+        {"name": "takeDeprecated", "type": "RaribleOrderFormAsset"},
+        {"name": "take", "type": "String"},
+        {"name": "takeType", "type": "Map<String,dynamic>"},
+        {"name": "salt", "type": "BigInt"},
+        {"name": "start", "type": "int"},
+        {"name": "end", "type": "int"},
+        {"name": "signature", "type": "String"},
+        {"name": "chainId", "type": "int"},
+        {"name": "blockchainToken", "type": "BlockchainToken", "optional": true}
+      ],
+      "references": [
+        "RaribleDataObject",
+        "RaribleOrderFormAsset",
+        "RaribleAssetType",
+        "RariblePayout",
+        "BlockchainToken"
+      ]
+    },
+    {
+      "name": "RaribleDataObject",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "dataType", "type": "String"},
+        {"name": "payouts", "type": "List<RariblePayout>"},
+        {"name": "originFees", "type": "List<RariblePayout>"}
+      ],
+      "references": ["RariblePayout"]
+    },
+    {
+      "name": "RaribleOrderFormAsset",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "assetType", "type": "RaribleAssetType"},
+        {"name": "value", "type": "BigInt"}
+      ],
+      "references": ["RaribleAssetType"]
+    },
+    {
+      "name": "RaribleAssetType",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "assetClass", "type": "String"},
+        {"name": "contract", "type": "EthereumAddress", "optional": true},
+        {"name": "tokenId", "type": "BigInt", "optional": true}
+      ]
+    },
+    {
+      "name": "RariblePayout",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "account", "type": "EthereumAddress"},
+        {"name": "value", "type": "int"},
+        {"name": "chainId", "type": "int"}
+      ]
+    },
+    {
+      "name": "OpenSeaV2ListingRequest",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "listingParams", "type": "OpenSeaListingParams"},
+        {"name": "signature", "type": "String"},
+        {"name": "protocolAddress", "type": "String"}
+      ],
+      "references": ["OpenSeaListingParams"]
+    },
+    {
+      "name": "OpenSeaListingParams",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "offerer", "type": "String"},
+        {"name": "offer", "type": "List<OpenSeaOffer>"},
+        {"name": "consideration", "type": "List<OpenSeaConsideration>"},
+        {"name": "startTime", "type": "int"},
+        {"name": "endTime", "type": "int"},
+        {"name": "orderType", "type": "String"},
+        {"name": "salt", "type": "String"},
+        {"name": "zone", "type": "String"},
+        {"name": "zoneHash", "type": "String"},
+        {"name": "conduitKey", "type": "String"},
+        {"name": "counter", "type": "int"}
+      ],
+      "references": ["OpenSeaOffer", "OpenSeaConsideration"]
+    },
+    {
+      "name": "OpenSeaOffer",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "itemType", "type": "int"},
+        {"name": "token", "type": "String"},
+        {"name": "identifierOrCriteria", "type": "int"},
+        {"name": "startAmount", "type": "int"},
+        {"name": "endAmount", "type": "int"}
+      ]
+    },
+    {
+      "name": "OpenSeaConsideration",
+      "file": "lib/domain/web3MarketplaceApi.dart",
+      "fields": [
+        {"name": "recipient", "type": "String"},
+        {"name": "itemType", "type": "int"},
+        {"name": "token", "type": "String"},
+        {"name": "identifierOrCriteria", "type": "int"},
+        {"name": "startAmount", "type": "int"},
+        {"name": "endAmount", "type": "int"}
+      ],
+      "references": ["OpenSeaOffer"]
+    }
+  ]
+}
