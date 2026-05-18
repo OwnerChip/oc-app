@@ -445,4 +445,3 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   }
 }
 
-

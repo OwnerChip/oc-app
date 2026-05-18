@@ -5,15 +5,16 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
-class SignatureDataNotifier extends StateNotifier<SignatureData> {
-  SignatureDataNotifier()
-      : super(
-          SignatureData(
-            hashedMsg: Uint8List(0),
-            signature: MsgSignature(BigInt.from(0), BigInt.from(0), 0),
-            tokenId: BigInt.from(0),
-          ),
-        );
+class SignatureDataNotifier extends Notifier<SignatureData> {
+  @override
+  SignatureData build() {
+    ref.keepAlive();
+    return SignatureData(
+      hashedMsg: Uint8List(0),
+      signature: MsgSignature(BigInt.from(0), BigInt.from(0), 0),
+      tokenId: BigInt.from(0),
+    );
+  }
 
   void setSignatureData(SignatureData signatureData) {
     state.hashedMsg = signatureData.hashedMsg;
@@ -28,19 +29,19 @@ class SignatureDataNotifier extends StateNotifier<SignatureData> {
 }
 
 final chipSignatureDataProvider =
-    StateNotifierProvider<SignatureDataNotifier, SignatureData>((ref) {
-  return SignatureDataNotifier();
-});
+    NotifierProvider<SignatureDataNotifier, SignatureData>(
+        SignatureDataNotifier.new);
 
-class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
-  ChipInfoNotifier()
-      : super(
-          ChipInfoModel(
-            chipEthereumAddress: zeroAddress,
-            tokenId: BigInt.from(0),
-            firstSlotKey: zeroAddress,
-          ),
-        );
+class ChipInfoNotifier extends Notifier<ChipInfoModel> {
+  @override
+  ChipInfoModel build() {
+    ref.keepAlive();
+    return ChipInfoModel(
+      chipEthereumAddress: zeroAddress,
+      tokenId: BigInt.from(0),
+      firstSlotKey: zeroAddress,
+    );
+  }
 
   void setTokenId(BigInt tokenId) {
     state.tokenId = tokenId;
@@ -60,6 +61,4 @@ class ChipInfoNotifier extends StateNotifier<ChipInfoModel> {
 }
 
 final chipInfoProvider =
-    StateNotifierProvider<ChipInfoNotifier, ChipInfoModel>((ref) {
-  return ChipInfoNotifier();
-});
+    NotifierProvider<ChipInfoNotifier, ChipInfoModel>(ChipInfoNotifier.new);

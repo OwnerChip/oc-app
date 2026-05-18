@@ -125,28 +125,40 @@ final findAllMinterRolesProvider =
 // **** CHAIN ID + COLLECTION ID ****
 
 // only used in admin app for selecting the chain
-final selectedChainIdProvider = StateProvider.autoDispose<int?>((ref) {
-  //return null if col.collections.keys has more than one element else return col.collections.keys.first
-  final AsyncValue<BlockchainCollectionList> collectionList =
-      ref.watch(findAllMinterRolesProvider);
-  final int? res = collectionList.asData != null &&
-          collectionList.asData!.value.collections.keys.length == 1
-      ? collectionList.asData!.value.collections.keys.first
-      : null;
-  return res;
-});
+class _SelectedChainIdNotifier extends Notifier<int?> {
+  @override
+  int? build() {
+    final AsyncValue<BlockchainCollectionList> collectionList =
+        ref.watch(findAllMinterRolesProvider);
+    final int? res = collectionList.asData != null &&
+            collectionList.asData!.value.collections.keys.length == 1
+        ? collectionList.asData!.value.collections.keys.first
+        : null;
+    return res;
+  }
+}
+
+final selectedChainIdProvider =
+    NotifierProvider.autoDispose<_SelectedChainIdNotifier, int?>(
+        _SelectedChainIdNotifier.new);
 
 // only used in admin app for selecting the collection
-final selectedCollectionIdProvider =
-    StateProvider.autoDispose<Collection?>((ref) {
-  final int? chainId = ref.watch(selectedChainIdProvider);
-  final AsyncValue<BlockchainCollectionList> collectionList =
-      ref.watch(findAllMinterRolesProvider);
+class _SelectedCollectionIdNotifier extends Notifier<Collection?> {
+  @override
+  Collection? build() {
+    final int? chainId = ref.watch(selectedChainIdProvider);
+    final AsyncValue<BlockchainCollectionList> collectionList =
+        ref.watch(findAllMinterRolesProvider);
 
-  final Collection? res = chainId != null &&
-          collectionList.asData != null &&
-          collectionList.asData!.value.collections[chainId]!.length == 1
-      ? collectionList.asData!.value.collections[chainId]![0]
-      : null;
-  return res;
-});
+    final Collection? res = chainId != null &&
+            collectionList.asData != null &&
+            collectionList.asData!.value.collections[chainId]!.length == 1
+        ? collectionList.asData!.value.collections[chainId]![0]
+        : null;
+    return res;
+  }
+}
+
+final selectedCollectionIdProvider =
+    NotifierProvider.autoDispose<_SelectedCollectionIdNotifier, Collection?>(
+        _SelectedCollectionIdNotifier.new);

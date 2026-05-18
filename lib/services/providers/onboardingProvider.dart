@@ -21,8 +21,13 @@ class OnboardingStatus {
   }
 }
 
-class OnboardingProvider extends StateNotifier<AsyncValue<OnboardingStatus>> {
-  OnboardingProvider() : super(const AsyncLoading());
+class OnboardingProvider extends Notifier<AsyncValue<OnboardingStatus>> {
+  @override
+  AsyncValue<OnboardingStatus> build() {
+    ref.keepAlive();
+    Future.microtask(fetchStatus);
+    return const AsyncLoading();
+  }
 
   static const _showTutorialNextTimeKey = 'showTutorialNextTime';
 
@@ -59,6 +64,6 @@ class OnboardingProvider extends StateNotifier<AsyncValue<OnboardingStatus>> {
 }
 
 final onboardingProvider =
-    StateNotifierProvider<OnboardingProvider, AsyncValue<OnboardingStatus>>(
-  (ref) => OnboardingProvider()..fetchStatus(),
+    NotifierProvider<OnboardingProvider, AsyncValue<OnboardingStatus>>(
+  OnboardingProvider.new,
 );

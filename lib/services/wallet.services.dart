@@ -784,7 +784,7 @@ void Function(ModalConnect?) wrapOnSessionConnect(WidgetRef ref,
     BuildContext context) {
   return (ModalConnect? args) {
     //set session and wallet type provider
-    talker.log('🔗 WalletConnect session connected');
+    talker.log(' WalletConnect session connected');
     talker.log('Session topic: ${args?.session?.topic}');
     talker.log('Session namespaces: ${args?.session?.namespaces}');
     

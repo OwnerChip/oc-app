@@ -49,7 +49,7 @@ class _QRCodeScannerScreenState extends State<QRCodeScannerScreen>
           ),
           MobileScanner(
             fit: BoxFit.cover,
-            errorBuilder: (context, error, child) {
+            errorBuilder: (context, error) {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(

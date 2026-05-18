@@ -4,19 +4,25 @@ import 'dart:ui' as ui;
 
 import 'app_localizations.dart';
 
+/// Notifier that provides AppLocalizations and updates on locale change.
+class _AppLocalizationsNotifier extends Notifier<AppLocalizations> {
+  @override
+  AppLocalizations build() {
+    ref.keepAlive();
+    final observer = _LocaleObserver((locales) {
+      state = lookupAppLocalizations(ui.window.locale);
+    });
+    final binding = WidgetsBinding.instance;
+    binding.addObserver(observer);
+    ref.onDispose(() => binding.removeObserver(observer));
+    return lookupAppLocalizations(ui.window.locale);
+  }
+}
+
 /// provider used to access the AppLocalizations object for the current locale
-final appLocalizationsProvider = Provider<AppLocalizations>((ref) {
-  // set the initial locale
-  ref.state = lookupAppLocalizations(ui.window.locale);
-  // update afterwards
-  final observer = _LocaleObserver((locales) {
-    ref.state = lookupAppLocalizations(ui.window.locale);
-  });
-  final binding = WidgetsBinding.instance;
-  binding.addObserver(observer);
-  ref.onDispose(() => binding.removeObserver(observer));
-  return ref.state;
-});
+final appLocalizationsProvider =
+    NotifierProvider<_AppLocalizationsNotifier, AppLocalizations>(
+        _AppLocalizationsNotifier.new);
 
 /// observed used to notify the caller when the locale changes
 class _LocaleObserver extends WidgetsBindingObserver {

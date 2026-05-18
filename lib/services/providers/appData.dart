@@ -1,7 +1,7 @@
 import 'package:ownerchip_whitelabel/domain/app/appDto.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// get all collections associated with the app (basis for filtering for MINTER_ROLE)

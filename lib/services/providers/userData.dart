@@ -10,15 +10,27 @@ import 'package:web3dart/crypto.dart';
 
 //**** USER SIGNATURE DATA */
 
-final userSignatureProvider = StateProvider.autoDispose<MsgSignature?>((ref) {
-  return null;
-});
+class _UserSignatureNotifier extends Notifier<MsgSignature?> {
+  @override
+  MsgSignature? build() => null;
+}
+
+final userSignatureProvider =
+    NotifierProvider.autoDispose<_UserSignatureNotifier, MsgSignature?>(
+        _UserSignatureNotifier.new);
 
 //**** USER BACKEND SESSION DATA */
 
-final userSessionProvider = StateProvider<UserSession?>((ref) {
-  return null;
-});
+class _UserSessionNotifier extends Notifier<UserSession?> {
+  @override
+  UserSession? build() {
+    ref.keepAlive();
+    return null;
+  }
+}
+
+final userSessionProvider =
+    NotifierProvider<_UserSessionNotifier, UserSession?>(_UserSessionNotifier.new);
 
 class DeferredUserSessionData {
   final UserSession? userSession;
@@ -37,9 +49,17 @@ class DeferredUserSessionData {
   });
 }
 
-final deferredUserSessionProvider = StateProvider<DeferredUserSessionData?>((ref) {
-  return null;
-});
+class _DeferredUserSessionNotifier extends Notifier<DeferredUserSessionData?> {
+  @override
+  DeferredUserSessionData? build() {
+    ref.keepAlive();
+    return null;
+  }
+}
+
+final deferredUserSessionProvider =
+    NotifierProvider<_DeferredUserSessionNotifier, DeferredUserSessionData?>(
+        _DeferredUserSessionNotifier.new);
 
 //**** USER HAS MINTER ROLE OR NOT */
 

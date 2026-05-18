@@ -21,10 +21,10 @@ dependencies:
   flutter_dotenv: ^5.0.2
   dio: ^5.0.0
   image_picker: ^1.0.7
-  flutter_riverpod: ^2.1.1
+  flutter_riverpod: ^3.0.0
   flutter_native_splash: ^2.2.16
   flutter_svg: ^2.0.6
-  riverpod_annotation: ^2.3.3
+  riverpod_annotation: ^3.0.0
   shared_preferences: ^2.1.2
   async: ^2.9.0
   sentry_flutter: ^8.14.1
@@ -50,7 +50,7 @@ dependencies:
   pull_to_refresh_flutter3: ^2.0.2
   retrofit: ^4.1.0
   native_ios_dialog: ^0.2.1
-  mobile_scanner: ^6.0.5
+  mobile_scanner: ^7.0.0
   socket_io_client: ^3.1.1
 
   #  Logger
@@ -73,13 +73,14 @@ dev_dependencies:
   flutter_lints: ^3.0.1
   test: ^1.21.4
   flutter_launcher_icons: ^0.13.1
-  riverpod_generator: ^2.3.9
-  retrofit_generator: ^9.1.7
+  riverpod_generator: ^3.0.0
+  retrofit_generator: ^10.0.0
 
 dependency_overrides:
   package_info_plus: ^8.1.4
 #  web_socket_channel: ^3.0.2
   intl: 0.19.0
+  test_api: 0.7.10
 #  reown_core:
 #    git:
 #      url: https://github.com/AndriiVivcharenko/reown_flutter

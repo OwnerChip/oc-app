@@ -96,10 +96,14 @@ final fetchAttachmentsProvider = FutureProvider.autoDispose((ref) async {
 });
 
 //This provider is used to display attachment data in the UI and to edit attachment data locally (which is then posted to backend)
+class _LocalAttachmentsNotifier extends Notifier<List<LocalAttachment>> {
+  @override
+  List<LocalAttachment> build() => [];
+}
+
 final localAttachmentsProvider =
-    StateProvider.autoDispose<List<LocalAttachment>>((ref) {
-  return [];
-});
+    NotifierProvider.autoDispose<_LocalAttachmentsNotifier, List<LocalAttachment>>(
+        _LocalAttachmentsNotifier.new);
 
 //provider with attachments only where isFromCreator == true
 final creatorAttachmentsProvider =
