@@ -243,7 +243,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         title: Text(
           _step == _Step.email
               ? context.loc.loginWithEmail_EnterEmailText
-              : 'Verify your email',
+              : context.loc.loginWithEmail_otpStepTitle,
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         centerTitle: true,
@@ -283,13 +283,13 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           Icon(Icons.email_outlined, size: 72, color: colors.accentColor),
           const SizedBox(height: 32),
           Text(
-            'Enter your email address',
+            context.loc.loginWithEmail_emailStepHeading,
             style: Theme.of(context).textTheme.displayLarge,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            'We\'ll send you a 6-digit verification code.',
+            context.loc.loginWithEmail_emailStepSubtitle,
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium
@@ -333,7 +333,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           ],
           const SizedBox(height: 32),
           CustomRoundedButton(
-            text: 'Send Code',
+            text: context.loc.loginWithEmail_sendCodeButton,
             height: 52,
             isLoading: _isLoading,
             onPressed: _isLoading ? null : _sendCode,
@@ -355,13 +355,13 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
               size: 72, color: colors.accentColor),
           const SizedBox(height: 32),
           Text(
-            'Check your inbox',
+            context.loc.loginWithEmail_otpStepHeading,
             style: Theme.of(context).textTheme.displayLarge,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            'A 6-digit code was sent to\n$_email',
+            context.loc.loginWithEmail_otpSubtitle(_email),
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium
@@ -392,8 +392,8 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
               ),
             ),
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Please enter the code';
-              if (v.trim().length != 6) return 'Code must be 6 digits';
+              if (v == null || v.trim().isEmpty) return context.loc.loginWithEmail_otpEmptyError;
+              if (v.trim().length != 6) return context.loc.loginWithEmail_otpLengthError;
               return null;
             },
           ),
@@ -407,7 +407,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
           ],
           const SizedBox(height: 32),
           CustomRoundedButton(
-            text: 'Verify',
+            text: context.loc.loginWithEmail_verifyButton,
             height: 52,
             isLoading: _isLoading,
             onPressed: _isLoading ? null : _verifyOtp,
@@ -417,7 +417,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             child: TextButton.icon(
               onPressed: _isLoading ? null : _resendCode,
               icon: const Icon(Icons.refresh, size: 16),
-              label: const Text('Resend code'),
+              label: Text(context.loc.loginWithEmail_resendCodeButton),
               style: TextButton.styleFrom(
                 foregroundColor: colors.secondaryColor,
               ),
@@ -434,7 +434,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                         _otpController.clear();
                       }),
               child: Text(
-                'Change email',
+                context.loc.loginWithEmail_changeEmailButton,
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ),

@@ -3116,6 +3116,84 @@ abstract class AppLocalizations {
   /// **'Please enter a valid email address'**
   String get loginWithEmail_ValidationError;
 
+  /// No description provided for @loginWithEmail_otpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get loginWithEmail_otpTitle;
+
+  /// No description provided for @loginWithEmail_otpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A 6-digit code was sent to {email}'**
+  String loginWithEmail_otpSubtitle(String email);
+
+  /// No description provided for @loginWithEmail_otpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'6-digit code'**
+  String get loginWithEmail_otpHint;
+
+  /// No description provided for @loginWithEmail_otpEmptyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the code'**
+  String get loginWithEmail_otpEmptyError;
+
+  /// No description provided for @loginWithEmail_otpLengthError.
+  ///
+  /// In en, this message translates to:
+  /// **'Code must be 6 digits'**
+  String get loginWithEmail_otpLengthError;
+
+  /// No description provided for @loginWithEmail_otpStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email'**
+  String get loginWithEmail_otpStepTitle;
+
+  /// No description provided for @loginWithEmail_emailStepHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address'**
+  String get loginWithEmail_emailStepHeading;
+
+  /// No description provided for @loginWithEmail_emailStepSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send you a 6-digit verification code.'**
+  String get loginWithEmail_emailStepSubtitle;
+
+  /// No description provided for @loginWithEmail_sendCodeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Code'**
+  String get loginWithEmail_sendCodeButton;
+
+  /// No description provided for @loginWithEmail_otpStepHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox'**
+  String get loginWithEmail_otpStepHeading;
+
+  /// No description provided for @loginWithEmail_verifyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get loginWithEmail_verifyButton;
+
+  /// No description provided for @loginWithEmail_resendCodeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get loginWithEmail_resendCodeButton;
+
+  /// No description provided for @loginWithEmail_changeEmailButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Change email'**
+  String get loginWithEmail_changeEmailButton;
+
   /// No description provided for @accountDeletionButton.
   ///
   /// In en, this message translates to:

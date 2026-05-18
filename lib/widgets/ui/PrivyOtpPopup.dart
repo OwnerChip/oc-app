@@ -29,7 +29,7 @@ class _PrivyOtpPopupState extends State<PrivyOtpPopup> {
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0))),
       title: Text(
-        'Enter verification code',
+        context.loc.loginWithEmail_otpTitle,
         textAlign: TextAlign.center,
       ),
       titleTextStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -60,7 +60,7 @@ class _PrivyOtpPopupState extends State<PrivyOtpPopup> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'A 6-digit code was sent to ${widget.email}',
+              context.loc.loginWithEmail_otpSubtitle(widget.email),
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -73,11 +73,11 @@ class _PrivyOtpPopupState extends State<PrivyOtpPopup> {
                 LengthLimitingTextInputFormatter(6),
               ],
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Please enter the code';
-                if (v.trim().length != 6) return 'Code must be 6 digits';
+                if (v == null || v.trim().isEmpty) return context.loc.loginWithEmail_otpEmptyError;
+                if (v.trim().length != 6) return context.loc.loginWithEmail_otpLengthError;
                 return null;
               },
-              decoration: const InputDecoration(hintText: '6-digit code'),
+              decoration: InputDecoration(hintText: context.loc.loginWithEmail_otpHint),
             ),
           ],
         ),

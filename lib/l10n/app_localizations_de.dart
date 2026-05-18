@@ -1646,7 +1646,51 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get loginWithEmail_ValidationError =>
-      'Bitte geben Sie eine gültige E-Mail-Adresse ein';
+      'Bitte geben Sie eine gltige E-Mail-Adresse ein';
+
+  @override
+  String get loginWithEmail_otpTitle => 'Bestätigungscode eingeben';
+
+  @override
+  String loginWithEmail_otpSubtitle(String email) {
+    return 'Ein 6-stelliger Code wurde an $email gesendet';
+  }
+
+  @override
+  String get loginWithEmail_otpHint => '6-stelliger Code';
+
+  @override
+  String get loginWithEmail_otpEmptyError => 'Bitte geben Sie den Code ein';
+
+  @override
+  String get loginWithEmail_otpLengthError => 'Der Code muss 6 Stellen haben';
+
+  @override
+  String get loginWithEmail_otpStepTitle => 'E-Mail verifizieren';
+
+  @override
+  String get loginWithEmail_emailStepHeading =>
+      'Geben Sie Ihre E-Mail-Adresse ein';
+
+  @override
+  String get loginWithEmail_emailStepSubtitle =>
+      'Wir senden Ihnen einen 6-stelligen Bestätigungscode.';
+
+  @override
+  String get loginWithEmail_sendCodeButton => 'Code senden';
+
+  @override
+  String get loginWithEmail_otpStepHeading =>
+      'Überprüfen Sie Ihren Posteingang';
+
+  @override
+  String get loginWithEmail_verifyButton => 'Bestätigen';
+
+  @override
+  String get loginWithEmail_resendCodeButton => 'Code erneut senden';
+
+  @override
+  String get loginWithEmail_changeEmailButton => 'E-Mail ändern';
 
   @override
   String get accountDeletionButton => 'Profil löschen';
