@@ -187,6 +187,81 @@ Future<bool> verifyGaslessTransaction(
   return res[0] as bool;
 }
 
+String buildContractCallData(
+  String functionSignatureHash,
+  EthereumAddress from,
+  EthereumAddress to,
+  EthereumAddress? toAccount,
+  Uint8List randomValueHash,
+  MsgSignature signature, {
+  String? tokenURI,
+  String? voucherTokenURI,
+  BigInt? tokenId,
+  bool? enableRecovery,
+  EthereumAddress? sellerPayoutAddress,
+  BigInt? price,
+  String? encodedOfferData,
+  String? typedDataHash,
+  String? offerHash,
+  BlockchainToken? token,
+  BigInt? amount,
+  int? chainId,
+}) {
+  if (functionSignatureHash == mintFunctionSignature) {
+    return makeMintData(
+        functionSignatureHash, randomValueHash, signature, tokenURI!, null);
+  } else if (functionSignatureHash == erc20TransferFromFunctionSignature) {
+    return makeErc20TransferFromData(
+        functionSignatureHash, from, toAccount!, amount!);
+  } else if (functionSignatureHash ==
+      mintVoucherToCertificateCardFunctionSignature) {
+    return makeMintToCertificateData(functionSignatureHash, randomValueHash,
+        signature, tokenURI!, voucherTokenURI!);
+  } else if (functionSignatureHash == mintVoucherFunctionSignature) {
+    return makeMintData(functionSignatureHash, randomValueHash, signature,
+        tokenURI!, voucherTokenURI!);
+  } else if (functionSignatureHash == burnFunctionSignature) {
+    return makeBurnData(functionSignatureHash, randomValueHash, signature);
+  } else if (functionSignatureHash == transferFromFunctionSignature) {
+    return makeTransferFromData(
+        functionSignatureHash, randomValueHash, signature, enableRecovery);
+  } else if (functionSignatureHash == approveFunctionSignature) {
+    return makeApproveData(functionSignatureHash, tokenId!, toAccount!);
+  } else if (functionSignatureHash == offerItemFunctionSignature) {
+    return makeOfferItemData(
+        functionSignatureHash,
+        tokenId!,
+        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
+        sellerPayoutAddress!,
+        price!,
+        typedDataHash!);
+  } else if (functionSignatureHash == offerItemErc20FunctionSignature) {
+    return makeOfferItemErc20Data(
+        functionSignatureHash,
+        tokenId!,
+        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
+        sellerPayoutAddress!,
+        price!,
+        token?.contractAddress,
+        typedDataHash!);
+  } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
+    return makeCancelOfferData(
+        functionSignatureHash,
+        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
+        randomValueHash,
+        signature,
+        encodedOfferData!);
+  } else if (functionSignatureHash == redeemItemFunctionSignature) {
+    return makeRedeemTwinTokenData(
+        functionSignatureHash, randomValueHash, signature, offerHash!);
+  } else if (functionSignatureHash == recoverTokenFunctionSignature) {
+    return makeRecoverTokenData(
+        functionSignatureHash, randomValueHash, signature);
+  } else {
+    throw Exception('Invalid function signature hash: $functionSignatureHash');
+  }
+}
+
 // Builds a typed V4 request, which is used to build a typed data object
 // which is then signed by the user's wallet to create a signature.
 // This request is then passed to the smart contract as a gasless transaction.

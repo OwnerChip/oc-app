@@ -65,4 +65,35 @@ abstract class BackendCollection extends Backend {
       return false;
     }
   }
+
+  static Future<void> recordTx(
+    EthereumAddress collectionAddress, {
+    required String txHash,
+    required String senderAddress,
+    required String metaTxAgreementId,
+    required String functionSignature,
+    String? callData,
+    String? tokenId,
+    String? transferId,
+  }) async {
+    try {
+      final body = <String, dynamic>{
+        'txHash': txHash,
+        'senderAddress': senderAddress,
+        'metaTxAgreementId': metaTxAgreementId,
+        'functionSignature': functionSignature,
+        if (callData != null) 'callData': callData,
+        if (tokenId != null) 'tokenId': tokenId,
+        if (transferId != null) 'transferId': transferId,
+      };
+      await BackendCollectionService.instance.recordTx(
+        hex: collectionAddress.hex,
+        body: body,
+      );
+    } catch (e, s) {
+      Sentry.captureException(e, stackTrace: s);
+      talker.error('Failed to record tx $txHash for ${collectionAddress.hex}: $e', s);
+      rethrow;
+    }
+  }
 }

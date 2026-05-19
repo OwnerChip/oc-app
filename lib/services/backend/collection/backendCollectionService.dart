@@ -36,4 +36,10 @@ abstract class BackendCollectionService {
     @Path("hex") required String hex,
     @Body() required SendCardLostPayload body,
   });
+
+  @POST("/{hex}/tx/record")
+  Future<void> recordTx({
+    @Path("hex") required String hex,
+    @Body() required Map<String, dynamic> body,
+  });
 }

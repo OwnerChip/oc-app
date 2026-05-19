@@ -442,6 +442,57 @@ Future<MsgSignature?> makeCardSignature(WidgetRef ref, BuildContext context,
           : context.loc.holdPhoneToCard);
 }
 
+/// Signs TWO hashes in a single NFC session (one card tap + one PIN entry).
+///
+/// Used for the EIP-7702 first-time setup where Alchemy requests both an
+/// EIP-7702 authorization signature AND a UserOperation signature.  Rather
+/// than asking the user to tap the card and enter their PIN twice, this
+/// function performs both `signHash` calls within the same NFC session.
+///
+/// Returns `[hash1Signature, hash2Signature]`.
+Future<List<MsgSignature?>> makeTwoCardSignatures(
+  WidgetRef ref,
+  BuildContext context,
+  dynamic hash1, // raw bytes (Uint8List) or hex String
+  dynamic hash2, // raw bytes (Uint8List) or hex String
+  String? pin,
+) async {
+  Future<List<MsgSignature?>> callback(
+      NFCPlatform nfc, String sessionId, List createFirstKeyChipResponse) async {
+    if (pin != null) {
+      await verifyPin(nfc, pin);
+    }
+    final EthereumAddress cardWalletAddress = createFirstKeyChipResponse[0];
+    final sig1 = await signHash(
+      nfc,
+      0x01,
+      cardWalletAddress,
+      hash1 is Uint8List ? hash1 : hexToBytes(hash1 as String),
+      false,
+    );
+    final sig2 = await signHash(
+      nfc,
+      0x01,
+      cardWalletAddress,
+      hash2 is Uint8List ? hash2 : hexToBytes(hash2 as String),
+      false,
+    );
+    return [sig1, sig2];
+  }
+
+  final result = await scanClosure(
+    context,
+    ref,
+    callback,
+    "MAKE_TWO_CARD_SIGNATURES",
+    pin == null
+        ? context.loc.holdPhoneCloseToCertificateCardToInit
+        : context.loc.holdPhoneToCard,
+  );
+  if (result == null) return [null, null];
+  return (result as List).cast<MsgSignature?>();
+}
+
 Future authCardCallback(
   WidgetRef ref,
   BuildContext context,

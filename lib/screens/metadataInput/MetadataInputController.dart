@@ -8,7 +8,7 @@ import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
-import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
+import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
 import 'package:ownerchip_whitelabel/services/images.services.dart';
 import 'package:ownerchip_whitelabel/services/ipfs.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -177,12 +177,6 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
         });
       }
 
-      //check if user is allowed to use gas station
-      final List response =
-      await BackendMetaTx.checkMetaTx(collectionId, functionSignature);
-      final bool canUseGasStation = response[0];
-      final metaTxAgreementId = response[1];
-
       // switch to minting loading overlay
       setState(() {
         isLoading = true;
@@ -192,56 +186,26 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
 
       BackendApp.sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
         'connectedWallet': connectedWallet.hex,
-        'gasStation': canUseGasStation
       });
 
       String txnHash = "";
 
-      Future<String> normalTx() async {
-        return await makeAndSendNormalTx(
-            context,
+      try {
+        txnHash = await makeAndSendGaslessTx(
             ref,
+            ScaffoldKey
+                .getScaffoldKey('MetadataInputScreen')
+                .currentContext!,
             functionSignature,
             chainId,
             voucherCollectionId ?? collectionId,
             signatureData,
             connectedWallet,
-            wc!,
+            wc,
             walletType!,
             twinTokenMetadataCID: twinTokenMetadataCID,
-            voucherTokenMetadataCID: voucherTokenMetadataCID);
-      }
-
-      try {
-        if (canUseGasStation) {
-          txnHash = await callFunctionWithFallback(
-              function: () {
-                return makeAndSendGaslessTx(
-                    ref,
-                    ScaffoldKey
-                        .getScaffoldKey('MetadataInputScreen')
-                        .currentContext!,
-                    functionSignature,
-                    chainId,
-                    voucherCollectionId ?? collectionId,
-                    signatureData,
-                    connectedWallet,
-                    wc,
-                    metaTxAgreementId,
-                    walletType!,
-                    twinTokenMetadataCID: twinTokenMetadataCID,
-                    voucherTokenMetadataCID: voucherTokenMetadataCID,
-                    toggleLoading: toggleLoading);
-              },
-              fallback: normalTx,
-              predicate: gaslessTransactionFallbackPredicate);
-        } else {
-          if (wc == null) {
-            throw 'Please connect with MetaMask or similar wallet.';
-          }
-
-          txnHash = await normalTx();
-        }
+            voucherTokenMetadataCID: voucherTokenMetadataCID,
+            toggleLoading: toggleLoading);
       } catch (e, st) {
         talker.error('Error minting token: $e', st);
         Sentry.captureException(e, stackTrace: st);
@@ -257,11 +221,10 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
         BackendApp.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS",
             tags: {
               'connectedWallet': connectedWallet.hex,
-              'gasStation': canUseGasStation
             });
 
+
         try {
-          await Future.delayed(const Duration(seconds: 2));
           //refresh providers so offer for sale button is shown correctly on NFT Details
           ChipInfoModel chipInfo = ref.read(chipInfoProvider);
           await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
