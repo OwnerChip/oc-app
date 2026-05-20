@@ -1013,14 +1013,10 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
         try {
           await Future.delayed(const Duration(seconds: 2));
-          //refresh providers so offer for sale button is shown correctly on NFT Details
-          ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-          await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
-          await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+          final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
 
-          // Handle MULTIPLE type differently
+          // Mark as minted on backend first — must not be blocked by provider refresh errors.
           if (metadata.type == DigitalTwinCreationType.multiple) {
-            // For MULTIPLE, call the special endpoint with the CID we already uploaded
             final response = await BackendCreation.markMultiSerialItemDigitalTwinAsMinted(
               parentId: metadata.parentUid ?? metadata.id,
               chipId: chipInfo.chipEthereumAddress.hex,
@@ -1030,12 +1026,10 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               talker.error('Error marking MULTI_SERIAL_ITEM digital twin as minted: $e', st);
               return {'success': false};
             });
-            
             if (response['success'] == true) {
               talker.info('MULTI_SERIAL_ITEM activated with UID: ${response['activatedItemUid']}');
             }
           } else {
-            // For regular tokens, use the existing endpoint
             await BackendCreation.markDigitalTwinAsMinted(
               id: metadata.id,
               chipId: chipInfo.chipEthereumAddress.hex,
@@ -1045,20 +1039,21 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
               return false;
             });
           }
-          
-          ref.refresh(digitalTwinAttachmentsProvider);
-          ref.refresh(digitalTwinCreationMetadataProvider);
+
+          try {
+            await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
+            await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
+            ref.refresh(digitalTwinAttachmentsProvider);
+            ref.refresh(digitalTwinCreationMetadataProvider);
+          } catch (e, st) {
+            Sentry.captureException(e, stackTrace: st);
+            talker.error('Error refreshing providers: $e', st);
+          }
 
           ref.read(creationsNotifierProvider.notifier).load();
         } catch (e, st) {
-          Sentry.captureException(
-            e,
-            stackTrace: st,
-          );
-          talker.error(
-            'Error refreshing providers: $e',
-            st,
-          );
+          Sentry.captureException(e, stackTrace: st);
+          talker.error('Error in post-mint updates: $e', st);
         }
 
         if (mounted) {
