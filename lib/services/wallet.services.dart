@@ -126,6 +126,95 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
     talker.warning('checkMetaTx failed (non-fatal, will skip recordTx): $e');
   }
 
+  if (walletType.type == EWalletType.walletConnect) {
+    talker.log('WalletConnect wallet detected — using normal eth_sendTransaction (no gas sponsorship)');
+    final w3mService = ref.read(w3mServiceProvider)!;
+    final toAddr = controllerContractId ?? toAddress;
+    final valueHex = (functionSignatureHash.isEmpty && amount != null)
+        ? '0x${amount!.toRadixString(16)}'
+        : '0x0';
+
+    late Future<dynamic> txnFuture;
+
+    await preventRepeatedNFCScan(() async {
+      await wcSwitchToChainConditionally(w3mService, chainId).catchError((e) {
+        talker.error('WalletConnect: failed to switch chain: $e');
+      });
+      await Future.delayed(const Duration(seconds: 3));
+
+      // Log a warning if the chain is not yet in the session namespaces, but
+      // still attempt the request — MetaMask handles chain selection internally.
+      final sessionTopic = wc!.session?.topic;
+      final sessionNamespaces = w3mService.appKit
+              ?.getActiveSessions()[sessionTopic]
+              ?.namespaces ??
+          {};
+      if (!isValidNamespacesChainId(
+        chainId: 'eip155:$chainId',
+        namespaces: sessionNamespaces,
+      )) {
+        talker.warning(
+          'WalletConnect: chain eip155:$chainId not found in session namespaces — '
+          'proceeding anyway (wallet may handle it). '
+          'If this fails, disconnect and reconnect your wallet.',
+        );
+      }
+
+      txnFuture = wc.request(
+        topic: sessionTopic,
+        chainId: 'eip155:$chainId',
+        request: SessionRequestParams(
+          method: 'eth_sendTransaction',
+          params: [
+            {
+              'from': walletAddress.hexEip55,
+              'to': toAddr.hexEip55,
+              'data': callData,
+              'value': valueHex,
+            }
+          ],
+        ),
+      );
+
+      w3mService.launchConnectedWallet();
+    });
+
+    late String txnHash;
+    try {
+      txnHash = (await txnFuture) as String;
+    } catch (e) {
+      final msg = e.toString();
+      // ReownSignError code 5100 means the target chain was not included in
+      // the WalletConnect session namespaces when the wallet connected.
+      // MetaMask approves only its currently active chain at pairing time.
+      // Ask the user to reconnect with the correct chain active.
+      if (msg.contains('5100') || msg.contains('Unsupported chains')) {
+        final chainName = chainConfig[chainId]?.networkName ?? 'chain $chainId';
+        throw Exception(
+          'Your wallet session does not include $chainName. '
+          'Please disconnect your wallet, switch MetaMask to $chainName, '
+          'then reconnect and try again.',
+        );
+      }
+      rethrow;
+    }
+    talker.log('WalletConnect eth_sendTransaction confirmed: $txnHash');
+
+    if (_metaTxAgreementId != null) {
+      BackendCollection.recordTx(
+        controllerContractId ?? toAddress,
+        txHash: txnHash,
+        senderAddress: walletAddress.hex,
+        metaTxAgreementId: _metaTxAgreementId!,
+        functionSignature: functionSignatureHash,
+        callData: callData,
+        tokenId: tokenId?.toString(),
+      ).catchError((e) => talker.error('recordTx failed (non-fatal): $e'));
+    }
+
+    return txnHash;
+  }
+
   final preparedResult = await alchemyPrepareCalls(
     chainId: chainId,
     from: walletAddress,
@@ -928,20 +1017,23 @@ Future<ReownAppKitModal> initWcClient(WidgetRef ref,
     );
   }).toList();
 
-  //create Web3Modal service and set provider
+  // Using optionalNamespaces so wallets that don't support every chain can
+  // still connect. Chains are included on a best-effort basis; if a chain is
+  // missing from the session after connect the transaction will surface a
+  // clear error asking the user to reconnect with that chain active.
   final ReownAppKitModal w3mService = ReownAppKitModal(
       context: context,
       appKit: appkit,
       projectId: dotenv.env['WC_PROJECT_ID']!,
-      logLevel: LogLevel.error, // Back to error level for production
-      // Add supported networks configuration
+      logLevel: LogLevel.error,
       optionalNamespaces: {
         'eip155': RequiredNamespace(
-          chains: supportedNetworks.map((network) => 'eip155:${network.chainId}').toList(),
+          chains: supportedNetworks
+              .map((n) => 'eip155:${n.chainId}')
+              .toList(),
           methods: [
             'eth_sendTransaction',
             'eth_signTransaction',
-            'eth_sign',
             'personal_sign',
             'eth_signTypedData',
             'eth_signTypedData_v4',
