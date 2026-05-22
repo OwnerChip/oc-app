@@ -3325,6 +3325,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Logout'**
   String get web3authExistingAccountLogout;
+
+  /// No description provided for @deepLinkLoginConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Web Login'**
+  String get deepLinkLoginConfirmTitle;
+
+  /// No description provided for @deepLinkLoginConfirmDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to log in to the OwnerChip web app?'**
+  String get deepLinkLoginConfirmDescription;
+
+  /// No description provided for @deepLinkLoginConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Login'**
+  String get deepLinkLoginConfirmButton;
+
+  /// No description provided for @deepLinkLoginSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Web login confirmed!'**
+  String get deepLinkLoginSuccessMessage;
+
+  /// No description provided for @deepLinkLoginConfirmError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to confirm login. Please try again.'**
+  String get deepLinkLoginConfirmError;
+
+  /// No description provided for @deepLinkLoginNotLoggedInError.
+  ///
+  /// In en, this message translates to:
+  /// **'You must be logged in to confirm a web login.'**
+  String get deepLinkLoginNotLoggedInError;
+
+  /// No description provided for @deepLinkLoginLogInNowButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Log In Now'**
+  String get deepLinkLoginLogInNowButton;
 }
 
 class _AppLocalizationsDelegate

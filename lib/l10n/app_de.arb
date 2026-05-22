@@ -584,5 +584,14 @@
   "@_WEB3AUTH_EXISTING_ACCOUNT": {},
   "web3authExistingAccountTitle": "Konto existiert bereits",
   "web3authExistingAccountDescription": "Ein Konto mit dieser E-Mail-Adresse existiert bereits.\nBitte melde dich mit der gleichen Anmeldemethode an, die du bei der Erstellung deines Kontos verwendet hast.",
-  "web3authExistingAccountLogout": "Abmelden"
+  "web3authExistingAccountLogout": "Abmelden",
+
+  "@_DEEP_LINK_LOGIN": {},
+  "deepLinkLoginConfirmTitle": "Web-Login bestätigen",
+  "deepLinkLoginConfirmDescription": "Möchtest du dich in der OwnerChip Web-App einloggen?",
+  "deepLinkLoginConfirmButton": "Login bestätigen",
+  "deepLinkLoginSuccessMessage": "Web-Login bestätigt!",
+  "deepLinkLoginConfirmError": "Login konnte nicht bestätigt werden. Bitte erneut versuchen.",
+  "deepLinkLoginNotLoggedInError": "Du musst eingeloggt sein, um einen Web-Login zu bestätigen.",
+  "deepLinkLoginLogInNowButton": "Jetzt einloggen"
 }

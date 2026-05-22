@@ -1219,8 +1219,11 @@ bool _initializedPrivy = false;
 
 Future<void> setupPrivy() async {
   if (_initializedPrivy) return;
-  await initPrivy().catchError((e) {
+  try {
+    await initPrivy();
+    _initializedPrivy = true;
+  } catch (e) {
     talker.error('Failed to initialize Privy: $e');
-  });
-  _initializedPrivy = true;
+    // Do NOT set _initializedPrivy = true here so the next call can retry.
+  }
 }

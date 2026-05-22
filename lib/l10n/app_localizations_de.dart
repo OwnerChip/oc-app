@@ -1765,4 +1765,28 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get web3authExistingAccountLogout => 'Abmelden';
+
+  @override
+  String get deepLinkLoginConfirmTitle => 'Web-Login bestätigen';
+
+  @override
+  String get deepLinkLoginConfirmDescription =>
+      'Möchtest du dich in der OwnerChip Web-App einloggen?';
+
+  @override
+  String get deepLinkLoginConfirmButton => 'Login bestätigen';
+
+  @override
+  String get deepLinkLoginSuccessMessage => 'Web-Login bestätigt!';
+
+  @override
+  String get deepLinkLoginConfirmError =>
+      'Login konnte nicht bestätigt werden. Bitte erneut versuchen.';
+
+  @override
+  String get deepLinkLoginNotLoggedInError =>
+      'Du musst eingeloggt sein, um einen Web-Login zu bestätigen.';
+
+  @override
+  String get deepLinkLoginLogInNowButton => 'Jetzt einloggen';
 }

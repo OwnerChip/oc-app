@@ -604,6 +604,14 @@
   "@_WEB3AUTH_EXISTING_ACCOUNT": {},
   "web3authExistingAccountTitle": "Account already exists",
   "web3authExistingAccountDescription": "An account with this email already exists.\nPlease log in using the same sign-in method you used when creating your account.",
-  "web3authExistingAccountLogout": "Logout"
+  "web3authExistingAccountLogout": "Logout",
 
+  "@_DEEP_LINK_LOGIN": {},
+  "deepLinkLoginConfirmTitle": "Confirm Web Login",
+  "deepLinkLoginConfirmDescription": "Do you want to log in to the OwnerChip web app?",
+  "deepLinkLoginConfirmButton": "Confirm Login",
+  "deepLinkLoginSuccessMessage": "Web login confirmed!",
+  "deepLinkLoginConfirmError": "Failed to confirm login. Please try again.",
+  "deepLinkLoginNotLoggedInError": "You must be logged in to confirm a web login.",
+  "deepLinkLoginLogInNowButton": "Log In Now"
 }

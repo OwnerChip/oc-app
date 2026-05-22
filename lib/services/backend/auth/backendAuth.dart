@@ -280,7 +280,8 @@ abstract class BackendAuth extends Backend {
       success = false;
     });
 
-    return response.response.statusCode == 200 && success;
+    final statusCode = response.response.statusCode ?? 0;
+  return (statusCode >= 200 && statusCode < 300) && success;
   }
 
   static Future<GetMeResponse?> getMe(String jwt) async {

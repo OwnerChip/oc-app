@@ -69,6 +69,15 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     _setError(null);
     _setLoading(true);
 
+    try {
+      await setupPrivy();
+    } catch (e) {
+      talker.error('Privy: failed to initialize on sendCode', e);
+      _setLoading(false);
+      _setError(context.loc.errorConnectingWallet);
+      return;
+    }
+
     final email = _emailController.text.trim();
     final result = await privyInstance.email.sendCode(email);
 
@@ -92,6 +101,14 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     _setError(null);
     _setLoading(true);
     _otpController.clear();
+    try {
+      await setupPrivy();
+    } catch (e) {
+      talker.error('Privy: failed to initialize on resendCode', e);
+      _setLoading(false);
+      _setError(context.loc.errorConnectingWallet);
+      return;
+    }
     final result = await privyInstance.email.sendCode(_email);
     result.fold(
       onSuccess: (_) => _setLoading(false),
@@ -106,6 +123,15 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     if (!_otpFormKey.currentState!.validate()) return;
     _setError(null);
     _setLoading(true);
+
+    try {
+      await setupPrivy();
+    } catch (e) {
+      talker.error('Privy: failed to initialize on verifyOtp', e);
+      _setLoading(false);
+      _setError(context.loc.errorConnectingWallet);
+      return;
+    }
 
     final otp = _otpController.text.trim();
 

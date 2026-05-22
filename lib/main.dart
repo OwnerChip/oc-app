@@ -45,6 +45,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/AddAttachmentScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
+import 'services/appLinks.services.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -120,6 +121,11 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     initMessaging();
+
+    // Deep-link handling (ownerchip://login?requestId=...)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppLinksService.instance.init();
+    });
   }
 
   Future<void> _onMessageReceived(RemoteMessage message) async {
@@ -186,6 +192,8 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _msgSubscription?.cancel();
     _bgSubscription?.cancel();
+
+    AppLinksService.instance.dispose();
 
     unsubscribeWcListeners(ref, context);
   }
