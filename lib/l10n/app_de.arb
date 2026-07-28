@@ -1,6 +1,5 @@
 {
     "termsAndConditionsUrl": "https://ownerchip.com/en/general-terms.html",
-    "tutorialUrl": "http://www.ownerchip.com/tutorial",
     "projectsUrl": "http://www.ownerchip.com/projects",
     "orderChipsUrl": "http://www.ownerchip.com/orderchips",
     "supportUrl": "https://www.ownerchip.com/creators-corner/",
@@ -115,7 +114,6 @@
     "selectCollection": "Collection",
     "troubleshoot": "Ich brauche Hilfe",
     "more": "Mehr...",
-    "watchTutorial": "Tutorial ansehen",
     "viewProjects": "Unsere Projekte",
     "orderChips": "Chips bestellen",
     "signupAsCertifier": "Als Zertifizierer registrieren",
@@ -362,41 +360,6 @@
     "myBalanceWithdrawMaxAmount": "Max: {amount}",
 
 
-    "@_ONBOARDING": {},
-    "onboardingTitle": "Schön, dass du da bist!",
-    "onboardingFeatureAuthenticityTitle": "Echtheit verifizieren",
-    "onboardingFeatureAuthenticitySubtitle": "Scanne den NFC-Chip, um die Echtheit zu verifizieren.",
-    "onboardingFeatureDigitalExperiencesTitle": "Zugang zu digitalen Inhalten",
-    "onboardingFeatureDigitalExperiencesSubtitle": "Erhalte Zugriff auf digitale Inhalte, die mit realen Gegenständen verbunden sind.",
-    "onboardingFeatureSellTitle": "Verkaufen & Wiederverkaufen",
-    "onboardingFeatureSellSubtitle": "Handle das physische und digitale Kunstwerk gemeinsam als Paket auf Web3-Marktplätzen.",
-    "onboardingStartButton": "Tutorial starten",
-    "onboardingUserPageTitle": "So verwendest du die App",
-    "onboardingPagination": "Schritt {current}/",
-    "onboardingUserPageStep1Title": "NFC-Chip scannen",
-    "onboardingUserPageStep1Subtitle": "Drücke \"Jetzt Scannen\" und halte dein Smartphone zum Chip.",
-    "onboardingUserPageStep2Title": "Mit deiner Wallet einloggen",
-    "onboardingUserPageStep2Subtitle": "Verbinde dich mit deiner OwnerCard oder Krypto-Wallet, um deinen Besitz nachzuweisen, zu übertragen oder private digitale Inhalte freizuschalten.",
-    "onboardingUsePageNextButtonTitle": "Weiter",
-    "onboardingUserPageCompleteButtonTitle": "Weiter",
-    "onboardingUserCompleteCreatorPageTitle": "Bist du ein Creator?",
-    "onboardingUserCompleteCreatorPageSubtitle": "Lerne, wie du einen Digital Twin erstellst.",
-    "onboardingUserCompleteCreatorButtonTitle": "Creator-Tutorial starten",
-    "onboardingCreatorPageTitle": "So erstellst du einen Digital Twin",
-    "onboardingCreatorStep1Title": "Hast du NFC-Chips?",
-    "onboardingCreatorStep1SubTitle": "Bestelle dein StarterKit und registriere dich als Creator.",
-    "onboardingCreatorStep1OrderButtonTitle": "Jetzt bestellen",
-    "onboardingCreatorStep2Title": "NFC-Chip anbringen",
-    "onboardingCreatorStep2SubTitle": "Integriere den Chip in dein Objekt, zum Beispiel mit Hilfe von Klebefolien, Klebstoff oder Aufklebern.",
-    "onboardingCreatorStep3Title": "Video-Tutorial ansehen",
-    "onboardingCreatorStep3SubTitle": "Sieh dir unsere App-Demo an, um in wenigen Minuten deinen ersten Digital Twin zu erstellen.",
-    "onboardingCreatorStep3YoutubeVideoURL": "https://youtube.com/watch?v=iB8g9QLSvw0",
-    "onboardingCreatorCompleteButtonTitle": "Digital Twin erstellen",
-    "onboardingUserCompleteTitle": "Fertig!",
-    "onboardingUserCompleteSubtitle": "Du hast das Tutorial erfolgreich abgeschlossen.",
-    "onboardingUserCompleteButtonTitle": "Jetzt scannen!",
-    "onboardingCheckboxShowAgainTitle": "Beim nächsten Mal anzeigen",
-    "onboardingMoreInfoShowTutorialButtonTitle": "Tutorial anzeigen",
 
 
     "@_GALLERY": {},
@@ -484,13 +447,6 @@
     "holdPhoneCloseToCertificateCardToInit": "Halten Sie Ihr Telefon nahe an die Zertifikatskarte.",
     "cannotCardLostOnCertificateCard": "Zertifikatskarte kann nicht für Kartenverlust verwendet werden.",
 
-    "@_QR_CODE_LOGIN": {},
-    "scanQRCode": "QR-Code scannen",
-    "noConnection": "Keine Verbindung",
-    "invalidQRCode": "Ungültiger QR-Code",
-    "reconnectWebSocketButtonText": "Neu versuchen",
-    "reconnectWebSocketErrorText": "Fehler beim Verbinden mit dem Server",
-    "reconnectWebSocketSuccessText": "Verbindung wiederhergestellt",
 
 
     "@_LOGIN_WITH_EMAIL": {},
@@ -535,19 +491,7 @@
 
 
     "@_TRANSFER": {},
-    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard.",
+    "transferToOwnerCardMessage": "Halte das Smartphone zur OwnerCard."
 
-  "@_WEB3AUTH_EXISTING_ACCOUNT": {},
-  "web3authExistingAccountTitle": "Konto existiert bereits",
-  "web3authExistingAccountDescription": "Ein Konto mit dieser E-Mail-Adresse existiert bereits.\nBitte melde dich mit der gleichen Anmeldemethode an, die du bei der Erstellung deines Kontos verwendet hast.",
-  "web3authExistingAccountLogout": "Abmelden",
 
-  "@_DEEP_LINK_LOGIN": {},
-  "deepLinkLoginConfirmTitle": "Web-Login bestätigen",
-  "deepLinkLoginConfirmDescription": "Möchtest du dich in der OwnerChip Web-App einloggen?",
-  "deepLinkLoginConfirmButton": "Login bestätigen",
-  "deepLinkLoginSuccessMessage": "Web-Login bestätigt!",
-  "deepLinkLoginConfirmError": "Login konnte nicht bestätigt werden. Bitte erneut versuchen.",
-  "deepLinkLoginNotLoggedInError": "Du musst eingeloggt sein, um einen Web-Login zu bestätigen.",
-  "deepLinkLoginLogInNowButton": "Jetzt einloggen"
 }

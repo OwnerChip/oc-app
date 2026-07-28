@@ -56,7 +56,6 @@ android {
         multiDexEnabled true
 
         manifestPlaceholders += [
-            'bitriseioPackageName': System.getenv("BITRISEIO_PACKAGE_NAME") ?: 'com.ownerchip.internal',
             'redirectScheme': System.getenv("APP_ID") ?: 'ownerchip',
         ]
     }

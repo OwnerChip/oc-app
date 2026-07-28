@@ -132,24 +132,6 @@
                         android:scheme="https"
                         android:host="stilami.ownerchip.com" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                        android:scheme="torusapp"
-                        android:host="org.torusresearch.${bitriseioPackageName}" />
-                <!-- Accept URIs: w3a://com.example.w3aflutter -->
-            </intent-filter>
-            <!-- Deep link: ownerchip://login?requestId=... -->
-            <intent-filter android:autoVerify="false">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="ownerchip" android:host="login" />
-            </intent-filter>
         </activity>
         <meta-data
                 android:name="flutterEmbedding"

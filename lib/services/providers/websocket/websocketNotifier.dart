@@ -120,9 +120,6 @@ class WebsocketNotifier extends Notifier<WebsocketData> {
           case WebsocketRequestType.ping:
             talker.info("WebsocketNotifier.init: received ping");
             break;
-          case WebsocketRequestType.qrCodeLoginConfirm:
-            talker.info("WebsocketNotifier.init: received qrCodeLoginConfirm");
-            break;
           case WebsocketRequestType.newJwt:
             talker.info("WebsocketNotifier.init: received newJwt");
             final storage = await SharedPreferences.getInstance();

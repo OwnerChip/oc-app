@@ -9,7 +9,6 @@ import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/walletSignature/walletSignature.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/getSessionExpirationPayload.dart';
-import 'package:ownerchip_whitelabel/services/backend/auth/payloads/qrcodeLoginConfirmPayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/responses/getMeResponse.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
@@ -248,34 +247,6 @@ abstract class BackendAuth extends Backend {
 
       return makeRandomInt().toString();
     });
-  }
-
-  static Future<bool> confirmQrCodeLogin({
-    required String requestId,
-    required String sessionId,
-    required String socketId,
-  }) async {
-    bool success = true;
-    final response = await BackendAuthService.instance
-        .qrCodeLoginConfirm(
-      id: requestId,
-      payload: QrCodeLoginConfirmPayload(
-        sessionId: sessionId,
-        socketId: socketId,
-      ),
-    )
-        .catchError((e) {
-      Sentry.captureException(
-        e,
-      );
-      talker.error(
-        e,
-      );
-      success = false;
-    });
-
-    final statusCode = response.response.statusCode ?? 0;
-  return (statusCode >= 200 && statusCode < 300) && success;
   }
 
   static Future<GetMeResponse?> getMe(String jwt) async {

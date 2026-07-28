@@ -13,7 +13,6 @@ import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
@@ -22,7 +21,6 @@ import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
@@ -340,19 +338,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
-
-    if (dotenv.get("APP_ID") == "ownerchip") {
-      ref.watch(onboardingProvider).maybeWhen(
-          data: (data) {
-            if (!data.showedTutorial && data.showTutorialNextTime) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ref.read(onboardingProvider.notifier).showedTutorial();
-                Navigator.of(context).pushNamed(OnboardingScreen.routeName);
-              });
-            }
-          },
-          orElse: () {});
-    }
 
     if (!app.upgradeShown && app.upgradeRequired) {
       // WidgetsBinding.instance.addPostFrameCallback((_) {

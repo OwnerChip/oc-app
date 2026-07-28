@@ -20,7 +20,6 @@ class WebsocketRequest {
 
 enum WebsocketRequestType {
   ping,
-  qrCodeLoginConfirm,
 
   newJwt,
 
@@ -34,7 +33,6 @@ extension WebsocketRequestTypeExtension on WebsocketRequestType {
 
 final websocketRequestTypes = {
   WebsocketRequestType.ping: '1',
-  WebsocketRequestType.qrCodeLoginConfirm: '2',
   WebsocketRequestType.newJwt: '3',
   WebsocketRequestType.refreshGallery: '4',
 };

@@ -13,9 +13,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'https://ownerchip.com/en/general-terms.html';
 
   @override
-  String get tutorialUrl => 'http://www.ownerchip.com/tutorial';
-
-  @override
   String get projectsUrl => 'http://www.ownerchip.com/projects';
 
   @override
@@ -362,9 +359,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get more => 'Mehr...';
-
-  @override
-  String get watchTutorial => 'Tutorial ansehen';
 
   @override
   String get viewProjects => 'Unsere Projekte';
@@ -1134,123 +1128,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get onboardingTitle => 'Schön, dass du da bist!';
-
-  @override
-  String get onboardingFeatureAuthenticityTitle => 'Echtheit verifizieren';
-
-  @override
-  String get onboardingFeatureAuthenticitySubtitle =>
-      'Scanne den NFC-Chip, um die Echtheit zu verifizieren.';
-
-  @override
-  String get onboardingFeatureDigitalExperiencesTitle =>
-      'Zugang zu digitalen Inhalten';
-
-  @override
-  String get onboardingFeatureDigitalExperiencesSubtitle =>
-      'Erhalte Zugriff auf digitale Inhalte, die mit realen Gegenständen verbunden sind.';
-
-  @override
-  String get onboardingFeatureSellTitle => 'Verkaufen & Wiederverkaufen';
-
-  @override
-  String get onboardingFeatureSellSubtitle =>
-      'Handle das physische und digitale Kunstwerk gemeinsam als Paket auf Web3-Marktplätzen.';
-
-  @override
-  String get onboardingStartButton => 'Tutorial starten';
-
-  @override
-  String get onboardingUserPageTitle => 'So verwendest du die App';
-
-  @override
-  String onboardingPagination(Object current) {
-    return 'Schritt $current/';
-  }
-
-  @override
-  String get onboardingUserPageStep1Title => 'NFC-Chip scannen';
-
-  @override
-  String get onboardingUserPageStep1Subtitle =>
-      'Drücke \"Jetzt Scannen\" und halte dein Smartphone zum Chip.';
-
-  @override
-  String get onboardingUserPageStep2Title => 'Mit deiner Wallet einloggen';
-
-  @override
-  String get onboardingUserPageStep2Subtitle =>
-      'Verbinde dich mit deiner OwnerCard oder Krypto-Wallet, um deinen Besitz nachzuweisen, zu übertragen oder private digitale Inhalte freizuschalten.';
-
-  @override
-  String get onboardingUsePageNextButtonTitle => 'Weiter';
-
-  @override
-  String get onboardingUserPageCompleteButtonTitle => 'Weiter';
-
-  @override
-  String get onboardingUserCompleteCreatorPageTitle => 'Bist du ein Creator?';
-
-  @override
-  String get onboardingUserCompleteCreatorPageSubtitle =>
-      'Lerne, wie du einen Digital Twin erstellst.';
-
-  @override
-  String get onboardingUserCompleteCreatorButtonTitle =>
-      'Creator-Tutorial starten';
-
-  @override
-  String get onboardingCreatorPageTitle => 'So erstellst du einen Digital Twin';
-
-  @override
-  String get onboardingCreatorStep1Title => 'Hast du NFC-Chips?';
-
-  @override
-  String get onboardingCreatorStep1SubTitle =>
-      'Bestelle dein StarterKit und registriere dich als Creator.';
-
-  @override
-  String get onboardingCreatorStep1OrderButtonTitle => 'Jetzt bestellen';
-
-  @override
-  String get onboardingCreatorStep2Title => 'NFC-Chip anbringen';
-
-  @override
-  String get onboardingCreatorStep2SubTitle =>
-      'Integriere den Chip in dein Objekt, zum Beispiel mit Hilfe von Klebefolien, Klebstoff oder Aufklebern.';
-
-  @override
-  String get onboardingCreatorStep3Title => 'Video-Tutorial ansehen';
-
-  @override
-  String get onboardingCreatorStep3SubTitle =>
-      'Sieh dir unsere App-Demo an, um in wenigen Minuten deinen ersten Digital Twin zu erstellen.';
-
-  @override
-  String get onboardingCreatorStep3YoutubeVideoURL =>
-      'https://youtube.com/watch?v=iB8g9QLSvw0';
-
-  @override
-  String get onboardingCreatorCompleteButtonTitle => 'Digital Twin erstellen';
-
-  @override
-  String get onboardingUserCompleteTitle => 'Fertig!';
-
-  @override
-  String get onboardingUserCompleteSubtitle =>
-      'Du hast das Tutorial erfolgreich abgeschlossen.';
-
-  @override
-  String get onboardingUserCompleteButtonTitle => 'Jetzt scannen!';
-
-  @override
-  String get onboardingCheckboxShowAgainTitle => 'Beim nächsten Mal anzeigen';
-
-  @override
-  String get onboardingMoreInfoShowTutorialButtonTitle => 'Tutorial anzeigen';
-
-  @override
   String get galleryPullToRefresh => 'Zum Aktualisieren herunterziehen';
 
   @override
@@ -1464,25 +1341,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zertifikatskarte kann nicht für Kartenverlust verwendet werden.';
 
   @override
-  String get scanQRCode => 'QR-Code scannen';
-
-  @override
-  String get noConnection => 'Keine Verbindung';
-
-  @override
-  String get invalidQRCode => 'Ungültiger QR-Code';
-
-  @override
-  String get reconnectWebSocketButtonText => 'Neu versuchen';
-
-  @override
-  String get reconnectWebSocketErrorText =>
-      'Fehler beim Verbinden mit dem Server';
-
-  @override
-  String get reconnectWebSocketSuccessText => 'Verbindung wiederhergestellt';
-
-  @override
   String get loginWithEmail_EnterEmailText =>
       'Bitte geben Sie Ihre E-Mail-Adresse ein';
 
@@ -1606,38 +1464,4 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get unsaved_attachments_popup_leave_button => 'Leave';
-
-  @override
-  String get web3authExistingAccountTitle => 'Konto existiert bereits';
-
-  @override
-  String get web3authExistingAccountDescription =>
-      'Ein Konto mit dieser E-Mail-Adresse existiert bereits.\nBitte melde dich mit der gleichen Anmeldemethode an, die du bei der Erstellung deines Kontos verwendet hast.';
-
-  @override
-  String get web3authExistingAccountLogout => 'Abmelden';
-
-  @override
-  String get deepLinkLoginConfirmTitle => 'Web-Login bestätigen';
-
-  @override
-  String get deepLinkLoginConfirmDescription =>
-      'Möchtest du dich in der OwnerChip Web-App einloggen?';
-
-  @override
-  String get deepLinkLoginConfirmButton => 'Login bestätigen';
-
-  @override
-  String get deepLinkLoginSuccessMessage => 'Web-Login bestätigt!';
-
-  @override
-  String get deepLinkLoginConfirmError =>
-      'Login konnte nicht bestätigt werden. Bitte erneut versuchen.';
-
-  @override
-  String get deepLinkLoginNotLoggedInError =>
-      'Du musst eingeloggt sein, um einen Web-Login zu bestätigen.';
-
-  @override
-  String get deepLinkLoginLogInNowButton => 'Jetzt einloggen';
 }

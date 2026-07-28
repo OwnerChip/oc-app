@@ -104,12 +104,6 @@ abstract class AppLocalizations {
   /// **'https://ownerchip.com/en/general-terms.html'**
   String get termsAndConditionsUrl;
 
-  /// No description provided for @tutorialUrl.
-  ///
-  /// In en, this message translates to:
-  /// **'http://www.ownerchip.com/tutorial'**
-  String get tutorialUrl;
-
   /// No description provided for @projectsUrl.
   ///
   /// In en, this message translates to:
@@ -793,12 +787,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More'**
   String get more;
-
-  /// No description provided for @watchTutorial.
-  ///
-  /// In en, this message translates to:
-  /// **'Watch Tutorial'**
-  String get watchTutorial;
 
   /// No description provided for @viewProjects.
   ///
@@ -2228,210 +2216,6 @@ abstract class AppLocalizations {
   /// **'Max: {amount}'**
   String myBalanceWithdrawMaxAmount(Object amount);
 
-  /// No description provided for @onboardingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Great that you\'re here!'**
-  String get onboardingTitle;
-
-  /// No description provided for @onboardingFeatureAuthenticityTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Prove Authenticity'**
-  String get onboardingFeatureAuthenticityTitle;
-
-  /// No description provided for @onboardingFeatureAuthenticitySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap items to verify authenticity.'**
-  String get onboardingFeatureAuthenticitySubtitle;
-
-  /// No description provided for @onboardingFeatureDigitalExperiencesTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Access Digital Content'**
-  String get onboardingFeatureDigitalExperiencesTitle;
-
-  /// No description provided for @onboardingFeatureDigitalExperiencesSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Unlock digital content attached to physical items.'**
-  String get onboardingFeatureDigitalExperiencesSubtitle;
-
-  /// No description provided for @onboardingFeatureSellTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sell & Re-Sell'**
-  String get onboardingFeatureSellTitle;
-
-  /// No description provided for @onboardingFeatureSellSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Trade physical-digital package on web3 marketplaces.'**
-  String get onboardingFeatureSellSubtitle;
-
-  /// No description provided for @onboardingStartButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Tutorial'**
-  String get onboardingStartButton;
-
-  /// No description provided for @onboardingUserPageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How to use this App'**
-  String get onboardingUserPageTitle;
-
-  /// No description provided for @onboardingPagination.
-  ///
-  /// In en, this message translates to:
-  /// **'Step {current}/'**
-  String onboardingPagination(Object current);
-
-  /// No description provided for @onboardingUserPageStep1Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap NFC chip'**
-  String get onboardingUserPageStep1Title;
-
-  /// No description provided for @onboardingUserPageStep1Subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Press \"Tap Now\" and hold your phone close to the chip.'**
-  String get onboardingUserPageStep1Subtitle;
-
-  /// No description provided for @onboardingUserPageStep2Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Login with your wallet'**
-  String get onboardingUserPageStep2Title;
-
-  /// No description provided for @onboardingUserPageStep2Subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Identify yourself using your OwnerCard or your crypto wallet to prove and transfer ownership and unlock private digital content.'**
-  String get onboardingUserPageStep2Subtitle;
-
-  /// No description provided for @onboardingUsePageNextButtonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Next'**
-  String get onboardingUsePageNextButtonTitle;
-
-  /// No description provided for @onboardingUserPageCompleteButtonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Next'**
-  String get onboardingUserPageCompleteButtonTitle;
-
-  /// No description provided for @onboardingUserCompleteCreatorPageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you a Creator?'**
-  String get onboardingUserCompleteCreatorPageTitle;
-
-  /// No description provided for @onboardingUserCompleteCreatorPageSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Learn how to create a Digital Twin.'**
-  String get onboardingUserCompleteCreatorPageSubtitle;
-
-  /// No description provided for @onboardingUserCompleteCreatorButtonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Creator Tutorial'**
-  String get onboardingUserCompleteCreatorButtonTitle;
-
-  /// No description provided for @onboardingCreatorPageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How to create a Digital Twin'**
-  String get onboardingCreatorPageTitle;
-
-  /// No description provided for @onboardingCreatorStep1Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Got NFC Chips?'**
-  String get onboardingCreatorStep1Title;
-
-  /// No description provided for @onboardingCreatorStep1SubTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Order our StarterKit and get registered as a Creator.'**
-  String get onboardingCreatorStep1SubTitle;
-
-  /// No description provided for @onboardingCreatorStep1OrderButtonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Order now'**
-  String get onboardingCreatorStep1OrderButtonTitle;
-
-  /// No description provided for @onboardingCreatorStep2Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Attach the NFC chip'**
-  String get onboardingCreatorStep2Title;
-
-  /// No description provided for @onboardingCreatorStep2SubTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Incorporate the NFC chip into your item, for example by using adhesive foils, glue, or stickers.'**
-  String get onboardingCreatorStep2SubTitle;
-
-  /// No description provided for @onboardingCreatorStep3Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Watch Video Tutorial'**
-  String get onboardingCreatorStep3Title;
-
-  /// No description provided for @onboardingCreatorStep3SubTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Watch our App Demo to create your first Digital Twin in a few minutes.'**
-  String get onboardingCreatorStep3SubTitle;
-
-  /// No description provided for @onboardingCreatorStep3YoutubeVideoURL.
-  ///
-  /// In en, this message translates to:
-  /// **'https://youtube.com/watch?v=iB8g9QLSvw0'**
-  String get onboardingCreatorStep3YoutubeVideoURL;
-
-  /// No description provided for @onboardingCreatorCompleteButtonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Create Digital Twin'**
-  String get onboardingCreatorCompleteButtonTitle;
-
-  /// No description provided for @onboardingUserCompleteTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'You\'re all done!'**
-  String get onboardingUserCompleteTitle;
-
-  /// No description provided for @onboardingUserCompleteSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'You have completed the tutorial.'**
-  String get onboardingUserCompleteSubtitle;
-
-  /// No description provided for @onboardingUserCompleteButtonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Start tapping now!'**
-  String get onboardingUserCompleteButtonTitle;
-
-  /// No description provided for @onboardingCheckboxShowAgainTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Show again next time'**
-  String get onboardingCheckboxShowAgainTitle;
-
-  /// No description provided for @onboardingMoreInfoShowTutorialButtonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Show Tutorial'**
-  String get onboardingMoreInfoShowTutorialButtonTitle;
-
   /// No description provided for @galleryPullToRefresh.
   ///
   /// In en, this message translates to:
@@ -2792,42 +2576,6 @@ abstract class AppLocalizations {
   /// **'Cannot use Certificate Card for card lost.'**
   String get cannotCardLostOnCertificateCard;
 
-  /// No description provided for @scanQRCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan QR code'**
-  String get scanQRCode;
-
-  /// No description provided for @noConnection.
-  ///
-  /// In en, this message translates to:
-  /// **'No connection'**
-  String get noConnection;
-
-  /// No description provided for @invalidQRCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Invalid QR code'**
-  String get invalidQRCode;
-
-  /// No description provided for @reconnectWebSocketButtonText.
-  ///
-  /// In en, this message translates to:
-  /// **'Reconnect'**
-  String get reconnectWebSocketButtonText;
-
-  /// No description provided for @reconnectWebSocketErrorText.
-  ///
-  /// In en, this message translates to:
-  /// **'Error reconnecting'**
-  String get reconnectWebSocketErrorText;
-
-  /// No description provided for @reconnectWebSocketSuccessText.
-  ///
-  /// In en, this message translates to:
-  /// **'Reconnected'**
-  String get reconnectWebSocketSuccessText;
-
   /// No description provided for @loginWithEmail_EnterEmailText.
   ///
   /// In en, this message translates to:
@@ -3049,66 +2797,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leave'**
   String get unsaved_attachments_popup_leave_button;
-
-  /// No description provided for @web3authExistingAccountTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Account already exists'**
-  String get web3authExistingAccountTitle;
-
-  /// No description provided for @web3authExistingAccountDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'An account with this email already exists.\nPlease log in using the same sign-in method you used when creating your account.'**
-  String get web3authExistingAccountDescription;
-
-  /// No description provided for @web3authExistingAccountLogout.
-  ///
-  /// In en, this message translates to:
-  /// **'Logout'**
-  String get web3authExistingAccountLogout;
-
-  /// No description provided for @deepLinkLoginConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Web Login'**
-  String get deepLinkLoginConfirmTitle;
-
-  /// No description provided for @deepLinkLoginConfirmDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Do you want to log in to the OwnerChip web app?'**
-  String get deepLinkLoginConfirmDescription;
-
-  /// No description provided for @deepLinkLoginConfirmButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Login'**
-  String get deepLinkLoginConfirmButton;
-
-  /// No description provided for @deepLinkLoginSuccessMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Web login confirmed!'**
-  String get deepLinkLoginSuccessMessage;
-
-  /// No description provided for @deepLinkLoginConfirmError.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to confirm login. Please try again.'**
-  String get deepLinkLoginConfirmError;
-
-  /// No description provided for @deepLinkLoginNotLoggedInError.
-  ///
-  /// In en, this message translates to:
-  /// **'You must be logged in to confirm a web login.'**
-  String get deepLinkLoginNotLoggedInError;
-
-  /// No description provided for @deepLinkLoginLogInNowButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Log In Now'**
-  String get deepLinkLoginLogInNowButton;
 }
 
 class _AppLocalizationsDelegate

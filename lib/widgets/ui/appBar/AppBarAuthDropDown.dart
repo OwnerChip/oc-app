@@ -4,8 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
-import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
-import 'package:ownerchip_whitelabel/screens/qrCode/websocket_connection_error_popup.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -13,10 +11,8 @@ import 'package:ownerchip_whitelabel/services/providers/privy/privyNotifier.dart
 import 'package:ownerchip_whitelabel/services/privyService.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomSnackBarContent.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
@@ -58,7 +54,7 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
             right: 12,
             top: CustomAppBar.kCustomAppBarHeight - 16,
             width: 220,
-            height: 160,
+            height: 120,
             child: Container(
               decoration: BoxDecoration(
                 color: CustomColors(dotenv.get('APP_ID')).cardColor,
@@ -131,22 +127,6 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
                           _buildItem(
                             context,
                             () {
-                              _onScanQRClicked(context);
-                            },
-                            (context) => Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  context.loc.scanQRCode,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ),
-                          _buildDivider(),
-                          _buildItem(
-                            context,
-                            () {
                               _onLogoutClicked(context);
                             },
                             (context) => Row(
@@ -199,80 +179,6 @@ class _AppBarAuthDropDownState extends ConsumerState<AppBarAuthDropDown> {
   void _onBalanceClicked(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
     Navigator.of(context).pushNamed(MyBalancePage.routeName);
-    widget.closeOverlay();
-  }
-
-  void _onScanQRClicked(BuildContext context) {
-    final messenger = ScaffoldMessenger.of(
-      ScaffoldKey.getScaffoldKey("HomeScreen").currentContext ??
-          navigatorKey.currentContext!,
-    );
-
-    final socket = ref.read(websocketProvider);
-
-    if (!socket.connected) {
-      showCustomPopup(
-        context,
-        context.loc.errorHeadingSnackBar,
-         WebsocketConnectionErrorPopup(
-          parentContext: widget.parentContext,
-        ),
-      );
-      widget.closeOverlay();
-      return;
-    }
-
-    final sessionId = ref.read(userSessionProvider)!.sessionId;
-    final socketId = socket.socket!.id!;
-
-    Navigator.of(context)
-        .pushNamed(QRCodeScannerScreen.routeName)
-        .then((dynamic response) {
-      if (response == null) {
-        return null;
-      }
-      if (response is! String) {
-        return null;
-      }
-
-      final split = response.split(':');
-
-      if (split[0] == "OWNERCHIP_LOGIN") {
-        final requestId = split[1];
-
-        BackendAuth.confirmQrCodeLogin(
-          requestId: requestId,
-          sessionId: sessionId,
-          socketId: socketId,
-        ).then((value) {
-          if (value) {
-            messenger.showSnackBar(
-              returnSnackBarWidget(
-                context.loc.successHeadingSnackbar,
-                context.loc.walletAuthenticated,
-                'success',
-              ),
-            );
-          } else {
-            messenger.showSnackBar(
-              returnSnackBarWidget(
-                context.loc.errorHeadingSnackBar,
-                context.loc.invalidQRCode,
-                'error',
-              ),
-            );
-          }
-        });
-      } else {
-        messenger.showSnackBar(
-          returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar,
-            context.loc.invalidQRCode,
-            'error',
-          ),
-        );
-      }
-    });
     widget.closeOverlay();
   }
 

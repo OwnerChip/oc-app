@@ -18,9 +18,6 @@ import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenUserComplete.dart';
-import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithSteps.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -36,7 +33,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/AddAttachmentScreen.dart';
 import 'screens/ChainSelectorScreen.dart';
-import 'services/appLinks.services.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
@@ -103,11 +99,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
     super.initState();
 
     WidgetsBinding.instance.addObserver(this);
-
-    // Deep-link handling (ownerchip://login?requestId=...)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppLinksService.instance.init();
-    });
   }
 
   @override
@@ -136,8 +127,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
-
-    AppLinksService.instance.dispose();
 
     unsubscribeWcListeners(ref, context);
   }
@@ -203,11 +192,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         EnterShippingAddressScreen.routeName: (context) =>
             const EnterShippingAddressScreen(),
         GalleryScreen.routeName: (context) => const GalleryScreen(),
-        OnboardingScreen.routeName: (context) => const OnboardingScreen(),
-        OnboardingScreenWithSteps.routeName: (context) =>
-            const OnboardingScreenWithSteps(),
-        OnboardingScreenUserComplete.routeName: (context) =>
-            const OnboardingScreenUserComplete(),
         MyBalancePage.routeName: (context) => const MyBalancePage(),
         OfferForSaleCreatedTokenScreen.routeName: (context) =>
             const OfferForSaleCreatedTokenScreen(),

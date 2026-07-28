@@ -45,14 +45,12 @@ dependencies:
 
   privy_flutter: ^0.7.0
   info_popup: ^4.3.1
-  video_player: ^2.8.6
   json_annotation: ^4.9.0
   pull_to_refresh_flutter3: ^2.0.2
   retrofit: ^4.1.0
   native_ios_dialog: ^0.2.1
   mobile_scanner: ^7.0.0
   socket_io_client: ^3.1.1
-  app_links: ^6.0.0
 
   #  Logger
   ansicolor: ^2.0.2
