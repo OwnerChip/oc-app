@@ -25,7 +25,6 @@ import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/globals.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/navigationArguments.dart';
-import 'package:ownerchip_whitelabel/utils/urls.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:ownerchip_whitelabel/widgets/layout/ScreenBodyLayout.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/CustomOverlay.dart';
@@ -40,7 +39,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/RefreshMetadataButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:sentry/sentry.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:web3dart/web3dart.dart';
 
@@ -566,19 +564,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                         walletPopupBuilder(context, ref);
                       }),
                     );
-                  }
-
-                  if (dotenv.get('APP_ID') == "ownerchip") {
-                    if (tokenInfoData.collectionId == zeroAddress &&
-                        userSession != null &&
-                        !userSession.jwt.canMint()) {
-                      return CustomRoundedButton(
-                          text: context.loc.signupAsCertifier,
-                          onPressed: () {
-                            launchUrl(Uri.parse(
-                                getBecomeACreatorUrl(userSession.jwt.raw)));
-                          });
-                    }
                   }
 
                   return const SizedBox();

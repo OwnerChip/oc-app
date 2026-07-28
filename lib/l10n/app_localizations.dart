@@ -794,12 +794,6 @@ abstract class AppLocalizations {
   /// **'Order NFC Chips'**
   String get orderChips;
 
-  /// No description provided for @signupAsCertifier.
-  ///
-  /// In en, this message translates to:
-  /// **'SignUp as Certifier'**
-  String get signupAsCertifier;
-
   /// No description provided for @scanNow.
   ///
   /// In en, this message translates to:

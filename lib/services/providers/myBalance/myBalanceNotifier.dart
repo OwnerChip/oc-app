@@ -17,7 +17,6 @@ class MyBalanceNotifier extends Notifier<MyBalanceNotifierData> {
   static final Map<int, String> _listItemAssetPath = {
     1: "assets/images/common/eth_icon.png",
     137: "assets/images/common/matic_icon.png",
-    11155111: "assets/images/common/eth_icon.png",
   };
 
   @override

@@ -67,7 +67,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             ...MoreInfoButtons(
               dotenv.get('APP_ID'),
               context.loc,
-              session?.jwt.raw,
             )
                 .roundedButtons
                 .map((button) => Padding(
@@ -239,7 +238,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
             ...MoreInfoButtons(
               dotenv.get('APP_ID'),
               context.loc,
-              session?.jwt.raw,
             )
                 .outlinedRoundedButtons
                 .map((button) => Padding(

@@ -16,7 +16,6 @@ import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
-import 'package:ownerchip_whitelabel/utils/urls.dart';
 import 'package:ownerchip_whitelabel/widgets/popups/WalletPopUp.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
@@ -366,14 +365,6 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                 text: context.loc.orderChips,
                 onPressed: () => {
                       launchUrl(Uri.parse(context.loc.orderChipsUrl),
-                          mode: LaunchMode.externalApplication)
-                    },
-                width: 250)
-          else
-            CustomRoundedButton(
-                text: context.loc.signupAsCertifier,
-                onPressed: () => {
-                      launchUrl(Uri.parse(getBecomeACreatorUrl(jwtToken.raw)),
                           mode: LaunchMode.externalApplication)
                     },
                 width: 250),

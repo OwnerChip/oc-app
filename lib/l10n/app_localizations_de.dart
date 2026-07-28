@@ -364,9 +364,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get orderChips => 'Chips bestellen';
 
   @override
-  String get signupAsCertifier => 'Als Zertifizierer registrieren';
-
-  @override
   String get scanNow => 'Jetzt scannen';
 
   @override

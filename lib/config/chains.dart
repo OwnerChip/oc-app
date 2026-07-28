@@ -23,23 +23,10 @@ final ethereumMainnet = BlockchainConfig(
     alchemyBaseUrl: "https://eth-mainnet.g.alchemy.com/",
     blockchainExplorerUrl: "https://etherscan.com/token");
 
-final Map<int, BlockchainConfig> _chainConfig = {
+final Map<int, BlockchainConfig> chainConfig = {
   1: ethereumMainnet,
-  137: polygonMainnet
+  137: polygonMainnet,
 };
-
-Map<int, BlockchainConfig> get chainConfig {
-  final Map<int, BlockchainConfig> configs = {};
-
-  for (final chain in _chainConfig.entries) {
-    if (chain.value.internal && dotenv.get("IS_INTERNAL") != "true") {
-      continue;
-    }
-    configs[chain.key] = chain.value;
-  }
-
-  return configs;
-}
 
 final Map<int, List<BlockchainToken>> chainTokenConfigs = {
   1: [
@@ -89,26 +76,6 @@ final Map<int, List<BlockchainToken>> chainTokenConfigs = {
     //   ),
     //   iconPath: "assets/images/common/usdt_icon.png",
     //   decimals: 6,
-    // ),
-  ],
-  11155111: [
-    // BlockchainToken(
-    //   symbol: "USDC",
-    //   abiAssetPath: "assets/contracts/erc20.abi.json",
-    //   contractAddress: EthereumAddress.fromHex(
-    //     "0x08D324a0f98D65A2bba83C9b62a2D12f59e59D91",
-    //   ),
-    //   iconPath: "assets/images/common/usdc_icon.png",
-    //   decimals: 18,
-    // ),
-    // BlockchainToken(
-    //   symbol: "WETH",
-    //   abiAssetPath: "assets/contracts/erc20.abi.json",
-    //   contractAddress: EthereumAddress.fromHex(
-    //     "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
-    //   ),
-    //   iconPath: "assets/images/common/eth_icon.png",
-    //   decimals: 18,
     // ),
   ],
 };

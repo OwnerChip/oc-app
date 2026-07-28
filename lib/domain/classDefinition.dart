@@ -103,7 +103,6 @@ class BlockchainConfig {
   final String openseaUrl;
   final String blockchainExplorerUrl;
   final String alchemyBaseUrl;
-  final bool internal;
 
   BlockchainConfig({
     required this.networkName,
@@ -113,7 +112,6 @@ class BlockchainConfig {
     required this.openseaUrl,
     required this.blockchainExplorerUrl,
     required this.alchemyBaseUrl,
-    this.internal = false,
   });
 }
 

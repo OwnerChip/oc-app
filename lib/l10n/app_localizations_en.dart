@@ -364,9 +364,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderChips => 'Order NFC Chips';
 
   @override
-  String get signupAsCertifier => 'SignUp as Certifier';
-
-  @override
   String get scanNow => 'Tap Now';
 
   @override
