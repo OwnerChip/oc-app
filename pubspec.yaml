@@ -3,7 +3,7 @@ description: Connecting physical goods to the blockchain.
 
 publish_to: 'none'
 
-version: 1.6.3+1
+version: 2.0.0+765
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
