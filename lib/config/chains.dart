@@ -23,22 +23,9 @@ final ethereumMainnet = BlockchainConfig(
     alchemyBaseUrl: "https://eth-mainnet.g.alchemy.com/",
     blockchainExplorerUrl: "https://etherscan.com/token");
 
-final sepoliaTestnet = BlockchainConfig(
-  networkName: "Sepolia Testnet",
-  nativeTokenSymbol: "ETH",
-  rpcUrl:
-      "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_SEPOLIA']}",
-  registryContract: "0x8Dcc2016E0dEe536D238562dC2a46c8EEf2aac86",
-  openseaUrl: "https://opensea.io/assets",
-  alchemyBaseUrl: "https://eth-sepolia.g.alchemy.com/",
-  blockchainExplorerUrl: "https://sepolia.etherscan.io/token",
-  internal: true,
-);
-
 final Map<int, BlockchainConfig> _chainConfig = {
   1: ethereumMainnet,
-  137: polygonMainnet,
-  11155111: sepoliaTestnet,
+  137: polygonMainnet
 };
 
 Map<int, BlockchainConfig> get chainConfig {
