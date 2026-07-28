@@ -9,15 +9,12 @@ import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/local_attachment.dart';
-import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/TransferScreen.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
-import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -50,7 +47,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../widgets/popups/CustomPopup.dart';
 
 class NFTDetailsScreen extends ConsumerStatefulWidget {
   const NFTDetailsScreen({super.key});
@@ -76,7 +72,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
   Widget build(BuildContext context) {
     final userSession = ref.watch(userSessionProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-    final activeOffers = ref.watch(activeOffersProvider);
     final AsyncValue<Map<String, dynamic>> nftMetadata =
         ref.watch(nftMetadataProvider(chipInfo.tokenId));
     final AsyncValue<String> nftImageUri =
@@ -85,7 +80,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
         ref.watch(findTokenProvider(chipInfo.tokenId));
     final wc = ref.watch(w3mServiceProvider);
     final  weblinkUrl = ref.watch(webLinkUrlProvider);
-    final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final AsyncValue<Uri> openseaUrl = ref.watch(openseaUrlProvider);
     final AsyncValue<Uri> blockchainExplorerUrl =
         ref.watch(blockchainExplorerUrlProvider);
@@ -106,10 +100,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     final AsyncValue<EthereumAddress> approval = ref.watch(nftApprovalProvider);
     final AsyncValue<EthereumAddress?> voucherContractAddress =
         ref.watch(voucherContractProvider);
-    final AsyncValue<EthereumAddress?> vouchertokenOwner =
-        ref.watch(voucherTokenOwnerProvider);
-    final AsyncValue<EthereumAddress> lastSellerAddress =
-        ref.watch(lastSellerAddressProvider);
     Widget buildButtons() {
       return _buildButtons(
         nftOwner,
@@ -117,16 +107,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
         approval,
         voucherContractAndTwinNftOwner,
         context,
-        activeOffers,
         userSession,
         relevantCollections,
         tokenInfo,
         wc,
         chipInfo,
         voucherContractAddress,
-        vouchertokenOwner,
-        lastSellerAddress,
-        raribleUrl,
       );
     }
 
@@ -499,8 +485,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                 : InfoKeyValues(keys: [
                                     context.loc.ownership,
                                   ], values: [
-                                    activeOffers.when(
-                                      data: (offers) => nftOwner.when(
+                                    nftOwner.when(
                                         data: (nftOwnerData) {
                                           if (ref.read(userAddressProvider) ==
                                               zeroAddress) {
@@ -510,12 +495,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                               approval.value != null) {
                                             return context.loc.transferred;
                                           } else if (connectedWallet ==
-                                                  nftOwnerData ||
-                                              offers.any((element) =>
-                                                  element.sellerAddress
-                                                      .toLowerCase() ==
-                                                  connectedWallet.hex
-                                                      .toLowerCase())) {
+                                              nftOwnerData) {
                                             return context.loc.confirmed;
                                           } else {
                                             return context.loc.unconfirmed;
@@ -524,10 +504,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                         error: (e, s) => context.loc
                                             .nftDetailsErrorFetchingCertificateData,
                                         loading: () => context.loc.loading,
-                                      ),
-                                      error: (e, s) => context.loc
-                                          .nftDetailsErrorFetchingCertificateData,
-                                      loading: () => context.loc.loading,
                                     ),
                                   ]),
                             const SizedBox(
@@ -567,17 +543,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                             mode: LaunchMode.externalApplication)
                       },
                     ),
-                    const SizedBox(height: 15),
-                    dotenv.get('APP_ID') == 'ownerchip_infineon'
-                        ? Container()
-                        : CustomRoundedButton(
-                            text: context.loc.showOnRarible,
-                            onPressed: () => {
-                              launchUrl(raribleUrl.asData!.value,
-                                  mode: LaunchMode.externalApplication)
-                            },
-                          ),
-
                   ]),
                 ),
                 const SizedBox(height: 20),
@@ -595,16 +560,12 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     AsyncValue<EthereumAddress> approval,
     AsyncValue<List<dynamic>?> voucherContractAndTwinNftOwner,
     BuildContext context,
-    AsyncValue<List<ActiveOffer>> activeOffers,
     UserSession? userSession,
     AsyncValue<BlockchainCollectionList> relevantCollections,
     AsyncValue<TokenChainAndCollection> tokenInfo,
     ReownAppKitModal? wc,
     ChipInfoModel chipInfo,
     AsyncValue<EthereumAddress?> voucherContractAddress,
-    AsyncValue<EthereumAddress?> vouchertokenOwner,
-    AsyncValue<EthereumAddress> lastSellerAddress,
-    AsyncValue<Uri> raribleUrl,
   ) {
     return GridView(
         shrinkWrap: true,
@@ -644,12 +605,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
             error: (e, s) => [],
             loading: () => [],
           ),
-          ...activeOffers
-              .when<List<Widget?>>(
-                data: (activeOffersData) {
-                  if (activeOffersData.isEmpty) {
-                    //TOKEN IS NOT FOR SALE
-                    return nftOwner.when(
+          ...nftOwner.when<List<Widget?>>(
                         data: (nftOwnerData) {
                           if (connectedWallet == zeroAddress ||
                               userSession == null) {
@@ -752,211 +708,15 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                   error: (e, s) => []);
                             } else {
                               //USER IS NOT OWNER
-                              return approval.when<List<Widget>>(
-                                  data: (approvalData) {
-                                    if (approvalData == zeroAddress) {
-                                      //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED
-                                      return voucherContractAddress
-                                          .when<List<Widget>>(
-                                        data: (voucherContractData) {
-                                          // VOUCHER CONTRACT EXISTS
-                                          return vouchertokenOwner.when(
-                                              data: (voucherTokenOwnerData) {
-                                                if (voucherTokenOwnerData ==
-                                                        connectedWallet &&
-                                                    voucherContractData !=
-                                                        null) {
-                                                  //USER IS VOUCHER OWNER AND CAN REDEEM TWIN
-                                                  return [
-                                                    BigIconButton(
-                                                      text: context
-                                                          .loc.redeemToken,
-                                                      onPressed: () async {
-                                                        final sig = ref.read(
-                                                            chipSignatureDataProvider);
-                                                        if (sig.tokenId !=
-                                                            chipInfo.tokenId) {
-                                                          final res =
-                                                              await scanItem(
-                                                            ref,
-                                                            context,
-                                                            navigateToResultPage:
-                                                                false,
-                                                          );
-
-                                                          if (res == null) {
-                                                            return;
-                                                          }
-                                                        }
-                                                        fromCancelable(
-                                                            redeemTwinToken(
-                                                                wc,
-                                                                chipInfo
-                                                                    .tokenId,
-                                                                ref.read(
-                                                                    chipSignatureDataProvider),
-                                                                connectedWallet));
-                                                      },
-                                                      icon: Icon(
-                                                        Icons.call_received,
-                                                        size: 35,
-                                                        color: CustomColors(
-                                                                dotenv.get(
-                                                                    'APP_ID'))
-                                                            .primaryColor,
-                                                      ),
-                                                      height: 85,
-                                                    )
-                                                  ];
-                                                } else {
-                                                  //USER IS NOT VOUCHER OWNER
-                                                  return tokenInfo.when(
-                                                      data: (tokenInfoData) {
-                                                        final EthereumAddress
-                                                            controllerContractAddress =
-                                                            EthereumAddress.fromHex(chainConfig[
-                                                                    tokenInfoData
-                                                                        .chainId]!
-                                                                .controllerContract);
-                                                        if (voucherTokenOwnerData ==
-                                                                controllerContractAddress &&
-                                                            nftOwnerData ==
-                                                                controllerContractAddress &&
-                                                            activeOffersData
-                                                                .isEmpty) {
-                                                          //ERROR HAPPENED WHEN TOKEN WAS OFFERED; NO OFFER IN BACKEND
-                                                          return lastSellerAddress
-                                                              .when(
-                                                                  data:
-                                                                      (lastSellerData) {
-                                                                    if (lastSellerData ==
-                                                                        connectedWallet) {
-                                                                      return [];
-                                                                    } else {
-                                                                      return [];
-                                                                    }
-                                                                  },
-                                                                  error:
-                                                                      (e, s) =>
-                                                                          [],
-                                                                  loading: () =>
-                                                                      []);
-                                                        } else {
-                                                          return [];
-                                                        }
-                                                      },
-                                                      error: (e, s) => [],
-                                                      loading: () => []);
-                                                }
-                                              },
-                                              error: (e, s) => [],
-                                              loading: () => []);
-                                        },
-                                        loading: () => [],
-                                        error: (e, s) {
-                                          return [];
-                                        },
-                                      );
-                                    } else {
-                                      //TOKEN IS APPROVED / IS READY TO BE CLAIMED
-                                      return approval.when(
-                                          data: (approvalData) {
-                                            if (approvalData ==
-                                                connectedWallet) {
-                                              //USER IS APPROVED TO CLAIM
-                                              return [];
-                                            } else {
-                                              //USER IS NOT APPROVED TO CLAIM
-                                              return [];
-                                            }
-                                          },
-                                          loading: () => [],
-                                          error: (e, s) => []);
-                                    }
-                                  },
-                                  loading: () => [],
-                                  error: (e, s) => []);
+                              return [];
                             }
                           }
                         },
                         loading: () => [],
-                        error: (e, s) => []);
-                  } else {
-                    //TOKEN IS FOR SALE
-                    return [
-                      BigIconButton(
-                        text: context.loc.buyOnRarible,
-                        icon: Icon(
-                          Icons.shopping_cart_outlined,
-                          size: 35,
-                          color:
-                              CustomColors(dotenv.get('APP_ID')).primaryColor,
-                        ),
-                        onPressed: () => {
-                          launchUrl(raribleUrl.asData!.value,
-                              mode: LaunchMode.externalApplication)
-                        },
-                      ),
-                      if (activeOffersData.isNotEmpty &&
-                          EthereumAddress.fromHex(
-                                  activeOffersData[0].sellerAddress) ==
-                              connectedWallet)
-                        //USER IS SELLER
-                        BigIconButton(
-                            icon: Icon(
-                              Icons.close,
-                              size: 35,
-                              color: CustomColors(dotenv.get('APP_ID'))
-                                  .primaryColor,
-                            ),
-                            text: context.loc.cancelOffer,
-                            onPressed: () async {
-                              final sig = ref.read(chipSignatureDataProvider);
-                              if (sig.tokenId != chipInfo.tokenId) {
-                                final res = await scanItem(
-                                  ref,
-                                  context,
-                                  navigateToResultPage: false,
-                                );
-
-                                if (res == null) {
-                                  return;
-                                }
-                              }
-
-                              fromCancelable(
-                                cancelOffer(
-                                    wc,
-                                    chipInfo.tokenId,
-                                    ref.read(chipSignatureDataProvider),
-                                    connectedWallet),
-                              );
-                            })
-                    ];
-                  }
-                },
-                loading: () => [],
-                error: (e, s) => [],
-              )
+                        error: (e, s) => [])
               .where((e) => e != null)
               .cast<Widget>(),
         ]);
   }
 }
 
-void navigateToOfferOnMPScreen(BuildContext context) {
-  if (dotenv.get('APP_ID') == 'ownerchip_infineon') {
-    showCustomPopup(
-        context,
-        context.loc.offerOnMpDiscoverDialogTitle,
-        Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(
-            context.loc.offerOnMpDiscoveryDialogMessage,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-        ]));
-  } else {
-    Navigator.pushNamed(context, OfferOnMPScreen.routeName);
-  }
-}

@@ -70,7 +70,6 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
     EthereumAddress walletAddress,
     ReownAppKitModal? wc,
     WalletType walletType, {
-      EthereumAddress? controllerContractId,
       String? typedDataHash,
       EthereumAddress? toAccount,
       String? twinTokenMetadataCID,
@@ -92,7 +91,7 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
   final callData = buildContractCallData(
     functionSignatureHash,
     walletAddress,
-    controllerContractId ?? toAddress,
+    toAddress,
     toAccount,
     signatureData.hashedMsg,
     signatureData.signature,
@@ -114,7 +113,7 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
   // Fetch MetaTx agreement ID early; soft-fail so the tx still proceeds if it errors.
   String? _metaTxAgreementId;
   try {
-    final collectionAddr = controllerContractId ?? toAddress;
+    final collectionAddr = toAddress;
     final checkResult = await BackendMetaTx.checkMetaTx(
       collectionAddr,
       functionSignatureHash,
@@ -129,7 +128,7 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
   if (walletType.type == EWalletType.walletConnect) {
     talker.log('WalletConnect wallet detected — using normal eth_sendTransaction (no gas sponsorship)');
     final w3mService = ref.read(w3mServiceProvider)!;
-    final toAddr = controllerContractId ?? toAddress;
+    final toAddr = toAddress;
     final valueHex = (functionSignatureHash.isEmpty && amount != null)
         ? '0x${amount!.toRadixString(16)}'
         : '0x0';
@@ -202,7 +201,7 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
 
     if (_metaTxAgreementId != null) {
       BackendCollection.recordTx(
-        controllerContractId ?? toAddress,
+        toAddress,
         txHash: txnHash,
         senderAddress: walletAddress.hex,
         metaTxAgreementId: _metaTxAgreementId!,
@@ -218,7 +217,7 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
   final preparedResult = await alchemyPrepareCalls(
     chainId: chainId,
     from: walletAddress,
-    to: controllerContractId ?? toAddress,
+    to: toAddress,
     callData: callData,
     value: (functionSignatureHash.isEmpty && amount != null)
         ? '0x${amount.toRadixString(16)}'
@@ -449,7 +448,7 @@ Future<String> makeAndSendGaslessTx(WidgetRef ref,
 
   if (_metaTxAgreementId != null) {
     BackendCollection.recordTx(
-      controllerContractId ?? toAddress,
+      toAddress,
       txHash: txHash,
       senderAddress: walletAddress.hex,
       metaTxAgreementId: _metaTxAgreementId!,

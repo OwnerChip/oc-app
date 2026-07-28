@@ -120,9 +120,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showOnOpenSea => 'Show on OpenSea';
 
   @override
-  String get showOnRarible => 'Show on Rarible';
-
-  @override
   String get openWebLink => 'Open Web Link';
 
   @override
@@ -781,81 +778,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unableToReadChip => 'Unable to read NFC chip';
 
   @override
-  String get offerOnOpenSea => 'Offer on OpenSea';
-
-  @override
-  String get offerOnRarible => 'Offer on Rarible';
-
-  @override
-  String get offeringToken => 'Offering Digital Twin...';
-
-  @override
-  String get itemOffered => 'Item offered';
-
-  @override
-  String get itemOfferedOnMP => 'Item offered on marketplace';
-
-  @override
-  String get viewOnMP => 'View on Marketplace';
-
-  @override
-  String get errorOfferingToken => 'Error offering Digital Twin';
-
-  @override
-  String get offerItem => 'Offer item';
-
-  @override
-  String get enterWalletAddressForPayout =>
-      'Enter wallet to receive the payment';
-
-  @override
-  String get price => 'Price';
-
-  @override
-  String get enterSalePrice => 'Enter sale price for your item';
-
-  @override
-  String get listOnRarible => 'List on Rarible';
-
-  @override
-  String get offerNow => 'Offer on Rarible';
-
-  @override
-  String get offerForSale => 'Sell';
-
-  @override
-  String get offerCanceled => 'Offer canceled';
-
-  @override
-  String get errorCancellingSale => 'Error canceling sale of Digital Twin.';
-
-  @override
-  String get redeemingtoken => 'Redeeming Digital Twin';
-
-  @override
-  String get tokenRedeemed => 'Digital Twin redeemed';
-
-  @override
-  String get errorRedeemingToken => 'Error redeeming Digital Twin.';
-
-  @override
-  String get redeemToken => 'Redeem Digital Twin';
-
-  @override
-  String get claimPhysicalItem =>
-      'Claim physical item linked to an Digital Twin in your wallet';
-
-  @override
-  String get enterShippingAddress => 'Enter shipping address';
-
-  @override
-  String get shippingDataSuccessfullySent => 'Shipping data successfully sent.';
-
-  @override
-  String get youWillReceiveFurtherInformationViaEmail =>
-      'You will receive further details via email.';
-
-  @override
   String get firstName => 'First name';
 
   @override
@@ -895,9 +817,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stateProvince => 'State/Province';
 
   @override
-  String get shippingAddress => 'Shipping address';
-
-  @override
   String get selectCountry => 'Select country';
 
   @override
@@ -916,19 +835,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contact => 'Contact';
 
   @override
-  String get sendShippingData => 'Send shipping data';
-
-  @override
-  String get cancelOffer => 'Cancel offer';
-
-  @override
-  String get tokenCurrentlyOfferedForSale =>
-      'Digital Twin is currently offered for sale on a marketplace.';
-
-  @override
-  String get payoutWalletAddress => 'Payout wallet address';
-
-  @override
   String get youAreTheNewOwner =>
       'You are the new owner. The Digital Twin can now be transferred into your wallet.';
 
@@ -936,46 +842,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transfer => 'Transfer';
 
   @override
-  String get ownerChipWillNotifyYouOnceTheItemIsPurchased =>
-      'OwnerChip will notify you via email once the item is purchased. You are responsible for packaging and shipping the item to the buyer.';
-
-  @override
-  String get thisItemHasBeenSold =>
-      'This item has been sold. You have received shipping instructions via email.';
-
-  @override
-  String get pleaseScanChipAgainToCancel =>
-      'Please tap NFC chip again to cancel offer.';
-
-  @override
   String get pleaseScanChipAgainToBurn =>
       'Please tap NFC chip again to delete Digital Twin.';
 
   @override
   String get attention => 'Attention!';
-
-  @override
-  String get mintingVoucherToken => 'Creating Digital Twin...';
-
-  @override
-  String get requestShipment => 'Request the shipment now.';
-
-  @override
-  String get manualHandover => 'Manual handover';
-
-  @override
-  String get feesInfo =>
-      '5% protocol fees + marketplace fees will be deducted from payout amount. \n \n EUR value may fluctuate with crypto exchange rates.';
-
-  @override
-  String get successManualHandover =>
-      'Tap the NFC chip to claim your Digital Twin.';
-
-  @override
-  String get itemAvailableForSale => 'This item is available for sale.';
-
-  @override
-  String get buyOnRarible => 'Buy on Rarible';
 
   @override
   String get voucherNftDescriptionGeneral =>
@@ -988,13 +859,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transferred => 'Transferred';
-
-  @override
-  String get errorWhenOffering =>
-      'Something went wrong when offering your Digital Twin. Please recover Digital Twin or contact support.';
-
-  @override
-  String get recoverToken => 'Recover Digital Twin';
 
   @override
   String get enterDetails => 'Enter details';
@@ -1018,14 +882,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get youDoNotOwnAnyItems => 'You do not own any Digital Twins.';
-
-  @override
-  String get legalHintTerrorismFinancing =>
-      'I have fulfilled all my due diligence obligations with regard to the prevention of money laundering and terrorist financing in accordance with the laws applicable to me.';
-
-  @override
-  String get shippingHint =>
-      'I am responsible for handling, packaging and shipping costs associated with the offer.';
 
   @override
   String get appBarProfileTitle => 'Profile';
@@ -1145,53 +1001,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryErrorLoadingMore => 'Error loading more Digital Twins';
 
   @override
-  String get offerForSaleCreatedTokenAppBarTitle => '';
+  String get tokenCreatedAppBarTitle => '';
 
   @override
-  String get offerForSaleCreatedTokenTitle => 'Token created';
+  String get tokenCreatedTitle => 'Token created';
 
   @override
-  String get offerForSaleCreatedTokenSubtitle =>
+  String get tokenCreatedSubtitle =>
       'You have successfully created a digital twin for your physical object.';
 
   @override
-  String get offerForSaleCreatedTokenButton => 'Offer for sale';
-
-  @override
-  String get offerForSaleCreatedTokenViewTokenButton => 'View token';
-
-  @override
-  String get offerOnMpDiscoverDialogTitle => 'Offer on Marketplace';
-
-  @override
-  String get offerOnMpDiscoveryDialogMessage =>
-      'The function “Offer on Marketplace” is not available in this “OwnerChip Discovery” app which is designed for NFC chip demo purposes only, not for real trading of goods. Use the app “OwnerChip” instead and request whitelisting in the “More…” menu.';
-
-  @override
-  String get offerOnMpEmailHint =>
-      'We will use this email address to notify you about the status of the offer.';
-
-  @override
-  String get offerOnMpPriceHint =>
-      '5% protocol fees + marketplace fees will be deducted from payout amount. Please check the support section for more details.';
-
-  @override
-  String offerOnMpEstimatedPriceInEur(Object price) {
-    return 'Estimated EUR value as of today ~$price';
-  }
-
-  @override
-  String get offerOnMpFetchingPrice => 'Fetching current price...';
-
-  @override
-  String get offerOnMpErrorFetchingPrice => 'Error fetching current price';
-
-  @override
-  String get offerOnMpPublishedDialogTitle => 'Published on Marketplace';
-
-  @override
-  String get offerOnMpPublishedDialogSubtitle =>
-      'Your item is now available for sale!';
+  String get tokenCreatedViewTokenButton => 'View token';
 
   @override
   String get newVersionTitle => 'Update App';
@@ -1210,26 +1030,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanResultPage_ownershipCheck => 'Ownership Check';
 
   @override
-  String get scanResultPage_ownershipOwnerOffered =>
-      'You are the owner of this item. Digital Twin is offered on a marketplace.';
-
-  @override
   String get scanResultPage_ownershipOwnerNotOffered =>
       'You are the owner of this item.';
 
   @override
-  String get scanResultPage_ownershipNotOwnerOffered =>
-      'You are not the owner of this item. Digital Twin is offered on a marketplace.';
-
-  @override
   String get scanResultPage_ownershipNotOwnerNotOffered =>
       'Your are not the owner of this item.';
-
-  @override
-  String get scanResultPage_buttonOwnerOffered => 'Show Offer';
-
-  @override
-  String get scanResultPage_buttonNotOwnerOffered => 'Show Offer';
 
   @override
   String get scanResultPage_chipHasNotYetBeenInitialized =>

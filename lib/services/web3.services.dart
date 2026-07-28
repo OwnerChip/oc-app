@@ -1,27 +1,12 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
-import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
-import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
-import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
-import 'package:ownerchip_whitelabel/services/providers/userData.dart';
-import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
-import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/CustomPopup.dart';
-import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/json_rpc.dart';
 import 'package:web3dart/web3dart.dart';
@@ -29,17 +14,6 @@ import 'package:web3dart/web3dart.dart';
 Web3Client getWeb3Client(String chainRpcUrl) {
   var client = Web3Client(chainRpcUrl, Client());
   return client;
-}
-
-Future<DeployedContract> getControllerContract(
-    EthereumAddress collectionId) async {
-  String abi =
-      await rootBundle.loadString("assets/contracts/controller.abi.json");
-  DeployedContract contract = DeployedContract(
-    ContractAbi.fromJson(abi, 'OwnerChipController'),
-    collectionId,
-  );
-  return contract;
 }
 
 Future<DeployedContract> getCollectionContract(
@@ -136,20 +110,6 @@ Future<List<dynamic>> queryForwarderContract(
     List<dynamic> args) async {
   DeployedContract contract =
       await getForwarderContract(registryForwarderAddress);
-  ContractFunction function = contract.function(functionName);
-  final web3Client = getWeb3Client(chainRpcUrl);
-  List<dynamic> result = await web3Client.call(
-      contract: contract, function: function, params: args);
-  return result;
-}
-
-Future<List<dynamic>> queryControllerContract(
-    String chainRpcUrl,
-    EthereumAddress controllerContractAddress,
-    String functionName,
-    List<dynamic> args) async {
-  DeployedContract contract =
-      await getControllerContract(controllerContractAddress);
   ContractFunction function = contract.function(functionName);
   final web3Client = getWeb3Client(chainRpcUrl);
   List<dynamic> result = await web3Client.call(
@@ -337,37 +297,6 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
-  } else if (functionSignatureHash == offerItemFunctionSignature) {
-    data = makeOfferItemData(
-        functionSignatureHash,
-        tokenId!,
-        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
-        sellerPayoutAddress!,
-        offerPrice!,
-        typedDataHash!);
-  } else if (functionSignatureHash == offerItemErc20FunctionSignature) {
-    data = makeOfferItemErc20Data(
-      functionSignatureHash,
-      tokenId!,
-      EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
-      sellerPayoutAddress!,
-      offerPrice!,
-      token?.contractAddress,
-      typedDataHash!,
-    );
-  } else if (functionSignatureHash == redeemItemFunctionSignature) {
-    data = makeRedeemTwinTokenData(
-        functionSignatureHash, randomValueHash, signature, offerHash!);
-  } else if (functionSignatureHash == recoverTokenFunctionSignature) {
-    data =
-        makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
-  } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
-    data = makeCancelOfferData(
-        functionSignatureHash,
-        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
-        randomValueHash,
-        signature,
-        encodedOfferData!);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -439,47 +368,6 @@ String makeBurnData(
   return data;
 }
 
-String makeRedeemTwinTokenData(String functionSignatureHash, Uint8List hash,
-    MsgSignature signature, String offerHash) {
-  String data = functionSignatureHash +
-      uint8ListTo32ByteHex(hash) +
-      signature.r.toRadixString(16).padLeft(64, '0') +
-      signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0') +
-      offerHash.substring(2).padLeft(64, '0');
-  return data;
-}
-
-String makeCancelOfferData(
-    String functionSignatureHash,
-    EthereumAddress marketplaceContract,
-    Uint8List hash,
-    MsgSignature signature,
-    String encodedOfferData) {
-  String data = functionSignatureHash +
-      marketplaceContract.toString().substring(2).padLeft(64, '0') +
-      uint8ListTo32ByteHex(hash) +
-      signature.r.toRadixString(16).padLeft(64, '0') +
-      signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0') +
-      "00000000000000000000000000000000000000000000000000000000000000c0" +
-      (encodedOfferData.substring(2).length ~/ 2)
-          .toRadixString(16)
-          .padLeft(64, '0') +
-      encodedOfferData.substring(2);
-  return data;
-}
-
-String makeRecoverTokenData(
-    String functionSignatureHash, Uint8List hash, MsgSignature signature) {
-  String data = functionSignatureHash +
-      uint8ListTo32ByteHex(hash) +
-      signature.r.toRadixString(16).padLeft(64, '0') +
-      signature.s.toRadixString(16).padLeft(64, '0') +
-      signature.v.toRadixString(16).padLeft(64, '0');
-  return data;
-}
-
 String makeErc20TransferData(
     String functionSignatureHash, EthereumAddress to, BigInt value) {
   String data = functionSignatureHash +
@@ -519,40 +407,6 @@ String makeApproveData(
   String data = functionSignatureHash +
       to.toString().substring(2).padLeft(64, '0') +
       tokenId.toRadixString(16).padLeft(64, '0');
-  return data;
-}
-
-String makeOfferItemData(
-    String functionSignatureHash,
-    BigInt tokenId,
-    EthereumAddress marketplaceContract,
-    EthereumAddress sellerPayoutAddress,
-    BigInt offerPrice,
-    String typedDataHash) {
-  String data = functionSignatureHash +
-      tokenId.toRadixString(16).padLeft(64, '0') +
-      marketplaceContract.toString().substring(2).padLeft(64, '0') +
-      sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
-      offerPrice.toRadixString(16).padLeft(64, '0') +
-      typedDataHash.substring(2).padLeft(64, '0');
-  return data;
-}
-
-String makeOfferItemErc20Data(
-    String functionSignatureHash,
-    BigInt tokenId,
-    EthereumAddress marketplaceContract,
-    EthereumAddress sellerPayoutAddress,
-    BigInt offerPrice,
-    EthereumAddress? tokenAddress,
-    String typedDataHash) {
-  String data = functionSignatureHash +
-      tokenId.toRadixString(16).padLeft(64, '0') +
-      marketplaceContract.toString().substring(2).padLeft(64, '0') +
-      sellerPayoutAddress.toString().substring(2).padLeft(64, '0') +
-      offerPrice.toRadixString(16).padLeft(64, '0') +
-      (tokenAddress ?? zeroAddress).toString().substring(2).padLeft(64, '0') +
-      typedDataHash.substring(2).padLeft(64, '0');
   return data;
 }
 
@@ -712,79 +566,3 @@ Future<TransactionReceipt?> getTxnReceipt(
   }
 }
 
-Future<void> checkAndShowShippingPopup(BuildContext context, WidgetRef ref,
-    {VoidCallback? setShippingPopupIsShownState}) async {
-  final UserSession? userSession = ref.read(userSessionProvider);
-
-  if (userSession == null) {
-    return;
-  }
-
-  final List<Purchase> unredeemedPurchases =
-      await ref.read(unredeemedVoucherNftsProvider.future);
-  if (unredeemedPurchases.isNotEmpty &&
-      !unredeemedPurchases.first.manualHandover &&
-      unredeemedPurchases.first.shippingInfo == null) {
-    // ignore: use_build_context_synchronously
-    await showCustomPopup(
-        context,
-        icon: Icon(Icons.local_shipping_outlined,
-            size: 90, color: CustomColors(dotenv.get('APP_ID')).accentColor),
-        context.loc.claimPhysicalItem,
-        Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(
-            context.loc.requestShipment,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          CustomRoundedButton(
-            text: context.loc.enterShippingAddress,
-            onPressed: () {
-              Navigator.pushNamed(
-                  context, EnterShippingAddressScreen.routeName);
-            },
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          CustomOutlinedButton(
-            width: double.infinity,
-            buttonText: context.loc.manualHandover,
-            onPressed: () async {
-              try {
-                await BackendToken.postManualHandoverToBackend(
-                    unredeemedPurchases.first);
-                ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-                    context.loc.successHeadingSnackbar,
-                    context.loc.successManualHandover,
-                    'success'));
-                Navigator.pop(context);
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  returnSnackBarWidget(context.loc.errorHeadingSnackBar,
-                      context.loc.pleaseTryAgainLater, 'error'),
-                );
-              }
-            },
-          ),
-        ]),
-        setShippingPopupIsShownState: setShippingPopupIsShownState);
-  }
-}
-
-Future<EthereumAddress> getLastSellerAddress(String chainRpcUrl,
-    EthereumAddress controllerContractAddress, BigInt tokenId) async {
-  try {
-    final List result = await queryControllerContract(chainRpcUrl,
-        controllerContractAddress, "getLastSellerAddress", [tokenId]);
-    print(result);
-    return result[0];
-  } catch (e) {
-    print('Error while fetching last seller address of tokenId $tokenId: $e');
-    throw Exception(
-        'Error while fetching last seller address of tokenId $tokenId: $e');
-  }
-}

@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
-import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
-import 'package:ownerchip_whitelabel/widgets/ui/CustomRoundedButton.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 
-class OfferForSaleCreatedTokenScreen extends StatelessWidget {
-  const OfferForSaleCreatedTokenScreen({super.key});
+class TokenCreatedScreen extends StatelessWidget {
+  const TokenCreatedScreen({super.key});
 
-  static String routeName = '/offerForSaleCreatedToken';
+  static String routeName = '/tokenCreated';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CustomAppBar(
-          text: context.loc.offerForSaleCreatedTokenAppBarTitle,
+          text: context.loc.tokenCreatedAppBarTitle,
           overrideBackButton: () {
             Navigator.of(context).pushReplacementNamed(
               NFTDetailsScreen.routeName,
@@ -46,14 +44,14 @@ class OfferForSaleCreatedTokenScreen extends StatelessWidget {
                   height: 12,
                 ),
                 Text(
-                  context.loc.offerForSaleCreatedTokenTitle,
+                  context.loc.tokenCreatedTitle,
                   style: Theme.of(context).textTheme.displayLarge,
                 ),
                 const SizedBox(
                   height: 16,
                 ),
                 Text(
-                  context.loc.offerForSaleCreatedTokenSubtitle,
+                  context.loc.tokenCreatedSubtitle,
                   style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
@@ -65,8 +63,7 @@ class OfferForSaleCreatedTokenScreen extends StatelessWidget {
                 SizedBox(
                   width: double.maxFinite,
                   child: CustomOutlinedButton(
-                    buttonText:
-                        context.loc.offerForSaleCreatedTokenViewTokenButton,
+                    buttonText: context.loc.tokenCreatedViewTokenButton,
                     onPressed: () {
                       Navigator.of(context).pushReplacementNamed(
                         NFTDetailsScreen.routeName,

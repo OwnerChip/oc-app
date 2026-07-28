@@ -18,20 +18,11 @@ const String transferFromFunctionSignature = '0x8f10e951';
 // approve
 const String approveFunctionSignature = '0x095ea7b3';
 
-//offerItem
-const String offerItemFunctionSignature = '0xc8f1044d';
 
-// offerItem erc20 token
-const String offerItemErc20FunctionSignature = '0x17a4332b';
 
 //cancelOffer
-const String cancelMarketplaceOfferSignature = '0x7a616970';
 
-//redeemItem
-const String redeemItemFunctionSignature = '0x1247fcb5';
 
-//recoverToken
-const String recoverTokenFunctionSignature = '0x41b49312';
 
 // erc20 approve
 const String erc20ApproveFunctionSignature = '0x095ea7b3';

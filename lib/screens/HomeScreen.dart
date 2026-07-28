@@ -27,7 +27,6 @@ import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotif
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 import 'package:ownerchip_whitelabel/services/privyService.dart';
 import 'package:privy_flutter/privy_flutter.dart';
-import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 
@@ -59,7 +58,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   // setup walletconnect client
   ReownAppKitModal? wcClient;
-  bool shippingPopupIsShown = false;
 
   Future<void>
       _checkAndRemovePersistedStorageDependingOnPreviousAppVersion() async {
@@ -183,12 +181,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await _clearSession(storage, wcService);
       }
 
-      if (!shippingPopupIsShown) {
-        checkAndShowShippingPopup(context, ref,
-            setShippingPopupIsShownState: () => setState(() {
-                  shippingPopupIsShown = !shippingPopupIsShown;
-                }));
-      }
     } catch (e, st) {
       Sentry.captureException(
         e,
@@ -251,14 +243,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 //do stuff on app resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.resumed) {
-      if (!shippingPopupIsShown) {
-        checkAndShowShippingPopup(context, ref,
-            setShippingPopupIsShownState: () => setState(() {
-                  shippingPopupIsShown = !shippingPopupIsShown;
-                }));
-      }
-    }
   }
 
   Future<void> onButtonPress(bool isInitialize) async {

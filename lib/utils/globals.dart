@@ -7,8 +7,6 @@ class ScaffoldKey {
     'MetadataInputScreen': GlobalKey<ScaffoldState>(),
     'UserScanResultsScreen': GlobalKey<ScaffoldState>(),
     'TransferScreen': GlobalKey<ScaffoldState>(),
-    'OfferOnMPScreen': GlobalKey<ScaffoldState>(),
-    'EnterShippingAddressScreen': GlobalKey<ScaffoldState>(),
     'HomeScreen': GlobalKey<ScaffoldState>(),
     'NFTDetailsScreen': GlobalKey<ScaffoldState>(),
   };

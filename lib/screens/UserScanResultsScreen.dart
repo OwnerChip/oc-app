@@ -4,26 +4,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 
 //import misc
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
 import 'package:ownerchip_whitelabel/screens/ChainSelectorScreen.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
-import 'package:ownerchip_whitelabel/services/backend/token/backendToken.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
-import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
-import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
-import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 
 //import services
@@ -76,9 +70,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<Uri> raribleUrl = ref.watch(raribleUrlProvider);
     final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-    final activeOffers = ref.watch(activeOffersProvider);
     final AsyncValue<String> nftImageUri =
         ref.watch(nftImageProvider(chipInfo.tokenId));
     final AsyncValue<Map<String, dynamic>> nftMetadata =
@@ -94,14 +86,6 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
     final SignatureData signatureData = ref.watch(chipSignatureDataProvider);
     final wc = ref.watch(w3mServiceProvider);
     final AsyncValue<CreatorData> creatorData = ref.watch(creatorDataProvider);
-    final AsyncValue<EthereumAddress?> voucherContractAddress =
-        ref.watch(voucherContractProvider);
-    final AsyncValue<EthereumAddress?> vouchertokenOwner =
-        ref.watch(voucherTokenOwnerProvider);
-    final AsyncValue<List<Purchase>> unredeemedVoucherNfts =
-        ref.watch(unredeemedVoucherNftsProvider);
-    final AsyncValue<EthereumAddress> lastSellerAddress =
-        ref.watch(lastSellerAddressProvider);
 
     final deferredSession = ref.watch(deferredUserSessionProvider);
     // if token is transferred, and ready to be claimed restore deferred session
@@ -111,13 +95,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
             (nftOwner.hasValue &&
                 nftOwner.value != null &&
                 nftOwner.value ==
-                    deferredSession?.userSession?.userWalletAddress) ||
-            (activeOffers.hasValue &&
-                (activeOffers.value?.any((offer) =>
-                        offer.sellerAddress.toLowerCase() ==
-                        deferredSession?.userSession?.userWalletAddress.hex
-                            .toLowerCase()) ??
-                    false))) &&
+                    deferredSession?.userSession?.userWalletAddress)) &&
         (deferredSession != null &&
             userSession?.userWalletAddress !=
                 deferredSession.userSession?.userWalletAddress)) {
@@ -294,35 +272,23 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
 
                                     //OWNERSHIP CHECK ICON
                                     nftOwner.when(
-                                      data: (nftOwnerData) => activeOffers.when(
-                                        data: (offers) => userSession == null
-                                            ?
-                                            //NFT owner exists and wallet is NOT connected
-                                            SvgPicture.asset(
-                                                "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
-                                            : connectedWallet == nftOwnerData ||
-                                                    offers.any((offer) =>
-                                                        offer.sellerAddress
-                                                            .toLowerCase() ==
-                                                        connectedWallet.hex
-                                                            .toLowerCase())
-                                                ?
-                                                //NFT owner exists and wallet is connected and wallet is owner
-                                                approval.value == zeroAddress
-                                                    ? SvgPicture.asset(
-                                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
-                                                    // NFT owner has approved another wallet
-                                                    : SvgPicture.asset(
-                                                        "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
-
-                                                //NFT owner exists and wallet is connected and wallet is NOT owner
-                                                : SvgPicture.asset(
-                                                    "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg"),
-                                        error: (e, s) => SvgPicture.asset(
-                                            "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
-                                        loading: () =>
-                                            const CircularProgressIndicator(),
-                                      ),
+                                      data: (nftOwnerData) => userSession == null
+                                          ?
+                                          //NFT owner exists and wallet is NOT connected
+                                          SvgPicture.asset(
+                                              "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                          : connectedWallet == nftOwnerData
+                                              ?
+                                              //NFT owner exists and wallet is connected and wallet is owner
+                                              approval.value == zeroAddress
+                                                  ? SvgPicture.asset(
+                                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/check.svg")
+                                                  // NFT owner has approved another wallet
+                                                  : SvgPicture.asset(
+                                                      "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg")
+                                              //NFT owner exists and wallet is connected and wallet is NOT owner
+                                              : SvgPicture.asset(
+                                                  "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/alert_cross.svg"),
                                       error: (e, s) => SvgPicture.asset(
                                           "${dotenv.get('IMAGE_ASSETS_BASE_URL')}/triangle_small.svg"),
                                       loading: () =>
@@ -335,11 +301,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                 //OWNERSHIP CHECK BODY
                                 Align(
                                     alignment: Alignment.centerLeft,
-                                    child: activeOffers.when(
-                                      data: (activeOffersData) {
-                                        if (activeOffersData.isEmpty) {
-                                          //TOKEN IS NOT FOR SALE
-                                          return nftOwner.when(
+                                    child: nftOwner.when(
                                               data: (nftOwnerData) {
                                                 if (connectedWallet ==
                                                         zeroAddress ||
@@ -478,118 +440,16 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                           if (approvalData ==
                                                               zeroAddress) {
                                                             //TOKEN IS NOT APPROVED / NOT READY TO BE CLAIMED
-                                                            return voucherContractAddress
-                                                                .when(
-                                                              data:
-                                                                  (voucherContractData) {
-                                                                // VOUCHER CONTRACT EXISTS
-                                                                return vouchertokenOwner
-                                                                    .when(
-                                                                        data:
-                                                                            (voucherTokenOwnerData) {
-                                                                          if (voucherTokenOwnerData == connectedWallet &&
-                                                                              voucherContractData != null) {
-                                                                            //USER IS VOUCHER OWNER AND CAN REDEEM TWIN
-                                                                            return Column(children: [
-                                                                              Text(context.loc.youAreTheNewOwner, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                              const SizedBox(height: 15),
-                                                                              CustomRoundedButton(
-                                                                                  width: double.infinity,
-                                                                                  text: context.loc.redeemToken,
-                                                                                  onPressed: (() => {
-                                                                                        fromCancelable(redeemTwinToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                                      })),
-                                                                            ]);
-                                                                          } else {
-                                                                            //USER IS NOT VOUCHER OWNER
-                                                                            return tokenInfo.when(
-                                                                                data: (tokenInfoData) {
-                                                                                  final EthereumAddress controllerContractAddress = EthereumAddress.fromHex(chainConfig[tokenInfoData.chainId]!.controllerContract);
-                                                                                  if (voucherTokenOwnerData == controllerContractAddress && nftOwnerData == controllerContractAddress && activeOffersData.isEmpty) {
-                                                                                    //ERROR HAPPENED WHEN TOKEN WAS OFFERED; NO OFFER IN BACKEND
-                                                                                    return lastSellerAddress.when(
-                                                                                        data: (lastSellerData) {
-                                                                                          if (lastSellerData == connectedWallet) {
-                                                                                            return Column(
-                                                                                              children: [
-                                                                                                Text(context.loc.errorWhenOffering, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                                                const SizedBox(height: 15),
-                                                                                                CustomRoundedButton(
-                                                                                                  width: double.infinity,
-                                                                                                  text: context.loc.recoverToken,
-                                                                                                  onPressed: (() => {
-                                                                                                        fromCancelable(recoverToken(wc, chipInfo.tokenId, signatureData, connectedWallet))
-                                                                                                      }),
-                                                                                                )
-                                                                                              ],
-                                                                                            );
-                                                                                          } else {
-                                                                                            return Column(
-                                                                                              children: [
-                                                                                                Text(context.loc.scanResultPage_ownershipNotOwnerNotOffered, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                                              ],
-                                                                                            );
-                                                                                          }
-                                                                                        },
-                                                                                        error: (e, s) => Container(),
-                                                                                        loading: () => Container());
-                                                                                  } else {
-                                                                                    return FutureBuilder<List>(
-                                                                                        future: BackendToken.getUnredeemedPurchases(chipInfo.tokenId),
-                                                                                        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
-                                                                                          if (snapshot.hasData) {
-                                                                                            if (snapshot.data!.isNotEmpty && EthereumAddress.fromHex(snapshot.data![0].offer.sellerAddress) == connectedWallet) {
-                                                                                              //USER IS SELLER AND ITEM HAS NOT BEEN REDEEMED YET
-                                                                                              return Column(children: [
-                                                                                                Text(context.loc.thisItemHasBeenSold, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium),
-                                                                                              ]);
-                                                                                            } else {
-                                                                                              //USER IS NOT SELLER AND ITEM HAS NOT BEEN REDEEMED YET
-                                                                                              return Text(context.loc.scanResultPage_ownershipNotOwnerNotOffered, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
-                                                                                            }
-                                                                                          } else if (snapshot.hasError) {
-                                                                                            return Text(context.loc.scanResultPage_ownershipNotOwnerNotOffered, textAlign: TextAlign.left, style: Theme.of(context).textTheme.bodyMedium);
-                                                                                          } else {
-                                                                                            return const CircularProgressIndicator();
-                                                                                          }
-                                                                                        });
-                                                                                  }
-                                                                                },
-                                                                                error: (e, s) => Container(),
-                                                                                loading: () => Container());
-                                                                          }
-                                                                        },
-                                                                        error: (e, s) => Text(
-                                                                            context
-                                                                                .loc.scanResultPage_ownershipNotOwnerNotOffered,
-                                                                            textAlign: TextAlign
-                                                                                .left,
-                                                                            style: Theme.of(context)
-                                                                                .textTheme
-                                                                                .bodyMedium),
-                                                                        loading:
-                                                                            () =>
-                                                                                Container());
-                                                              },
-                                                              loading: () =>
-                                                                  Container(),
-                                                              error: (e, s) {
-                                                                return Column(
-                                                                  children: [
-                                                                    Align(
-                                                                        alignment:
-                                                                            Alignment
-                                                                                .centerLeft,
-                                                                        child: Text(
-                                                                            context
-                                                                                .loc.scanResultPage_ownershipNotOwnerNotOffered,
-                                                                            textAlign:
-                                                                                TextAlign.center,
-                                                                            style: Theme.of(context).textTheme.bodyMedium)),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
+                                                            return Text(
+                                                                context.loc
+                                                                    .scanResultPage_ownershipNotOwnerNotOffered,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .left,
+                                                                style: Theme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .bodyMedium);
                                                           } else {
                                                             //TOKEN IS APPROVED / IS READY TO BE CLAIMED
                                                             return approval
@@ -646,73 +506,8 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
                                                   textAlign: TextAlign.left,
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyMedium));
-                                        } else {
-                                          //TOKEN IS FOR SALE
-                                          if (activeOffersData.any((offer) =>
-                                              offer.sellerAddress
-                                                  .toLowerCase() ==
-                                              connectedWallet.hex
-                                                  .toLowerCase())) {
-                                            //USER IS SELLER
-                                            return Column(
-                                              children: [
-                                                Text(
-                                                    context.loc
-                                                        .scanResultPage_ownershipOwnerOffered,
-                                                    textAlign: TextAlign.left,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium),
-                                                const SizedBox(height: 10),
-                                                CustomRoundedButton(
-                                                  text: context.loc
-                                                      .scanResultPage_buttonOwnerOffered,
-                                                  onPressed: () => {
-                                                    launchUrl(
-                                                        raribleUrl
-                                                            .asData!.value,
-                                                        mode: LaunchMode
-                                                            .externalApplication)
-                                                  },
-                                                ),
-                                              ],
-                                            );
-                                          } else {
-                                            //USER IS NOT SELLER
-                                            return Column(
-                                              children: [
-                                                Align(
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Text(
-                                                        context.loc
-                                                            .scanResultPage_ownershipNotOwnerOffered,
-                                                        textAlign:
-                                                            TextAlign.left,
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyMedium)),
-                                                const SizedBox(height: 10),
-                                                CustomRoundedButton(
-                                                  text: context.loc
-                                                      .scanResultPage_buttonNotOwnerOffered,
-                                                  onPressed: () => {
-                                                    launchUrl(
-                                                        raribleUrl
-                                                            .asData!.value,
-                                                        mode: LaunchMode
-                                                            .externalApplication)
-                                                  },
-                                                ),
-                                              ],
-                                            );
-                                          }
-                                        }
-                                      },
-                                      loading: () => Container(),
-                                      error: (e, s) => Container(),
-                                    ))
+                                                      .bodyMedium))
+                                    )
                               ]),
                         ]
                       ]),

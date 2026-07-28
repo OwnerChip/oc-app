@@ -13,15 +13,12 @@ abstract class BackendCreator extends Backend {
       final response = await service.getCreatorData(tokenId: tokenId.hex);
       final Map creatorData = response.data;
 
-      bool hasActiveOffer = creatorData["token"]["hasActiveOffer"];
-
       return CreatorData(
         name: creatorData['name'],
         affiliation: creatorData['affiliation'],
         email: creatorData['email'],
         walletAddress: EthereumAddress.fromHex(creatorData['address']),
         createdAt: DateTime.parse(creatorData['token']['mintedAt']),
-        hasActiveOffer: hasActiveOffer,
         tokenForWhichCreatorDataWasRequested:
             Token.fromJson(creatorData['token']),
       );

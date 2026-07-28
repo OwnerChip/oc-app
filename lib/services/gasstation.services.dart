@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
-import 'package:ownerchip_whitelabel/domain/web3MarketplaceApi.dart';
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
@@ -102,36 +101,6 @@ Future<Map<String, dynamic>> buildTypedV4Request(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     data = makeApproveData(functionSignatureHash, tokenId!, toAccount!);
-  } else if (functionSignatureHash == offerItemFunctionSignature) {
-    data = makeOfferItemData(
-        functionSignatureHash,
-        tokenId!,
-        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
-        sellerPayoutAddress!,
-        price!,
-        typedDataHash!);
-  } else if (functionSignatureHash == offerItemErc20FunctionSignature) {
-    data = makeOfferItemErc20Data(
-        functionSignatureHash,
-        tokenId!,
-        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
-        sellerPayoutAddress!,
-        price!,
-        token?.contractAddress,
-        typedDataHash!);
-  } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
-    data = makeCancelOfferData(
-        functionSignatureHash,
-        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
-        randomValueHash,
-        signature,
-        encodedOfferData!);
-  } else if (functionSignatureHash == redeemItemFunctionSignature) {
-    data = makeRedeemTwinTokenData(
-        functionSignatureHash, randomValueHash, signature, offerHash!);
-  } else if (functionSignatureHash == recoverTokenFunctionSignature) {
-    data =
-        makeRecoverTokenData(functionSignatureHash, randomValueHash, signature);
   } else {
     throw Exception('Invalid function signature hash');
   }
@@ -227,36 +196,6 @@ String buildContractCallData(
         functionSignatureHash, randomValueHash, signature, enableRecovery);
   } else if (functionSignatureHash == approveFunctionSignature) {
     return makeApproveData(functionSignatureHash, tokenId!, toAccount!);
-  } else if (functionSignatureHash == offerItemFunctionSignature) {
-    return makeOfferItemData(
-        functionSignatureHash,
-        tokenId!,
-        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
-        sellerPayoutAddress!,
-        price!,
-        typedDataHash!);
-  } else if (functionSignatureHash == offerItemErc20FunctionSignature) {
-    return makeOfferItemErc20Data(
-        functionSignatureHash,
-        tokenId!,
-        EthereumAddress.fromHex(raribleTransferProxies[chainId]!),
-        sellerPayoutAddress!,
-        price!,
-        token?.contractAddress,
-        typedDataHash!);
-  } else if (functionSignatureHash == cancelMarketplaceOfferSignature) {
-    return makeCancelOfferData(
-        functionSignatureHash,
-        EthereumAddress.fromHex(raribleExchangeV2Contracts[chainId]!),
-        randomValueHash,
-        signature,
-        encodedOfferData!);
-  } else if (functionSignatureHash == redeemItemFunctionSignature) {
-    return makeRedeemTwinTokenData(
-        functionSignatureHash, randomValueHash, signature, offerHash!);
-  } else if (functionSignatureHash == recoverTokenFunctionSignature) {
-    return makeRecoverTokenData(
-        functionSignatureHash, randomValueHash, signature);
   } else {
     throw Exception('Invalid function signature hash: $functionSignatureHash');
   }

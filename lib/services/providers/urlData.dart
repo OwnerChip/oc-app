@@ -40,20 +40,3 @@ final openseaUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
       "$baseUrl/${contractAddress.toString()}/${chipInfo.tokenId}";
   return Uri.parse(openseaUrl);
 });
-
-final raribleUrlProvider = FutureProvider.autoDispose<Uri>((ref) async {
-  final ChipInfoModel chipInfo = ref.watch(chipInfoProvider);
-  final TokenChainAndCollection tokenInfo =
-      await ref.watch(findTokenProvider(chipInfo.tokenId).future);
-  final String baseUrl = chainConfig[tokenInfo.chainId]!.raribleUrl;
-  late final EthereumAddress contractAddress;
-  try {
-    contractAddress = await getVoucherContractFromTwin(
-        getRPCUrlFromChainId(tokenInfo.chainId), tokenInfo.collectionId);
-  } catch (e) {
-    contractAddress = tokenInfo.collectionId;
-  }
-  String raribleUrl =
-      "$baseUrl/${contractAddress.toString()}:${chipInfo.tokenId}";
-  return Uri.parse(raribleUrl);
-});

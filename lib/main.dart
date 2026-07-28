@@ -10,14 +10,12 @@ import 'package:logging/logging.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
-import 'package:ownerchip_whitelabel/screens/EnterShippingAddressScreen.dart';
 import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
-import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
-import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
+import 'package:ownerchip_whitelabel/screens/TokenCreatedScreen.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -188,13 +186,9 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         EnterPukScreen.routeName: (context) => const EnterPukScreen(),
         AdminInitCard.routeName: (context) => const AdminInitCard(),
         CardLostScreen.routeName: (context) => const CardLostScreen(),
-        OfferOnMPScreen.routeName: (context) => const OfferOnMPScreen(),
-        EnterShippingAddressScreen.routeName: (context) =>
-            const EnterShippingAddressScreen(),
         GalleryScreen.routeName: (context) => const GalleryScreen(),
         MyBalancePage.routeName: (context) => const MyBalancePage(),
-        OfferForSaleCreatedTokenScreen.routeName: (context) =>
-            const OfferForSaleCreatedTokenScreen(),
+        TokenCreatedScreen.routeName: (context) => const TokenCreatedScreen(),
         QRCodeScannerScreen.routeName: (context) => const QRCodeScannerScreen(),
         EmailLoginScreen.routeName: (context) => const EmailLoginScreen(),
       },

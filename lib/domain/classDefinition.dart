@@ -66,10 +66,7 @@ class BlockchainConfig {
   final String nativeTokenSymbol;
   final String rpcUrl;
   final String registryContract;
-  final String controllerContract;
   final String openseaUrl;
-  final String raribleUrl;
-  final String raribleEnum;
   final String blockchainExplorerUrl;
   final String alchemyBaseUrl;
   final String? forwarderContract;
@@ -80,10 +77,7 @@ class BlockchainConfig {
     required this.nativeTokenSymbol,
     required this.rpcUrl,
     required this.registryContract,
-    required this.controllerContract,
     required this.openseaUrl,
-    required this.raribleUrl,
-    required this.raribleEnum,
     required this.blockchainExplorerUrl,
     required this.alchemyBaseUrl,
     this.forwarderContract,
@@ -250,7 +244,6 @@ class CreatorData {
   final String email;
   final EthereumAddress walletAddress;
   final DateTime createdAt;
-  final bool hasActiveOffer;
   final Token tokenForWhichCreatorDataWasRequested;
 
   const CreatorData({
@@ -259,16 +252,8 @@ class CreatorData {
     required this.email,
     required this.walletAddress,
     required this.createdAt,
-    required this.hasActiveOffer,
     required this.tokenForWhichCreatorDataWasRequested,
   });
-}
-
-class RaribleHashAndEncodedData {
-  final String typedDataHash;
-  final String encodedData;
-
-  RaribleHashAndEncodedData(this.typedDataHash, this.encodedData);
 }
 
 typedef StringCallback = Function(String?);

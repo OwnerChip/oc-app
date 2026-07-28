@@ -6,7 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/screens/metadataInput/MetadataInputScreen.dart';
-import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
+import 'package:ownerchip_whitelabel/screens/TokenCreatedScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
 import 'package:ownerchip_whitelabel/services/images.services.dart';
@@ -246,7 +246,7 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
         }
 
         Navigator.of(context).pushNamedAndRemoveUntil(
-          OfferForSaleCreatedTokenScreen.routeName,
+          TokenCreatedScreen.routeName,
               (route) => route.isFirst,
         );
 

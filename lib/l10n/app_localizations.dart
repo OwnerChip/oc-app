@@ -314,12 +314,6 @@ abstract class AppLocalizations {
   /// **'Show on OpenSea'**
   String get showOnOpenSea;
 
-  /// No description provided for @showOnRarible.
-  ///
-  /// In en, this message translates to:
-  /// **'Show on Rarible'**
-  String get showOnRarible;
-
   /// No description provided for @openWebLink.
   ///
   /// In en, this message translates to:
@@ -1580,150 +1574,6 @@ abstract class AppLocalizations {
   /// **'Unable to read NFC chip'**
   String get unableToReadChip;
 
-  /// No description provided for @offerOnOpenSea.
-  ///
-  /// In en, this message translates to:
-  /// **'Offer on OpenSea'**
-  String get offerOnOpenSea;
-
-  /// No description provided for @offerOnRarible.
-  ///
-  /// In en, this message translates to:
-  /// **'Offer on Rarible'**
-  String get offerOnRarible;
-
-  /// No description provided for @offeringToken.
-  ///
-  /// In en, this message translates to:
-  /// **'Offering Digital Twin...'**
-  String get offeringToken;
-
-  /// No description provided for @itemOffered.
-  ///
-  /// In en, this message translates to:
-  /// **'Item offered'**
-  String get itemOffered;
-
-  /// No description provided for @itemOfferedOnMP.
-  ///
-  /// In en, this message translates to:
-  /// **'Item offered on marketplace'**
-  String get itemOfferedOnMP;
-
-  /// No description provided for @viewOnMP.
-  ///
-  /// In en, this message translates to:
-  /// **'View on Marketplace'**
-  String get viewOnMP;
-
-  /// No description provided for @errorOfferingToken.
-  ///
-  /// In en, this message translates to:
-  /// **'Error offering Digital Twin'**
-  String get errorOfferingToken;
-
-  /// No description provided for @offerItem.
-  ///
-  /// In en, this message translates to:
-  /// **'Offer item'**
-  String get offerItem;
-
-  /// No description provided for @enterWalletAddressForPayout.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter wallet to receive the payment'**
-  String get enterWalletAddressForPayout;
-
-  /// No description provided for @price.
-  ///
-  /// In en, this message translates to:
-  /// **'Price'**
-  String get price;
-
-  /// No description provided for @enterSalePrice.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter sale price for your item'**
-  String get enterSalePrice;
-
-  /// No description provided for @listOnRarible.
-  ///
-  /// In en, this message translates to:
-  /// **'List on Rarible'**
-  String get listOnRarible;
-
-  /// No description provided for @offerNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Offer on Rarible'**
-  String get offerNow;
-
-  /// No description provided for @offerForSale.
-  ///
-  /// In en, this message translates to:
-  /// **'Sell'**
-  String get offerForSale;
-
-  /// No description provided for @offerCanceled.
-  ///
-  /// In en, this message translates to:
-  /// **'Offer canceled'**
-  String get offerCanceled;
-
-  /// No description provided for @errorCancellingSale.
-  ///
-  /// In en, this message translates to:
-  /// **'Error canceling sale of Digital Twin.'**
-  String get errorCancellingSale;
-
-  /// No description provided for @redeemingtoken.
-  ///
-  /// In en, this message translates to:
-  /// **'Redeeming Digital Twin'**
-  String get redeemingtoken;
-
-  /// No description provided for @tokenRedeemed.
-  ///
-  /// In en, this message translates to:
-  /// **'Digital Twin redeemed'**
-  String get tokenRedeemed;
-
-  /// No description provided for @errorRedeemingToken.
-  ///
-  /// In en, this message translates to:
-  /// **'Error redeeming Digital Twin.'**
-  String get errorRedeemingToken;
-
-  /// No description provided for @redeemToken.
-  ///
-  /// In en, this message translates to:
-  /// **'Redeem Digital Twin'**
-  String get redeemToken;
-
-  /// No description provided for @claimPhysicalItem.
-  ///
-  /// In en, this message translates to:
-  /// **'Claim physical item linked to an Digital Twin in your wallet'**
-  String get claimPhysicalItem;
-
-  /// No description provided for @enterShippingAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter shipping address'**
-  String get enterShippingAddress;
-
-  /// No description provided for @shippingDataSuccessfullySent.
-  ///
-  /// In en, this message translates to:
-  /// **'Shipping data successfully sent.'**
-  String get shippingDataSuccessfullySent;
-
-  /// No description provided for @youWillReceiveFurtherInformationViaEmail.
-  ///
-  /// In en, this message translates to:
-  /// **'You will receive further details via email.'**
-  String get youWillReceiveFurtherInformationViaEmail;
-
   /// No description provided for @firstName.
   ///
   /// In en, this message translates to:
@@ -1802,12 +1652,6 @@ abstract class AppLocalizations {
   /// **'State/Province'**
   String get stateProvince;
 
-  /// No description provided for @shippingAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Shipping address'**
-  String get shippingAddress;
-
   /// No description provided for @selectCountry.
   ///
   /// In en, this message translates to:
@@ -1844,30 +1688,6 @@ abstract class AppLocalizations {
   /// **'Contact'**
   String get contact;
 
-  /// No description provided for @sendShippingData.
-  ///
-  /// In en, this message translates to:
-  /// **'Send shipping data'**
-  String get sendShippingData;
-
-  /// No description provided for @cancelOffer.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel offer'**
-  String get cancelOffer;
-
-  /// No description provided for @tokenCurrentlyOfferedForSale.
-  ///
-  /// In en, this message translates to:
-  /// **'Digital Twin is currently offered for sale on a marketplace.'**
-  String get tokenCurrentlyOfferedForSale;
-
-  /// No description provided for @payoutWalletAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Payout wallet address'**
-  String get payoutWalletAddress;
-
   /// No description provided for @youAreTheNewOwner.
   ///
   /// In en, this message translates to:
@@ -1880,24 +1700,6 @@ abstract class AppLocalizations {
   /// **'Transfer'**
   String get transfer;
 
-  /// No description provided for @ownerChipWillNotifyYouOnceTheItemIsPurchased.
-  ///
-  /// In en, this message translates to:
-  /// **'OwnerChip will notify you via email once the item is purchased. You are responsible for packaging and shipping the item to the buyer.'**
-  String get ownerChipWillNotifyYouOnceTheItemIsPurchased;
-
-  /// No description provided for @thisItemHasBeenSold.
-  ///
-  /// In en, this message translates to:
-  /// **'This item has been sold. You have received shipping instructions via email.'**
-  String get thisItemHasBeenSold;
-
-  /// No description provided for @pleaseScanChipAgainToCancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Please tap NFC chip again to cancel offer.'**
-  String get pleaseScanChipAgainToCancel;
-
   /// No description provided for @pleaseScanChipAgainToBurn.
   ///
   /// In en, this message translates to:
@@ -1909,48 +1711,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attention!'**
   String get attention;
-
-  /// No description provided for @mintingVoucherToken.
-  ///
-  /// In en, this message translates to:
-  /// **'Creating Digital Twin...'**
-  String get mintingVoucherToken;
-
-  /// No description provided for @requestShipment.
-  ///
-  /// In en, this message translates to:
-  /// **'Request the shipment now.'**
-  String get requestShipment;
-
-  /// No description provided for @manualHandover.
-  ///
-  /// In en, this message translates to:
-  /// **'Manual handover'**
-  String get manualHandover;
-
-  /// No description provided for @feesInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'5% protocol fees + marketplace fees will be deducted from payout amount. \n \n EUR value may fluctuate with crypto exchange rates.'**
-  String get feesInfo;
-
-  /// No description provided for @successManualHandover.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap the NFC chip to claim your Digital Twin.'**
-  String get successManualHandover;
-
-  /// No description provided for @itemAvailableForSale.
-  ///
-  /// In en, this message translates to:
-  /// **'This item is available for sale.'**
-  String get itemAvailableForSale;
-
-  /// No description provided for @buyOnRarible.
-  ///
-  /// In en, this message translates to:
-  /// **'Buy on Rarible'**
-  String get buyOnRarible;
 
   /// No description provided for @voucherNftDescriptionGeneral.
   ///
@@ -1969,18 +1729,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transferred'**
   String get transferred;
-
-  /// No description provided for @errorWhenOffering.
-  ///
-  /// In en, this message translates to:
-  /// **'Something went wrong when offering your Digital Twin. Please recover Digital Twin or contact support.'**
-  String get errorWhenOffering;
-
-  /// No description provided for @recoverToken.
-  ///
-  /// In en, this message translates to:
-  /// **'Recover Digital Twin'**
-  String get recoverToken;
 
   /// No description provided for @enterDetails.
   ///
@@ -2023,18 +1771,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You do not own any Digital Twins.'**
   String get youDoNotOwnAnyItems;
-
-  /// No description provided for @legalHintTerrorismFinancing.
-  ///
-  /// In en, this message translates to:
-  /// **'I have fulfilled all my due diligence obligations with regard to the prevention of money laundering and terrorist financing in accordance with the laws applicable to me.'**
-  String get legalHintTerrorismFinancing;
-
-  /// No description provided for @shippingHint.
-  ///
-  /// In en, this message translates to:
-  /// **'I am responsible for handling, packaging and shipping costs associated with the offer.'**
-  String get shippingHint;
 
   /// No description provided for @appBarProfileTitle.
   ///
@@ -2264,89 +2000,29 @@ abstract class AppLocalizations {
   /// **'Error loading more Digital Twins'**
   String get galleryErrorLoadingMore;
 
-  /// No description provided for @offerForSaleCreatedTokenAppBarTitle.
+  /// No description provided for @tokenCreatedAppBarTitle.
   ///
   /// In en, this message translates to:
   /// **''**
-  String get offerForSaleCreatedTokenAppBarTitle;
+  String get tokenCreatedAppBarTitle;
 
-  /// No description provided for @offerForSaleCreatedTokenTitle.
+  /// No description provided for @tokenCreatedTitle.
   ///
   /// In en, this message translates to:
   /// **'Token created'**
-  String get offerForSaleCreatedTokenTitle;
+  String get tokenCreatedTitle;
 
-  /// No description provided for @offerForSaleCreatedTokenSubtitle.
+  /// No description provided for @tokenCreatedSubtitle.
   ///
   /// In en, this message translates to:
   /// **'You have successfully created a digital twin for your physical object.'**
-  String get offerForSaleCreatedTokenSubtitle;
+  String get tokenCreatedSubtitle;
 
-  /// No description provided for @offerForSaleCreatedTokenButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Offer for sale'**
-  String get offerForSaleCreatedTokenButton;
-
-  /// No description provided for @offerForSaleCreatedTokenViewTokenButton.
+  /// No description provided for @tokenCreatedViewTokenButton.
   ///
   /// In en, this message translates to:
   /// **'View token'**
-  String get offerForSaleCreatedTokenViewTokenButton;
-
-  /// No description provided for @offerOnMpDiscoverDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Offer on Marketplace'**
-  String get offerOnMpDiscoverDialogTitle;
-
-  /// No description provided for @offerOnMpDiscoveryDialogMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'The function “Offer on Marketplace” is not available in this “OwnerChip Discovery” app which is designed for NFC chip demo purposes only, not for real trading of goods. Use the app “OwnerChip” instead and request whitelisting in the “More…” menu.'**
-  String get offerOnMpDiscoveryDialogMessage;
-
-  /// No description provided for @offerOnMpEmailHint.
-  ///
-  /// In en, this message translates to:
-  /// **'We will use this email address to notify you about the status of the offer.'**
-  String get offerOnMpEmailHint;
-
-  /// No description provided for @offerOnMpPriceHint.
-  ///
-  /// In en, this message translates to:
-  /// **'5% protocol fees + marketplace fees will be deducted from payout amount. Please check the support section for more details.'**
-  String get offerOnMpPriceHint;
-
-  /// No description provided for @offerOnMpEstimatedPriceInEur.
-  ///
-  /// In en, this message translates to:
-  /// **'Estimated EUR value as of today ~{price}'**
-  String offerOnMpEstimatedPriceInEur(Object price);
-
-  /// No description provided for @offerOnMpFetchingPrice.
-  ///
-  /// In en, this message translates to:
-  /// **'Fetching current price...'**
-  String get offerOnMpFetchingPrice;
-
-  /// No description provided for @offerOnMpErrorFetchingPrice.
-  ///
-  /// In en, this message translates to:
-  /// **'Error fetching current price'**
-  String get offerOnMpErrorFetchingPrice;
-
-  /// No description provided for @offerOnMpPublishedDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Published on Marketplace'**
-  String get offerOnMpPublishedDialogTitle;
-
-  /// No description provided for @offerOnMpPublishedDialogSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your item is now available for sale!'**
-  String get offerOnMpPublishedDialogSubtitle;
+  String get tokenCreatedViewTokenButton;
 
   /// No description provided for @newVersionTitle.
   ///
@@ -2378,41 +2054,17 @@ abstract class AppLocalizations {
   /// **'Ownership Check'**
   String get scanResultPage_ownershipCheck;
 
-  /// No description provided for @scanResultPage_ownershipOwnerOffered.
-  ///
-  /// In en, this message translates to:
-  /// **'You are the owner of this item. Digital Twin is offered on a marketplace.'**
-  String get scanResultPage_ownershipOwnerOffered;
-
   /// No description provided for @scanResultPage_ownershipOwnerNotOffered.
   ///
   /// In en, this message translates to:
   /// **'You are the owner of this item.'**
   String get scanResultPage_ownershipOwnerNotOffered;
 
-  /// No description provided for @scanResultPage_ownershipNotOwnerOffered.
-  ///
-  /// In en, this message translates to:
-  /// **'You are not the owner of this item. Digital Twin is offered on a marketplace.'**
-  String get scanResultPage_ownershipNotOwnerOffered;
-
   /// No description provided for @scanResultPage_ownershipNotOwnerNotOffered.
   ///
   /// In en, this message translates to:
   /// **'Your are not the owner of this item.'**
   String get scanResultPage_ownershipNotOwnerNotOffered;
-
-  /// No description provided for @scanResultPage_buttonOwnerOffered.
-  ///
-  /// In en, this message translates to:
-  /// **'Show Offer'**
-  String get scanResultPage_buttonOwnerOffered;
-
-  /// No description provided for @scanResultPage_buttonNotOwnerOffered.
-  ///
-  /// In en, this message translates to:
-  /// **'Show Offer'**
-  String get scanResultPage_buttonNotOwnerOffered;
 
   /// No description provided for @scanResultPage_chipHasNotYetBeenInitialized.
   ///
