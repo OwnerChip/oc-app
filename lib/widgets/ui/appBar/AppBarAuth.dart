@@ -44,12 +44,6 @@ class _AppBarAuthState extends ConsumerState<AppBarAuth> {
     ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
     UserSession? userSession = ref.watch(userSessionProvider);
 
-    // If the user is using a certificate card,
-    // we don't want to show the profile icon.
-    if(userSession?.isCertificateCard ?? false) {
-      return const SizedBox();
-    }
-
     return Stack(
       alignment: Alignment.topCenter,
       children: [

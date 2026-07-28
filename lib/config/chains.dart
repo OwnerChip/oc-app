@@ -11,8 +11,7 @@ final polygonMainnet = BlockchainConfig(
     registryContract: "0x4dD835afC9E02382e98700eC2fa5317aeE1f321d",
     openseaUrl: "https://opensea.io/assets/matic",
     blockchainExplorerUrl: "https://polygonscan.com/token",
-    alchemyBaseUrl: "https://polygon-mainnet.g.alchemy.com/",
-    forwarderContract: "0x65CDf66C6FDDCD0a43042F237Aa871414b724f4d");
+    alchemyBaseUrl: "https://polygon-mainnet.g.alchemy.com/");
 
 final ethereumMainnet = BlockchainConfig(
     networkName: "Ethereum Mainnet",
@@ -30,7 +29,6 @@ final sepoliaTestnet = BlockchainConfig(
   rpcUrl:
       "https://eth-sepolia.g.alchemy.com/v2/${dotenv.env['ALCHEMY_API_KEY_SEPOLIA']}",
   registryContract: "0x8Dcc2016E0dEe536D238562dC2a46c8EEf2aac86",
-  forwarderContract: "0x4e63de97Cd856b9D835dB1656948E5227622F829",
   openseaUrl: "https://opensea.io/assets",
   alchemyBaseUrl: "https://eth-sepolia.g.alchemy.com/",
   blockchainExplorerUrl: "https://sepolia.etherscan.io/token",

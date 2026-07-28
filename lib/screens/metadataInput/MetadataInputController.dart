@@ -27,7 +27,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:web3dart/web3dart.dart';
 import 'package:mime/mime.dart';
-import '../../config/ownercard.dart';
 import '../../utils/logger.dart';
 
 mixin MetadataInputController on ConsumerState<MetadataScreen> {
@@ -139,10 +138,6 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
           ? mintVoucherFunctionSignature
           : mintFunctionSignature;
 
-      if (OwnercardData.isCertificateCard(chipInfo.firstSlotKey)) {
-        functionSignature = mintVoucherToCertificateCardFunctionSignature;
-      }
-
       /////////// TWIN METADATA ///////////
       String twinTokenMetadataCID = '';
 
@@ -191,11 +186,11 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
       String txnHash = "";
 
       try {
-        txnHash = await makeAndSendGaslessTx(
-            ref,
+        txnHash = await makeAndSendNormalTx(
             ScaffoldKey
                 .getScaffoldKey('MetadataInputScreen')
                 .currentContext!,
+            ref,
             functionSignature,
             chainId,
             voucherCollectionId ?? collectionId,
@@ -204,8 +199,7 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
             wc,
             walletType!,
             twinTokenMetadataCID: twinTokenMetadataCID,
-            voucherTokenMetadataCID: voucherTokenMetadataCID,
-            toggleLoading: toggleLoading);
+            voucherTokenMetadataCID: voucherTokenMetadataCID);
       } catch (e, st) {
         talker.error('Error minting token: $e', st);
         Sentry.captureException(e, stackTrace: st);

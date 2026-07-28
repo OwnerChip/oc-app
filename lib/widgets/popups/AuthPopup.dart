@@ -111,7 +111,6 @@ Future<void> onTapAuth(
   String sessionId =
       oldUserSession?.sessionId ?? await BackendAuth.getSessionId();
   final bool isOwnerCard = oldUserSession?.isOwnerCard ?? false;
-  final bool isCertificateCard = oldUserSession?.isCertificateCard ?? false;
 
   late final JwtToken token;
   late final MsgSignature signature;
@@ -153,7 +152,6 @@ Future<void> onTapAuth(
     signature,
     ref.read(userAddressProvider),
     isOwnerCard,
-    isCertificateCard,
     token,
   );
 

@@ -1424,12 +1424,6 @@ abstract class AppLocalizations {
   /// **'OwnerCard'**
   String get ownercard;
 
-  /// No description provided for @certificatecard.
-  ///
-  /// In en, this message translates to:
-  /// **'Certificate Card'**
-  String get certificatecard;
-
   /// No description provided for @or.
   ///
   /// In en, this message translates to:
@@ -2186,47 +2180,17 @@ abstract class AppLocalizations {
   /// **'No, keep'**
   String get nft_transfer_cancel_confirmation_dialog_cancel_keep_button;
 
-  /// No description provided for @certificateCardLoginSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Successfully connected with Certificate Card.'**
-  String get certificateCardLoginSuccess;
-
-  /// No description provided for @cannotSetPinOnCertificateCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot set PIN on Certificate Card'**
-  String get cannotSetPinOnCertificateCard;
-
-  /// No description provided for @cannotResetPinOnCertificateCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot reset PIN on Certificate Card'**
-  String get cannotResetPinOnCertificateCard;
-
-  /// No description provided for @cardIsNotCertificateCard.
-  ///
-  /// In en, this message translates to:
-  /// **'NFC chip is not a Certificate Card.'**
-  String get cardIsNotCertificateCard;
-
   /// No description provided for @cardIsNotOwnerCard.
   ///
   /// In en, this message translates to:
   /// **'NFC chip is not an OwnerCard.'**
   String get cardIsNotOwnerCard;
 
-  /// No description provided for @holdPhoneCloseToCertificateCardToInit.
+  /// No description provided for @holdPhoneCloseToCardToInit.
   ///
   /// In en, this message translates to:
   /// **'Hold your phone close to the Certificate Card'**
-  String get holdPhoneCloseToCertificateCardToInit;
-
-  /// No description provided for @cannotCardLostOnCertificateCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot use Certificate Card for card lost.'**
-  String get cannotCardLostOnCertificateCard;
+  String get holdPhoneCloseToCardToInit;
 
   /// No description provided for @loginWithEmail_EnterEmailText.
   ///

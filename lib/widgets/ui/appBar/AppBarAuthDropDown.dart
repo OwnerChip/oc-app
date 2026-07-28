@@ -7,8 +7,6 @@ import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/providers/privy/privyNotifier.dart';
-import 'package:ownerchip_whitelabel/services/privyService.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/themes/colorSpecs.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
@@ -221,14 +219,6 @@ Future<void> disconnectWallet(
   //remove session and wallet type from storage
   storage.remove('walletType');
   storage.remove('userSession');
-
-  ref.refresh(privyNotifierProvider);
-
-  try {
-    await privyInstance.logout();
-  } catch (e) {
-    talker.error('Error logging out of Privy', e);
-  }
 
   if (wc != null && wcSession != null) {
     await wc

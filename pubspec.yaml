@@ -42,7 +42,6 @@ dependencies:
 #      path: packages/reown_appkit
 #      ref: fix/session_persistence
 
-  privy_flutter: ^0.7.0
   json_annotation: ^4.9.0
   pull_to_refresh_flutter3: ^2.0.2
   retrofit: ^4.1.0
@@ -103,7 +102,6 @@ flutter:
     - assets/images/stilami/
     - assets/contracts/collection.abi.json
     - assets/contracts/registry.abi.json
-    - assets/contracts/forwarder.abi.json
     - assets/contracts/voucher.abi.json
     - assets/contracts/erc20.abi.json
     - .env

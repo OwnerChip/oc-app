@@ -58,7 +58,7 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
             keys: OwnercardData.instance.map((e) => e.name).toList(),
             values: OwnercardData.instance
                 .map((e) =>
-                    "${e.appId.toString()}\nOwnerCard: ${e.ownerCard.hex.substring(0, 6)}...\nCertificate: ${e.certificateCard.hex.substring(0, 6)}...")
+                    "${e.appId.toString()}\nOwnerCard: ${e.ownerCard.hex.substring(0, 6)}...")
                 .toList(),
           ),
           const SizedBox(height: 20),
@@ -171,27 +171,6 @@ class _AdminInitCard extends ConsumerState<AdminInitCard> {
                   setChipAddressZero,
                   customerId,
                   cardBaseId: dotenv.get('OWNERCARD_BASE_ID'),
-                  ocInternalPassword: ocInternalPassword,
-                  isCertificateCard: false,
-                );
-              }
-            },
-          ),
-          const SizedBox(height: 20),
-          CustomRoundedButton(
-            text: 'Init Certificate Card slot 0',
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                setState(() {
-                  allChipAddresses = [];
-                });
-                await importKeyToSlotZero(
-                  context,
-                  ref,
-                  setChipAddressZero,
-                  customerId,
-                  cardBaseId: dotenv.get('CERTIFICATE_CARD_BASE_ID'),
-                  isCertificateCard: true,
                   ocInternalPassword: ocInternalPassword,
                 );
               }

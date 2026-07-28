@@ -33,13 +33,47 @@ class WalletType {
   Map<String, dynamic> toJson() => {
         'name': name,
         'iconUri': iconUri,
-        'type': type.index,
+        'type': type.name,
       };
 
   WalletType.fromJson(Map<String, dynamic> json)
       : name = json['name'],
         iconUri = json['iconUri'],
-        type = EWalletType.values[json['type']];
+        type = parseWalletTypeJson(json['type']);
+}
+
+/// Thrown when a persisted session references a wallet type this build no
+/// longer supports. Callers are expected to treat this as "clear the session".
+class StaleWalletTypeException implements Exception {
+  final Object? value;
+
+  const StaleWalletTypeException(this.value);
+
+  @override
+  String toString() => 'StaleWalletTypeException: unsupported wallet type '
+      '"$value" — persisted by an older build';
+}
+
+/// Reads a persisted wallet type.
+///
+/// Accepts the current name form (`'ownerCard'`) and the legacy index form
+/// (`0`) that older builds wrote. Anything unrecognised — including the
+/// indices of wallet types this build dropped — raises
+/// [StaleWalletTypeException] rather than an unhandled RangeError.
+EWalletType parseWalletTypeJson(Object? raw) {
+  if (raw is String) {
+    for (final t in EWalletType.values) {
+      if (t.name == raw) return t;
+    }
+    throw StaleWalletTypeException(raw);
+  }
+  if (raw is int) {
+    if (raw < 0 || raw >= EWalletType.values.length) {
+      throw StaleWalletTypeException(raw);
+    }
+    return EWalletType.values[raw];
+  }
+  throw StaleWalletTypeException(raw);
 }
 
 class Collection {
@@ -69,7 +103,6 @@ class BlockchainConfig {
   final String openseaUrl;
   final String blockchainExplorerUrl;
   final String alchemyBaseUrl;
-  final String? forwarderContract;
   final bool internal;
 
   BlockchainConfig({
@@ -80,7 +113,6 @@ class BlockchainConfig {
     required this.openseaUrl,
     required this.blockchainExplorerUrl,
     required this.alchemyBaseUrl,
-    this.forwarderContract,
     this.internal = false,
   });
 }
@@ -204,8 +236,6 @@ class UserSession {
   final EthereumAddress userWalletAddress;
   final bool isOwnerCard;
 
-  final bool isCertificateCard;
-
   int get expiryDate => jwt.exp;
 
   late final JwtToken jwt;
@@ -215,7 +245,6 @@ class UserSession {
     this.signatureData,
     this.userWalletAddress,
     this.isOwnerCard,
-    this.isCertificateCard,
     this.jwt,
   );
 
@@ -224,7 +253,6 @@ class UserSession {
         'signatureData': msgSignatureToJson(signatureData),
         'userWalletAddress': userWalletAddress.hex,
         'isOwnerCard': isOwnerCard,
-        'isCertificateCard': isCertificateCard,
         'expiryDate': expiryDate.toString(),
         'jwt': jwt.toJson(),
       };
@@ -234,7 +262,6 @@ class UserSession {
         signatureData = msgSignatureFromJson(json['signatureData']),
         userWalletAddress = EthereumAddress.fromHex(json['userWalletAddress']),
         isOwnerCard = json['isOwnerCard'],
-        isCertificateCard = json['isCertificateCard'],
         jwt = JwtToken.fromJson(json['jwt']);
 }
 

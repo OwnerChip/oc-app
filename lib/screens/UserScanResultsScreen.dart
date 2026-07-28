@@ -14,7 +14,6 @@ import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 //import screens
 import 'package:ownerchip_whitelabel/screens/NFTDetailsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
-import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -87,22 +86,7 @@ class _UserScanResultsScreenState extends ConsumerState<UserScanResultsScreen>
     final wc = ref.watch(w3mServiceProvider);
     final AsyncValue<CreatorData> creatorData = ref.watch(creatorDataProvider);
 
-    final deferredSession = ref.watch(deferredUserSessionProvider);
     // if token is transferred, and ready to be claimed restore deferred session
-    if ((approval.hasValue &&
-                approval.value != null &&
-                (approval.value != zeroAddress) ||
-            (nftOwner.hasValue &&
-                nftOwner.value != null &&
-                nftOwner.value ==
-                    deferredSession?.userSession?.userWalletAddress)) &&
-        (deferredSession != null &&
-            userSession?.userWalletAddress !=
-                deferredSession.userSession?.userWalletAddress)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        restoreDeferredUserSession(ref);
-      });
-    }
 
     Sentry.configureScope(
       (scope) => scope.setUser(SentryUser(id: connectedWallet.toString())),

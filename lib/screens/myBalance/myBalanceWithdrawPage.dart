@@ -6,10 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/myBalance/myBalanceListItem.dart';
-import 'package:ownerchip_whitelabel/screens/myBalance/myBalanceWithdrawConfirmationDialog.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
@@ -321,15 +319,6 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
         return;
       }
       final walletType = ref.read(walletTypeProvider);
-
-      if (walletType?.type == EWalletType.privy) {
-        final confirmation =
-            await _web3AuthTransactionConfirmation(context, item);
-
-        if (confirmation != true) {
-          return;
-        }
-      }
 
       widget.onProcessing(true);
 
@@ -643,15 +632,4 @@ class _MyBalanceWithdrawPageState extends ConsumerState<MyBalanceWithdrawPage> {
     }
   }
 
-  Future<dynamic> _web3AuthTransactionConfirmation(
-      BuildContext context, MyBalanceListItem item) async {
-    return await showDialog(
-      context: context,
-      builder: (context) => MyBalanceWithdrawConfirmationDialog(
-        amount: _amountController.text,
-        address: _addressController.text,
-        item: item,
-      ),
-    );
-  }
 }

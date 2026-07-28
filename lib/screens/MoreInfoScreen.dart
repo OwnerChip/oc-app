@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
@@ -24,7 +23,6 @@ import 'package:ownerchip_whitelabel/widgets/ui/CustomOutlinedButton.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/config/moreInfoButtons.dart';
 
-import '../services/providers/walletconnectData.dart';
 
 class MoreInfoScreen extends ConsumerStatefulWidget {
   const MoreInfoScreen({Key? key}) : super(key: key);
@@ -39,7 +37,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionProvider);
-    final walletType = ref.watch(walletTypeProvider);
     final accountDeletionRequest = ref.watch(accountDeletionRequestProvider);
 
     return Scaffold(
@@ -111,7 +108,7 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                         width: 250))
                 : Container(),
             const SizedBox(height: 60),
-            if (session != null && walletType?.type == EWalletType.privy)
+            if (session != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: CustomOutlinedButton(

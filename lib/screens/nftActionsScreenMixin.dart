@@ -95,9 +95,9 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       String txnHash = "";
 
       try {
-        txnHash = await makeAndSendGaslessTx(
-          ref,
+        txnHash = await makeAndSendNormalTx(
           context,
+          ref,
           burnFunctionSignature,
           config.chainId,
           config.collectionId,
@@ -105,7 +105,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           connectedWallet,
           wc,
           walletType!,
-          toggleLoading: toggleLoading,
           getCardSignature: (hash) async {
             final List<MsgSignature?> chipSignatures =
                 await getChipSignatures(
@@ -203,9 +202,9 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       String txnHash = "";
 
       try {
-        txnHash = await makeAndSendGaslessTx(
-          ref,
+        txnHash = await makeAndSendNormalTx(
           context,
+          ref,
           transferFromFunctionSignature,
           config.chainId,
           config.collectionId,
@@ -214,7 +213,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           wc,
           walletType!,
           tokenId: tokenId,
-          toggleLoading: toggleLoading,
           getCardSignature: (hash) async {
             final List<MsgSignature?> chipSignatures =
                 await getChipSignatures(
@@ -327,9 +325,9 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
 
       String txnHash = "";
       try {
-        txnHash = await makeAndSendGaslessTx(
-          ref,
+        txnHash = await makeAndSendNormalTx(
           context,
+          ref,
           approveFunctionSignature,
           config.chainId,
           config.collectionId,
@@ -340,7 +338,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           toAccount: to,
           tokenId: tokenId,
           enableRecovery: isOwnerCard,
-          toggleLoading: toggleLoading,
           getCardSignature: (hash) async {
             final List<MsgSignature?> chipSignatures =
                 await getChipSignatures(

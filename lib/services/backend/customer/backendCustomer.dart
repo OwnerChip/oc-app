@@ -12,7 +12,6 @@ abstract class BackendCustomer extends Backend {
   static Future<bool> sendCardInitToBackend(
     String customerId,
     EthereumAddress chipAddress,
-    bool isCertificateCard,
     String ocInternalPassword,
   ) async {
     final service = BackendCustomerService.instanceProd;
@@ -23,7 +22,6 @@ abstract class BackendCustomer extends Backend {
         appId: dotenv.get('BITRISEIO_PACKAGE_NAME'),
         payload: CardInitPayload(
           id: chipAddress.hex,
-          isCertificateCard: isCertificateCard,
           ocInternalPassword: ocInternalPassword,
         ),
       );

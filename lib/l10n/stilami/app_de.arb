@@ -380,13 +380,8 @@
 
 
     "@_CERTIFICATE_CARD": {},
-    "certificateCardLoginSuccess": "Erfolgreich mit der Zertifikatskarte verbunden.",
-    "cannotSetPinOnCertificateCard": "PIN kann auf der Zertifikatskarte nicht gesetzt werden.",
-    "cannotResetPinOnCertificateCard": "PIN kann auf der Zertifikatskarte nicht zurückgesetzt werden.",
-    "cardIsNotCertificateCard": "NFC-Chip ist keine Zertifikatskarte.",
     "cardIsNotOwnerCard": "NFC-Chip ist keine OwnerCard.",
-    "holdPhoneCloseToCertificateCardToInit": "Halten Sie Ihr Telefon nahe an die Zertifikatskarte.",
-    "cannotCardLostOnCertificateCard": "Zertifikatskarte kann nicht für Kartenverlust verwendet werden.",
+    "holdPhoneCloseToCardToInit": "Halten Sie Ihr Telefon nahe an die Zertifikatskarte.",
 
 
 

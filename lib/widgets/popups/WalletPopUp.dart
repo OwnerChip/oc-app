@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
-import 'package:ownerchip_whitelabel/screens/EmailLoginScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
@@ -96,21 +95,6 @@ Future<void> walletPopupBuilder(BuildContext context, WidgetRef ref) async {
                           }
                         });
                       }
-                    },
-                    backgroundColor: CustomColors(dotenv.get('APP_ID'))
-                        .ownerCardWalletIconBackgroundColor,
-                  ),
-
-                  // Privy Email OTP
-                  WalletIcon(
-                    walletName: 'Email',
-                    icon: Icon(
-                      Icons.email,
-                      color: CustomColors(dotenv.get('APP_ID')).secondaryColor,
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, EmailLoginScreen.routeName);
                     },
                     backgroundColor: CustomColors(dotenv.get('APP_ID'))
                         .ownerCardWalletIconBackgroundColor,

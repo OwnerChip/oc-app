@@ -149,14 +149,13 @@ abstract class BackendAuth extends Backend {
     });
   }
 
-  /// save a userSession of a OwnerCard or CertificateCard
+  /// save a userSession of an OwnerCard
   static Future<void> saveUserSession(
     String sessionId,
     EthereumAddress cardWalletAddress,
     MsgSignature signature,
     WidgetRef ref,
     String? jwt,
-    bool isCertificateCard,
   ) async {
     late JwtToken jwtToken;
 
@@ -188,34 +187,26 @@ abstract class BackendAuth extends Backend {
         sessionId,
         signature,
         ref.read(userAddressProvider),
-        !isCertificateCard,
-        isCertificateCard,
+        true,
         jwtToken);
 
     ref.read(userSessionProvider.notifier).state = userSession;
-    ref.read(walletTypeProvider.notifier).state = walletConfig[isCertificateCard
-        ? EWalletType.certificateCard
-        : EWalletType.ownerCard];
+    ref.read(walletTypeProvider.notifier).state =
+        walletConfig[EWalletType.ownerCard];
     ref.read(websocketProvider.notifier).init();
     ref.read(accountDeletionRequestProvider.notifier).refresh();
     ref.refresh(ocNFTsForOwnerProvider);
     ref.refresh(ocNFTsMintedByUserNotifierProvider);
 
-    // persist session date if not a certificate card
-    if(!isCertificateCard) {
-      final SharedPreferences storage = await SharedPreferences.getInstance();
-      storage.setString(
-        'userSession',
-        jsonEncode(userSession.toJson()),
-      );
-      storage.setString(
-        'walletType',
-        jsonEncode(walletConfig[isCertificateCard
-            ? EWalletType.certificateCard
-            : EWalletType.ownerCard]!
-            .toJson()),
-      );
-    }
+    final SharedPreferences storage = await SharedPreferences.getInstance();
+    storage.setString(
+      'userSession',
+      jsonEncode(userSession.toJson()),
+    );
+    storage.setString(
+      'walletType',
+      jsonEncode(walletConfig[EWalletType.ownerCard]!.toJson()),
+    );
   }
 
   static Future<bool> terminateSession() async {

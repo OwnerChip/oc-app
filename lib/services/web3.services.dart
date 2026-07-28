@@ -5,7 +5,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/utils/utils.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/json_rpc.dart';
@@ -44,17 +43,6 @@ Future<DeployedContract> getRegistryContract(
   DeployedContract contract = DeployedContract(
     ContractAbi.fromJson(abi, 'OwnerChipRegistry'),
     EthereumAddress.fromHex(registryContractAddress),
-  );
-  return contract;
-}
-
-Future<DeployedContract> getForwarderContract(
-    String registryForwarderAddress) async {
-  String abi =
-      await rootBundle.loadString("assets/contracts/forwarder.abi.json");
-  DeployedContract contract = DeployedContract(
-    ContractAbi.fromJson(abi, 'MinimalForwarder'),
-    EthereumAddress.fromHex(registryForwarderAddress),
   );
   return contract;
 }
@@ -103,20 +91,6 @@ Future<List<dynamic>> queryVoucherContract(
   return result;
 }
 
-Future<List<dynamic>> queryForwarderContract(
-    String chainRpcUrl,
-    String registryForwarderAddress,
-    String functionName,
-    List<dynamic> args) async {
-  DeployedContract contract =
-      await getForwarderContract(registryForwarderAddress);
-  ContractFunction function = contract.function(functionName);
-  final web3Client = getWeb3Client(chainRpcUrl);
-  List<dynamic> result = await web3Client.call(
-      contract: contract, function: function, params: args);
-  return result;
-}
-
 Future<BigInt> estimateGas(
   String chainRpcUrl,
   EthereumAddress contractAddress,
@@ -142,21 +116,6 @@ Future<BigInt> estimateGasPrice(String chainRpcUrl) async {
   return gasPrice.getInWei;
 }
 
-Future<BigInt> getNonce(String chainRpcUrl, String registryContractAddress,
-    String fromAddress) async {
-  try {
-    var nonce = await queryForwarderContract(
-        chainRpcUrl,
-        registryContractAddress,
-        "getNonce",
-        [EthereumAddress.fromHex(fromAddress)]);
-    return nonce[0];
-  } catch (e) {
-    print('Error while fetching nonce: $e');
-    throw Exception('Error while fetching nonce: $e');
-  }
-}
-
 // contract version 2
 Future<bool> verifyTokenSigner(
     String chainRpcUrl,
@@ -175,39 +134,6 @@ Future<bool> verifyTokenSigner(
   } catch (e) {
     return false;
   }
-}
-
-String makeMintToCertificateData(String functionSignatureHash, Uint8List hash,
-    MsgSignature signature, String tokenURI, String? voucherTokenURI) {
-  String data = ((functionSignatureHash == mintVoucherFunctionSignature ||
-              functionSignatureHash ==
-                  mintVoucherToCertificateCardFunctionSignature) &&
-          voucherTokenURI != null &&
-          voucherTokenURI != "")
-      ?
-      // voucherToken mint calldata
-      functionSignatureHash +
-          uint8ListTo32ByteHex(hash) + //bytes32
-          "c0".padLeft(64, '0') + //string1 position
-          //position of string2 is string1 position + 96 bytes (3 lines below in call data)
-          (0xc0 + 96).toRadixString(16).padLeft(64, '0') + //string2 position
-          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
-          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
-          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
-          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
-          stringToHex(tokenURI) + //string1;
-          (voucherTokenURI.length).toRadixString(16).padLeft(64, '0') +
-          stringToHex(voucherTokenURI) //string2;
-      // twinToken mint calldata
-      : functionSignatureHash +
-          uint8ListTo32ByteHex(hash) + //bytes32
-          "a0".padLeft(64, '0') + //string prefix
-          signature.r.toRadixString(16).padLeft(64, '0') + //bytes32
-          signature.s.toRadixString(16).padLeft(64, '0') + //bytes32
-          signature.v.toRadixString(16).padLeft(64, '0') + //uint8
-          (tokenURI.length).toRadixString(16).padLeft(64, '0') +
-          stringToHex(tokenURI); //string;
-  return data;
 }
 
 String makeMintData(String functionSignatureHash, Uint8List hash,
@@ -270,15 +196,6 @@ Future<List<dynamic>> buildEthSendTransactionRequest(
   if (functionSignatureHash == mintFunctionSignature) {
     data = makeMintData(
         functionSignatureHash, randomValueHash, signature, tokenURI!, null);
-  } else if (functionSignatureHash ==
-      mintVoucherToCertificateCardFunctionSignature) {
-    data = makeMintToCertificateData(
-      functionSignatureHash,
-      randomValueHash,
-      signature,
-      tokenURI!,
-      voucherTokenURI!,
-    );
   } else if (functionSignatureHash == erc20TransferFunctionSignature) {
     data = makeErc20TransferData(
       functionSignatureHash,

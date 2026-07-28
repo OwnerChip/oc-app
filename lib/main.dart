@@ -34,7 +34,6 @@ import 'screens/ChainSelectorScreen.dart';
 
 //import screens
 import 'screens/HomeScreen.dart';
-import 'screens/EmailLoginScreen.dart';
 import 'screens/metadataInput/MetadataInputScreen.dart';
 import 'screens/NFTDetailsScreen.dart';
 import 'screens/TransferScreen.dart';
@@ -190,7 +189,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         MyBalancePage.routeName: (context) => const MyBalancePage(),
         TokenCreatedScreen.routeName: (context) => const TokenCreatedScreen(),
         QRCodeScannerScreen.routeName: (context) => const QRCodeScannerScreen(),
-        EmailLoginScreen.routeName: (context) => const EmailLoginScreen(),
       },
     );
   }

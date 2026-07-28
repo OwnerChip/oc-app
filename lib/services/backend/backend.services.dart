@@ -7,7 +7,6 @@ import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.da
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollectionService.dart';
 import 'package:ownerchip_whitelabel/services/backend/creator/backendCreatorService.dart';
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomerService.dart';
-import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTxService.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 import 'package:sentry/sentry.dart';
 import 'package:sentry_dio/sentry_dio.dart';
@@ -62,7 +61,6 @@ abstract class Backend {
     talker.info('Recreating backend services with new JWT.\n$jwt');
 
     BackendAuthService.recreate(jwt);
-    BackendMetaTxService.recreate(jwt);
     BackendAppService.recreate(jwt);
     BackendCollectionService.recreate(jwt);
     BackendCustomerService.recreate(jwt);

@@ -702,9 +702,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get ownercard => 'OwnerCard';
 
   @override
-  String get certificatecard => 'Zertifikatskarte';
-
-  @override
   String get or => 'oder';
 
   @override
@@ -1120,30 +1117,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nein, behalten';
 
   @override
-  String get certificateCardLoginSuccess =>
-      'Erfolgreich mit der Zertifikatskarte verbunden.';
-
-  @override
-  String get cannotSetPinOnCertificateCard =>
-      'PIN kann auf der Zertifikatskarte nicht gesetzt werden.';
-
-  @override
-  String get cannotResetPinOnCertificateCard =>
-      'PIN kann auf der Zertifikatskarte nicht zurückgesetzt werden.';
-
-  @override
-  String get cardIsNotCertificateCard => 'NFC-Chip ist keine Zertifikatskarte.';
-
-  @override
   String get cardIsNotOwnerCard => 'NFC-Chip ist keine OwnerCard.';
 
   @override
-  String get holdPhoneCloseToCertificateCardToInit =>
+  String get holdPhoneCloseToCardToInit =>
       'Halten Sie Ihr Telefon nahe an die Zertifikatskarte.';
-
-  @override
-  String get cannotCardLostOnCertificateCard =>
-      'Zertifikatskarte kann nicht für Kartenverlust verwendet werden.';
 
   @override
   String get loginWithEmail_EnterEmailText =>

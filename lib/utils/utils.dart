@@ -276,24 +276,3 @@ String formatDate(String date) {
   }
 }
 
-T callFunctionWithFallback<T>({
-  required T Function() function,
-  required T Function() fallback,
-  bool Function(Object e)? predicate,
-}) {
-  try {
-    return function();
-  } catch (e) {
-    if (predicate != null && predicate(e)) {
-      return fallback();
-    }
-    return fallback();
-  }
-}
-
-bool gaslessTransactionFallbackPredicate(Object e) {
-  if (e is JsonRpcError) {
-    return e.code != 4001;
-  }
-  return true;
-}

@@ -25,8 +25,6 @@ import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
-import 'package:ownerchip_whitelabel/services/privyService.dart';
-import 'package:privy_flutter/privy_flutter.dart';
 import 'package:ownerchip_whitelabel/utils/localization.helper.dart';
 import 'package:ownerchip_whitelabel/utils/logger.dart';
 
@@ -76,12 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _setProviderStatesFromPersistedState() async {
     try {
-      await Future.wait(
-        [
-          initWcClient(ref, context),
-          setupPrivy(),
-        ],
-      );
+      await initWcClient(ref, context);
     } catch (e, s) {
       await Sentry.captureException(
         e,
@@ -104,9 +97,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ((storedUserSession != null &&
                   UserSession.fromJson(jsonDecode(storedUserSession))
                       .isOwnerCard) ||
-              (storedUserSession != null &&
-                  WalletType.fromJson(jsonDecode(storedWalletType)).type ==
-                      EWalletType.privy) ||
               (storedWcSession != null && storedUserSession != null))) {
         final walletType = WalletType.fromJson(jsonDecode(storedWalletType));
         final backendSession =
@@ -118,34 +108,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           seconds: 8,
         ));
 
-        if (walletType.type == EWalletType.certificateCard ||
-            (me != null && me.role != backendSession.jwt.role)) {
+        if (me != null && me.role != backendSession.jwt.role) {
           //remove session and wallet type from storage
           await _clearSession(storage, wcService);
           return;
         }
 
-        if (walletType.type == EWalletType.privy) {
-          // Privy handles token refresh internally; just check auth state
-          final authState = await privyInstance.getAuthState();
-          final isAuthenticated = authState is Authenticated;
-          final privyUser = await privyInstance.getUser();
-          final wallets = privyUser?.embeddedEthereumWallets ?? [];
-
-          if (isAuthenticated &&
-              wallets.isNotEmpty &&
-              backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
-              backendSession.jwt.raw.isNotEmpty) {
-            ref.read(userAddressProvider.notifier).state =
-                EthereumAddress.fromHex(wallets.first.address);
-            ref.read(walletTypeProvider.notifier).state = walletType;
-            ref.read(userSessionProvider.notifier).state = backendSession;
-            Backend.recreateServices(backendSession.jwt.raw);
-            ref.read(websocketProvider.notifier).init();
-          } else {
-            await _clearSession(storage, wcService);
-          }
-        } else if (walletType.type == EWalletType.ownerCard) {
+        if (walletType.type == EWalletType.ownerCard) {
           if (backendSession.expiryDate > BackendAuth.nowPlusThreeHours() &&
               backendSession.jwt.raw.isNotEmpty) {
             ref.read(userAddressProvider.notifier).state =
@@ -209,10 +178,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     WidgetsBinding.instance.addObserver(this);
     super.initState();
     
-    //check if persisted session is from previous app version; has to be called before _setProviderStatesFromPersistedState()
-    _checkAndRemovePersistedStorageDependingOnPreviousAppVersion();
-    //read persisted session
-    _setProviderStatesFromPersistedState().then((_) {
+    // The version guard must COMPLETE before the persisted session is read,
+    // otherwise the two race on SharedPreferences and a stale session can be
+    // rehydrated before the wipe lands. initState cannot be async, so chain.
+    _checkAndRemovePersistedStorageDependingOnPreviousAppVersion()
+        .then((_) => _setProviderStatesFromPersistedState())
+        .then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (ref.read(appNotifierProvider).appDto == null) {
           ref.read(appNotifierProvider.notifier).init();

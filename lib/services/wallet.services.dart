@@ -1,7 +1,6 @@
 //package imports
 import 'dart:convert';
 
-import 'package:convert/convert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,16 +15,11 @@ import 'package:ownerchip_whitelabel/domain/blockchain_token.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
 import 'package:ownerchip_whitelabel/domain/eip155.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
-import 'package:ownerchip_whitelabel/services/alchemy_bundler.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
-import 'package:ownerchip_whitelabel/services/backend/metaTx/backendMetaTx.dart';
-import 'package:ownerchip_whitelabel/services/gasstation.services.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
-import 'package:ownerchip_whitelabel/services/signature.services.dart';
 
 //service imports
 import 'package:ownerchip_whitelabel/services/web3.services.dart';
@@ -38,8 +32,6 @@ import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ownerchip_whitelabel/services/privyService.dart';
-import 'package:privy_flutter/privy_flutter.dart';
 import 'package:web3dart/src/utils/rlp.dart' as rlp;
 
 import 'providers/websocket/websocketNotifier.dart';
@@ -59,461 +51,6 @@ Uri convertToWcLink({
     }
   }
   return Uri.parse('$appLink/$wcPath');
-}
-
-Future<String> makeAndSendGaslessTx(WidgetRef ref,
-    BuildContext context,
-    String functionSignatureHash,
-    int chainId,
-    EthereumAddress toAddress,
-    SignatureData signatureData,
-    EthereumAddress walletAddress,
-    ReownAppKitModal? wc,
-    WalletType walletType, {
-      String? typedDataHash,
-      EthereumAddress? toAccount,
-      String? twinTokenMetadataCID,
-      String? voucherTokenMetadataCID,
-      BigInt? tokenId,
-      bool? enableRecovery,
-      EthereumAddress? sellerPayoutAddress,
-      BigInt? salt,
-      int? endTimestamp,
-      BigInt? price,
-      String? encodedOfferData,
-      required Function toggleLoading,
-      String? offerHash,
-      BigInt? amount,
-      BlockchainToken? token,
-      BigInt? gasAmount,
-      Future<MsgSignature?> Function(String hash)? getCardSignature,
-    }) async {
-  final callData = buildContractCallData(
-    functionSignatureHash,
-    walletAddress,
-    toAddress,
-    toAccount,
-    signatureData.hashedMsg,
-    signatureData.signature,
-    tokenURI: twinTokenMetadataCID != null ? 'ipfs://$twinTokenMetadataCID' : null,
-    voucherTokenURI:
-        voucherTokenMetadataCID != null ? 'ipfs://$voucherTokenMetadataCID' : null,
-    tokenId: tokenId,
-    enableRecovery: enableRecovery,
-    sellerPayoutAddress: sellerPayoutAddress,
-    price: price,
-    encodedOfferData: encodedOfferData,
-    typedDataHash: typedDataHash,
-    offerHash: offerHash,
-    amount: amount,
-    token: token,
-    chainId: chainId,
-  );
-
-  // Fetch MetaTx agreement ID early; soft-fail so the tx still proceeds if it errors.
-  String? _metaTxAgreementId;
-  try {
-    final collectionAddr = toAddress;
-    final checkResult = await BackendMetaTx.checkMetaTx(
-      collectionAddr,
-      functionSignatureHash,
-    );
-    if (checkResult[0] == true) {
-      _metaTxAgreementId = checkResult[1] as String?;
-    }
-  } catch (e) {
-    talker.warning('checkMetaTx failed (non-fatal, will skip recordTx): $e');
-  }
-
-  if (walletType.type == EWalletType.walletConnect) {
-    talker.log('WalletConnect wallet detected — using normal eth_sendTransaction (no gas sponsorship)');
-    final w3mService = ref.read(w3mServiceProvider)!;
-    final toAddr = toAddress;
-    final valueHex = (functionSignatureHash.isEmpty && amount != null)
-        ? '0x${amount!.toRadixString(16)}'
-        : '0x0';
-
-    late Future<dynamic> txnFuture;
-
-    await preventRepeatedNFCScan(() async {
-      await wcSwitchToChainConditionally(w3mService, chainId).catchError((e) {
-        talker.error('WalletConnect: failed to switch chain: $e');
-      });
-      await Future.delayed(const Duration(seconds: 3));
-
-      // Log a warning if the chain is not yet in the session namespaces, but
-      // still attempt the request — MetaMask handles chain selection internally.
-      final sessionTopic = wc!.session?.topic;
-      final sessionNamespaces = w3mService.appKit
-              ?.getActiveSessions()[sessionTopic]
-              ?.namespaces ??
-          {};
-      if (!isValidNamespacesChainId(
-        chainId: 'eip155:$chainId',
-        namespaces: sessionNamespaces,
-      )) {
-        talker.warning(
-          'WalletConnect: chain eip155:$chainId not found in session namespaces — '
-          'proceeding anyway (wallet may handle it). '
-          'If this fails, disconnect and reconnect your wallet.',
-        );
-      }
-
-      txnFuture = wc.request(
-        topic: sessionTopic,
-        chainId: 'eip155:$chainId',
-        request: SessionRequestParams(
-          method: 'eth_sendTransaction',
-          params: [
-            {
-              'from': walletAddress.hexEip55,
-              'to': toAddr.hexEip55,
-              'data': callData,
-              'value': valueHex,
-            }
-          ],
-        ),
-      );
-
-      w3mService.launchConnectedWallet();
-    });
-
-    late String txnHash;
-    try {
-      txnHash = (await txnFuture) as String;
-    } catch (e) {
-      final msg = e.toString();
-      // ReownSignError code 5100 means the target chain was not included in
-      // the WalletConnect session namespaces when the wallet connected.
-      // MetaMask approves only its currently active chain at pairing time.
-      // Ask the user to reconnect with the correct chain active.
-      if (msg.contains('5100') || msg.contains('Unsupported chains')) {
-        final chainName = chainConfig[chainId]?.networkName ?? 'chain $chainId';
-        throw Exception(
-          'Your wallet session does not include $chainName. '
-          'Please disconnect your wallet, switch MetaMask to $chainName, '
-          'then reconnect and try again.',
-        );
-      }
-      rethrow;
-    }
-    talker.log('WalletConnect eth_sendTransaction confirmed: $txnHash');
-
-    if (_metaTxAgreementId != null) {
-      BackendCollection.recordTx(
-        toAddress,
-        txHash: txnHash,
-        senderAddress: walletAddress.hex,
-        metaTxAgreementId: _metaTxAgreementId!,
-        functionSignature: functionSignatureHash,
-        callData: callData,
-        tokenId: tokenId?.toString(),
-      ).catchError((e) => talker.error('recordTx failed (non-fatal): $e'));
-    }
-
-    return txnHash;
-  }
-
-  final preparedResult = await alchemyPrepareCalls(
-    chainId: chainId,
-    from: walletAddress,
-    to: toAddress,
-    callData: callData,
-    value: (functionSignatureHash.isEmpty && amount != null)
-        ? '0x${amount.toRadixString(16)}'
-        : '0x0',
-  );
-
-  // wallet_prepareCalls returns one of two shapes:
-  //
-  //  A. type: "user-operation-v070"         (normal case, existing account)
-  //       → signatureRequest.data.raw = hash to personal_sign
-  //
-  //  B. type: "array"                        (first-time EIP-7702 delegation)
-  //       data[0]: type "authorization"     → signatureRequest.rawPayload
-  //       data[1]: type "user-operation-v070" → signatureRequest.data.raw
-  //
-  final resultType = preparedResult['type'] as String? ?? '';
-  talker.log('wallet_prepareCalls result type: $resultType');
-
-  String hashHex;
-  String? authHashHex;
-
-  if (resultType == 'array') {
-    final items =
-        (preparedResult['data'] as List).cast<Map<String, dynamic>>();
-
-    final userOpItem = items.firstWhere(
-      (i) => (i['type'] as String?) == 'user-operation-v070',
-      orElse: () => throw Exception(
-          'No user-operation-v070 item in wallet_prepareCalls array'),
-    );
-    final uopSigReq =
-        userOpItem['signatureRequest'] as Map<String, dynamic>?;
-    final uopSigData = uopSigReq?['data'] as Map<String, dynamic>?;
-    hashHex = (uopSigData?['raw'] as String?) ??
-        (uopSigReq?['rawPayload'] as String?) ??
-        (throw Exception('user-operation signatureRequest missing hash'));
-    talker.log('UserOp hash (from array): $hashHex');
-
-    final authItem = items.cast<Map<String, dynamic>?>().firstWhere(
-          (i) => (i?['type'] as String?) == 'authorization',
-          orElse: () => null,
-        );
-    if (authItem != null) {
-      final authSigReq =
-          authItem['signatureRequest'] as Map<String, dynamic>?;
-      authHashHex = authSigReq?['rawPayload'] as String?;
-      talker.log('EIP-7702 auth required, rawPayload: $authHashHex');
-    }
-  } else {
-    final sigReq =
-        preparedResult['signatureRequest'] as Map<String, dynamic>?;
-    if (sigReq == null) {
-      talker.error(
-          'wallet_prepareCalls result missing signatureRequest. Full: $preparedResult');
-      throw Exception(
-          'wallet_prepareCalls did not return a signatureRequest');
-    }
-    final sigData = sigReq['data'] as Map<String, dynamic>?;
-    talker.log('signatureRequest: $sigReq');
-    hashHex = (sigData?['raw'] as String?) ??
-        (sigData?['data'] as String?) ??
-        (throw Exception(
-            'wallet_prepareCalls signatureRequest.data.raw missing'));
-  }
-
-  String signature = '';
-  String? _ownerCardAuthSignature;
-
-  if (walletType.type == EWalletType.ownerCard) {
-    final hashBytes = hexToBytes(hashHex.substring(2));
-    final prefixedHash = applyPersonalSignPrefix(hashBytes);
-
-    if (authHashHex != null) {
-      // EIP-7702 first-time setup: sign BOTH auth hash AND userOp hash in
-      // a SINGLE card tap + PIN entry to avoid asking the user twice.
-      //
-      // auth hash:   raw bytes (no EIP-191 prefix) — EIP-7702 requires raw secp256k1
-      // userOp hash: with EIP-191 prefix         — LightAccount uses toEthSignedMessageHash
-      final authBytes = hexToBytes(authHashHex.substring(2));
-      // ignore: use_build_context_synchronously
-      final sigs = await Navigator.pushNamed(
-        context,
-        PinScreen.routeName,
-        arguments: PinScreenArguments(
-          activeFeature: PinScreenActiveFeature.verifyPinTx,
-          callback: (String pin) async => makeTwoCardSignatures(
-            ref, context,
-            authBytes,    // hash1 → authSignature (raw, no prefix)
-            prefixedHash, // hash2 → userOpSignature (with EIP-191 prefix)
-            pin,
-          ),
-        ),
-      ) as List<MsgSignature?>;
-      signature = msgSignatureToHex(sigs[1]!);
-      _ownerCardAuthSignature = msgSignatureToHex(sigs[0]!);
-    } else {
-      // ignore: use_build_context_synchronously
-      final cardSignature = await Navigator.pushNamed(
-        context,
-        PinScreen.routeName,
-        arguments: PinScreenArguments(
-          activeFeature: PinScreenActiveFeature.verifyPinTx,
-          callback: (String pin) async =>
-              makeCardSignature(ref, context, prefixedHash, toggleLoading, pin),
-        ),
-      ) as MsgSignature;
-      signature = msgSignatureToHex(cardSignature);
-    }
-  } else if (walletType.type == EWalletType.certificateCard) {
-    await Future.delayed(const Duration(seconds: 3));
-    final hashBytes = hexToBytes(hashHex.substring(2));
-    final prefixedHash = applyPersonalSignPrefix(hashBytes);
-    final sig = await getCardSignature!(hex.encode(prefixedHash));
-    if (sig == null) throw Exception('Certificate card returned null signature');
-    signature = msgSignatureToHex(sig);
-  } else if (walletType.type == EWalletType.walletConnect) {
-    final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
-
-    await preventRepeatedNFCScan(() async {
-      w3mService!.launchConnectedWallet();
-      toggleLoading();
-
-      signature = await wc!
-          .request(
-            topic: wc.session?.topic,
-            chainId: w3mService.selectedChain?.chainId ?? 'eip155:$chainId',
-            request: SessionRequestParams(
-              method: 'personal_sign',
-              params: [hashHex, walletAddress.toString()],
-            ),
-          )
-          .onError((error, stackTrace) {
-        talker.error('WalletConnect personal_sign error: $error', stackTrace);
-        throw error!;
-      });
-    });
-
-    toggleLoading();
-  } else {
-    // Privy embedded wallet.
-    //
-    // personal_sign requires user interaction via a WebView modal which blocks
-    // behind any loading overlay and times out.  Instead we pre-apply the
-    // EIP-191 prefix ourselves (exactly as card signers do) and then use
-    // secp256k1_sign, which signs raw bytes silently without any UI prompt,
-    // producing an identical signature.
-    try {
-      final hashBytes = hexToBytes(hashHex.substring(2));
-      final prefixedHash = applyPersonalSignPrefix(hashBytes);
-      final prefixedHex =
-          '0x${prefixedHash.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}';
-      signature = await _privySecp256k1Sign(
-        hashHex: prefixedHex,
-        label: 'UserOp',
-      );
-    } catch (e, st) {
-      Sentry.captureException(e, stackTrace: st);
-      debugPrint(e.toString());
-      debugPrintStack(stackTrace: st);
-      rethrow;
-    }
-  }
-
-  if (signature.isEmpty) throw Exception('Failed to obtain signature');
-
-  // EIP-7702 auth hash (rawPayload) must be signed RAW — no EIP-191 prefix.
-  // personal_sign would prepend "\x19Ethereum Signed Message:\n32" and hash
-  // again, making Alchemy recover the wrong authority address.
-  //
-  // OwnerCard: already signed in step 4 (single tap), stored in _ownerCardAuthSignature.
-  // WalletConnect: use eth_sign (params: [address, data]) — no prefix.
-  // Privy: use secp256k1_sign (raw, no UI prompt).
-  // CertificateCard: sign raw bytes.
-  String? authSignature = _ownerCardAuthSignature; // pre-filled for OwnerCard
-  if (authHashHex != null && authSignature == null) {
-    talker.log('Signing EIP-7702 auth hash: $authHashHex');
-    if (walletType.type == EWalletType.certificateCard) {
-      await Future.delayed(const Duration(seconds: 3));
-      final authBytes = hexToBytes(authHashHex.substring(2));
-      final sig = await getCardSignature!(hex.encode(authBytes));
-      if (sig == null) throw Exception('Certificate card returned null auth signature');
-      authSignature = msgSignatureToHex(sig);
-    } else if (walletType.type == EWalletType.walletConnect) {
-      final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
-      await preventRepeatedNFCScan(() async {
-        w3mService!.launchConnectedWallet();
-        toggleLoading();
-        // EIP-7702 auth must be signed raw (no EIP-191 prefix).
-        // eth_sign params are [address, data] — opposite of personal_sign.
-        authSignature = await wc!
-            .request(
-              topic: wc.session?.topic,
-              chainId:
-                  w3mService.selectedChain?.chainId ?? 'eip155:$chainId',
-              request: SessionRequestParams(
-                method: 'eth_sign',
-                params: [walletAddress.toString(), authHashHex],
-              ),
-            )
-            .onError((error, stackTrace) {
-          talker.error('WalletConnect auth eth_sign error: $error');
-          throw error!;
-        });
-      });
-      toggleLoading();
-    } else {
-      // Privy embedded wallet.
-      // EIP-7702 auth MUST be signed raw (no EIP-191 prefix).
-      // secp256k1_sign signs the hash directly, no user confirmation needed.
-      authSignature = await _privySecp256k1Sign(
-        hashHex: authHashHex!,
-        label: 'EIP-7702 auth',
-      );
-    }
-    talker.log('EIP-7702 auth signature obtained');
-  }
-
-  final userOpHash = await alchemySendPreparedCalls(
-    chainId: chainId,
-    preparedResult: preparedResult,
-    userOpSignature: signature,
-    authSignature: authSignature,
-  );
-  talker.log('UserOperation submitted: $userOpHash');
-
-  final txHash = await waitForUserOpReceipt(chainId, userOpHash);
-  talker.log('UserOperation confirmed, txHash: $txHash');
-
-  if (_metaTxAgreementId != null) {
-    BackendCollection.recordTx(
-      toAddress,
-      txHash: txHash,
-      senderAddress: walletAddress.hex,
-      metaTxAgreementId: _metaTxAgreementId!,
-      functionSignature: functionSignatureHash,
-      callData: callData,
-      tokenId: tokenId?.toString(),
-    ).catchError((e) => talker.error('recordTx failed (non-fatal): $e'));
-  }
-
-  return txHash;
-}
-
-/// Signs [hashHex] via the Privy embedded wallet using `secp256k1_sign`.
-///
-/// This method signs the hash **raw** (no EIP-191 prefix) and requires no
-/// user interaction — unlike `personal_sign` which opens a WebView modal.
-///
-/// Usage:
-///  • UserOp hash: caller must pre-apply [applyPersonalSignPrefix] so that
-///    the on-chain `toEthSignedMessageHash(hash)` verification passes.
-///  • EIP-7702 auth rawPayload: pass as-is (no prefix — raw secp256k1 verify).
-Future<String> _privySecp256k1Sign({
-  required String hashHex,
-  String label = '',
-  int maxRetries = 3,
-  Duration retryDelay = const Duration(seconds: 2),
-}) async {
-  int attempt = 0;
-  while (true) {
-    attempt++;
-    try {
-      final privyUser = await privyInstance.getUser();
-      if (privyUser == null || privyUser.embeddedEthereumWallets.isEmpty) {
-        throw Exception('No Privy embedded wallet found');
-      }
-      final wallet = privyUser.embeddedEthereumWallets.first;
-      String result = '';
-      final rpcResponse = await wallet.provider.request(
-        EthereumRpcRequest(
-          method: 'secp256k1_sign',
-          params: [hashHex],
-        ),
-      );
-      rpcResponse.fold(
-        onSuccess: (response) => result = response.data,
-        onFailure: (error) =>
-            throw Exception('Privy secp256k1_sign failed: ${error.message}'),
-      );
-      if (attempt > 1) {
-        talker.log('Privy $label secp256k1_sign succeeded on attempt $attempt');
-      }
-      return result;
-    } catch (e) {
-      final isTransient = e.toString().toLowerCase().contains('timeout') ||
-          e.toString().toLowerCase().contains('timed out') ||
-          e.toString().toLowerCase().contains('network');
-      if (attempt < maxRetries && isTransient) {
-        talker.warning(
-            'Privy $label secp256k1_sign attempt $attempt failed, retrying in ${retryDelay.inSeconds}s…');
-        await Future.delayed(retryDelay);
-        continue;
-      }
-      rethrow;
-    }
-  }
 }
 
 Future<EtherAmount> _getMaxPriorityFeePerGas() {
@@ -634,9 +171,10 @@ Future<String> makeAndSendNormalTx(BuildContext context,
     EthereumAddress toAddress,
     SignatureData signatureData,
     EthereumAddress walletAddress,
-    ReownAppKitModal wc,
+    ReownAppKitModal? wc,
     WalletType walletType, {
       EthereumAddress? toAccount,
+      bool? enableRecovery,
       BigInt? tokenId,
       String? twinTokenMetadataCID,
       String? voucherTokenMetadataCID,
@@ -667,7 +205,7 @@ Future<String> makeAndSendNormalTx(BuildContext context,
     voucherTokenURI: voucherTokenMetadataCID != null
         ? "ipfs://$voucherTokenMetadataCID"
         : null,
-    enableRecovery: false,
+    enableRecovery: enableRecovery ?? false,
     sellerPayoutAddress: sellerPayoutAddress,
     typedDataHash: typedDataHash,
     chainId: chainId,
@@ -689,11 +227,7 @@ Future<String> makeAndSendNormalTx(BuildContext context,
     throw Exception('Wallet type not found');
   }
 
-  if ([
-    EWalletType.ownerCard,
-    EWalletType.certificateCard,
-    EWalletType.privy,
-  ].contains(walletType.type)) {
+  if (walletType.type == EWalletType.ownerCard) {
     final client = getWeb3Client(chainConfig[chainId]!.rpcUrl);
     final params = txParams[0];
 
@@ -720,7 +254,7 @@ Future<String> makeAndSendNormalTx(BuildContext context,
 
     final MsgSignature signature;
 
-    if (walletType.type == EWalletType.ownerCard) {
+    {
       final sig =
       // ignore: use_build_context_synchronously
       await Navigator.pushNamed(context, PinScreen.routeName,
@@ -741,37 +275,6 @@ Future<String> makeAndSendNormalTx(BuildContext context,
       }
 
       signature = MsgSignature(sig.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
-    } else if (walletType.type == EWalletType.certificateCard) {
-      // add this delay, because if you scan the card immediately after scanning the chip, it will cause an error
-      await Future.delayed(const Duration(seconds: 3));
-      final sig = await getCardSignature!(
-        hex.encode(hash),
-      );
-
-      signature = MsgSignature(sig!.r, sig.s, sig.v - 27 + (chainId * 2 + 35));
-    } else {
-      final privyUser = await privyInstance.getUser();
-      if (privyUser == null || privyUser.embeddedEthereumWallets.isEmpty) {
-        throw Exception('No Privy embedded wallet');
-      }
-      final wallet = privyUser.embeddedEthereumWallets.first;
-
-      EthereumRpcResponse? rpcResult;
-      final rpcResponse = await wallet.provider.request(
-        EthereumRpcRequest(
-          method: 'eth_sendTransaction',
-          params: [txParams[0]],
-        ),
-      );
-      rpcResponse.fold(
-        onSuccess: (response) => rpcResult = response,
-        onFailure: (error) =>
-            throw Exception('Privy tx failed: ${error.message}'),
-      );
-      // For privy eth_sendTransaction, the result is the tx hash
-      txnHash = rpcResult!.data;
-      talker.log('Privy transaction sent: $txnHash');
-      return txnHash;
     }
 
     final signedTx = rlp.encode(
@@ -799,7 +302,7 @@ Future<String> makeAndSendNormalTx(BuildContext context,
       });
       await Future.delayed(const Duration(seconds: 3));
 
-      txnFuture = wc.request(
+      txnFuture = wc!.request(
         topic: wc.session?.topic!,
         chainId: 'eip155:$chainId',
         request: SessionRequestParams(
@@ -811,7 +314,23 @@ Future<String> makeAndSendNormalTx(BuildContext context,
       w3mService!.launchConnectedWallet();
     });
 
-    txnHash = await txnFuture;
+    try {
+      txnHash = await txnFuture;
+    } catch (e) {
+      final msg = e.toString();
+      // ReownSignError 5100 means the target chain was not in the WalletConnect
+      // session namespaces at pairing time; MetaMask approves only its active
+      // chain. Ask the user to reconnect with the right chain selected.
+      if (msg.contains('5100') || msg.contains('Unsupported chains')) {
+        final chainName = chainConfig[chainId]?.networkName ?? 'chain $chainId';
+        throw Exception(
+          'Your wallet session does not include $chainName. '
+          'Please disconnect your wallet, switch to $chainName, '
+          'then reconnect and try again.',
+        );
+      }
+      rethrow;
+    }
   }
 
   return txnHash;
@@ -933,35 +452,6 @@ Future<String> sendPersonalSignRequest(WidgetRef ref,
     walletAddress.toString()
   ];
 
-  if (walletType.type == EWalletType.privy) {
-    Future<String> signWithPrivy() async {
-      final privyUser = await privyInstance.getUser();
-      if (privyUser == null || privyUser.embeddedEthereumWallets.isEmpty) {
-        throw Exception('No Privy embedded wallet');
-      }
-      final wallet = privyUser.embeddedEthereumWallets.first;
-      String result = '';
-      final rpcResponse = await wallet.provider.request(
-        EthereumRpcRequest(
-          method: 'personal_sign',
-          params: [siweMessage ? message : hexUtf8EncodedMessage, walletAddress.toString()],
-        ),
-      );
-      rpcResponse.fold(
-        onSuccess: (response) => result = response.data,
-        onFailure: (error) =>
-            throw Exception('Privy personal_sign failed: ${error.message}'),
-      );
-      return result;
-    }
-
-    try {
-      return await signWithPrivy();
-    } catch (e, st) {
-      Sentry.captureException(e, stackTrace: st);
-      throw Exception('Failed to sign message with Privy');
-    }
-  } else {
     final ReownAppKitModal? w3mService = ref.read(w3mServiceProvider);
     w3mService!.launchConnectedWallet();
 
@@ -980,7 +470,6 @@ Future<String> sendPersonalSignRequest(WidgetRef ref,
       talker.error('Failed to sign message with WalletConnect $e', st);
       rethrow;
     }
-  }
 }
 
 
@@ -1144,41 +633,6 @@ void unsubscribeWcListeners(WidgetRef ref, BuildContext context) {
   }
 }
 
-Future<void> onCertificateCardLogin(WidgetRef ref,
-    BuildContext context,
-    bool removeWalletPopup,) async {
-  try {
-    if (!await checkInternetConnection()) {
-      throw "No internet connection";
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.errorHeadingSnackBar,
-        context.loc.errorNoInternetConnection,
-        'error'));
-    return;
-  }
-
-  await authenticateCard(
-    ref,
-    context,
-    pin: null,
-  );
-  final walletType = ref.read(walletTypeProvider);
-  if (walletType != null) {
-    ScaffoldMessenger.of(context).showSnackBar(returnSnackBarWidget(
-        context.loc.successHeadingSnackbar,
-        context.loc.certificateCardLoginSuccess,
-        'success'));
-  }
-
-  //navigate to previous screen
-  Navigator.pop(context);
-  if (removeWalletPopup) {
-    //remove wallet popup
-    Navigator.pop(context);
-  }
-}
 
 Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
     bool removeWalletPopup) async {
@@ -1211,18 +665,5 @@ Future<void> onCardPress(WidgetRef ref, BuildContext context, String pin,
   if (removeWalletPopup) {
     //remove wallet popup
     Navigator.pop(context);
-  }
-}
-
-bool _initializedPrivy = false;
-
-Future<void> setupPrivy() async {
-  if (_initializedPrivy) return;
-  try {
-    await initPrivy();
-    _initializedPrivy = true;
-  } catch (e) {
-    talker.error('Failed to initialize Privy: $e');
-    // Do NOT set _initializedPrivy = true here so the next call can retry.
   }
 }

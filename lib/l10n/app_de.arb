@@ -220,7 +220,6 @@
     "transferOnlyToOwnerCard": "Transfer nur zu initialisierter OwnerCard möglich.",
     "digitalContentWillBeTransferred": "Öffentlicher und privater Digital Content wird zusammen mit dem Digital Twin transferiert.",
     "ownercard": "OwnerCard",
-    "certificatecard": "Zertifikatskarte",
     "or": "oder",
     "cardNotInitializedByAdmin": "OwnerCard noch nicht vom Admin initialisiert.",
     "deletingAttachment": "Anhang löschen",
@@ -380,13 +379,8 @@
     "nft_transfer_cancel_confirmation_dialog_cancel_keep_button": "Nein, behalten",
 
     "@_CERTIFICATE_CARD": {},
-    "certificateCardLoginSuccess": "Erfolgreich mit der Zertifikatskarte verbunden.",
-    "cannotSetPinOnCertificateCard": "PIN kann auf der Zertifikatskarte nicht gesetzt werden.",
-    "cannotResetPinOnCertificateCard": "PIN kann auf der Zertifikatskarte nicht zurückgesetzt werden.",
-    "cardIsNotCertificateCard": "NFC-Chip ist keine Zertifikatskarte.",
     "cardIsNotOwnerCard": "NFC-Chip ist keine OwnerCard.",
-    "holdPhoneCloseToCertificateCardToInit": "Halten Sie Ihr Telefon nahe an die Zertifikatskarte.",
-    "cannotCardLostOnCertificateCard": "Zertifikatskarte kann nicht für Kartenverlust verwendet werden.",
+    "holdPhoneCloseToCardToInit": "Halten Sie Ihr Telefon nahe an die Zertifikatskarte.",
 
 
 
