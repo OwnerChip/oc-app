@@ -269,10 +269,9 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                         title: context.loc.loading, content: null)),
                 //if attachments are not empty --> show dropdown container
                 //if attachments are empty, but the connected wallet is the owner --> show dropdown container (so NFT owner can add documents)
-                ((attachments.isNotEmpty ||
-                            (nftOwner.hasValue &&
-                                connectedWallet == nftOwner.value)) &&
-                        dotenv.get('APP_ID') != 'ownerchip_infineon')
+                (attachments.isNotEmpty ||
+                        (nftOwner.hasValue &&
+                            connectedWallet == nftOwner.value))
                     ? DropdownContainer(
                         title: 'Digital Content ' +
                             '(' +

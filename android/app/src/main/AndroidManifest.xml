@@ -125,13 +125,6 @@
                         android:scheme="https"
                         android:host="item.ownerchip.com" />
             </intent-filter>
-            <intent-filter android:label="check chip">
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data
-                        android:scheme="https"
-                        android:host="stilami.ownerchip.com" />
-            </intent-filter>
         </activity>
         <meta-data
                 android:name="flutterEmbedding"

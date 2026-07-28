@@ -38,25 +38,11 @@ This is the main OwnerChip app.
     IS_INTERNAL='false'
 ```
 
-3. OwnerChip Discovery
-```dotenv
-   APP_ID='ownerchip'
-   IMAGE_ASSETS_BASE_URL='./assets/images/ownerchip_infineon'
-   BITRISEIO_PACKAGE_NAME='com.ownerchipinfineon.demo'
-   IS_INTERNAL='false'
-```
-4. SteboArt
+3. SteboArt
 ```dotenv
    APP_ID='stebo'
    IMAGE_ASSETS_BASE_URL='./assets/images/stebo'
    BITRISEIO_PACKAGE_NAME='com.steboart.user'
-   IS_INTERNAL='false'
-```
-5. Stilami
-```dotenv 
-   APP_ID='stilami'
-   IMAGE_ASSETS_BASE_URL='./assets/images/stilami'
-   BITRISEIO_PACKAGE_NAME='com.stilami.identity'
    IS_INTERNAL='false'
 ```
 

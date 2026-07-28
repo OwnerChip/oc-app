@@ -39,17 +39,5 @@ class OwnercardData {
       ownerCard:
           EthereumAddress.fromHex('0xdb166d2468d111bba8f80904cfd8143cebd07507'),
     ),
-    OwnercardData(
-      name: 'Infineon',
-      appId: 102,
-      ownerCard:
-          EthereumAddress.fromHex('0x3ad219eb491f5587bc26738cc9abd842f57e188f'),
-    ),
-    OwnercardData(
-      name: 'Stilami',
-      appId: 103,
-      ownerCard:
-          EthereumAddress.fromHex('0x9eb5ac7ce359f50176f98a4b6b6bdbca0cd79185'),
-    ),
   ];
 }

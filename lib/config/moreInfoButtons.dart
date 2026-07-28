@@ -26,16 +26,6 @@ class MoreInfoButtons {
           MoreInfoButton(loc.legal, loc.legalUrl)
         ];
         break;
-      case 'stilami':
-        roundedButtons = [
-          MoreInfoButton((loc as dynamic).stilamiIdentityButtonText, (loc as dynamic).stilamiIdentityUrl),
-          MoreInfoButton((loc as dynamic).collectionsButtonText, (loc as dynamic).collectionsUrl),
-        ];
-        outlinedRoundedButtons = [
-          MoreInfoButton(loc.support, loc.supportUrl),
-          MoreInfoButton(loc.legal, loc.legalUrl)
-        ];
-        break;
       default:
         roundedButtons = [
           MoreInfoButton(loc.viewProjects, loc.projectsUrl),

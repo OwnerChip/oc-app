@@ -98,8 +98,6 @@ flutter:
     - assets/images/ownerchip/
     - assets/images/ownerchip_user/
     - assets/images/stebo/
-    - assets/images/ownerchip_infineon/
-    - assets/images/stilami/
     - assets/contracts/collection.abi.json
     - assets/contracts/registry.abi.json
     - assets/contracts/voucher.abi.json

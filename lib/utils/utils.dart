@@ -59,10 +59,6 @@ String getCustomerId() {
       return '100';
     case 'com.steboart.user':
       return '101';
-    case 'com.ownerchipinfineon.demo':
-      return '102';
-    case 'com.stilami.identity':
-      return '103';
     default:
       return '';
   }
