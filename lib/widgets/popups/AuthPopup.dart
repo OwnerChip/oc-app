@@ -8,7 +8,6 @@ import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
@@ -157,7 +156,6 @@ Future<void> onTapAuth(
     isOwnerCard,
     isCertificateCard,
     token,
-    await BackendFCM.getAndSaveFCMToken(sessionId),
   );
 
   ref.read(userSessionProvider.notifier).state = userSession;

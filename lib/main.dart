@@ -1,9 +1,5 @@
 //import packages
 
-import 'dart:async';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,8 +7,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
-import 'package:ownerchip_whitelabel/domain/common/fcmNotificationData.dart';
-import 'package:ownerchip_whitelabel/firebase_options.dart';
 import 'package:ownerchip_whitelabel/screens/AdminInitCard.dart';
 import 'package:ownerchip_whitelabel/screens/CardLostScreen.dart';
 import 'package:ownerchip_whitelabel/screens/EnterPukScreen.dart';
@@ -81,10 +75,6 @@ void main(List<String> args) async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
   await BackendAuth.initGuestSession();
 
   //init sentry
@@ -111,57 +101,16 @@ class MyApp extends ConsumerStatefulWidget {
 
 //root widget
 class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
-  StreamSubscription? _msgSubscription;
-  StreamSubscription? _bgSubscription;
-
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addObserver(this);
 
-    initMessaging();
-
     // Deep-link handling (ownerchip://login?requestId=...)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppLinksService.instance.init();
     });
-  }
-
-  Future<void> _onMessageReceived(RemoteMessage message) async {
-    talker.log('Message received: ${message.toMap()}');
-
-    final data = FCMNotificationData.fromJson(message.data);
-
-    if (data.isDigitalTwinCreation ||
-        data.isDigitalTwinBurn ||
-        data.isDigitalTwinTransfer) {
-      await ref.read(creationsNotifierProvider.notifier).load();
-      ref.read(creationsNotifierProvider.notifier).navigateConditionally(
-            navigatorKey.currentContext ?? context,
-            data.decodeAsDigitalTwinCreation().userWalletAddress,
-            isFromNotification: true,
-          );
-    }
-  }
-
-  Future<void> initMessaging() async {
-    FirebaseMessaging.instance.requestPermission(
-      provisional: true,
-    );
-
-    _msgSubscription = FirebaseMessaging.onMessage.listen(_onMessageReceived);
-    FirebaseMessaging.onBackgroundMessage((message) async {
-      _onMessageReceived(message);
-    });
-    _bgSubscription =
-        FirebaseMessaging.onMessageOpenedApp.listen(_onMessageReceived);
-    FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
-      if (initialMessage != null) {
-        _onMessageReceived(initialMessage);
-      }
-    });
-    talker.log('Firebase messaging initialized');
   }
 
   @override
@@ -190,8 +139,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    _msgSubscription?.cancel();
-    _bgSubscription?.cancel();
 
     AppLinksService.instance.dispose();
 

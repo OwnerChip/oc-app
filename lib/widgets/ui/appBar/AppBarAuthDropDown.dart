@@ -3,12 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/websocket_connection_error_popup.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
-import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -307,9 +305,6 @@ Future<void> disconnectWallet(
   final wc = ref.read(w3mServiceProvider);
   ReownAppKitModalSession? wcSession = ref.watch(wcSessionProvider);
 
-  final session = ref.read(userSessionProvider);
-  final FCMToken? fcmToken = session?.fcmToken;
-
   //reset providers
   ref.read(userAddressProvider.notifier).state = zeroAddress;
   ref.read(walletTypeProvider.notifier).state = null;
@@ -336,12 +331,7 @@ Future<void> disconnectWallet(
         .disconnect(); //WC disconnect event is triggered and riverpod state is deleted in listener
   }
 
-  final terminated = await BackendAuth.terminateSession();
-
-  // fallback to delete fcm token if session termination failed
-  if (!terminated && fcmToken != null) {
-    await BackendFCM.deleteFCMToken(fcmToken);
-  }
+  await BackendAuth.terminateSession();
 
   try {
     // clean up services

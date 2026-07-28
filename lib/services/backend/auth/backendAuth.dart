@@ -1,12 +1,10 @@
 import 'dart:convert';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/config/wallets.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/fcm/fcm_token.dart';
 import 'package:ownerchip_whitelabel/domain/jwt/jwt_token.dart';
 import 'package:ownerchip_whitelabel/domain/walletSignature/walletSignature.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuthService.dart';
@@ -15,7 +13,6 @@ import 'package:ownerchip_whitelabel/services/backend/auth/payloads/qrcodeLoginC
 import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwePayload.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/responses/getMeResponse.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
-import 'package:ownerchip_whitelabel/services/backend/fcm/backendFcm.dart';
 import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
@@ -195,8 +192,7 @@ abstract class BackendAuth extends Backend {
         ref.read(userAddressProvider),
         !isCertificateCard,
         isCertificateCard,
-        jwtToken,
-        await BackendFCM.getAndSaveFCMToken(sessionId));
+        jwtToken);
 
     ref.read(userSessionProvider.notifier).state = userSession;
     ref.read(walletTypeProvider.notifier).state = walletConfig[isCertificateCard

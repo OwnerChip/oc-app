@@ -2,7 +2,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -228,13 +227,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     //read persisted session
     _setProviderStatesFromPersistedState().then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        FirebaseMessaging.instance.requestPermission(
-          alert: true,
-          badge: true,
-          provisional: false,
-          sound: true,
-        );
-
         if (ref.read(appNotifierProvider).appDto == null) {
           ref.read(appNotifierProvider.notifier).init().then((_) {
             _checkCreations();
