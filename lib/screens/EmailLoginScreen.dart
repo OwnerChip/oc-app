@@ -11,7 +11,6 @@ import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/myBalance/myBalanceNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
@@ -230,7 +229,6 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
 
     ref.read(userSessionProvider.notifier).state = userSession;
     ref.read(websocketProvider.notifier).init();
-    ref.read(creationsNotifierProvider.notifier).load();
     ref.read(accountDeletionRequestProvider.notifier).refresh();
 
     final String jsonUserSession = jsonEncode(userSession.toJson());

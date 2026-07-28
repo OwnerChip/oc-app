@@ -13,7 +13,6 @@ import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 
 //import screens
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
-import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreen.dart';
 import 'package:ownerchip_whitelabel/services/alchemy.services.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
@@ -23,8 +22,6 @@ import 'package:ownerchip_whitelabel/services/providers/app/appNotifier.dart';
 
 //import services
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/onboardingProvider.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -228,24 +225,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _setProviderStatesFromPersistedState().then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (ref.read(appNotifierProvider).appDto == null) {
-          ref.read(appNotifierProvider.notifier).init().then((_) {
-            _checkCreations();
-          });
+          ref.read(appNotifierProvider.notifier).init();
         }
       });
     });
 
     //refreshes alchemy metadata for all collections belonging to app
     makeAlchemyRefreshMetadata();
-  }
-
-  void _checkCreations() {
-    ref.read(creationsNotifierProvider.notifier).load().then((_) {
-      ref.read(creationsNotifierProvider.notifier).navigateConditionally(
-            context,
-            null,
-          );
-    });
   }
 
   @override
@@ -351,7 +337,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final app = ref.watch(appNotifierProvider);
-    final creations = ref.watch(creationsNotifierProvider);
 
     AsyncValue<BlockchainCollectionList> relevantCollections =
         ref.watch(findAllMinterRolesProvider);
@@ -383,7 +368,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: _buildBody(
         context,
         relevantCollections,
-        creations,
       ),
     );
   }
@@ -391,7 +375,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   ScreenBodyLayout _buildBody(
     BuildContext context,
     AsyncValue<BlockchainCollectionList> relevantCollections,
-    CreationsData creations,
   ) {
     return ScreenBodyLayout(
       withScrollView: false,
@@ -452,16 +435,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     loading: () =>
                         SizedBox(height: 40, child: Text(context.loc.loading)),
                     error: (err, stack) => Container()),
-            if (creations.initialized &&
-                (creations.data != null && creations.data!.isNotEmpty)) ...[
-              const SizedBox(height: 20),
-              CustomRoundedButton(
-                width: 250,
-                text: context.loc.nftCreationsHomeScreenButtonTitle,
-                onPressed: () =>
-                    Navigator.pushNamed(context, CreationsPage.routeName),
-              ),
-            ]
           ],
         ),
 

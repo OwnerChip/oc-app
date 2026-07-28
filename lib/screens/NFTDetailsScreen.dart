@@ -8,7 +8,6 @@ import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/collections.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/local_attachment.dart';
 import 'package:ownerchip_whitelabel/domain/tokenTypes.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
@@ -21,7 +20,6 @@ import 'package:ownerchip_whitelabel/services/providers/attachmentsData.dart';
 import 'package:ownerchip_whitelabel/services/providers/blockchainData.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creationData.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/urlData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
@@ -112,11 +110,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
         ref.watch(voucherTokenOwnerProvider);
     final AsyncValue<EthereumAddress> lastSellerAddress =
         ref.watch(lastSellerAddressProvider);
-    final digitalTwinMetadata = ref.watch(digitalTwinCreationMetadataProvider);
-
-    Widget buildButtons({
-      DigitalTwinMetadata? digitalTwinMetadata,
-    }) {
+    Widget buildButtons() {
       return _buildButtons(
         nftOwner,
         connectedWallet,
@@ -133,7 +127,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
         vouchertokenOwner,
         lastSellerAddress,
         raribleUrl,
-        digitalTwinMetadata: digitalTwinMetadata,
       );
     }
 
@@ -214,14 +207,7 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                   indent: 0,
                   endIndent: 0,
                 ),
-                digitalTwinMetadata.when(
-                    data: (creation) {
-                      return buildButtons(digitalTwinMetadata: creation);
-                    },
-                    error: (e, s) => buildButtons(),
-                    loading: () {
-                      return const SizedBox();
-                    }),
+                buildButtons(),
 
                 /*** DESCRIPTION ***/
                 nftMetadata.when(
@@ -618,9 +604,8 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
     AsyncValue<EthereumAddress?> voucherContractAddress,
     AsyncValue<EthereumAddress?> vouchertokenOwner,
     AsyncValue<EthereumAddress> lastSellerAddress,
-    AsyncValue<Uri> raribleUrl, {
-    DigitalTwinMetadata? digitalTwinMetadata,
-  }) {
+    AsyncValue<Uri> raribleUrl,
+  ) {
     return GridView(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -641,9 +626,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                               onPressed: () => Navigator.pushNamed(
                                 context,
                                 TransferScreen.routeName,
-                                arguments: TransferScreenArguments(
-                                  digitalTwinMetadata: digitalTwinMetadata,
-                                ),
                               ),
                               icon: Icon(
                                 Icons.send,
@@ -742,8 +724,6 @@ class _NFTDetailsScreen extends ConsumerState<NFTDetailsScreen>
                                                       ref.read(
                                                           chipSignatureDataProvider),
                                                       connectedWallet,
-                                                      digitalTwinMetadata:
-                                                          digitalTwinMetadata,
                                                     ));
                                                   },
                                                   icon: Icon(

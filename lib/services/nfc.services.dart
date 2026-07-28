@@ -28,7 +28,6 @@ import 'package:ownerchip_whitelabel/services/backend/collection/backendCollecti
 import 'package:ownerchip_whitelabel/services/backend/customer/backendCustomer.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -326,7 +325,6 @@ Future<void> restoreDeferredUserSession(WidgetRef ref) async {
     ref.read(walletTypeProvider.notifier).state =
         deferredUserSession.walletType;
     Backend.recreateServices(deferredUserSession.userSession!.jwt.raw);
-    ref.read(creationsNotifierProvider.notifier).load();
     ref.read(websocketProvider.notifier).init();
     //persist session date
     final SharedPreferences storage = await SharedPreferences.getInstance();

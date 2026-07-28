@@ -7,7 +7,6 @@ import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/screens/qrCode/websocket_connection_error_popup.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
 import 'package:ownerchip_whitelabel/services/providers/privy/privyNotifier.dart';
@@ -310,7 +309,6 @@ Future<void> disconnectWallet(
   ref.read(walletTypeProvider.notifier).state = null;
   ref.read(userSessionProvider.notifier).state = null;
   ref.read(websocketProvider.notifier).disconnect();
-  ref.read(creationsNotifierProvider.notifier).onLogout();
 
   final storage = await SharedPreferences.getInstance();
 

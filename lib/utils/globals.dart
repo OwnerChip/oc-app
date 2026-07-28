@@ -11,7 +11,6 @@ class ScaffoldKey {
     'EnterShippingAddressScreen': GlobalKey<ScaffoldState>(),
     'HomeScreen': GlobalKey<ScaffoldState>(),
     'NFTDetailsScreen': GlobalKey<ScaffoldState>(),
-    'CreationsPage': GlobalKey<ScaffoldState>(),
   };
 
   static GlobalKey<ScaffoldState> getScaffoldKey(String screenName) {

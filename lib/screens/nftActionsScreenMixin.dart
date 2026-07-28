@@ -3,24 +3,17 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
-import 'package:ownerchip_whitelabel/config/ownercard.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/domain/phygitalTradeTypes.dart';
-import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/app/backendApp.dart';
 import 'package:ownerchip_whitelabel/services/backend/attachments/backendAttachments.dart';
 import 'package:ownerchip_whitelabel/services/backend/collection/backendCollection.dart';
-import 'package:ownerchip_whitelabel/services/backend/creation/backendCreation.dart';
 import 'package:ownerchip_whitelabel/services/backend/offer/backendOffer.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/chipData.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creationData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/purchasesData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
@@ -39,7 +32,6 @@ import 'package:ownerchip_whitelabel/widgets/popups/returnSnackBarWidget.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import '../services/ipfs.services.dart';
 
 mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     implements ConsumerState<T> {
@@ -220,7 +212,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     SignatureData signatureData,
     EthereumAddress connectedWallet, {
     VoidCallback? onSuccess,
-    DigitalTwinMetadata? digitalTwinMetadata,
   }) async {
     final UserSession userSession = ref.read(userSessionProvider)!;
     final wcSession = ref.read(wcSessionProvider);
@@ -253,13 +244,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             'chipWallet': convertTokenIdToEthereumAddress(
                 ref.read(chipInfoProvider).tokenId)
           });
-
-      if (digitalTwinMetadata != null &&
-          digitalTwinMetadata.status !=
-              DigitalTwinCreationMetadataStatus.toBeBurned) {
-        await BackendCreation.prepareBurnDigitalTwin(
-            id: digitalTwinMetadata.id);
-      }
 
       String txnHash = "";
 
@@ -296,15 +280,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       var txnReceipt =
           await getTxnReceipt(getRPCUrlFromChainId(config.chainId), txnHash);
       if (txnReceipt?.status == true) {
-        if (digitalTwinMetadata != null) {
-          await BackendCreation.markDigitalTwinAsBurned(
-            id: digitalTwinMetadata.id,
-          );
-        }
-
-        ref.refresh(digitalTwinAttachmentsProvider);
-        ref.refresh(digitalTwinCreationMetadataProvider);
-
         //this means burn succeeded
         setState(() {
           isRotating = false;
@@ -335,12 +310,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       setState(() {
         isLoading = false;
       });
-
-      // if (digitalTwinMetadata != null) {
-      //   await BackendCreation.cancelBurnDigitalTwin(
-      //     id: digitalTwinMetadata.id,
-      //   );
-      // }
 
       // send Error to analytics
       burnProcess.throwable = e;
@@ -628,9 +597,8 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     EthereumAddress to,
     SignatureData signatureData,
     EthereumAddress connectedWallet,
-    String sessionId, {
-    DigitalTwinMetadata? digitalTwinMetadata,
-  }) async {
+    String sessionId,
+  ) async {
     final wcSession = ref.read(wcSessionProvider);
     final TokenChainAndCollection config =
         await ref.watch(findTokenProvider(tokenId).future);
@@ -649,14 +617,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
             convertTokenIdToEthereumAddress(ref.read(chipInfoProvider).tokenId),
         'to': to.toString(),
       });
-
-      if (digitalTwinMetadata != null &&
-          digitalTwinMetadata.status !=
-              DigitalTwinCreationMetadataStatus.toBeTransferred) {
-        await BackendCreation.prepareTransferDigitalTwin(
-          id: digitalTwinMetadata.id,
-        );
-      }
 
       String txnHash = "";
       try {
@@ -702,16 +662,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
           loadingText = context.loc.transferSuccess;
         });
 
-        if (digitalTwinMetadata != null) {
-          await BackendCreation.markDigitalTwinAsTransferred(
-            id: digitalTwinMetadata.id,
-            recipient: to.hex,
-          );
-        }
-
-        ref.refresh(digitalTwinAttachmentsProvider);
-        ref.refresh(digitalTwinCreationMetadataProvider);
-
         try {
           await Future.delayed(const Duration(seconds: 2));
           //refresh provider state to update nft owner & approval for next screen
@@ -745,11 +695,6 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
       setState(() {
         isLoading = false;
       });
-      // if (digitalTwinMetadata != null) {
-      //   await BackendCreation.cancelTransferDigitalTwin(
-      //     id: digitalTwinMetadata.id,
-      //   );
-      // }
       // send Error to analytics
       transferProcess.throwable = e;
       transferProcess.status = const SpanStatus.aborted();
@@ -887,213 +832,4 @@ mixin NftActionScreenMixin<T extends ConsumerStatefulWidget>
     }
   }
 
-  Future<void> createToken(
-    String sessionId,
-    ReownAppKitModal? wc,
-    SignatureData signatureData,
-    DigitalTwinMetadata metadata,
-  ) async {
-    final UserSession userSession = ref.read(userSessionProvider)!;
-    final wcSession = ref.read(wcSessionProvider);
-    final walletType = ref.read(walletTypeProvider);
-
-    final mintProcess = Sentry.startTransaction('initMinting()', 'task');
-
-    EthereumAddress connectedWallet = ref.read(userAddressProvider);
-
-    final ipfsProcess = Sentry.startTransaction('initIPFSUpload()', 'task');
-    BackendApp.sendAnalyticsTrace(sessionId, "", "IPFS_UPLOAD_STARTED",
-        tags: {'connectedWallet': connectedWallet.hex});
-
-    final chipInfo = ref.read(chipInfoProvider);
-
-    // For MULTIPLE, get metadata from backend and upload to IPFS
-    // This CID will be used in the minting transaction
-    String twinTokenMetadataCID;
-    Map<String, dynamic> metadataIPFS;
-    
-    if (metadata.type == DigitalTwinCreationType.multiple) {
-      // Get IPFS metadata from backend endpoint
-      metadataIPFS = await BackendCreation.getMultiSerialItemIpfsMetadata(
-        itemId: metadata.id,
-      );
-      
-      // Generate twin metadata JSON file from the backend metadata
-      XFile jsonFileTwin = await saveMetadataAsJSONFile(metadataIPFS);
-      
-      // Upload twin metadata JSON to IPFS
-      twinTokenMetadataCID = await uploadFileToIPFS(jsonFileTwin, 'application/json');
-    } else {
-      // For regular tokens, download existing metadata from IPFS
-      metadataIPFS = await downloadMetadataFromIPFS(metadata.twinTokenMetadataCID!);
-      twinTokenMetadataCID = metadata.twinTokenMetadataCID!;
-    }
-
-    /////////// VOUCHER METADATA ///////////
-
-    Map<String, dynamic> voucherMetadata = {...metadataIPFS};
-
-    XFile jsonFileVoucher = await generateVoucherMetadataFile(
-        voucherMetadata, chipInfo.tokenId, context);
-    String voucherTokenMetadataCID =
-        await uploadFileToIPFS(jsonFileVoucher, 'application/json');
-
-    ipfsProcess.finish();
-
-    setState(() {
-      isLoading = true;
-      loadingText = context.loc.uploadingMetadata;
-    });
-
-    try {
-      final chipInfo = ref.read(chipInfoProvider);
-
-      String functionSignature = mintVoucherFunctionSignature;
-
-      if (OwnercardData.isCertificateCard(chipInfo.firstSlotKey)) {
-        functionSignature = mintVoucherToCertificateCardFunctionSignature;
-      }
-
-      // switch to minting loading overlay
-      setState(() {
-        isLoading = true;
-        loadingText = context.loc.mintingToken;
-      });
-
-      BackendApp.sendAnalyticsTrace(sessionId, "", "MINTING_STARTED", tags: {
-        'connectedWallet': connectedWallet.hex,
-      });
-
-      String txnHash = "";
-
-      int chainId = metadata.collection.chainId;
-
-      try {
-        txnHash = await makeAndSendGaslessTx(
-          ref,
-          context,
-          functionSignature,
-          chainId,
-          EthereumAddress.fromHex(metadata.collection.voucherAddress),
-          signatureData,
-          connectedWallet,
-          wc,
-          walletType!,
-          twinTokenMetadataCID: twinTokenMetadataCID,
-          voucherTokenMetadataCID: voucherTokenMetadataCID,
-          toggleLoading: toggleLoading,
-          getCardSignature: (hash) async {
-            final List<MsgSignature?> chipSignatures =
-                await getChipSignatures(
-              ref,
-              context,
-              [hash],
-              toggleLoading,
-            );
-            return chipSignatures[0];
-          },
-        );
-      } catch (e, st) {
-        talker.error('Error minting token: $e', st);
-        Sentry.captureException(e, stackTrace: st);
-        throw Exception("Can't mint token with gas station at the moment");
-      }
-
-      //wait until TX is succeeded or failed
-      var txnReceipt =
-          await getTxnReceipt(getRPCUrlFromChainId(chainId), txnHash);
-
-      //if transaction is mined, then navigate to NFTDetailsScreen
-      if (txnReceipt?.status == true) {
-        mintProcess.finish();
-        BackendApp.sendAnalyticsTrace(sessionId, txnHash, "MINTING_SUCCESS",
-            tags: {
-              'connectedWallet': connectedWallet.hex,
-            });
-
-        try {
-          await Future.delayed(const Duration(seconds: 2));
-          final ChipInfoModel chipInfo = ref.read(chipInfoProvider);
-
-          // Mark as minted on backend first — must not be blocked by provider refresh errors.
-          if (metadata.type == DigitalTwinCreationType.multiple) {
-            final response = await BackendCreation.markMultiSerialItemDigitalTwinAsMinted(
-              parentId: metadata.parentUid ?? metadata.id,
-              chipId: chipInfo.chipEthereumAddress.hex,
-              twinTokenMetadataCID: twinTokenMetadataCID,
-            ).catchError((e, st) {
-              Sentry.captureException(e, stackTrace: st);
-              talker.error('Error marking MULTI_SERIAL_ITEM digital twin as minted: $e', st);
-              return {'success': false};
-            });
-            if (response['success'] == true) {
-              talker.info('MULTI_SERIAL_ITEM activated with UID: ${response['activatedItemUid']}');
-            }
-          } else {
-            await BackendCreation.markDigitalTwinAsMinted(
-              id: metadata.id,
-              chipId: chipInfo.chipEthereumAddress.hex,
-            ).catchError((e, st) {
-              Sentry.captureException(e, stackTrace: st);
-              talker.error('Error marking digital twin as minted: $e', st);
-              return false;
-            });
-          }
-
-          try {
-            await ref.refresh(findTokenProvider(chipInfo.tokenId).future);
-            await ref.refresh(voucherContractAndTwinNftOwnerProvider.future);
-            ref.refresh(digitalTwinAttachmentsProvider);
-            ref.refresh(digitalTwinCreationMetadataProvider);
-          } catch (e, st) {
-            Sentry.captureException(e, stackTrace: st);
-            talker.error('Error refreshing providers: $e', st);
-          }
-
-          ref.read(creationsNotifierProvider.notifier).load();
-        } catch (e, st) {
-          Sentry.captureException(e, stackTrace: st);
-          talker.error('Error in post-mint updates: $e', st);
-        }
-
-        if (mounted) {
-          isLoading = false;
-          setState(() {});
-        }
-
-        if(!mounted) return;
-
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          OfferForSaleCreatedTokenScreen.routeName,
-          (route) => route.isFirst,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          returnSnackBarWidget(context.loc.successHeadingSnackbar,
-              context.loc.mintSuccess, 'success'),
-        );
-      } else {
-        throw Exception('Transaction failed');
-      }
-    } catch (e, s) {
-      // Send message mint error to analytics/ownerchip & Sentry
-      BackendApp.sendAnalyticsTrace(sessionId, "$e", "MINTING_ERROR",
-          tags: {'connectedWallet': connectedWallet.hex});
-      mintProcess.throwable = e;
-      mintProcess.status = const SpanStatus.aborted();
-      mintProcess.finish();
-      await Sentry.captureException(
-        e,
-        stackTrace: s,
-      );
-      talker.error('Error minting token: $e', s);
-      ScaffoldMessenger.of(context).showSnackBar(
-        returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
-      );
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
 }

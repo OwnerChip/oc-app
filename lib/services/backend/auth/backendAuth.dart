@@ -14,7 +14,6 @@ import 'package:ownerchip_whitelabel/services/backend/auth/payloads/validateSiwe
 import 'package:ownerchip_whitelabel/services/backend/auth/responses/getMeResponse.dart';
 import 'package:ownerchip_whitelabel/services/backend/backend.services.dart';
 import 'package:ownerchip_whitelabel/services/providers/accountDeletionRequest/accountDeletionRequestNotifier.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/nftData.dart';
 import 'package:ownerchip_whitelabel/services/providers/userData.dart';
 import 'package:ownerchip_whitelabel/services/providers/walletconnectData.dart';
@@ -198,7 +197,6 @@ abstract class BackendAuth extends Backend {
     ref.read(walletTypeProvider.notifier).state = walletConfig[isCertificateCard
         ? EWalletType.certificateCard
         : EWalletType.ownerCard];
-    ref.read(creationsNotifierProvider.notifier).load();
     ref.read(websocketProvider.notifier).init();
     ref.read(accountDeletionRequestProvider.notifier).refresh();
     ref.refresh(ocNFTsForOwnerProvider);

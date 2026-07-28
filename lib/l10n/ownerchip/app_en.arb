@@ -457,68 +457,7 @@
   "nftDetailsErrorFetchingCertificateData": "unknown",
 
 
-  "@_NFT_CREATIONS_PAGE": {},
-  "nftCreationsPageTitle": "Digital Twins",
-  "nftCreationsPagePullToRefresh": "Pull to refresh",
-  "nftCreationsPageRefreshing": "Refreshing...",
-  "nftCreationsHomeScreenButtonTitle": "Sign Transactions",
-  "nftCreationsPageToBeBurned": "Deletion pending",
-  "nftCreationsPagePending": "Activation pending",
-  "nftCreationsPageToBeTransferred": "Transfer pending",
-  "nftCreationsPageError": "Error",
-  "nftCreationsPageChipMismatchError": "Chip mismatch",
-  "nftCreationsPagePullToLoadMore": "Pull to load more",
-  "nftCreationsPageLoading": "Loading...",
-  "nftCreationsLoggedInWithDifferentWalletTitle": "Wallet",
-  "nftCreationsLoggedInWithDifferentWalletDescription": "You are logged in with a different wallet. Please log in with the wallet you used to create the Digital Twin.",
-  "nftCreationsLoggedInWidthDifferentWalletButton": "Close",
-  "nftCreationsNotLoggedInTitle": "Wallet",
-  "nftCreationsNotLoggedInDescription": "Please log in with the wallet you used to create the Digital Twin.",
-  "nftCreationsNotLoggedInButton": "Close",
-  "nftCreationsAlreadyMintedToken": "The chip you scanned is already activated with another digital twin",
-  "nftCreationRestoreTokenPopupTitle": "Restore Digital Twin",
-  "nftCreationRestoreTokenPopupMessage": "The chip you scanned is already activated with another digital twin. Do you want to restore the Digital Twin?",
-  "nftCreationRestoreTokenPopupCancelButton": "Cancel",
-  "nftCreationRestoreTokenPopupRestoreButton": "Restore",
-  "nftCreationRestoreTokenPopupViewTokenButton": "View Digital Twin",
-  "nftCreationRestoreTokenPopupSuccessTitle": "Digital Twin restored",
 
-  "nftCreationMultiSeriesTitle": "Series Activation",
-  "nftCreationMultiSeriesDescription": "Series - {number} twins",
-  "nftCreationMultiSeriesStatus": "{current} of {total} activated",
-  "nftCreationMultiSeriesActivateButton": "Scan next NFC chip",
-  "nftCreationMultiSeriesPause": "Pause and continue later",
-  "nftCreationMultiSeriesBadge": "Series",
-  "nftCreationMultiSeriesItemsCount": "{count} items",
-  "@nftCreationMultiSeriesItemsCount": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
-  "nftCreationMultiSeriesItemsActivated": "{current} of {total} items activated",
-  "@nftCreationMultiSeriesItemsActivated": {
-    "placeholders": {
-      "current": {
-        "type": "String"
-      },
-      "total": {
-        "type": "String"
-      }
-    }
-  },
-  "nftCreationSeriesStatusActivationPending": "Activation pending",
-  "nftCreationSeriesStatusDraft": "Draft",
-  "nftCreationSeriesStatusActive": "Active",
-  "nftCreationSeriesStatusToBeBurned": "To be burned",
-  "nftCreationSeriesStatusToBeTransferred": "To be transferred",
-  "nftCreationSeriesActionStartScanning": "Tap to start scanning",
-  "nftCreationSeriesActionConnectNFC": "Tap to connect with NFC chip",
-  "nftCreationSingleItemBadge": "Single item",
-  "nftCreationSingleActionConnectNFC": "Tap to connect with NFC chip",
-  "nftCreationSingleActionBurnToken": "Tap to burn token",
-  "nftCreationSingleActionTransferToken": "Tap to transfer token",
 
 
   "nft_cancel_confirmation_dialog_title": "Cancel NFT",

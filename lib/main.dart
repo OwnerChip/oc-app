@@ -15,7 +15,6 @@ import 'package:ownerchip_whitelabel/screens/GalleryScreen.dart';
 import 'package:ownerchip_whitelabel/screens/ListAttachmentsScreen.dart';
 import 'package:ownerchip_whitelabel/screens/MoreInfoScreen.dart';
 import 'package:ownerchip_whitelabel/screens/PinScreen.dart';
-import 'package:ownerchip_whitelabel/screens/creations/CreationsPage.dart';
 import 'package:ownerchip_whitelabel/screens/myBalance/MyBalanceScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferForSaleCreatedTokenScreen.dart';
 import 'package:ownerchip_whitelabel/screens/offer/OfferOnMPScreen.dart';
@@ -25,8 +24,6 @@ import 'package:ownerchip_whitelabel/screens/onboarding/OnboardingScreenWithStep
 import 'package:ownerchip_whitelabel/screens/qrCode/QRCodeScannerScreen.dart';
 import 'package:ownerchip_whitelabel/services/backend/auth/backendAuth.dart';
 import 'package:ownerchip_whitelabel/services/providers/collectionsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsData.dart';
-import 'package:ownerchip_whitelabel/services/providers/creations/creationsNotifier.dart';
 import 'package:ownerchip_whitelabel/services/providers/websocket/websocketNotifier.dart';
 import 'package:ownerchip_whitelabel/services/wallet.services.dart';
 
@@ -194,15 +191,7 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         NFTDetailsScreen.routeName: (context) => const NFTDetailsScreen(),
         ChainSelectorScreen.routeName: (context) => const ChainSelectorScreen(),
         MoreInfoScreen.routeName: (context) => const MoreInfoScreen(),
-        TransferScreen.routeName: (context) {
-          TransferScreenArguments? args = ModalRoute.of(context)!
-              .settings
-              .arguments as TransferScreenArguments?;
-
-          return TransferScreen(
-            digitalTwinMetadata: args?.digitalTwinMetadata,
-          );
-        },
+        TransferScreen.routeName: (context) => const TransferScreen(),
         AddAttachmentScreen.routeName: (context) => const AddAttachmentScreen(),
         ListAttachmentsScreen.routeName: (context) =>
             const ListAttachmentsScreen(),
@@ -223,7 +212,6 @@ class _MyApp extends ConsumerState<MyApp> with WidgetsBindingObserver {
         OfferForSaleCreatedTokenScreen.routeName: (context) =>
             const OfferForSaleCreatedTokenScreen(),
         QRCodeScannerScreen.routeName: (context) => const QRCodeScannerScreen(),
-        CreationsPage.routeName: (context) => const CreationsPage(),
         EmailLoginScreen.routeName: (context) => const EmailLoginScreen(),
       },
     );

@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ownerchip_whitelabel/domain/classDefinition.dart';
-import 'package:ownerchip_whitelabel/domain/creation/digitalTwinMetadata.dart';
 import 'package:ownerchip_whitelabel/screens/HomeScreen.dart';
 import 'package:ownerchip_whitelabel/screens/nftActionsScreenMixin.dart';
 import 'package:ownerchip_whitelabel/services/nfc.services.dart';
@@ -24,21 +23,11 @@ import 'package:ownerchip_whitelabel/widgets/ui/SpinningLoadingSvg.dart';
 import 'package:ownerchip_whitelabel/widgets/ui/appBar/CustomAppBar.dart';
 import 'package:web3dart/web3dart.dart';
 
-class TransferScreenArguments {
-  final DigitalTwinMetadata? digitalTwinMetadata;
-
-  TransferScreenArguments({
-    this.digitalTwinMetadata,
-  });
-}
-
 class TransferScreen extends ConsumerStatefulWidget {
   const TransferScreen({
     Key? key,
-    this.digitalTwinMetadata,
   }) : super(key: key);
 
-  final DigitalTwinMetadata? digitalTwinMetadata;
   static const routeName = '/transfer';
 
   @override
@@ -145,7 +134,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen>
                               signatureData,
                               connectedWallet,
                               sessionId,
-                              digitalTwinMetadata: widget.digitalTwinMetadata,
                             ));
                           })),
                       const SizedBox(height: 30),
@@ -176,8 +164,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen>
                                           signatureData,
                                           connectedWallet,
                                           sessionId,
-                                          digitalTwinMetadata:
-                                              widget.digitalTwinMetadata,
                                         ))
                                       }
                                   })),
