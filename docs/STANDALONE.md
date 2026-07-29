@@ -159,34 +159,19 @@ No `app.ownerchip.com` / `testapp.ownerchip.com` reference of any kind. No
 Firebase, Rarible, Privy, Web3Auth/torus, forwarder or bundler — in **Dart code,
 `pubspec.yaml`, the Android project or the Xcode project**.
 
-⚠️ **Two tracked iOS lockfiles are still stale** and were not regenerated,
-because this machine has neither working CocoaPods (`cocoapods-core` gem missing)
-nor a selected Xcode (CommandLineTools only):
+`ios/Podfile.lock` has been regenerated and committed — no Firebase or Privy
+pods remain (25 pods from 19 dependencies), and `pod install` also dropped the
+now-purposeless `[CP] Copy Pods Resources` build phase from the Xcode project.
+Confirmed against a real build: no Firebase or Privy framework is embedded in
+`Runner.app`.
 
-- `ios/Podfile.lock` — still pins `Firebase/CoreOnly` 11.10.0,
-  `firebase_core` 3.13.0, `firebase_messaging` 15.1.0, `privy_flutter` /
-  `PrivySDK` 2.10.1
-- `ios/Runner.xcodeproj/.../swiftpm/Package.resolved` — still references
-  `firebase-ios-sdk`, `flutterfire`, `leveldb`, `nanopb`, `privy-ios`
-
-Neither was hand-edited — both carry checksums and are generated artifacts.
-
-**How much this actually matters:**
-
-- `Podfile.lock` self-heals. `ios/Podfile` is Flutter-generated from
-  `pubspec.yaml`, those packages are no longer in pubspec, so the next
-  `pod install` — which `flutter build ios` runs, and which Bitrise's macOS stack
-  runs on every iOS build — resolves without them and rewrites the file. CI is
-  therefore **not** blocked by this; the stale copy in git is cosmetic.
-- `Package.resolved` is **inert**. The Xcode project contains zero
-  `XCRemoteSwiftPackageReference` entries and there is no `Package.swift`, so
-  Swift Package Manager is not in use for this project and nothing reads the
-  file. Its stale pins are misleading to a human reader, nothing more. It could
-  simply be deleted from git.
-
-Still worth doing once someone has Xcode: run `flutter build ios --no-codesign`
-and commit the regenerated `Podfile.lock` so the checked-in state matches
-reality.
+One stale file is knowingly left in place:
+`ios/Runner.xcodeproj/.../swiftpm/Package.resolved` still references
+`firebase-ios-sdk`, `flutterfire`, `leveldb`, `nanopb` and `privy-ios`. It is
+**inert** — the Xcode project has zero `XCRemoteSwiftPackageReference` entries
+and there is no `Package.swift`, so Swift Package Manager is not in use and
+nothing reads the file. It misleads a human reader and does nothing else; it can
+simply be deleted from git.
 
 ---
 
@@ -256,6 +241,14 @@ turned out never to be persisted at all — `backendAuth` guards persistence wit
 for anything unrecognised, so a stale session becomes a clean logout instead of
 an unhandled `RangeError`. Covered by `test/wallet_type_test.dart`.
 
+**Xcode 16+ rejects pods below iOS 15.0, and Flutter's Podfile hook is not
+enough.** `flutter_additional_ios_build_settings` only raises pod deployment
+targets to Flutter's own minimum, which is itself below 15.0, so 78 pod build
+configurations sat at 9.0-13.0 and the iOS build failed with 26 Target Integrity
+errors. The Podfile `post_install` now enforces a 15.0 floor explicitly. This is
+not a beta-only problem — the release Xcode versions on Bitrise enforce the same
+floor.
+
 **Bumping `VERSION_NUMBER` logs everyone out.** `HomeScreen` wipes the persisted
 `walletType` and `userSession` whenever it differs from the stored `appVersion`.
 Desirable for 2.0 given the session-shape changes, but know it happens.
@@ -281,6 +274,7 @@ everyone. App Store Guideline 5.1.1(v). Now gated on `session != null`.
 | `flutter analyze` errors | **8** | **0** |
 | `flutter analyze` issues | 1140 | 747 |
 | `flutter build apk --debug` | **failed** | ✓ (`2.0.0+765`) |
+| `flutter build ios --no-codesign` | not attempted | ✓ (`2.0.0` / `765`) |
 | `flutter test` | 5 passed / 4 failed | 19 passed / 1 failed |
 | `dart run build_runner build` | broken (78) | broken (78) — pre-existing |
 
@@ -323,14 +317,12 @@ will meet the enforcement on a modern device.
   `/auth/qrCode/*`, `/collection/{id}/metaTx*`, `/creator/web3auth*`. Nothing
   server-side must change, but the mobile app is no longer an authenticator for
   any web session.
-- **Regenerate `ios/Podfile.lock`** once someone has a working Xcode +
-  CocoaPods; it still pins Firebase and PrivySDK. Not CI-blocking (Bitrise runs
-  `pod install` itself). `Package.resolved` is unused and can just be deleted.
-  See [What is definitively gone](#what-is-definitively-gone).
-- **This machine cannot build iOS at all**: Xcode is not installed (only
-  CommandLineTools at `/Library/Developer/CommandLineTools`), and the `cocoapods`
-  1.16.2 gem in `~/.gem` is missing its `cocoapods-core` dependency under
-  Homebrew Ruby 4.0.6. `brew install cocoapods` is the durable fix — the formula
-  vendors its own Ruby and so survives Ruby upgrades.
+- **Delete `ios/.../swiftpm/Package.resolved`** if you want the tree honest — it
+  is unused but still names Firebase and Privy. See
+  [What is definitively gone](#what-is-definitively-gone).
+- **Do not submit a build produced by an Xcode beta.** Local iOS builds here used
+  Xcode 27.0 beta 4; Apple accepts App Store submissions only from release Xcode
+  outside its beta windows. Bitrise's `osx-xcode-26.2.x` / `osx-xcode-16.2.x`
+  stacks are the source of submittable IPAs.
 - **Check Google Play's current `versionCode`** — if it is above 765, Android
   uploads will hit the same wall Apple did.
