@@ -1,0 +1,639 @@
+---
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: flutter
+workflows:
+  OC_Internal:
+    description: |
+      Builds and deploys app using [Deploy to bitrise.io Step](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html#deploying-a-flutter-app).
+
+      If you build for iOS, make sure to set up code signing secrets on Bitrise for a successful build.
+
+      Next steps:
+      - Check out [Getting started with Flutter apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html) for signing and deployment options.
+      - Check out the [Code signing guide](https://devcenter.bitrise.io/en/code-signing.html) for iOS and Android
+    steps:
+    - activate-ssh-key@4: {}
+    - git-clone@8: {}
+    - file-downloader@1:
+        title: Download logo image
+        inputs:
+        - destination: "./logo.png"
+        - source: "$LOGO"
+    - flutter-installer@1.1:
+        inputs:
+        - version: "$FLUTTER_VERSION"
+    - script@1:
+        title: flutter pub get
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub get
+    - script@1:
+        title: create InfoPlistPrefix.h
+        inputs:
+        - script_file_path:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            cd ios/Runner
+
+            sh updateInfoPlist.sh
+    - script@1:
+        title: Configure Firebase
+        inputs:
+        - script_file_path:
+        - is_debug: 'yes'
+        - content: |-
+            #!/usr/bin/env bash
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+
+            echo $OC_INTERNAL_GOOGLESERVICE_INFO_PLIST
+            echo $OC_INTERNAL_GOOGLE_SERVICES_JSON
+
+            sh setFirebaseApp.sh OC_INTERNAL_GOOGLESERVICE_INFO_PLIST OC_INTERNAL_GOOGLE_SERVICES_JSON
+    - script@1:
+        title: create splash screen
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub run flutter_native_splash:create --path=$LOGO_CONFIG_YAML
+    - script@1:
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub run flutter_launcher_icons:main -f $LOGO_CONFIG_YAML
+        title: create launcher icons
+    - script@1:
+        title: Save ENV to .env file
+        inputs:
+        - script_file_path:
+        - content: "echo \"APP_ID=$APP_ID\" >> $BITRISE_SOURCE_DIR/.env\necho \"IS_INTERNAL=$IS_INTERNAL\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"LANDING_PAGE_URL=$LANDING_PAGE_URL\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"DEFAULT_GAS_PRICE=$DEFAULT_GAS_PRICE\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"IPFS_GATEWAY=$IPFS_GATEWAY\" >> $BITRISE_SOURCE_DIR/.env\necho
+            \"IPFS_ALTERNATIVE_GATEWAY=$IPFS_ALTERNATIVE_GATEWAY\" >> $BITRISE_SOURCE_DIR/.env\necho
+            \"IPFS_GATEWAY_API=$IPFS_GATEWAY_API\" >> $BITRISE_SOURCE_DIR/.env\necho
+            \"IPFS_API_KEY=$IPFS_API_KEY\" >> $BITRISE_SOURCE_DIR/.env\necho \"IPFS_PIN_COMMAND=$IPFS_PIN_COMMAND\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"IPFS_UNPIN_COMMAND=$IPFS_UNPIN_COMMAND\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"IPFS_CID_RESPONSE_PATH=$IPFS_CID_RESPONSE_PATH\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"WALLETCONNECT_ICON=$WALLETCONNECT_ICON\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"IMAGE_ASSETS_BASE_URL=$IMAGE_ASSETS_BASE_URL\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"LEGAL_PAGE_URL=$LEGAL_PAGE_URL\" >>
+            $BITRISE_SOURCE_DIR/.env\necho \"SUPPORT_PAGE_URL=$SUPPORT_PAGE_URL\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"BITRISEIO_PACKAGE_NAME=$BITRISEIO_PACKAGE_NAME\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"OC_BACKEND_URL=$OC_BACKEND_URL\" >>
+            $BITRISE_SOURCE_DIR/.env\necho \"OC_BACKEND_URL_TEST=$OC_BACKEND_URL_TEST\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"NDEF_URL=$NDEF_URL\" >> $BITRISE_SOURCE_DIR/.env\necho
+            \"NDEF_URL_TEST=$NDEF_URL_TEST\" >> $BITRISE_SOURCE_DIR/.env\necho \"SENTRY_DSN=$SENTRY_DSN\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"VERSION_NUMBER=$VERSION_NUMBER\" >>
+            $BITRISE_SOURCE_DIR/.env\necho \"WC_PROJECT_ID=$WC_PROJECT_ID\" >> $BITRISE_SOURCE_DIR/.env\necho
+            \"TUTORIAL_PAGE_URL=$TUTORIAL_PAGE_URL\" >> $BITRISE_SOURCE_DIR/.env\necho
+            \"TERMS_PAGE_URL=$TERMS_PAGE_URL\" >> $BITRISE_SOURCE_DIR/.env\necho \"ORDER_CHIPS_URL=$ORDER_CHIPS_URL\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"PROJECTS_PAGE_URL=$PROJECTS_PAGE_URL\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"OWNERCARD_BASE_ID=$OWNERCARD_BASE_ID\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"CERTIFICATE_CARD_BASE_ID=$CERTIFICATE_CARD_BASE_ID\"
+            >> $BITRISE_SOURCE_DIR/.env \necho \"MAINNET_RARIBLE_API_KEY=$MAINNET_RARIBLE_API_KEY\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"TESTNET_RARIBLE_API_KEY=$TESTNET_RARIBLE_API_KEY\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"ALCHEMY_API_KEY_ETH=$ALCHEMY_API_KEY_ETH\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"ALCHEMY_API_KEY_POLYGON=$ALCHEMY_API_KEY_POLYGON\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"ALCHEMY_API_KEY_SEPOLIA=$ALCHEMY_API_KEY_SEPOLIA\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"WEB3_AUTH_CLIENT_ID=$WEB3_AUTH_CLIENT_ID\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"WEB_APP_URI=$WEB_APP_URI\" >> $BITRISE_SOURCE_DIR/.env\n\necho
+            \"PRIVY_APP_ID=$PRIVY_APP_ID\" >> $BITRISE_SOURCE_DIR/.env\necho \"PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID\"
+            >> $BITRISE_SOURCE_DIR/.env\necho \"ALCHEMY_GAS_POLICY_ID=$ALCHEMY_GAS_POLICY_ID\"
+            >> $BITRISE_SOURCE_DIR/.env\n\ncat $BITRISE_SOURCE_DIR/.env"
+    - script@1:
+        title: Localization
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+
+            dart run scripts/customizeLocalization.dart lib/l10n/ownerchip/app_de.arb lib/l10n/app_de.arb
+            dart run scripts/customizeLocalization.dart lib/l10n/ownerchip/app_en.arb lib/l10n/app_en.arb
+
+            flutter gen-l10n
+    - set-ios-product-bundle-identifier@1.1:
+        inputs:
+        - new_bundle_identifier: "$BITRISEIO_PACKAGE_NAME"
+        - project_path: ios/Runner.xcodeproj
+    - manage-ios-code-signing@2:
+        inputs:
+        - distribution_method: app-store
+        - verbose_log: 'yes'
+        - apple_team_id: YSGH4U92FV
+        - apple_service_connection: api-key
+    - file-downloader@1:
+        inputs:
+        - destination: "$BITRISE_SOURCE_DIR/keystores/my_keystore.jks"
+        - source: "$BITRISEIO_ANDROID_KEYSTORE_URL"
+    - script@1:
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub global activate rename
+            flutter pub get
+            rename setBundleId --targets ios,android --value $BITRISEIO_PACKAGE_NAME
+            rename setAppName --targets ios,android --value "$BITRISEIO_APP_LABEL"
+        title: Change package name to ENV variable
+    - change-android-versioncode-and-versionname@1:
+        inputs:
+        - new_version_name: "$VERSION_NUMBER"
+        - build_gradle_path: "$BITRISE_SOURCE_DIR/android/app/build.gradle"
+    - set-xcode-build-number@2:
+        inputs:
+        - plist_path: "$BITRISE_SOURCE_DIR/iOS/Runner/Info.plist"
+        - build_short_version_string: "$VERSION_NUMBER"
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '17'
+    - flutter-build@0:
+        inputs:
+        - project_location: "$BITRISE_FLUTTER_PROJECT_LOCATION"
+        - is_debug_mode: 'true'
+        - additional_build_params:
+        - ios_output_type: archive
+    - xcode-archive@6.0:
+        inputs:
+        - distribution_method: app-store
+        - cache_level: swift_packages
+    - sign-apk@2.0: {}
+    - deploy-to-bitrise-io@2: {}
+    - deploy-to-itunesconnect-application-loader@2.1:
+        inputs:
+        - connection: api_key
+    envs:
+    - opts:
+        is_expand: false
+      APP_ID: "'ownerchip'"
+    - opts:
+        is_expand: false
+      LANDING_PAGE_URL: "'https://ownerchip.com/en/support.html'"
+    - opts:
+        is_expand: false
+      IMAGE_ASSETS_BASE_URL: "'assets/images/ownerchip'"
+    - opts:
+        is_expand: false
+      BITRISEIO_PACKAGE_NAME: com.ownerchip.internal
+    - opts:
+        is_expand: false
+      BITRISEIO_APP_LABEL: OC Internal
+    - LOGO: "$BITRISEIO_OCLOGO_URL"
+    - opts:
+        is_expand: false
+      LOGO_CONFIG_YAML: flutter_logo_config_ownerchip.yaml
+    - opts:
+        is_expand: false
+      LEGAL_PAGE_URL: "'https://www.ownerchip.com/en/app-support-legal-information.html'"
+    - opts:
+        is_expand: false
+      IS_INTERNAL: "'true'"
+    - opts:
+        is_expand: false
+      TERMS_PAGE_URL: "'https://ownerchip.com/en/general-terms.html'"
+    - opts:
+        is_expand: false
+      LOCALIZED_TEXT_DE: "'lib/l10n/ownerchip/app_de.arb'"
+    - opts:
+        is_expand: false
+      LOCALIZED_TEXT_DE: "'lib/l10n/ownerchip/app_en.arb'"
+    - opts:
+        is_expand: false
+      NDEF_URL: "'item.ownerchip.com/'"
+    - opts:
+        is_expand: false
+      URL_SCHEME: ownerchipInternal
+    meta:
+      bitrise.io:
+        stack: osx-xcode-26.2.x
+  OwnerChip:
+    description: |
+      Builds and deploys app using [Deploy to bitrise.io Step](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html#deploying-a-flutter-app).
+
+      If you build for iOS, make sure to set up code signing secrets on Bitrise for a successful build.
+
+      Next steps:
+      - Check out [Getting started with Flutter apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html) for signing and deployment options.
+      - Check out the [Code signing guide](https://devcenter.bitrise.io/en/code-signing.html) for iOS and Android
+    steps:
+    - activate-ssh-key@4: {}
+    - git-clone@8: {}
+    - file-downloader@2:
+        title: Download logo image
+        inputs:
+        - destination: "./logo.png"
+        - source: "$LOGO"
+    - flutter-installer@1.1:
+        inputs:
+        - version: "$FLUTTER_VERSION"
+    - script@1:
+        title: flutter pub get
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub get
+    - script@1:
+        inputs:
+        - script_file_path:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            cd ios/Runner
+
+            sh updateInfoPlist.sh
+        title: create InfoPlistPrefix.h
+    - script@1:
+        title: create splash screen
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub run flutter_native_splash:create --path=$LOGO_CONFIG_YAML
+    - script@1:
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub run flutter_launcher_icons:main -f $LOGO_CONFIG_YAML
+        title: create launcher icons
+    - script@1:
+        title: Save ENV to .env file
+        inputs:
+        - script_file_path:
+        - content: |-
+            echo "APP_ID=$APP_ID" >> $BITRISE_SOURCE_DIR/.env
+            echo "IS_INTERNAL=$IS_INTERNAL" >> $BITRISE_SOURCE_DIR/.env
+            echo "LANDING_PAGE_URL=$LANDING_PAGE_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "DEFAULT_GAS_PRICE=$DEFAULT_GAS_PRICE" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_GATEWAY=$IPFS_GATEWAY" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_ALTERNATIVE_GATEWAY=$IPFS_ALTERNATIVE_GATEWAY" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_GATEWAY_API=$IPFS_GATEWAY_API" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_API_KEY=$IPFS_API_KEY" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_PIN_COMMAND=$IPFS_PIN_COMMAND" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_UNPIN_COMMAND=$IPFS_UNPIN_COMMAND" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_CID_RESPONSE_PATH=$IPFS_CID_RESPONSE_PATH" >> $BITRISE_SOURCE_DIR/.env
+            echo "IMAGE_ASSETS_BASE_URL=$IMAGE_ASSETS_BASE_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "BITRISEIO_PACKAGE_NAME=$BITRISEIO_PACKAGE_NAME" >> $BITRISE_SOURCE_DIR/.env
+            echo "OC_BACKEND_URL=$OC_BACKEND_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "OC_BACKEND_URL_TEST=$OC_BACKEND_URL_TEST" >> $BITRISE_SOURCE_DIR/.env
+            echo "NDEF_URL=$NDEF_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "NDEF_URL_TEST=$NDEF_URL_TEST" >> $BITRISE_SOURCE_DIR/.env
+            echo "SENTRY_DSN=$SENTRY_DSN" >> $BITRISE_SOURCE_DIR/.env
+            echo "VERSION_NUMBER=$VERSION_NUMBER" >> $BITRISE_SOURCE_DIR/.env
+            echo "WC_PROJECT_ID=$WC_PROJECT_ID" >> $BITRISE_SOURCE_DIR/.env
+            echo "TERMS_PAGE_URL=$TERMS_PAGE_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "OWNERCARD_BASE_ID=$OWNERCARD_BASE_ID" >> $BITRISE_SOURCE_DIR/.env
+            echo "ALCHEMY_API_KEY_ETH=$ALCHEMY_API_KEY_ETH" >> $BITRISE_SOURCE_DIR/.env
+            echo "ALCHEMY_API_KEY_POLYGON=$ALCHEMY_API_KEY_POLYGON" >> $BITRISE_SOURCE_DIR/.env
+
+            cat $BITRISE_SOURCE_DIR/.env
+    - script@1:
+        title: Localization
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+
+            dart run scripts/customizeLocalization.dart lib/l10n/ownerchip/app_de.arb lib/l10n/app_de.arb
+            dart run scripts/customizeLocalization.dart lib/l10n/ownerchip/app_en.arb lib/l10n/app_en.arb
+
+            flutter gen-l10n
+    - set-ios-product-bundle-identifier@1:
+        inputs:
+        - new_bundle_identifier: "$BITRISEIO_PACKAGE_NAME"
+        - project_path: ios/Runner.xcodeproj
+    - manage-ios-code-signing@2:
+        inputs:
+        - distribution_method: app-store
+        - apple_team_id: YSGH4U92FV
+    - file-downloader@2:
+        inputs:
+        - destination: "$BITRISE_SOURCE_DIR/keystores/my_keystore.jks"
+        - source: "$BITRISEIO_ANDROID_KEYSTORE_URL"
+    - script@1:
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub global activate rename
+            flutter pub get
+            rename setBundleId --targets ios,android --value $BITRISEIO_PACKAGE_NAME
+            rename setAppName --targets ios,android --value "$BITRISEIO_APP_LABEL"
+        title: Change package name to ENV variable
+    - change-android-versioncode-and-versionname@1:
+        inputs:
+        - new_version_name: "$VERSION_NUMBER"
+        - build_gradle_path: "$BITRISE_SOURCE_DIR/android/app/build.gradle"
+    - set-xcode-build-number@2:
+        inputs:
+        - build_short_version_string: "$VERSION_NUMBER"
+        - plist_path: "$BITRISE_SOURCE_DIR/iOS/Runner/Info.plist"
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '17'
+    - flutter-build@0:
+        inputs:
+        - project_location: "$BITRISE_FLUTTER_PROJECT_LOCATION"
+        - is_debug_mode: 'true'
+        - android_output_type: appbundle
+        - ios_output_type: archive
+    - xcode-archive@6:
+        inputs:
+        - distribution_method: app-store
+    - sign-apk@2.0: {}
+    - deploy-to-bitrise-io@2: {}
+    - deploy-to-itunesconnect-application-loader@2.1:
+        inputs:
+        - connection: api_key
+    envs:
+    - opts:
+        is_expand: false
+      APP_ID: "'ownerchip'"
+    - opts:
+        is_expand: false
+      LANDING_PAGE_URL: "'https://ownerchip.com/en/support.html'"
+    - opts:
+        is_expand: false
+      IMAGE_ASSETS_BASE_URL: "'assets/images/ownerchip_user'"
+    - opts:
+        is_expand: false
+      BITRISEIO_PACKAGE_NAME: com.ownerchip.user
+    - opts:
+        is_expand: false
+      BITRISEIO_APP_LABEL: OwnerChip
+    - LOGO: "$BITRISEIO_BITRISEIO_OCUSERLOGO_URL_URL"
+    - opts:
+        is_expand: false
+      STYLE_ID: '"ownerchip"'
+    - opts:
+        is_expand: false
+      LOGO_CONFIG_YAML: flutter_logo_config_ownerchip_user.yaml
+    - opts:
+        is_expand: false
+      LEGAL_PAGE_URL: "'https://www.ownerchip.com/en/app-support-legal-information.html'"
+    - opts:
+        is_expand: false
+      IS_INTERNAL: "'false'"
+    - opts:
+        is_expand: false
+      TUTORIAL_PAGE_URL: "'http://www.ownerchip.com/tutorial'"
+    - opts:
+        is_expand: false
+      TERMS_PAGE_URL: "'https://ownerchip.com/en/general-terms.html'"
+    - opts:
+        is_expand: false
+      ORDER_CHIPS_URL: "'http://www.ownerchip.com/orderchips'"
+    - opts:
+        is_expand: false
+      PROJECTS_PAGE_URL: "'http://www.ownerchip.com/projects'"
+    - opts:
+        is_expand: false
+      LOCALIZED_TEXT_DE: "'lib/l10n/ownerchip/app_de.arb'"
+    - opts:
+        is_expand: false
+      LOCALIZED_TEXT_EN: "'lib/l10n/ownerchip/app_en.arb'"
+    - opts:
+        is_expand: false
+      NDEF_URL: "'item.ownerchip.com/'"
+    - opts:
+        is_expand: false
+      URL_SCHEME: ownerchip
+  SteboArt_User:
+    description: |
+      Builds and deploys app using [Deploy to bitrise.io Step](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html#deploying-a-flutter-app).
+
+      If you build for iOS, make sure to set up code signing secrets on Bitrise for a successful build.
+
+      Next steps:
+      - Check out [Getting started with Flutter apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-flutter-apps.html) for signing and deployment options.
+      - Check out the [Code signing guide](https://devcenter.bitrise.io/en/code-signing.html) for iOS and Android
+    steps:
+    - activate-ssh-key@4: {}
+    - git-clone@8: {}
+    - file-downloader@1:
+        title: Download logo image
+        inputs:
+        - destination: "./logo.png"
+        - source: "$LOGO"
+    - flutter-installer@1.1:
+        inputs:
+        - version: "$FLUTTER_VERSION"
+    - script@1:
+        title: flutter pub get
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub get
+    - script@1:
+        inputs:
+        - script_file_path:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            cd ios/Runner
+
+            sh updateInfoPlist.sh
+        title: create InfoPlistPrefix.h
+    - script@1:
+        title: create splash screen
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub run flutter_native_splash:create --path=$LOGO_CONFIG_YAML
+    - script@1:
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub run flutter_launcher_icons:main -f $LOGO_CONFIG_YAML
+        title: create launcher icons
+    - script@1:
+        title: Save ENV to .env file
+        inputs:
+        - script_file_path:
+        - content: |-
+            echo "APP_ID=$APP_ID" >> $BITRISE_SOURCE_DIR/.env
+            echo "IS_INTERNAL=$IS_INTERNAL" >> $BITRISE_SOURCE_DIR/.env
+            echo "DEFAULT_GAS_PRICE=$DEFAULT_GAS_PRICE" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_GATEWAY=$IPFS_GATEWAY" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_ALTERNATIVE_GATEWAY=$IPFS_ALTERNATIVE_GATEWAY" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_GATEWAY_API=$IPFS_GATEWAY_API" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_API_KEY=$IPFS_API_KEY" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_PIN_COMMAND=$IPFS_PIN_COMMAND" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_UNPIN_COMMAND=$IPFS_UNPIN_COMMAND" >> $BITRISE_SOURCE_DIR/.env
+            echo "IPFS_CID_RESPONSE_PATH=$IPFS_CID_RESPONSE_PATH" >> $BITRISE_SOURCE_DIR/.env
+            echo "IMAGE_ASSETS_BASE_URL=$IMAGE_ASSETS_BASE_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "BITRISEIO_PACKAGE_NAME=$BITRISEIO_PACKAGE_NAME" >> $BITRISE_SOURCE_DIR/.env
+            echo "OC_BACKEND_URL=$OC_BACKEND_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "OC_BACKEND_URL_TEST=$OC_BACKEND_URL_TEST" >> $BITRISE_SOURCE_DIR/.env
+            echo "NDEF_URL=$NDEF_URL" >> $BITRISE_SOURCE_DIR/.env
+            echo "NDEF_URL_TEST=$NDEF_URL_TEST" >> $BITRISE_SOURCE_DIR/.env
+            echo "SENTRY_DSN=$SENTRY_DSN" >> $BITRISE_SOURCE_DIR/.env
+            echo "VERSION_NUMBER=$VERSION_NUMBER" >> $BITRISE_SOURCE_DIR/.env
+            echo "WC_PROJECT_ID=$WC_PROJECT_ID" >> $BITRISE_SOURCE_DIR/.env
+            echo "OWNERCARD_BASE_ID=$OWNERCARD_BASE_ID" >> $BITRISE_SOURCE_DIR/.env
+            echo "ALCHEMY_API_KEY_ETH=$ALCHEMY_API_KEY_ETH" >> $BITRISE_SOURCE_DIR/.env
+            echo "ALCHEMY_API_KEY_POLYGON=$ALCHEMY_API_KEY_POLYGON" >> $BITRISE_SOURCE_DIR/.env
+
+            cat $BITRISE_SOURCE_DIR/.env
+    - script@1:
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+
+            dart run scripts/customizeLocalization.dart lib/l10n/stebo/app_de.arb lib/l10n/app_de.arb
+            dart run scripts/customizeLocalization.dart lib/l10n/stebo/app_en.arb lib/l10n/app_en.arb
+
+            flutter gen-l10n
+        title: Localization
+    - set-ios-product-bundle-identifier@1:
+        inputs:
+        - new_bundle_identifier: "$BITRISEIO_PACKAGE_NAME"
+        - project_path: ios/Runner.xcodeproj
+    - manage-ios-code-signing@2:
+        inputs:
+        - apple_team_id: L2L69K9G7S
+        - distribution_method: app-store
+        - apple_service_connection: apple-id
+    - file-downloader@1:
+        inputs:
+        - destination: "$BITRISE_SOURCE_DIR/keystores/my_keystore.jks"
+        - source: "$BITRISEIO_ANDROID_KEYSTORE_URL"
+    - script@1:
+        inputs:
+        - content: |-
+            cd $BITRISE_FLUTTER_PROJECT_LOCATION
+            flutter pub global activate rename
+            flutter pub get
+            rename setBundleId --targets ios,android --value $BITRISEIO_PACKAGE_NAME
+            rename setAppName --targets ios,android --value "$BITRISEIO_APP_LABEL"
+        title: Change package name to ENV variable
+    - cache-pull@2: {}
+    - change-android-versioncode-and-versionname@1:
+        inputs:
+        - new_version_name: "$VERSION_NUMBER"
+        - build_gradle_path: "$BITRISE_SOURCE_DIR/android/app/build.gradle"
+    - set-xcode-build-number@2:
+        inputs:
+        - build_short_version_string: "$VERSION_NUMBER"
+        - plist_path: "$BITRISE_SOURCE_DIR/iOS/Runner/Info.plist"
+    - set-java-version@1:
+        inputs:
+        - set_java_version: '17'
+    - flutter-build@0:
+        inputs:
+        - project_location: "$BITRISE_FLUTTER_PROJECT_LOCATION"
+        - is_debug_mode: 'true'
+        - android_output_type: appbundle
+        - ios_output_type: archive
+    - xcode-archive@6.0:
+        inputs:
+        - distribution_method: app-store
+    - sign-apk@2.0: {}
+    - deploy-to-bitrise-io@2: {}
+    envs:
+    - opts:
+        is_expand: false
+      IS_ADMIN: "'false'"
+    - opts:
+        is_expand: false
+      APP_ID: "'stebo'"
+    - opts:
+        is_expand: false
+      LANDING_PAGE_URL: "'https://en.steboart.com'"
+    - opts:
+        is_expand: false
+      IMAGE_ASSETS_BASE_URL: "'assets/images/stebo'"
+    - opts:
+        is_expand: false
+      BITRISEIO_PACKAGE_NAME: com.steboart.user
+    - opts:
+        is_expand: false
+      BITRISEIO_APP_LABEL: Stebo Art
+    - LOGO: "$BITRISEIO_STEBOLOGO_URL"
+    - opts:
+        is_expand: false
+      LOGO_CONFIG_YAML: flutter_logo_config_stebo.yaml
+    - opts:
+        is_expand: false
+      LEGAL_PAGE_URL: "'https://www.ownerchip.com/en/app-support-legal-information.html'"
+    - opts:
+        is_expand: false
+      IS_INTERNAL: "'false'"
+    - opts:
+        is_expand: false
+      TUTORIAL_PAGE_URL: https://www.ownerchip.com/en/support.html
+    - opts:
+        is_expand: false
+      TERMS_PAGE_URL: "'https://ownerchip.com/en/general-terms.html'"
+    - opts:
+        is_expand: false
+      ORDER_CHIPS_URL: "''"
+    - opts:
+        is_expand: false
+      PROJECTS_PAGE_URL: "'https://www.steboart.com'"
+    - opts:
+        is_expand: false
+      LOCALIZED_TEXT_DE: "'lib/l10n/ownerchip/app_de.arb'"
+    - opts:
+        is_expand: false
+      LOCALIZED_TEXT_EN: "'lib/l10n/ownerchip/app_en.arb'"
+    - opts:
+        is_expand: false
+      NDEF_URL: "'stebo.ownerchip.com/'"
+    - opts:
+        is_expand: false
+      URL_SCHEME: steboart
+    meta:
+      bitrise.io:
+        stack: osx-xcode-16.2.x
+meta:
+  bitrise.io:
+    stack: osx-xcode-26.2.x-edge
+    machine_type_id: g2.mac.medium
+app:
+  envs:
+  - BITRISE_FLUTTER_PROJECT_LOCATION: "."
+  - opts:
+      is_expand: false
+    BITRISE_PROJECT_PATH: ios/Runner.xcworkspace
+  - opts:
+      is_expand: false
+    BITRISE_SCHEME: Runner
+  - opts:
+      is_expand: false
+    NDEF_URL_TEST: "'testitem.ownerchip.com/'"
+  - opts:
+      is_expand: false
+    OC_BACKEND_URL: "'https://api.ownerchip.com'"
+  - opts:
+      is_expand: false
+    OC_BACKEND_URL_TEST: "'https://testapi.ownerchip.com'"
+  - opts:
+      is_expand: false
+    DEFAULT_GAS_PRICE: '"0x77359400"'
+  - opts:
+      is_expand: false
+    IPFS_GATEWAY: '"https://rose-able-mollusk-412.mypinata.cloud/ipfs/"'
+  - opts:
+      is_expand: false
+    IPFS_ALTERNATIVE_GATEWAY: '"https://nftstorage.link/ipfs/"'
+  - opts:
+      is_expand: false
+    IPFS_GATEWAY_API: "'https://api.pinata.cloud/'"
+  - opts:
+      is_expand: false
+    IPFS_PIN_COMMAND: '"pinning/pinFileToIPFS/"'
+  - opts:
+      is_expand: false
+    IPFS_UNPIN_COMMAND: '"pinning/unpin/"'
+  - opts:
+      is_expand: false
+    IPFS_CID_RESPONSE_PATH: '"IpfsHash"'
+  - opts:
+      is_expand: false
+    SENTRY_DSN: "'https://30b7e5fbd27e4b4a9a6be20d3e4dc8c4@o4504922227212288.ingest.sentry.io/4504922228719616'"
+  - opts:
+      is_expand: false
+    SUPPORT_PAGE_URL: "'https://www.ownerchip.com/en/support.html'"
+  - VERSION_NUMBER: 2.0.0
+    opts:
+      is_expand: false
+  - opts:
+      is_expand: false
+    WC_PROJECT_ID: e2054be6f373cb53d8d8de9c95049cf0
+  - FLUTTER_VERSION: 3.38.1
+    opts:
+      is_expand: false
