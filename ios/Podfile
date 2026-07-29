@@ -37,5 +37,17 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # Xcode 16+ refuses to build targets whose IPHONEOS_DEPLOYMENT_TARGET is
+    # below 15.0, and several transitive pods still declare 9.0-13.0.
+    # flutter_additional_ios_build_settings only raises them to Flutter's own
+    # minimum, which is still under that floor, so enforce it explicitly.
+    target.build_configurations.each do |config|
+      deployment_target =
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f
+      if deployment_target < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
   end
 end
