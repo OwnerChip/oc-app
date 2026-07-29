@@ -169,17 +169,24 @@ nor a selected Xcode (CommandLineTools only):
 - `ios/Runner.xcodeproj/.../swiftpm/Package.resolved` — still references
   `firebase-ios-sdk`, `flutterfire`, `leveldb`, `nanopb`, `privy-ios`
 
-These should self-heal: `ios/Podfile` is Flutter-generated from `pubspec.yaml`,
-and those packages are no longer in pubspec, so the next `pod install` (which
-`flutter build ios` runs) will resolve without them and rewrite both files. They
-were deliberately **not** hand-edited — both carry checksums and are generated
-artifacts.
+Neither was hand-edited — both carry checksums and are generated artifacts.
 
-**Do this on a machine with Xcode before the first iOS release:** run
-`flutter build ios --no-codesign` (or `cd ios && pod install`) and commit the
-regenerated lockfiles. Watch the first iOS CI run in particular: a stale
-`Package.resolved` pointing at removed SwiftPM packages is the most likely place
-an iOS build trips.
+**How much this actually matters:**
+
+- `Podfile.lock` self-heals. `ios/Podfile` is Flutter-generated from
+  `pubspec.yaml`, those packages are no longer in pubspec, so the next
+  `pod install` — which `flutter build ios` runs, and which Bitrise's macOS stack
+  runs on every iOS build — resolves without them and rewrites the file. CI is
+  therefore **not** blocked by this; the stale copy in git is cosmetic.
+- `Package.resolved` is **inert**. The Xcode project contains zero
+  `XCRemoteSwiftPackageReference` entries and there is no `Package.swift`, so
+  Swift Package Manager is not in use for this project and nothing reads the
+  file. Its stale pins are misleading to a human reader, nothing more. It could
+  simply be deleted from git.
+
+Still worth doing once someone has Xcode: run `flutter build ios --no-codesign`
+and commit the regenerated `Podfile.lock` so the checked-in state matches
+reality.
 
 ---
 
@@ -316,8 +323,14 @@ will meet the enforcement on a modern device.
   `/auth/qrCode/*`, `/collection/{id}/metaTx*`, `/creator/web3auth*`. Nothing
   server-side must change, but the mobile app is no longer an authenticator for
   any web session.
-- **Regenerate the iOS lockfiles** on a machine with Xcode + CocoaPods —
-  `ios/Podfile.lock` and `Package.resolved` still pin Firebase and PrivySDK. See
-  [What is definitively gone](#what-is-definitively-gone).
+- **Regenerate `ios/Podfile.lock`** once someone has a working Xcode +
+  CocoaPods; it still pins Firebase and PrivySDK. Not CI-blocking (Bitrise runs
+  `pod install` itself). `Package.resolved` is unused and can just be deleted.
+  See [What is definitively gone](#what-is-definitively-gone).
+- **This machine cannot build iOS at all**: Xcode is not installed (only
+  CommandLineTools at `/Library/Developer/CommandLineTools`), and the `cocoapods`
+  1.16.2 gem in `~/.gem` is missing its `cocoapods-core` dependency under
+  Homebrew Ruby 4.0.6. `brew install cocoapods` is the durable fix — the formula
+  vendors its own Ruby and so survives Ruby upgrades.
 - **Check Google Play's current `versionCode`** — if it is above 765, Android
   uploads will hit the same wall Apple did.
