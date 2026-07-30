@@ -609,7 +609,11 @@ app:
     IPFS_GATEWAY: '"https://rose-able-mollusk-412.mypinata.cloud/ipfs/"'
   - opts:
       is_expand: false
-    IPFS_ALTERNATIVE_GATEWAY: '"https://nftstorage.link/ipfs/"'
+    # Was https://nftstorage.link/ipfs/ — NFT.Storage Classic decommissioned
+    # uploads in June 2024 and warns availability will degrade, so it was a dead
+    # fallback. Now our own Kubo node, which holds every CID the app references.
+    # Trailing slash is required.
+    IPFS_ALTERNATIVE_GATEWAY: '"https://ipfs.ownerchip.com/ipfs/"'
   - opts:
       is_expand: false
     IPFS_GATEWAY_API: "'https://api.pinata.cloud/'"

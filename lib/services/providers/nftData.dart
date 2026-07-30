@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ownerchip_whitelabel/config/chains.dart';
 import 'package:ownerchip_whitelabel/config/constants.dart';
@@ -117,7 +116,11 @@ final nftImageProvider =
     return '';
   }
   String cid = getCidFromIpfsLink(nftMetadata['image']);
-  String imageUri = "${dotenv.get('IPFS_GATEWAY')}$cid";
+  // Build from the gateway that just served this token's metadata, not blindly
+  // from IPFS_GATEWAY. If the primary is down, the metadata above came from the
+  // alternative, and hardcoding the primary here would hand the image widget a
+  // URL that is currently failing.
+  String imageUri = ipfsUrlForCid(cid);
   return imageUri;
 });
 

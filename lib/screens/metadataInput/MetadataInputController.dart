@@ -263,9 +263,23 @@ mixin MetadataInputController on ConsumerState<MetadataScreen> {
         stackTrace: s,
       );
       talker.error('Error minting token: $e', s);
+      // Carry the underlying reason, not just a generic code. An IPFS pin can be
+      // rejected because the pinning account is at its plan file limit, which
+      // needs an upgrade or a prune rather than a retry — indistinguishable from
+      // a network blip if all the user and the logs get is "mint error".
+      // Read the localised string once and build from that, so this adds no
+      // further BuildContext access across the async gap.
+      final String baseMintError = context.loc.mintError;
+      String message = baseMintError;
+      if (e is IpfsPinException) {
+        message = e.looksLikeQuotaLimit
+            ? '$baseMintError\nIPFS pin rejected (HTTP ${e.statusCode}). '
+                'The pinning account may be at its plan file/storage limit.'
+            : '$baseMintError\nIPFS pin failed (HTTP ${e.statusCode}): ${e.reason}';
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         returnSnackBarWidget(
-            context.loc.errorHeadingSnackBar, context.loc.mintError, 'error'),
+            context.loc.errorHeadingSnackBar, message, 'error'),
       );
       setState(() {
         isLoading = false;
